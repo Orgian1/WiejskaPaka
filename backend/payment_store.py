@@ -97,6 +97,34 @@ def validate_payment_history(con, payment):
         raise ValueError('Niespójna historia płatności')
 
 
+def validate_order_refund(con, payment, order):
+    """A terminal refund needs matching financial and order-closure evidence."""
+    if payment.state != 'refunded_test':
+        return
+    if order['status'] == 'anulowane_testowo':
+        expected_type = 'customer_cancel_refund_test'
+        linked = con.execute('SELECT 1 FROM shipment_order_links WHERE order_id=?', (order['id'],)).fetchone()
+        closure_type = 'shipment_paid_cancel_test' if linked else 'order_paid_cancel_test'
+        previous_status = 'oczekuje_na_platnosc_testowa'
+        actor_id = order['buyer_id']
+    elif order['status'] == 'nieudana_dostawa_testowo' and order['fulfillment'] == 'dostawa':
+        expected_type = 'delivery_failed_by_courier_test'
+        closure_type = 'courier_delivery_failed_test'
+        previous_status = 'w_drodze_testowo'
+        actor_id = order['farmer_id']
+    else:
+        raise ValueError('Niespójny kontekst zwrotu')
+    refunds = con.execute('''SELECT event_type FROM payment_simulation_events
+        WHERE order_id=? AND state_after=? LIMIT 2''', (order['id'], 'refunded_test')).fetchall()
+    closures = con.execute('''SELECT actor_id,event_type,previous_status FROM order_events
+        WHERE order_id=? AND new_status=? LIMIT 2''', (order['id'], order['status'])).fetchall()
+    if (len(refunds) != 1 or refunds[0]['event_type'] != expected_type or len(closures) != 1
+            or closures[0]['event_type'] != closure_type
+            or closures[0]['previous_status'] != previous_status
+            or closures[0]['actor_id'] != actor_id):
+        raise ValueError('Niespójny kontekst zwrotu')
+
+
 def persist_event(con, payment, event_id, event_type, timestamp):
     from backend.payment_state_audit import audit_payment
     if not audit_payment(payment).valid:

@@ -1196,12 +1196,13 @@ def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authoriza
         return {'shipment_id': shipment_id, 'status': 'anulowane_testowo', 'cancelled_orders': len(orders), 'refund_grosze': 0, 'warning': 'Brak rzeczywistej płatności i zwrotu'}
 
 def checked_refund_payment(con, order):
-    from backend.payment_store import validate_order_payment, validate_payment_history
+    from backend.payment_store import validate_order_payment, validate_payment_history, validate_order_refund
     payment = get_payment(con, order['id'])
     if payment is not None:
         try:
             validate_order_payment(payment, order)
             validate_payment_history(con, payment)
+            validate_order_refund(con, payment, order)
         except ValueError as exc:
             raise HTTPException(409, 'Niespójne rozliczenie; wymagana weryfikacja') from exc
     return payment
@@ -2386,6 +2387,8 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
             raise HTTPException(409, 'Wypłata wyłącznie po odbiorze')
         try:
             payment = create_payment(con, order)
+            from backend.payment_store import validate_order_refund
+            validate_order_refund(con, payment, order)
             updated = persist_event(con, payment, event_key, payload.event_type,
                                     datetime.now(timezone.utc).isoformat())
             if payload.event_type == 'delivery_failed_by_courier_test' and order['status'] == 'w_drodze_testowo':

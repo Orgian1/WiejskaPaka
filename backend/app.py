@@ -1018,6 +1018,13 @@ def my_orders(user=Depends(current_user), authorization: str | None = Header(def
             raise HTTPException(403,'Brak uprawnień')
         return [dict(r) for r in rows]
 
+def require_shipment_membership(shipment, orders):
+    """Call on locked rows before granting authority through shipment links."""
+    if any(order[key] != shipment[key]
+           for order in orders for key in ('buyer_id', 'farmer_id', 'fulfillment')):
+        raise HTTPException(409, 'Niespójne zamówienia przesyłki; wymagana weryfikacja')
+
+
 @app.post('/shipments/{shipment_id}/confirm')
 def confirm_shipment(shipment_id: str, payload: ConfirmIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
     # Confirm all shipment orders atomically using one PIN.
@@ -1032,6 +1039,7 @@ def confirm_shipment(shipment_id: str, payload: ConfirmIn, user=Depends(current_
         if user['role'] == 'rolnik' and (shipment['farmer_id'] != user['id'] or shipment['fulfillment'] != 'odbior'):
             raise HTTPException(403, 'Brak uprawnień do przesyłki')
         orders = con.execute('SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id WHERE l.shipment_id=? ORDER BY o.id' + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders:
             raise HTTPException(409, 'Przesyłka nie ma zamówień')
         if user['role'] == 'dostawca':
@@ -1170,6 +1178,7 @@ def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authoriza
         if not shipment or shipment['buyer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
         orders = con.execute('SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id WHERE l.shipment_id=? ORDER BY o.id' + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders or any(o['status'] != 'oczekuje_na_platnosc_testowa' for o in orders):
             raise HTTPException(409, 'Nie można anulować przesyłki na tym etapie')
         # Nie przywracaj towaru i nie anuluj przesyłki z opłaconą symulacją.
@@ -1197,6 +1206,7 @@ def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), auth
         if not shipment or shipment['buyer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
         orders = con.execute('SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id WHERE l.shipment_id=? ORDER BY o.id' + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders:
             raise HTTPException(409, 'Pusta przesyłka')
         if all(o['status'] == 'anulowane_testowo' for o in orders):
@@ -1521,6 +1531,7 @@ def assign_shipment_courier(shipment_id: str, payload: AssignCourierIn,
         if not courier:
             raise HTTPException(422, 'Nie znaleziono dostawcy')
         orders = con.execute('SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id WHERE l.shipment_id=? ORDER BY o.id' + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders or any(o['status'] != 'oczekuje_na_platnosc_testowa' for o in orders):
             raise HTTPException(409, 'Nieprawidłowy status zamówień')
         if any(con.execute('SELECT 1 FROM delivery_assignments WHERE order_id=?', (o['id'],)).fetchone() for o in orders):
@@ -1541,6 +1552,7 @@ def dispatch_shipment(shipment_id: str, user=Depends(current_user), authorizatio
         if shipment['fulfillment'] != 'dostawa':
             raise HTTPException(409, 'Przesyłka nie jest dostawą na adres')
         orders = con.execute('SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id WHERE l.shipment_id=? ORDER BY o.id' + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders or any(o['status'] != 'oczekuje_na_platnosc_testowa' for o in orders):
             raise HTTPException(409, 'Nieprawidłowy status zamówień')
         couriers = [con.execute('SELECT courier_id FROM delivery_assignments WHERE order_id=?',(o['id'],)).fetchone() for o in orders]
@@ -1572,6 +1584,7 @@ def fail_shipment_by_courier(shipment_id: str, payload: ShipmentFailureIn,
             raise HTTPException(409, 'Zwrot dotyczy tylko dostawy na adres')
         orders = con.execute("""SELECT o.* FROM orders o JOIN shipment_order_links l ON l.order_id=o.id
             WHERE l.shipment_id=? ORDER BY o.id""" + (' FOR UPDATE OF o' if DATABASE_URL else ''), (shipment_id,)).fetchall()
+        require_shipment_membership(shipment, orders)
         if not orders:
             raise HTTPException(409, 'Przesyłka nie zawiera zamówień')
         states = {o['status'] for o in orders}

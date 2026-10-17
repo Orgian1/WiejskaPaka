@@ -1196,11 +1196,12 @@ def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authoriza
         return {'shipment_id': shipment_id, 'status': 'anulowane_testowo', 'cancelled_orders': len(orders), 'refund_grosze': 0, 'warning': 'Brak rzeczywistej płatności i zwrotu'}
 
 def checked_refund_payment(con, order):
-    from backend.payment_store import validate_order_payment
+    from backend.payment_store import validate_order_payment, validate_payment_history
     payment = get_payment(con, order['id'])
     if payment is not None:
         try:
             validate_order_payment(payment, order)
+            validate_payment_history(con, payment)
         except ValueError as exc:
             raise HTTPException(409, 'Niespójne rozliczenie; wymagana weryfikacja') from exc
     return payment

@@ -65,10 +65,45 @@ def create_payment(con, order):
     return payment
 
 
+def validate_payment_history(con, payment):
+    """Replay the current acyclic simulation graph without trusting clock order."""
+    from dataclasses import replace
+    from backend.payment_state_audit import audit_payment
+    if not audit_payment(payment).valid:
+        raise ValueError('Niespójny stan płatności')
+    rows = con.execute('''SELECT event_id,event_type,state_after FROM payment_simulation_events
+        WHERE order_id=? LIMIT 4''', (payment.order_id,)).fetchall()
+    # The current state machine has at most three transitions (paid/completed/paid out).
+    if len(rows) > 3:
+        raise ValueError('Niespójna historia płatności')
+    replayed = replace(payment, state='awaiting_payment', refund_grosze=0,
+                       payout_grosze=0, processed_event_ids=frozenset())
+    remaining = list(rows)
+    while remaining:
+        candidates = []
+        for index, row in enumerate(remaining):
+            try:
+                updated = apply_event(replayed, row['event_id'], row['event_type'])
+            except ValueError:
+                continue
+            candidates.append((index, row, updated))
+        if len(candidates) != 1:
+            raise ValueError('Niespójna historia płatności')
+        index, row, replayed = candidates[0]
+        if replayed.state != row['state_after']:
+            raise ValueError('Niespójna historia płatności')
+        remaining.pop(index)
+    if replayed != payment:
+        raise ValueError('Niespójna historia płatności')
+
+
 def persist_event(con, payment, event_id, event_type, timestamp):
     from backend.payment_state_audit import audit_payment
     if not audit_payment(payment).valid:
         raise ValueError('Niespójny stan płatności')
+    if get_payment(con, payment.order_id) != payment:
+        raise ValueError('Stan płatności zmienił się równolegle; ponów operację')
+    validate_payment_history(con, payment)
     previous = con.execute('SELECT order_id,event_type FROM payment_simulation_events WHERE event_id=?', (event_id,)).fetchone()
     if previous:
         if previous['order_id'] != payment.order_id or previous['event_type'] != event_type:

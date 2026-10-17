@@ -1195,6 +1195,17 @@ def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authoriza
             record_order_event(con, o['id'], user['id'], 'shipment_cancel_test', o['status'], 'anulowane_testowo')
         return {'shipment_id': shipment_id, 'status': 'anulowane_testowo', 'cancelled_orders': len(orders), 'refund_grosze': 0, 'warning': 'Brak rzeczywistej płatności i zwrotu'}
 
+def checked_refund_payment(con, order):
+    from backend.payment_store import validate_order_payment
+    payment = get_payment(con, order['id'])
+    if payment is not None:
+        try:
+            validate_order_payment(payment, order)
+        except ValueError as exc:
+            raise HTTPException(409, 'Niespójne rozliczenie; wymagana weryfikacja') from exc
+    return payment
+
+
 @app.post('/shipments/{shipment_id}/cancel-paid-test')
 def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), authorization: str | None = Header(default=None)):
     """Atomically refund simulated paid items and cancel the whole pending shipment."""
@@ -1210,13 +1221,16 @@ def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), auth
         if not orders:
             raise HTTPException(409, 'Pusta przesyłka')
         if all(o['status'] == 'anulowane_testowo' for o in orders):
-            payments = [get_payment(con, o['id']) for o in orders]
+            payments = [checked_refund_payment(con, o) for o in orders]
+            if (any(p is not None and p.state not in ('refunded_test', 'awaiting_payment', 'failed_test') for p in payments)
+                    or not any(p is not None and p.state == 'refunded_test' for p in payments)):
+                raise HTTPException(409, 'Brak potwierdzonego zwrotu testowego przesyłki')
             return {'shipment_id':shipment_id, 'status':'anulowane_testowo',
                     'refund_grosze':sum(p.refund_grosze for p in payments if p),
                     'already_processed':True, 'mode':'test'}
         if any(o['status'] != 'oczekuje_na_platnosc_testowa' for o in orders):
             raise HTTPException(409, 'Anulowanie możliwe tylko przed realizacją przesyłki')
-        payments = [get_payment(con, o['id']) for o in orders]
+        payments = [checked_refund_payment(con, o) for o in orders]
         if any(p is not None and p.state not in ('paid_test', 'awaiting_payment', 'failed_test') for p in payments):
             raise HTTPException(409, 'Niedozwolony stan płatności; wymagana ręczna weryfikacja')
         if not any(p is not None and p.state == 'paid_test' for p in payments):
@@ -1254,7 +1268,7 @@ def cancel_paid_order_test(order_id: int, user=Depends(current_user), authorizat
             raise HTTPException(404, 'Nie znaleziono zamówienia')
         if con.execute('SELECT 1 FROM shipment_order_links WHERE order_id=?', (order_id,)).fetchone():
             raise HTTPException(409, 'Anuluj całą przesyłkę, nie pojedynczy produkt')
-        payment = get_payment(con, order_id)
+        payment = checked_refund_payment(con, order)
         if order['status'] == 'anulowane_testowo':
             if payment is None or payment.state != 'refunded_test' or payment.refund_grosze != order['total_grosze']:
                 raise HTTPException(409, 'Brak potwierdzonego pełnego zwrotu testowego')
@@ -1589,7 +1603,7 @@ def fail_shipment_by_courier(shipment_id: str, payload: ShipmentFailureIn,
             raise HTTPException(409, 'Przesyłka nie zawiera zamówień')
         states = {o['status'] for o in orders}
         if states == {'nieudana_dostawa_testowo'}:
-            payments = [get_payment(con, o['id']) for o in orders]
+            payments = [checked_refund_payment(con, o) for o in orders]
             if any(p is None or p.state != 'refunded_test' or p.refund_grosze != o['total_grosze']
                    for p, o in zip(payments, orders)):
                 raise HTTPException(409, 'Niespójny stan zwrotów przesyłki')
@@ -1603,14 +1617,14 @@ def fail_shipment_by_courier(shipment_id: str, payload: ShipmentFailureIn,
             if not assignment:
                 raise HTTPException(409, 'Brak dostawcy dla zamówienia')
             courier_ids.append(assignment['courier_id'])
-            payment = get_payment(con, order['id'])
+            payment = checked_refund_payment(con, order)
             if payment is None or payment.state != 'paid_test':
                 raise HTTPException(409, 'Przed zwrotem wszystkie zamówienia muszą mieć symulowaną płatność')
         if len(set(courier_ids)) != 1:
             raise HTTPException(409, 'Niespójny dostawca przesyłki')
         refunded = 0
         for order in orders:
-            payment = get_payment(con, order['id'])
+            payment = checked_refund_payment(con, order)
             event_id = 'shipment-failure:' + hashlib.sha256(f'{shipment_id}:{order["id"]}'.encode()).hexdigest()
             updated = persist_event(con, payment, event_id, 'delivery_failed_by_courier_test', datetime.now(timezone.utc).isoformat())
             refunded += updated.refund_grosze

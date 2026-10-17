@@ -36,9 +36,24 @@ def get_payment(con, order_id):
         row['refund_grosze'], row['payout_grosze'], frozenset(e['event_id'] for e in events))
 
 
+def validate_order_payment(payment, order):
+    """Validate persisted money against its order, including idempotent retries."""
+    from backend.payment_state_audit import audit_payment
+    if not audit_payment(payment).valid:
+        raise ValueError('Niespójny stan płatności')
+    fields = ('subtotal_grosze', 'delivery_grosze', 'total_grosze')
+    if (any(type(order[key]) is not int or order[key] < 0 for key in fields)
+            or order['total_grosze'] <= 0
+            or order['subtotal_grosze'] + order['delivery_grosze'] != order['total_grosze']
+            or (payment.order_id, payment.products_grosze, payment.delivery_grosze, payment.total_grosze)
+            != (order['id'], order['subtotal_grosze'], order['delivery_grosze'], order['total_grosze'])):
+        raise ValueError('Niespójna kwota zamówienia i płatności')
+
+
 def create_payment(con, order):
     existing = get_payment(con, order['id'])
     if existing is not None:
+        validate_order_payment(existing, order)
         return existing
     payment = new_payment(order['id'], order['subtotal_grosze'], order['delivery_grosze'])
     if payment.total_grosze != order['total_grosze']:

@@ -1,0 +1,35 @@
+# REVIEW ONLY — NEW EMPTY DISPOSABLE TEST DATABASE, NEVER PRODUCTION.
+# Verify WP_TEST_DATABASE_URL points to a newly created, empty test database.
+# No global transaction: each file may commit independently.
+# On ANY failure, STOP. Destroy/recreate disposable DB; never resume midway.
+# Commands must be run by a human in a secure shell, from project root directory.
+set -e
+: "${WP_TEST_DATABASE_URL:?Missing dedicated test database URL}"
+export WP_TEST_DATABASE_URL
+python -m database.validate_migration_target
+cd database
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f postgres_schema.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_09.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_10.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_11.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_12.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_13.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_14.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_16.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_17.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_21.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_23.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_25.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_26.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_28.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_pack3.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b371_saved_cart.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b561_shipments.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b1681_checkout_idempotency.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_z_password_change.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_z_checkout_pin_recovery.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b10921_inventory_reservations.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b10921_local_marketplace.sql
+psql -X -v ON_ERROR_STOP=1 -d "$WP_TEST_DATABASE_URL" -f upgrade_b10921_purchase_records.sql
+cd ..
+python -m database.verify_migrated_schema

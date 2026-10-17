@@ -1,0 +1,117 @@
+[
+  {
+    "file": "postgres_schema.sql",
+    "sha256": "c4e3deba7f535001212e83e83509331f972ff72721d74a69e995367b2756ea97",
+    "bytes": 3232
+  },
+  {
+    "file": "upgrade_09.sql",
+    "sha256": "a9f55237c3e25e031e5576190280022dac1497a55c77628c4ca17fa7f2fb6a66",
+    "bytes": 740
+  },
+  {
+    "file": "upgrade_10.sql",
+    "sha256": "8c976d5cf416a9683b37632c2f1a214b8406ca265ac462473e510dc9e67e24b9",
+    "bytes": 580
+  },
+  {
+    "file": "upgrade_11.sql",
+    "sha256": "e166d64f61a7f8e9ee45913f674e69e962042179db8d83d8b19b593fc5567d8f",
+    "bytes": 789
+  },
+  {
+    "file": "upgrade_12.sql",
+    "sha256": "22b585ea562c5b264486f9d9ccf45a7ed7d6fad6bebdd58a4922caebedc7f378",
+    "bytes": 1050
+  },
+  {
+    "file": "upgrade_13.sql",
+    "sha256": "2b15c6e900d5c2b811247a077bfe66f961322f908cf1ddf1b83f44798fe57288",
+    "bytes": 1246
+  },
+  {
+    "file": "upgrade_14.sql",
+    "sha256": "9c04cec01fd0e6fe5d72e61b92eb16bdcc8e4125ce73e28ae7b10488f38dd44f",
+    "bytes": 675
+  },
+  {
+    "file": "upgrade_16.sql",
+    "sha256": "e6a3a78c0a3e8a0f9d071e4723a2f17a37d271608e92f56077ba569d0bd99be1",
+    "bytes": 672
+  },
+  {
+    "file": "upgrade_17.sql",
+    "sha256": "62123d0543b8f52c98a9d96022fee7efe16b0b6690b8e981b37eb84674d6320e",
+    "bytes": 643
+  },
+  {
+    "file": "upgrade_21.sql",
+    "sha256": "d2de042c0bd480209bea42741b3c4a50e5cd72b04fc3589efec3cc643fa9c495",
+    "bytes": 1065
+  },
+  {
+    "file": "upgrade_23.sql",
+    "sha256": "a7bfc608f1ffe2f87c691661a27d6a024519d2a1fe165faba1a7a64f67568739",
+    "bytes": 707
+  },
+  {
+    "file": "upgrade_25.sql",
+    "sha256": "8a3ef439b298dc49f03850cdcb9a71630c3e69fb770dc7281d272e82bc95b0c5",
+    "bytes": 715
+  },
+  {
+    "file": "upgrade_26.sql",
+    "sha256": "9c7248fc5b780f9dabccb0ca86feb0b8c45227dda9f00a58c680d4ce51649c18",
+    "bytes": 302
+  },
+  {
+    "file": "upgrade_28.sql",
+    "sha256": "a4dee66860d28d9ad00173e3c10b786a477ed60813ef0dcb694be4b0c2e21299",
+    "bytes": 358
+  },
+  {
+    "file": "upgrade_pack3.sql",
+    "sha256": "b375b8793150bab3579270d25b25ee8a6b32aa8de8fd7a059df9d1f796523ec8",
+    "bytes": 704
+  },
+  {
+    "file": "upgrade_b371_saved_cart.sql",
+    "sha256": "dd6963b71d0ea7c506543264b0b229cb2ae8f99f07b302e263918f6e83ecc632",
+    "bytes": 361
+  },
+  {
+    "file": "upgrade_b561_shipments.sql",
+    "sha256": "1fe06f8d870a0a9005b34ef2e8e7f21a985273ca111b6647577325b3ec9108a0",
+    "bytes": 685
+  },
+  {
+    "file": "upgrade_b1681_checkout_idempotency.sql",
+    "sha256": "d46717ba882640d0b11c5ce3b8de07a4422a4fc1a6303ccb064beb0e0cfc5b6c",
+    "bytes": 440
+  },
+  {
+    "file": "upgrade_z_password_change.sql",
+    "sha256": "9df7ea5a14c592fc92be1a4624e3afe10d7852d4e12450883b2d8baec568b91e",
+    "bytes": 279
+  },
+  {
+    "file": "upgrade_z_checkout_pin_recovery.sql",
+    "sha256": "c92d37f4c19b998439d415898e867bd926d774659cb23bc833fabfdda5173d28",
+    "bytes": 1030
+  },
+  {
+    "file": "upgrade_b10921_inventory_reservations.sql",
+    "sha256": "9ec98cb94b142a7e0cc4785a45cdb85ea63e925dd6c00d6128ba85e8323ea04e",
+    "bytes": 460
+  },
+  {
+    "file": "upgrade_b10921_local_marketplace.sql",
+    "sha256": "80a0b179274ec0166dea9693609d92379f5facce7652b12d21e020138402105b",
+    "bytes": 1075
+  },
+  {
+    "file": "upgrade_b10921_purchase_records.sql",
+    "sha256": "56e0775b9f632f0c27591e9e84d826049467de8e767da97e1808cb8a5d193587",
+    "bytes": 2132
+  }
+]

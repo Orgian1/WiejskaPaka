@@ -1,0 +1,55 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.sqlite3
+*.sqlite3-*
+*.db
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+node_modules/
+artifacts/private/
+
+*.checkout-key*
+.checkout-key-*
+
+# Lokalne klucze szyfrujace
+testy_lokalne/*.key
+
+# Lokalne kopie zapasowe
+*.backup-*
+*.bak
+
+# Lokalna konfiguracja PostgreSQL z danymi dostepowymi
+docker-compose.postgres.yml
+
+# Tymczasowo wykluczone testy wymagajace kontroli sekretow
+tests/test_b11295_schema_startup.py
+tests/test_b96_b100_regression_runner.py
+tests/test_checkout_vault_ui_cli.py
+tests/test_http_runner_entrypoints_b5821.py
+tests/test_postgres_live_opt_in.py
+tests/test_postgres_live_optin.py
+
+# Lokalne raporty JSON w katalogu glownym
+/*.json
+
+# Lokalne raporty posrednie z audytow
+docs/audits/intermediate/
+
+# Testy PostgreSQL do dodatkowej kontroli przed publikacja
+tests/test_b10201_postgres_guard_adversarial.py
+tests/test_b11289_test_server_preflight.py
+tests/test_b11290_private_launcher.py
+tests/test_b11291_private_port.py
+tests/test_b11292_postgres_transport.py
+tests/test_b11293_database_name_guard.py
+tests/test_b11303_preflight_secret_redaction.py
+tests/test_b11304_no_auto_schema.py
+tests/test_b11311_target_preflight.py
+tests/test_b11312_post_migration.py
+tests/test_postgres_smoke_safety.py
+tests/test_postgres_test_guard.py
+tests/test_postgres_test_guard_hardening.py

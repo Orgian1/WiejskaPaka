@@ -1,0 +1,2 @@
+# B/361–B/370: wstępna wycena koszyka
+Dodano POST /cart/quote dla zalogowanego klienta. Wycena wielu pozycji jest tylko odczytem; sprawdza dostępność i limity groszy. Dostawa jest w tej orientacyjnej wycenie liczona raz na sprzedawcę według najwyższej stawki jego produktów; docelowy model koszyka i kosztu dostawy wymaga zatwierdzenia i transakcyjnego checkoutu. Nie pobiera pieniędzy, nie rezerwuje zapasów i nie tworzy zamówienia. Dalsze zadania: atomowy checkout wielu pozycji, zgodność opłat dostaw z regulaminem, UI koszyka, testy PostgreSQL.

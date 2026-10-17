@@ -3,7 +3,8 @@
 Po zalogowaniu sekcja **Bezpieczeństwo konta** pozwala zmienić hasło. Wymaga
 obecnego hasła, nowego hasła i powtórzenia nowego hasła. Nowe hasło ma 12–256
 znaków i musi różnić się od obecnego. Nie przycinamy spacji ani znaków Unicode.
-Nie jest to odzyskiwanie zapomnianego hasła; taki proces pozostaje do wdrożenia.
+Osobny przepływ odzyskiwania zapomnianego hasła w lokalnym demo opisuje
+`ODZYSKIWANIE_HASLA_TESTOWE.md`; rzeczywista wysyłka nadal nie jest podłączona.
 
 `POST /auth/change-password` przyjmuje wyłącznie `current_password` oraz
 `new_password`. Sesja oraz aktualna rola są ponownie sprawdzane w transakcji.

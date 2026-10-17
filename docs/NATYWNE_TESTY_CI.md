@@ -10,8 +10,9 @@ Każda brama korzysta z osobnej maszyny GitHub-hosted:
 - PostgreSQL: jednorazowy kontener PostgreSQL 16 i 15 przypadków adaptera,
   transakcji, migracji, ograniczonej roli aplikacji i rzeczywistego HTTP.
   Dozwolony jest tylko DSN loopback z nazwą testową.
-- Chromium: 7 przypadków offline, w tym cztery role, i rzeczywiste HTTP
-  przy pięciu rozmiarach okna. SKIP lub brak przeglądarki nie jest sukcesem.
+- Chromium: wcześniejsze 7 przypadków offline, w tym cztery role, oraz
+  2 nowe przypadki resetu hasła przez rzeczywisty HTTP (390 i 1280 px),
+  a także kontrola HTTP przy pięciu rozmiarach okna. SKIP lub brak przeglądarki nie jest sukcesem.
 
 Hasło `disposable-ci-only` jest jawnym hasłem wyłącznie jednorazowego kontenera,
 bez produkcyjnych danych. Testy nie używają Neon ani sekretów repozytorium.

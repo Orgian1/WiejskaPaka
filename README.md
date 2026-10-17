@@ -79,6 +79,12 @@ Klucza nie ma w archiwum. Nowe lokalne demo tworzy własny klucz. PostgreSQL
 wymaga jawnego pliku klucza. Przed aktualizacją własnej bazy przeczytaj opis
 migracji, kopii zapasowych i ograniczeń: `docs/SZYFROWANIE_ODPOWIEDZI_ZAKUPU.md`.
 
+## Odzyskiwanie zapomnianego hasła w demo
+
+Launcher lokalny udostępnia formularz oraz prywatną skrzynkę wiadomości
+testowych. Instrukcja i ograniczenia: `docs/ODZYSKIWANIE_HASLA_TESTOWE.md`.
+Nie wysyła rzeczywistych e-maili; poza launcherem funkcja jest wyłączona.
+
 ## Zmiana hasła
 
 Sekcja Bezpieczeństwo konta zmienia hasło po ponownym podaniu obecnego hasła

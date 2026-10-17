@@ -18,6 +18,7 @@ def test_environment(source, db_path):
     # Nie pozwalamy, by DATABASE_URL przekierował testy na PostgreSQL/Neon.
     for key in (
         'DATABASE_URL', 'NEON_DATABASE_URL', 'WP_CHECKOUT_KEY_FILE',
+        'WP_ENABLE_TEST_PASSWORD_RESET', 'WP_TEST_RESET_OUTBOX',
         'WP_TEST_POSTGRES_DSN', 'WP_TEST_DATABASE_URL',
         'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', 'WP_AUTO_INIT_POSTGRES',
         'PGHOST', 'PGHOSTADDR', 'PGPORT', 'PGDATABASE', 'PGUSER', 'PGPASSWORD',

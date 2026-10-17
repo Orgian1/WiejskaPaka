@@ -71,6 +71,8 @@ def snapshot(source, key_file, destination, *, restore=False, timeout=30):
                 if restore:
                     with dst:
                         revoked = dst.execute('DELETE FROM sessions').rowcount
+                        if dst.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='password_reset_tokens'").fetchone():
+                            dst.execute('DELETE FROM password_reset_tokens')
                     if dst.execute('SELECT COUNT(*) FROM sessions').fetchone()[0]:
                         raise ValueError('Nie udało się unieważnić sesji')
                 else:

@@ -8,7 +8,7 @@ def test_real_plan_lists_all_scripts_without_false_atomicity():
     plan = build_sequential_plan()
     assert plan['execution_performed'] is False
     assert plan['atomic'] is False
-    assert plan['verified_files'] == 23
+    assert plan['verified_files'] == len(UPGRADES) + 1
     assert '-1 ' not in plan['script']
     assert 'set -e' in plan['script']
     assert 'Destroy/recreate' in plan['script']

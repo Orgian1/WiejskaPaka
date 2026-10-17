@@ -85,7 +85,8 @@ python scripts/sqlite_snapshot.py restore --source /tmp/demo-kopia/database.sqli
 
 Obie operacje wykonują Online Backup API oraz kontrolę integralności SQLite,
 kluczy obcych, odczytu wszystkich zaszyfrowanych odpowiedzi zakupowych i audyt
-symulacji płatności. `restore` dodatkowo usuwa wszystkie odziedziczone sesje.
+symulacji płatności. `restore` dodatkowo usuwa wszystkie odziedziczone sesje i, jeśli istnieje
+tabela resetu hasła, wszystkie odziedziczone linki resetujące.
 Wynik zawiera tylko liczniki, bez PIN-ów, danych kont i ścieżek. Błąd usuwa
 nowo utworzony katalog częściowej kopii. Istniejący cel pozostaje nietknięty.
 Limit kopiowania wynosi domyślnie 30 sekund (`--timeout`).

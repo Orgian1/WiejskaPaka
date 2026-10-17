@@ -6,7 +6,7 @@ from database.test_schema_manifest import BASE, UPGRADES, build_manifest
 
 
 def test_lock_matches_reviewed_sql():
-    assert verify_lock()['verified_files'] == 23
+    assert verify_lock()['verified_files'] == len(UPGRADES) + 1
 
 
 def test_changed_sql_is_rejected(tmp_path):

@@ -2867,3 +2867,66 @@ def change_account_password(payload:ChangePasswordIn,user=Depends(current_user),
         except AccountChangeError as exc:denial=exc
     if denial is not None:raise HTTPException(denial.status,str(denial),headers=denial.headers)
     return result
+
+
+# Demo-only password reset: never silently enable a local mailbox on PostgreSQL.
+from backend import password_reset as reset_service
+RESET_TEST_ENABLED = os.environ.get('WP_ENABLE_TEST_PASSWORD_RESET') == '1' and not DATABASE_URL
+RESET_OUTBOX = None
+if RESET_TEST_ENABLED:
+    _reset_folder = os.environ.get('WP_TEST_RESET_OUTBOX', '')
+    if not _reset_folder:
+        raise RuntimeError('Testowe odzyskiwanie hasła wymaga prywatnej skrzynki lokalnej')
+    RESET_OUTBOX = reset_service.prepare_outbox(_reset_folder)
+    with db() as _reset_con:
+        _reset_con.executescript(reset_service.SCHEMA_SQLITE)
+
+
+class RequestPasswordResetIn(BaseModel):
+    model_config = {'extra': 'forbid'}
+    email: CleanText = Field(min_length=5, max_length=254)
+
+
+class ConfirmPasswordResetIn(BaseModel):
+    model_config = {'extra': 'forbid'}
+    token: str = Field(min_length=1, max_length=256)
+    new_password: str = Field(min_length=12, max_length=256)
+
+
+@app.get('/auth/password-reset-test/options')
+def password_reset_options():
+    return {'enabled': RESET_TEST_ENABLED, 'test_only': True}
+
+
+@app.post('/auth/password-reset-test/request', status_code=202)
+def request_test_password_reset(payload: RequestPasswordResetIn):
+    if not RESET_TEST_ENABLED:
+        raise HTTPException(404, 'Odzyskiwanie hasła jest niedostępne.')
+    message_file = None
+    try:
+        with db() as con:
+            if not DATABASE_URL:
+                con.execute('BEGIN IMMEDIATE')
+            reset_token = reset_service.issue(con, payload.email)
+            if reset_token:
+                message_file = reset_service.deliver_demo(RESET_OUTBOX, payload.email, reset_token)
+    except Exception:
+        if message_file is not None:
+            message_file.unlink(missing_ok=True)
+        raise
+    return {'message': reset_service.NOTICE}
+
+
+@app.post('/auth/password-reset-test/confirm')
+def confirm_test_password_reset(payload: ConfirmPasswordResetIn):
+    if not RESET_TEST_ENABLED:
+        raise HTTPException(404, 'Odzyskiwanie hasła jest niedostępne.')
+    with db() as con:
+        if not DATABASE_URL:
+            con.execute('BEGIN IMMEDIATE')
+        outcome = reset_service.consume(con, ph, payload.token, payload.new_password)
+    if outcome == 429:
+        raise HTTPException(429, 'Zbyt wiele prób. Spróbuj później.', headers={'Retry-After': '900'})
+    if outcome != 200:
+        raise HTTPException(400, reset_service.INVALID)
+    return {'changed': True, 'reauthentication_required': True}

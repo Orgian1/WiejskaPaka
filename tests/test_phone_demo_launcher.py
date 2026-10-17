@@ -10,11 +10,14 @@ def test_demo_environment_drops_external_database_config():
               'WP_TEST_DATABASE_URL': 'postgresql://example.invalid/test',
               'WP_TEST_POSTGRES_DSN': 'secret',
               'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB': 'YES_I_CONFIRM',
+              'WP_ENABLE_TEST_PASSWORD_RESET': '1',
+              'WP_TEST_RESET_OUTBOX': '/untrusted/outbox',
               'PATH': '/usr/bin'}
     result = demo_environment(source, Path('/tmp/isolated_demo.sqlite3'))
     assert all(key not in result for key in source if key.startswith(('DATABASE_URL', 'WP_TEST_', 'WP_ALLOW_')))
     assert Path(result['WIEJSKAPAKA_DB']) == Path('/tmp/isolated_demo.sqlite3')
     assert result['PATH'] == '/usr/bin'
+    assert 'WP_ENABLE_TEST_PASSWORD_RESET' not in result
 
 
 def test_demo_launcher_binds_only_to_loopback():

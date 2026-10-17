@@ -21,6 +21,7 @@ UPGRADES = (
     'upgrade_b10921_inventory_reservations.sql',
     'upgrade_b10921_local_marketplace.sql',
     'upgrade_b10921_purchase_records.sql',
+    'upgrade_z_password_reset_test.sql',
 )
 
 

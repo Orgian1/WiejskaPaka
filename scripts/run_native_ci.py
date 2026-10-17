@@ -17,7 +17,7 @@ from scripts.run_tests_isolated import test_environment as isolated_environment
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_integration_optional.py',
                   'test_postgres_full_api_optin.py')
-BROWSER_TESTS = ('test_mobile_offline.py', 'test_roles_offline.py')
+BROWSER_TESTS = ('test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
               'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'PROGRAMDATA', 'PROGRAMFILES',
               'PROGRAMFILES(X86)', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL',

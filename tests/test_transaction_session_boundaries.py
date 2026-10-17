@@ -143,7 +143,9 @@ def test_authenticated_mutations_do_not_open_unverified_connections():
     import ast
     from pathlib import Path
     tree = ast.parse((Path(api.__file__)).read_text(encoding='utf-8'))
-    exceptions = {'register', 'login', 'cart_quote', 'search_nearby'}
+    # Reset is intentionally anonymous; confirmation authenticates a single-use token.
+    exceptions = {'register', 'login', 'cart_quote', 'search_nearby',
+                  'request_test_password_reset', 'confirm_test_password_reset'}
     unverified = []
     for node in tree.body:
         if not isinstance(node, ast.FunctionDef) or node.name in exceptions:

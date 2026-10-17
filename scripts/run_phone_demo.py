@@ -12,7 +12,7 @@ import tempfile
 
 SENSITIVE_DATABASE_KEYS = (
     'DATABASE_URL', 'WP_TEST_DATABASE_URL', 'WP_TEST_POSTGRES_DSN', 'WP_CHECKOUT_KEY_FILE',
-    'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB',
+    'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', 'WP_ENABLE_TEST_PASSWORD_RESET', 'WP_TEST_RESET_OUTBOX',
 )
 
 
@@ -37,9 +37,12 @@ def main(argv=None):
     root = Path(__file__).resolve().parents[1]
     with tempfile.TemporaryDirectory(prefix='wiejskapaka_phone_demo_') as directory:
         env = demo_environment(os.environ, Path(directory) / 'demo.sqlite3')
+        env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'
+        env['WP_TEST_RESET_OUTBOX'] = str(Path(directory) / 'reset-mailbox')
         command = [sys.executable, '-m', 'uvicorn', 'backend.app:app',
                    '--host', '127.0.0.1', '--port', str(args.port), '--no-access-log']
         print(f'WiejskaPaka DEMO: http://127.0.0.1:{args.port}', flush=True)
+        print('Skrzynka testowa odzyskiwania hasła: '+env['WP_TEST_RESET_OUTBOX'], flush=True)
         print('Tylko na tym urządzeniu; brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
         try:
             return subprocess.call(command, cwd=root, env=env)

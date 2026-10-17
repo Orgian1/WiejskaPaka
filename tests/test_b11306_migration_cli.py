@@ -6,7 +6,7 @@ from database.test_schema_manifest import BASE, UPGRADES
 def test_project_sql_files_all_accounted_for():
     result = verify()
     assert result['ok']
-    assert len(result['files']) == 23
+    assert len(result['files']) == len(UPGRADES) + 1
     assert result['execution_performed'] is False
 
 

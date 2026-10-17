@@ -18,6 +18,8 @@ from scripts.run_phone_demo import demo_environment
 
 ROOT = Path(__file__).resolve().parents[1]
 VIEWPORTS = ((320, 700), (360, 740), (390, 844), (768, 1024), (1280, 800))
+EXPECTED_NAVIGATION = ('#auth', '#nearby-section', '#products-section',
+                       '#cart-section', '#orders-section', '#dashboard')
 
 
 def horizontal_overflow_script():
@@ -95,12 +97,12 @@ def check_browser(screenshot_dir=None):
                         assert page.locator('#dashboard').is_hidden()
                         # Sprawdzamy także faktyczną nawigację dotykową i fokus klawiatury.
                         links = page.locator('nav.quick-nav a')
-                        assert links.count() == 5, 'Oczekiwano pięciu przycisków szybkiej nawigacji'
+                        assert links.evaluate_all('(links) => links.map(link => link.getAttribute("href"))') == list(EXPECTED_NAVIGATION)
                         for index in range(links.count()):
                             target = links.nth(index).get_attribute('href')
                             assert target and target.startswith('#')
                             assert page.locator(target).count() == 1, f'Nieistniejący cel: {target}'
-                        links.nth(1).click()
+                        page.locator('nav.quick-nav a[href="#products-section"]').click()
                         assert page.evaluate('window.location.hash') == '#products-section'
                         assert page.locator('#products-section').is_visible()
                         page.locator('#email').focus()

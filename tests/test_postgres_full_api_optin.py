@@ -4,6 +4,7 @@ Requires a disposable test-cluster DSN with CREATE DATABASE/ROLE permissions.
 Creates and drops ONLY a new randomly named database and role. Never uses Neon.
 """
 from concurrent.futures import ThreadPoolExecutor
+import hashlib
 from pathlib import Path
 import os
 import secrets
@@ -20,6 +21,21 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def reviewed_test_schema(root):
+    """Read a verified, ordered SQL snapshot before creating any test resource."""
+    from database.verify_test_migrations import verify
+    reviewed = verify(root)
+    if not reviewed['ok']:
+        raise ValueError('Test migration review failed; no database created')
+    statements = []
+    for entry in reviewed['files']:
+        content = (root / entry['file']).read_bytes()
+        if hashlib.sha256(content).hexdigest() != entry['sha256']:
+            raise ValueError('Test migrations changed during review; no database created')
+        statements.append(content.decode('utf-8'))
+    return tuple(statements)
+
+
 @pytest.fixture(scope='module')
 def pg_api():
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
@@ -31,6 +47,7 @@ def pg_api():
     host = urlsplit(dsn).hostname
     if host not in ('localhost', '127.0.0.1', '::1', 'postgres'):
         raise ValueError('This gate accepts only loopback or the local Compose postgres service')
+    migration_sql = reviewed_test_schema(ROOT / 'database')
     psycopg = pytest.importorskip('psycopg')
     from psycopg import sql
     from psycopg.conninfo import conninfo_to_dict, make_conninfo
@@ -54,9 +71,8 @@ def pg_api():
             admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(database)))
             database_created = True
             with psycopg.connect(**admin_parameters, autocommit=True) as migration:
-                migration.execute((ROOT / 'database/postgres_schema.sql').read_text())
-                for path in sorted((ROOT / 'database').glob('upgrade_*.sql')):
-                    migration.execute(path.read_text())
+                for statement in migration_sql:
+                    migration.execute(statement)
                 migration.execute('REVOKE CREATE ON SCHEMA public FROM PUBLIC')
                 migration.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO {}').format(
                     sql.Identifier(database), sql.Identifier(role)))

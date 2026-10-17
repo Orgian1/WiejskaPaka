@@ -16,11 +16,14 @@ def test_environment(source, db_path):
     """Tworzy środowisko procesu potomnego bez połączenia produkcyjnego."""
     env = dict(source)
     # Nie pozwalamy, by DATABASE_URL przekierował testy na PostgreSQL/Neon.
-    env.pop('DATABASE_URL', None)
-    env.pop('WP_CHECKOUT_KEY_FILE', None)
-    env.pop('WP_TEST_POSTGRES_DSN', None)
-    env.pop('WP_TEST_DATABASE_URL', None)
-    env.pop('WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', None)
+    for key in (
+        'DATABASE_URL', 'NEON_DATABASE_URL', 'WP_CHECKOUT_KEY_FILE',
+        'WP_TEST_POSTGRES_DSN', 'WP_TEST_DATABASE_URL',
+        'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', 'WP_AUTO_INIT_POSTGRES',
+        'PGHOST', 'PGHOSTADDR', 'PGPORT', 'PGDATABASE', 'PGUSER', 'PGPASSWORD',
+        'PGPASSFILE', 'PGSERVICE', 'PGSERVICEFILE', 'PGOPTIONS', 'PGSSLCERT', 'PGSSLKEY',
+    ):
+        env.pop(key, None)
     env['WIEJSKAPAKA_DB'] = str(db_path)
     # Python children and captured pytest diagnostics must agree on Windows too.
     env['PYTHONUTF8'] = '1'

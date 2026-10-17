@@ -22,6 +22,9 @@ def test_environment(source, db_path):
     env.pop('WP_TEST_DATABASE_URL', None)
     env.pop('WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', None)
     env['WIEJSKAPAKA_DB'] = str(db_path)
+    # Python children and captured pytest diagnostics must agree on Windows too.
+    env['PYTHONUTF8'] = '1'
+    env['PYTHONIOENCODING'] = 'utf-8'
     return env
 
 

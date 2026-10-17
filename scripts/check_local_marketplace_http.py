@@ -3,6 +3,7 @@
 Uses only disposable SQLite and synthetic data. No location history, geocoding,
 GitHub, production payments or remote database. No Chromium evidence implied.
 """
+from contextlib import closing
 import argparse
 from datetime import datetime,timezone
 import json
@@ -91,7 +92,7 @@ def run():
                     refund=request('POST',f'/shipments/{sid}/courier-failure-test',farmer,{'reason':'dostawca_nie_przyjechal'})
                     check(refund['refund_grosze']==1001,'100 percent of payment including single delivery fee refunded')
                     check(request('GET','/couriers/me/active-addresses',courier)==[],'delivery address access revoked after refund')
-                    with sqlite3.connect(database) as con:
+                    with closing(sqlite3.connect(database)) as con, con:
                         tables={r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                         check(not any('customer_location' in n or 'search_history' in n for n in tables),'no customer location/history table')
                         check(con.execute('PRAGMA foreign_key_check').fetchall()==[],'foreign keys remain valid')
@@ -110,5 +111,5 @@ def run():
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--report',default='audit_local_marketplace_http.json');args=parser.parse_args()
-    result=run();Path(args.report).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+    result=run();Path(args.report).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:v for k,v in result.items() if k!='checks'},ensure_ascii=False,indent=2))

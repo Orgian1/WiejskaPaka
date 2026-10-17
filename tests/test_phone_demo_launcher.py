@@ -13,7 +13,7 @@ def test_demo_environment_drops_external_database_config():
               'PATH': '/usr/bin'}
     result = demo_environment(source, Path('/tmp/isolated_demo.sqlite3'))
     assert all(key not in result for key in source if key.startswith(('DATABASE_URL', 'WP_TEST_', 'WP_ALLOW_')))
-    assert result['WIEJSKAPAKA_DB'] == '/tmp/isolated_demo.sqlite3'
+    assert Path(result['WIEJSKAPAKA_DB']) == Path('/tmp/isolated_demo.sqlite3')
     assert result['PATH'] == '/usr/bin'
 
 

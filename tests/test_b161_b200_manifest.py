@@ -1,3 +1,4 @@
+import os
 import json
 import sys
 from pathlib import Path
@@ -51,7 +52,11 @@ def test_symlink_rejected(tmp_path):
     d = setup(tmp_path)
     outside = tmp_path / 'other.py'
     outside.write_text('pass')
-    (d / 'test_unsafe.py').symlink_to(outside)
+    try:
+        (d / 'test_unsafe.py').symlink_to(outside)
+    except OSError:
+        if os.name == 'nt':pytest.skip('Windows symlink privilege unavailable')
+        raise
     with pytest.raises(ValueError, match='Unsafe'):
         discover(tmp_path)
 
@@ -86,6 +91,10 @@ def test_runner_rejects_symlink_selection(tmp_path):
     outside = tmp_path / 'external.py'
     outside.write_text('pass')
     link = d / 'test_link.py'
-    link.symlink_to(outside)
+    try:
+        link.symlink_to(outside)
+    except OSError:
+        if os.name == 'nt':pytest.skip('Windows symlink privilege unavailable')
+        raise
     with pytest.raises(ValueError):
         run(tmp_path, selected=[link])

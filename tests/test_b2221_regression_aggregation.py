@@ -9,7 +9,7 @@ def project(tmp_path):
     root = tmp_path / 'project'
     (root / 'tests').mkdir(parents=True)
     for name in ('test_alpha.py', 'test_beta.py'):
-        (root / 'tests' / name).write_text('def test_ok(): assert True\n')
+        (root / 'tests' / name).write_text('def test_ok(): assert True\n', encoding='utf-8', newline='\n')
     return root
 
 

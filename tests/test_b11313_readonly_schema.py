@@ -1,6 +1,16 @@
 """Verify the schema gate never permits database writes during inspection."""
 from database.verify_migrated_schema import verify_schema
-from tests.test_b11312_post_migration import ENV, make_rows
+from backend.postgres_schema_preflight import CORE_TABLES
+from database.verify_migrated_schema import STARTUP_COLUMNS
+
+# Self-contained synthetic fixture: the previous import referenced a local-only
+# test module intentionally excluded from the repository.
+ENV = {'WP_ENV': 'test', 'WP_TEST_DATABASE_URL': 'postgresql://localhost/wp_test_11312',
+       'WP_BIND_HOST': '127.0.0.1'}
+
+def make_rows():
+    return [(table, column) for table in CORE_TABLES
+            for column in STARTUP_COLUMNS.get(table, {'id'})]
 
 class Cursor:
     def __init__(self):

@@ -1,10 +1,12 @@
 """Actual process restarts, key rotation/loss and post-retention HTTP replay."""
+from contextlib import closing
 from datetime import datetime,timedelta,timezone
 import json
 import sqlite3
+import os
 import pytest
 from tests.test_purchase_record_http_restart import server,setup
-from backend.checkout_vault import read_ring,rotate_ring,Vault
+from backend.checkout_vault import read_ring,rotate_ring,Vault,CheckoutStorageError
 
 
 def create(client,buyer,pid,cart=False):
@@ -25,12 +27,19 @@ def test_real_http_replay_after_restart_rotation_and_expiry(tmp_path,cart):
     with server(database) as client:
         farmer,buyer,products=setup(client)
         key,body,url,headers,result=create(client,buyer,products[0],cart)
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         con.row_factory=sqlite3.Row;row=con.execute('SELECT * FROM checkout_idempotency').fetchone()
         assert all(s not in row['response_json'] for s in ('pin_test_only','Prywatna 9'))
         count=con.execute('SELECT COUNT(*) FROM orders').fetchone()[0]
-    previous_id=read_ring(keyfile)[0];rotate_ring(keyfile)
-    assert read_ring(keyfile)[0]!=previous_id
+    previous_id=read_ring(keyfile)[0]
+    if os.name == 'posix':
+        rotate_ring(keyfile)
+        assert read_ring(keyfile)[0]!=previous_id
+    else:
+        before_key=keyfile.read_bytes()
+        with pytest.raises(CheckoutStorageError, match='POSIX'):rotate_ring(keyfile)
+        assert keyfile.read_bytes()==before_key
+    # Restart, replay and retention are exercised on every supported platform.
     with server(database) as client:
         response=client.post(url,headers=headers,json=body)
         assert response.status_code==201 and response.json()==result
@@ -41,7 +50,7 @@ def test_real_http_replay_after_restart_rotation_and_expiry(tmp_path,cart):
             assert 'pin' not in status.text.lower()
     active,keys=read_ring(keyfile);v=Vault(active,keys)
     # Simulate an authenticated old reply; do not bypass authentication by editing TTL.
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         sealed=v.seal(result,row['buyer_id'],row['request_key'],row['payload_hash'],
                       pin_until=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat())
         con.execute('UPDATE checkout_idempotency SET response_json=?',(sealed,))
@@ -49,7 +58,7 @@ def test_real_http_replay_after_restart_rotation_and_expiry(tmp_path,cart):
         response=client.post(url,headers=headers,json=body)
         assert response.status_code==201 and response.json()['pin_available'] is False
         assert 'pin_test_only' not in response.text
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         current=con.execute('SELECT response_json FROM checkout_idempotency').fetchone()[0]
         assert json.loads(current)['pin_state']=='redacted'
         assert 'pin_test_only' not in v._decrypt(current,row['buyer_id'],row['request_key'],row['payload_hash'])[0]
@@ -80,7 +89,7 @@ def test_running_server_purges_expired_secret_without_restart(tmp_path):
     with server(database) as client:
         farmer,buyer,products=setup(client);key,body,url,headers,result=create(client,buyer,products[0])
         v=Vault(*read_ring(keyfile))
-        with sqlite3.connect(database) as con:
+        with closing(sqlite3.connect(database)) as con, con:
             con.row_factory=sqlite3.Row;row=con.execute('SELECT * FROM checkout_idempotency').fetchone()
             sealed=v.seal(result,row['buyer_id'],row['request_key'],row['payload_hash'],
                          pin_until=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat())
@@ -90,7 +99,7 @@ def test_running_server_purges_expired_secret_without_restart(tmp_path):
         assert response.status_code==201 and response.json()['pin_available'] is False
         end=time.monotonic()+36
         while time.monotonic()<end:
-            with sqlite3.connect(database) as con:
+            with closing(sqlite3.connect(database)) as con, con:
                 raw=con.execute('SELECT response_json FROM checkout_idempotency').fetchone()[0]
             if json.loads(raw)['pin_state']=='redacted':break
             time.sleep(.2)

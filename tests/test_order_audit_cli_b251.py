@@ -1,3 +1,4 @@
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -16,7 +17,7 @@ class AuditCliTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name)
         self.db = self.base / 'test.sqlite3'
-        with sqlite3.connect(self.db) as c:
+        with closing(sqlite3.connect(self.db)) as c, c:
             c.executescript('''CREATE TABLE orders(id INTEGER,product_id INTEGER,farmer_id INTEGER,quantity INTEGER,subtotal_grosze INTEGER,delivery_grosze INTEGER,total_grosze INTEGER,fulfillment TEXT,status TEXT,pin_used INTEGER,confirmed_at TEXT);
             CREATE TABLE products(id INTEGER,farmer_id INTEGER,stock INTEGER);
             CREATE TABLE order_locations(order_id INTEGER,pickup_point_id INTEGER,delivery_city TEXT,delivery_street TEXT,delivery_postal_code TEXT);
@@ -28,7 +29,7 @@ class AuditCliTests(unittest.TestCase):
         self.assertTrue(run(self.db)['ok'])
 
     def test_detects_problem_and_exit_code(self):
-        with sqlite3.connect(self.db) as c:
+        with closing(sqlite3.connect(self.db)) as c, c:
             c.execute('UPDATE orders SET total_grosze=900 WHERE id=1')
         self.assertEqual(main(['--database', str(self.db)]), 1)
         self.assertEqual(run(self.db)['issues'][0]['code'], 'ORDER_TOTAL_MISMATCH')
@@ -47,6 +48,20 @@ class AuditCliTests(unittest.TestCase):
         before = self.db.read_bytes()
         run(self.db)
         self.assertEqual(self.db.read_bytes(), before)
+
+    def test_audit_closes_read_only_connection(self):
+        from unittest.mock import patch
+        real_connect = sqlite3.connect
+        opened = []
+        def connect(*args, **kwargs):
+            connection = real_connect(*args, **kwargs)
+            opened.append(connection)
+            return connection
+        with patch('scripts.run_order_audit.sqlite3.connect', side_effect=connect):
+            self.assertTrue(run(self.db)['ok'])
+        self.assertEqual(len(opened), 1)
+        with self.assertRaises(sqlite3.ProgrammingError):
+            opened[0].execute('SELECT 1')
 
     def test_no_personal_data_in_report(self):
         result = run(self.db)

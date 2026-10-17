@@ -21,7 +21,7 @@ def snapshot(path):
     source = Path(path).resolve()
     if not source.is_file():
         raise ValueError('Baza SQLite nie istnieje')
-    con = sqlite3.connect(f'file:{source}?mode=ro', uri=True)
+    con = sqlite3.connect(source.as_uri() + '?mode=ro', uri=True)
     try:
         con.execute('BEGIN')  # consistent read snapshot during the entire inventory
         integrity = con.execute('PRAGMA integrity_check').fetchone()[0]

@@ -13,7 +13,7 @@ def test_runner_removes_external_database_credentials():
         'SAFE_KEY': 'preserved',
     }
     env = make_env(original, Path('/tmp/fresh.sqlite3'))
-    assert env['WIEJSKAPAKA_DB'] == '/tmp/fresh.sqlite3'
+    assert Path(env['WIEJSKAPAKA_DB']) == Path('/tmp/fresh.sqlite3')
     assert env['SAFE_KEY'] == 'preserved'
     assert all(k not in env for k in (
         'DATABASE_URL', 'WP_TEST_POSTGRES_DSN', 'WP_TEST_DATABASE_URL',
@@ -37,3 +37,11 @@ def test_runner_invokes_pytest_in_temporary_directory(monkeypatch):
     assert main(['-q', 'tests/test_stage4.py']) == 17
     assert len(calls) == 1
     assert not calls[0].exists()
+
+
+def test_runner_enforces_utf8_without_mutating_parent():
+    original = {'PYTHONUTF8': '0', 'PYTHONIOENCODING': 'cp1250'}
+    env = make_env(original, Path('disposable.sqlite3'))
+    assert env['PYTHONUTF8'] == '1'
+    assert env['PYTHONIOENCODING'] == 'utf-8'
+    assert original == {'PYTHONUTF8': '0', 'PYTHONIOENCODING': 'cp1250'}

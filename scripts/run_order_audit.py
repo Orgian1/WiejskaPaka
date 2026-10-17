@@ -1,5 +1,6 @@
 """Read-only offline order audit. Exit 0 clean, 1 issues, 2 operational failure."""
 import argparse
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,7 @@ def run(db_path):
     if not path.is_file():
         raise ValueError('Database path must be a regular file')
     uri = path.as_uri() + '?mode=ro'
-    with sqlite3.connect(uri, uri=True, timeout=5) as con:
+    with closing(sqlite3.connect(uri, uri=True, timeout=5)) as con:
         con.row_factory = sqlite3.Row
         con.execute('PRAGMA query_only=ON')
         result = audit_orders(con)

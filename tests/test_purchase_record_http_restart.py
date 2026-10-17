@@ -1,4 +1,5 @@
 """Real TCP restart durability and read/refund races on disposable SQLite."""
+from contextlib import closing
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from pathlib import Path
@@ -76,7 +77,7 @@ def test_record_and_sql_guards_survive_actual_process_restart(tmp_path):
         url,ids,receipt=checkout(client,buyer,products,True)
         before=client.get(url,headers=buyer).json()
         assert before['original_available']
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         records=con.execute('SELECT * FROM order_purchase_records ORDER BY order_id').fetchall()
     with server(database) as client:
         # Login session and original record both remain valid after a clean restart.
@@ -90,7 +91,7 @@ def test_record_and_sql_guards_survive_actual_process_restart(tmp_path):
     with server(database) as client:
         assert client.get(url,headers=buyer).status_code==401
         assert client.get(url,headers=farmer).json()==before
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         assert con.execute('SELECT * FROM order_purchase_records ORDER BY order_id').fetchall()==records
         for sql in ('UPDATE order_purchase_records SET product_name=product_name WHERE order_id=?',
                     'DELETE FROM order_purchase_records WHERE order_id=?',

@@ -3,6 +3,7 @@
 Uses only disposable SQLite and synthetic data. No location history, geocoding,
 GitHub, production payments or remote database. No Chromium evidence implied.
 """
+from contextlib import closing
 import argparse
 from datetime import datetime,timezone
 import json
@@ -116,7 +117,7 @@ def run():
                     check(sum(o['current']['refund_grosze'] for o in after['orders'])==1001,'current refund includes original full delivery fee')
                     check(all(o['current']['payment_state_test']=='refunded_test' for o in after['orders']),'all lines show refunded state')
 
-                    with sqlite3.connect(database) as con:
+                    with closing(sqlite3.connect(database)) as con, con:
                         tables={r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                         check(not any('customer_location' in n or 'search_history' in n for n in tables),'no customer location/history table')
                         check(con.execute('SELECT COUNT(*) FROM order_purchase_records').fetchone()[0]==3,'one durable original record per order')
@@ -136,5 +137,5 @@ def run():
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--report',default='audit_purchase_records_http.json');args=parser.parse_args()
-    result=run();Path(args.report).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+    result=run();Path(args.report).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:v for k,v in result.items() if k!='checks'},ensure_ascii=False,indent=2))

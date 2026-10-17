@@ -1,5 +1,7 @@
 from pathlib import Path
 import subprocess
+import shutil
+import pytest
 
 from database.generate_test_migration_plan import generate
 from database.test_schema_manifest import UPGRADES
@@ -15,6 +17,7 @@ def test_plan_is_anchored_and_fails_before_migration_if_no_psql():
     assert plan.count('psql -X') == len(UPGRADES) + 1
 
 
+@pytest.mark.skipif(shutil.which('sh') is None, reason='POSIX shell is not installed; generated plan is a shell artifact')
 def test_generated_shell_syntax(tmp_path):
     output = tmp_path / 'plan.sh'
     output.write_text(generate())

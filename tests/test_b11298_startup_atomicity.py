@@ -12,7 +12,7 @@ def env():
 
 
 def test_failed_database_probe_does_not_export_database_url(monkeypatch):
-    for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST'):
+    for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST','WIEJSKAPAKA_DB'):
         monkeypatch.delenv(key, raising=False)
     for key,value in env().items(): monkeypatch.setenv(key,value)
     def fail(*args,**kwargs):
@@ -25,7 +25,7 @@ def test_failed_database_probe_does_not_export_database_url(monkeypatch):
 
 
 def test_successful_probe_exports_only_after_validation(monkeypatch):
-    for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST'):
+    for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST','WIEJSKAPAKA_DB'):
         monkeypatch.delenv(key, raising=False)
     for key,value in env().items(): monkeypatch.setenv(key,value)
     calls=[]

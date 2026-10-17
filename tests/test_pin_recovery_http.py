@@ -1,9 +1,11 @@
 """Actual TCP and process restarts, no browser or native PostgreSQL claim."""
+from contextlib import closing
 from datetime import datetime,timedelta,timezone
 import sqlite3
+import os
 import pytest
 from tests.test_purchase_record_http_restart import server,setup,checkout
-from backend.checkout_vault import rotate_ring
+from backend.checkout_vault import rotate_ring, CheckoutStorageError
 PASSWORD='Disposable-private-record-123!'
 
 
@@ -16,9 +18,13 @@ def test_lost_response_and_old_link_migration_after_restart_and_key_rotation(tmp
         expected=original['shipment_pin_test_only' if cart else 'pin_test_only']
         ids=[o['id'] for o in original['orders']] if cart else [original['id']]
     # Simulate an upgrade from the previous release: encrypted cache, no link tables.
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         con.execute('DROP TABLE checkout_pin_links');con.execute('DROP TABLE checkout_pin_access')
-    rotate_ring(str(database)+'.checkout-key')
+    if os.name == 'posix':
+        rotate_ring(str(database)+'.checkout-key')
+    else:
+        with pytest.raises(CheckoutStorageError, match='POSIX'):
+            rotate_ring(str(database)+'.checkout-key')
     with server(database) as client:
         history=client.get('/orders/me',headers=buyer);assert history.status_code==200
         assert {o['id'] for o in history.json()}==set(ids)
@@ -29,7 +35,7 @@ def test_lost_response_and_old_link_migration_after_restart_and_key_rotation(tmp
         assert r.headers['cache-control']=='no-store'
         assert client.post(url,json={'password':PASSWORD}).status_code==401
         assert client.post(url,headers=farmer,json={'password':PASSWORD}).status_code==403
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         assert con.execute('SELECT COUNT(*) FROM orders').fetchone()[0]==len(ids)
         assert con.execute('SELECT COUNT(*) FROM checkout_pin_links').fetchone()[0]==len(ids)
         assert 'pin_test_only' not in con.execute('SELECT response_json FROM checkout_idempotency').fetchone()[0]

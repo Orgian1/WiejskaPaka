@@ -112,7 +112,7 @@ def run(root, *, batch_size=12, timeout=90, report=None, selected=None, start_ba
                 started = time.monotonic()
                 try:
                     completed = subprocess.run(command, cwd=root, env=env, capture_output=True,
-                                               text=True, timeout=timeout)
+                                               text=True, encoding='utf-8', timeout=timeout)
                     item = {'file': test_file.name, 'returncode': completed.returncode,
                             'seconds': round(time.monotonic() - started, 2),
                             'output_tail': (completed.stdout + completed.stderr)[-2500:]}

@@ -100,7 +100,7 @@ def run(root, *, selected=None, timeout=90, report=None, resume=False, refresh_s
             try:
                 proc = subprocess.run([sys.executable, '-m', 'pytest', '-q', '--disable-warnings',
                                        '--junitxml', str(junit), str(resolved)],
-                                      cwd=root, env=env, capture_output=True, text=True, timeout=timeout)
+                                      cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=timeout)
                 entry = {'file': resolved.name, 'sha256': hashlib.sha256(resolved.read_bytes()).hexdigest(), 'returncode': proc.returncode,
                          'seconds': round(time.monotonic() - started, 2),
                          'test_counts': testcase_counts(junit),

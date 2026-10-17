@@ -103,8 +103,15 @@ def test_postgres_never_silently_creates_a_local_key(tmp_path):
 
 @pytest.mark.parametrize('kind',['symlink','directory','permissions'])
 def test_reject_unsafe_key_file(tmp_path,kind):
+    if kind == 'permissions' and os.name != 'posix':
+        pytest.skip('POSIX mode bits are not Windows ACLs')
     key=tmp_path/'safe.checkout-key';create_ring(key)
-    if kind=='symlink':target=tmp_path/'link.checkout-key';target.symlink_to(key)
+    if kind=='symlink':
+        target=tmp_path/'link.checkout-key'
+        try:target.symlink_to(key)
+        except OSError:
+            if os.name == 'nt':pytest.skip('Symlink creation requires Windows developer mode or privilege')
+            raise
     elif kind=='directory':target=tmp_path
     else:key.chmod(0o644);target=key
     with pytest.raises((OSError,CheckoutStorageError)):read_ring(target)
@@ -114,10 +121,11 @@ def test_concurrent_key_creation_uses_one_complete_key(tmp_path):
     path=tmp_path/'shared.checkout-key'
     with ThreadPoolExecutor(max_workers=8) as pool:rings=list(pool.map(lambda _:create_ring(path),range(16)))
     assert all(r==rings[0] for r in rings)
-    assert path.stat().st_mode&0o777==0o600
+    if os.name == 'posix':assert path.stat().st_mode&0o777==0o600
     assert len(list(tmp_path.iterdir()))==1
 
 
+@pytest.mark.skipif(os.name != 'posix', reason='Rotation and directory fsync require POSIX; Windows remains fail-closed')
 def test_rotation_keeps_old_replies_readable_and_uses_new_key(tmp_path):
     path=tmp_path/'private.checkout-key';old=vault(tmp_path)
     raw=old.seal(RESPONSE,2,'key','payload',pin_until=(NOW+timedelta(days=1)).isoformat())
@@ -139,6 +147,7 @@ def test_migration_failure_can_be_rolled_back_atomically(tmp_path):
     assert all('format' not in json.loads(r[0]) for r in c.execute('SELECT response_json FROM checkout_idempotency'))
 
 
+@pytest.mark.skipif(os.name != 'posix', reason='Rotation and directory fsync require POSIX; Windows remains fail-closed')
 def test_concurrent_rotation_retains_every_new_key(tmp_path):
     path=tmp_path/'private.checkout-key';create_ring(path)
     with ThreadPoolExecutor(max_workers=4) as pool:ids=list(pool.map(lambda _:rotate_ring(path),range(4)))
@@ -146,6 +155,7 @@ def test_concurrent_rotation_retains_every_new_key(tmp_path):
     assert len(keys)==5 and all(k in keys for k in ids) and active in ids
 
 
+@pytest.mark.skipif(os.name != 'posix', reason='Rotation and directory fsync require POSIX; Windows remains fail-closed')
 def test_creation_and_rotation_sync_key_and_directory(tmp_path,monkeypatch):
     import stat
     observed=[];real=os.fsync
@@ -157,3 +167,18 @@ def test_creation_and_rotation_sync_key_and_directory(tmp_path,monkeypatch):
     assert observed==['file','directory']
     observed.clear();rotate_ring(path)
     assert observed==['file','directory']
+
+
+def test_unsupported_rotation_preserves_key_and_ciphertext(tmp_path, monkeypatch):
+    path = tmp_path / 'windows.checkout-key'
+    active, keys = create_ring(path)
+    v = Vault(active, keys)
+    sealed = v.seal(RESPONSE, 2, 'key', 'payload', pin_until=(NOW+timedelta(days=1)).isoformat())
+    original = path.read_bytes()
+    from types import SimpleNamespace
+    import backend.checkout_vault as module
+    monkeypatch.setattr(module, 'os', SimpleNamespace(name='nt'))
+    with pytest.raises(CheckoutStorageError, match='POSIX'):
+        rotate_ring(path)
+    assert path.read_bytes() == original
+    assert v.open(sealed, 2, 'key', 'payload', now=NOW) == RESPONSE

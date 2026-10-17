@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import pytest
 from database.generate_test_migration_plan import generate, main
@@ -34,6 +35,7 @@ def test_generator_writes_private_file(monkeypatch):
     try:
         assert main(['--output', str(output)]) == 0
         assert output.read_text() == 'safe\n'
-        assert output.stat().st_mode & 0o777 == 0o600
+        if os.name == 'posix':
+            assert output.stat().st_mode & 0o777 == 0o600
     finally:
         output.unlink(missing_ok=True)

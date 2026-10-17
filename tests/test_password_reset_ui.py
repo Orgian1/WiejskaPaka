@@ -3,7 +3,7 @@ import subprocess
 import pytest
 
 
-@pytest.mark.parametrize('case', ['success','request','mismatch','network','duplicate','account_switch','disabled'])
+@pytest.mark.parametrize('case', ['success','request','mismatch','network','duplicate','account_switch','disabled','fragment_navigation'])
 def test_actual_reset_javascript(case):
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run(['node','scripts/password_reset_ui_checks.js',case],cwd=root,

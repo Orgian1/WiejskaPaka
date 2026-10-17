@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -44,6 +45,24 @@ def counts(path):
     failed = sum(c.find('failure') is not None or c.find('error') is not None for c in cases)
     skipped = sum(c.find('skipped') is not None for c in cases)
     return {'total': len(cases), 'passed': len(cases)-failed-skipped, 'failed': failed, 'skipped': skipped}
+
+
+
+def failure_locations(path, root):
+    """Return only allowlisted repository filenames and line numbers, never logs."""
+    known = {p.name for p in (Path(root)/'tests').glob('test_*.py')}
+    found = set()
+    for case in ET.parse(path).getroot().iter('testcase'):
+        for tag in ('failure', 'error'):
+            failure = case.find(tag)
+            if failure is None:
+                continue
+            # Do not emit assertion text, parameter values, absolute paths or locals.
+            for name, line in re.findall(r'(?:^|[/\\ ])(test_[A-Za-z0-9_]+\.py):(\d+):',
+                                         failure.text or '', re.MULTILINE):
+                if name in known:
+                    found.add((name, int(line)))
+    return [{'file': name, 'line': line} for name,line in sorted(found)[:30]]
 
 
 def checked_counts(data):
@@ -107,6 +126,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                         and task['test_counts']['total'] > 0 and task['test_counts']['failed'] == 0)
                 elif kind == 'junit':
                     task['test_counts'] = counts(xml)
+                    task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
                     minimum = 15 if gate == 'postgres' else 7
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0

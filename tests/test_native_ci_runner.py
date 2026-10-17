@@ -124,3 +124,21 @@ def test_source_change_invalidates_native_evidence(tmp_path, monkeypatch):
         return subprocess.CompletedProcess(command, 0, '', '')
     result = ci.run('postgres', tmp_path/'result.json', source=source(), runner=runner)
     assert not result['success'] and not result['sources_unchanged']
+
+
+def test_failure_locations_exclude_logs_parameters_and_private_paths(tmp_path):
+    import xml.etree.ElementTree as ET
+    tests = tmp_path/'tests'
+    tests.mkdir()
+    (tests/'test_public_case.py').write_text('')
+    document = ET.Element('testsuite')
+    case = ET.SubElement(document,'testcase',name='test_case[private-token]',classname='private-email')
+    failure = ET.SubElement(case,'failure')
+    failure.text = ('/private/home/test_public_case.py:42: AssertionError private-secret\n'
+                    'tests/test_unknown_case.py:99: private-secret\n'
+                    'tests/test_public_case.py:42: private-secret')
+    path = tmp_path/'failure.xml'
+    ET.ElementTree(document).write(path)
+    result = ci.failure_locations(path,tmp_path)
+    assert result == [{'file':'test_public_case.py','line':42}]
+    assert 'private' not in json.dumps(result)

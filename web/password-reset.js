@@ -1,11 +1,18 @@
 // Reset links use fragments: browsers never send the secret in an HTTP URL.
 (async()=>{
   const section=el('password-reset-section'),status=el('reset-status');
-  let incoming=null;
-  if(location.hash.startsWith('#reset-token=')){
+  let incoming=null,enabled=false;
+  function captureResetFragment(){
+    if(!location.hash.startsWith('#reset-token='))return;
     incoming=location.hash.slice('#reset-token='.length);
     history.replaceState(null,'',location.pathname+location.search);
+    if(enabled){
+      el('reset-token').value=/^[A-Za-z0-9_-]{43}$/.test(incoming)?incoming:'';
+      incoming=null;
+    }
   }
+  captureResetFragment();
+  globalThis.addEventListener('hashchange',captureResetFragment);
   async function post(path,body){
     const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body),cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
@@ -19,7 +26,7 @@
   try{
     const response=await fetch('/auth/password-reset-test/options',{cache:'no-store',credentials:'omit'});
     if(!response.ok||!(await response.json()).enabled)return;
-    section.hidden=false;
+    enabled=true;section.hidden=false;
     if(incoming&&/^[A-Za-z0-9_-]{43}$/.test(incoming))el('reset-token').value=incoming;
   }catch(_e){return}
   finally{incoming=null}

@@ -7,9 +7,9 @@ for(const id of ['password-reset-section','reset-status','reset-token','reset-em
     for(const input of ids)nodes[input].value='';
   }};
 }
-let calls=[],urlRemoved=false,loggedOut=0,finish;
-const ctx=vm.createContext({el:id=>nodes[id],location:{hash:'#reset-token='+secret,pathname:'/',search:''},
-  history:{replaceState(a,b,url){assert.equal(url,'/');urlRemoved=true}},sessionEpoch:0,loginAttempt:0,token:'session',
+let calls=[],urlRemoved=false,loggedOut=0,finish;const listeners={};
+const ctx=vm.createContext({el:id=>nodes[id],location:{hash:chosen==='fragment_navigation'?'':'#reset-token='+secret,pathname:'/',search:''},
+  history:{replaceState(a,b,url){assert.equal(url,'/');urlRemoved=true;ctx.location.hash=''}},addEventListener(name,handler){listeners[name]=handler},sessionEpoch:0,loginAttempt:0,token:'session',
   logged(user){assert.equal(user,null);loggedOut++},
   fetch:async(path,options)=>{
     calls.push({path,options});
@@ -20,7 +20,8 @@ const ctx=vm.createContext({el:id=>nodes[id],location:{hash:'#reset-token='+secr
   }});
 (async()=>{
   await vm.runInContext(script,ctx);
-  assert(urlRemoved);assert.equal(ctx.location.hash.includes(secret),true); // browser stub doesn't mutate hash
+  if(chosen==='fragment_navigation'){ctx.location.hash='#reset-token='+secret;listeners.hashchange()}
+  assert(urlRemoved);assert.equal(ctx.location.hash,'');
   if(chosen==='disabled'){
     assert(nodes['password-reset-section'].hidden);assert.equal(nodes['reset-token'].value,'');return;
   }

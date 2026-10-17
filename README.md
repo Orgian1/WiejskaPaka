@@ -10,7 +10,9 @@ Aktualne poprawki są rozwijane na gałęzi GitHub `wiejskapaka-import`.
 Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
 `docs/SYNCHRONIZACJA_GITHUB_2026-10-17.md`.
 Natywne bramy Windows/PostgreSQL/Chromium: `docs/NATYWNE_TESTY_CI.md`.
-Bieżący raport: `docs/RAPORT_AUDYTU_PLATNOSCI_2026-10-17.md`.
+Bieżące wyniki Linux/Windows/PostgreSQL/Chromium:
+`docs/RAPORT_NATIVE_CI_2026-10-17.md`.
+Poprzedni raport audytu płatności: `docs/RAPORT_AUDYTU_PLATNOSCI_2026-10-17.md`.
 Poprzednia paczka kontekstu zwrotów: `docs/RAPORT_KONTEKSTU_ZWROTOW_2026-10-17.md`.
 Poprzednia paczka historii płatności: `docs/RAPORT_HISTORII_PLATNOSCI_2026-10-17.md`.
 Poprzednia paczka kwot zwrotów: `docs/RAPORT_ZWROTOW_2026-10-17.md`.

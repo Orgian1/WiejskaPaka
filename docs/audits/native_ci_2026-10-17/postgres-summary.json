@@ -1,0 +1,27 @@
+{
+  "gate": "postgres",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "system": "Linux",
+  "evidence": {
+    "runtime_sha256": "0047ac6619a8ef0c750403575f71a90056fda7a8ea59fe296645aff09f0464e0",
+    "tests_sha256": "6a7b4f81e8d79de61b34726a54cc9938603fae010cc7d3c82ff47584c4b4a5ee",
+    "test_sources_sha256": "f1a6462fabc527e90df0ea512094027509e3f684ea0f21a6ae62ba2dd0f77f2c",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "2bca985608643a19f0f68865cfc5a1f79858a1687c4510944d158a4445a4561a"
+  },
+  "tasks": [
+    {
+      "name": "native_postgres",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  ]
+}

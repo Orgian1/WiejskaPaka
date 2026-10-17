@@ -7,6 +7,8 @@ Dowody aktualnego wydania: `docs/RAPORT_SESJE_2026-10-16.md` oraz
 `audit_sessions_final_*.json`. Poprzednie pakiety bezpieczeństwa opisują
 `docs/ODZYSKIWANIE_PIN.md` i `docs/BEZPIECZENSTWO_KONTA.md`.
 Aktualne poprawki są rozwijane na gałęzi GitHub `wiejskapaka-import`.
+Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
+`docs/SYNCHRONIZACJA_GITHUB_2026-10-17.md`.
 Bieżący raport: `docs/RAPORT_AUDYTU_PLATNOSCI_2026-10-17.md`.
 Poprzednia paczka kontekstu zwrotów: `docs/RAPORT_KONTEKSTU_ZWROTOW_2026-10-17.md`.
 Poprzednia paczka historii płatności: `docs/RAPORT_HISTORII_PLATNOSCI_2026-10-17.md`.

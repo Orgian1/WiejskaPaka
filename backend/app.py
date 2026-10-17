@@ -20,7 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError, VerificationError
+from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
 
 # Blokada przypadkowego wdrożenia developerskiej aplikacji do produkcji.
 from backend.deployment_guard import assert_safe_environment
@@ -341,7 +341,7 @@ def login(payload: Login):
         try:
             verified = ph.verify(row['password_hash'] if row else DUMMY_PASSWORD_HASH, payload.password)
             valid = bool(row and verified)
-        except (VerifyMismatchError, VerificationError):
+        except (VerifyMismatchError, VerificationError, InvalidHashError):
             pass
         if not valid:
             failures = (attempt['failures'] if attempt else 0) + 1
@@ -1045,13 +1045,15 @@ def confirm_shipment(shipment_id: str, payload: ConfirmIn, user=Depends(current_
         if any(o['status'] != expected or o['pin_used'] or o['pin_attempts'] >= 5 for o in orders):
             raise HTTPException(409, 'Przesyłka nie jest gotowa lub PIN został zablokowany')
         try:
-            correct = ph.verify(orders[0]['pin_hash'], payload.pin)
-        except (VerifyMismatchError, VerificationError):
+            # Every linked order must authorize the same PIN, including after
+            # persisted corruption or an interrupted external repair.
+            correct = all(ph.verify(o['pin_hash'], payload.pin) for o in orders)
+        except (VerifyMismatchError, VerificationError, InvalidHashError):
             correct = False
         if not correct:
             for o in orders:
                 con.execute('UPDATE orders SET pin_attempts=pin_attempts+1 WHERE id=?', (o['id'],))
-            return {'confirmed': False, 'remaining_attempts': 4 - orders[0]['pin_attempts']}
+            return {'confirmed': False, 'remaining_attempts': 4 - max(o['pin_attempts'] for o in orders)}
         now = datetime.now(timezone.utc).isoformat()
         for o in orders:
             require_transition(o['fulfillment'], o['status'], 'odebrane')
@@ -1087,7 +1089,7 @@ def confirm_order(order_id:int,payload:ConfirmIn,user=Depends(current_user), aut
             raise HTTPException(409,'Zamówienie nie jest gotowe do odbioru')
         try:
             correct=ph.verify(o['pin_hash'],payload.pin)
-        except (VerifyMismatchError,VerificationError):
+        except (VerifyMismatchError,VerificationError,InvalidHashError):
             correct=False
         if not correct:
             con.execute('UPDATE orders SET pin_attempts=pin_attempts+1 WHERE id=?',(order_id,))

@@ -1,5 +1,6 @@
 """Read-only local SQLite audit. Never connects to Neon/PostgreSQL."""
 import argparse
+from contextlib import closing
 import json
 import sqlite3
 from pathlib import Path
@@ -13,9 +14,14 @@ def main():
     path = Path(args.sqlite).resolve()
     if not path.is_file():
         parser.error('Plik SQLite nie istnieje; audyt nie utworzy nowej bazy')
-    with sqlite3.connect(f'file:{path}?mode=ro', uri=True) as con:
-        con.row_factory = sqlite3.Row
-        result = audit_payment_integrity(con)
+    try:
+        with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as con:
+            con.row_factory = sqlite3.Row
+            con.execute('BEGIN')
+            result = audit_payment_integrity(con)
+    except sqlite3.DatabaseError:
+        print(json.dumps({'ok': False, 'complete': False, 'error': 'AUDIT_UNAVAILABLE'}))
+        return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result['ok'] else 1
 

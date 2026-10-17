@@ -1,5 +1,6 @@
 import sqlite3
 from backend.payment_integrity import audit_payment_integrity
+from backend.payment_store import SCHEMA_SQLITE, create_payment, persist_event
 
 
 def make_db():
@@ -7,14 +8,18 @@ def make_db():
     con.row_factory = sqlite3.Row
     con.executescript('''
         CREATE TABLE orders(id INTEGER PRIMARY KEY, subtotal_grosze INTEGER,
-            delivery_grosze INTEGER, total_grosze INTEGER, status TEXT);
-        CREATE TABLE payment_simulations(order_id INTEGER PRIMARY KEY, total_grosze INTEGER,
-            products_grosze INTEGER, delivery_grosze INTEGER, commission_grosze INTEGER,
-            seller_grosze INTEGER, state TEXT, refund_grosze INTEGER, payout_grosze INTEGER);
-        CREATE TABLE payment_simulation_events(event_id TEXT, order_id INTEGER);
-        INSERT INTO orders VALUES(1,349,501,850,'nieudana_dostawa_testowo');
-        INSERT INTO payment_simulations VALUES(1,850,349,501,17,833,'refunded_test',850,0);
-    ''')
+            delivery_grosze INTEGER, total_grosze INTEGER, status TEXT,
+            fulfillment TEXT, buyer_id INTEGER, farmer_id INTEGER);
+        CREATE TABLE order_events(order_id INTEGER,actor_id INTEGER,event_type TEXT,
+            previous_status TEXT,new_status TEXT);
+        CREATE TABLE shipment_order_links(order_id INTEGER,shipment_id TEXT);
+        INSERT INTO orders VALUES(1,349,501,850,'nieudana_dostawa_testowo','dostawa',2,3);
+        INSERT INTO order_events VALUES(1,3,'courier_delivery_failed_test',
+            'w_drodze_testowo','nieudana_dostawa_testowo');
+    ''' + SCHEMA_SQLITE)
+    payment = create_payment(con, {'id': 1, 'subtotal_grosze': 349, 'delivery_grosze': 501, 'total_grosze': 850})
+    payment = persist_event(con, payment, 'paid', 'payment_success_test', 'now')
+    persist_event(con, payment, 'refund', 'delivery_failed_by_courier_test', 'now')
     return con
 
 
@@ -46,5 +51,5 @@ def test_b59_incomplete_refund_and_wrong_status_detected():
 
 def test_b60_orphan_event_detected():
     with make_db() as con:
-        con.execute("INSERT INTO payment_simulation_events VALUES('ev1', 999)")
+        con.execute("INSERT INTO payment_simulation_events VALUES('ev1',999,'payment_success_test','paid_test','now')")
         assert 'ORPHAN_EVENT' in {x['code'] for x in audit_payment_integrity(con)['issues']}

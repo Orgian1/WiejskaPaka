@@ -1,3 +1,4 @@
+from tests.authorization_helpers import authorization_for
 import pytest
 from fastapi import HTTPException
 from backend.app import db, accounting_export_preview, prepare_accounting_export, my_accounting_export_jobs
@@ -20,14 +21,14 @@ def test_export_jobs_private_idempotent_and_blocked():
     preview=accounting_export_preview(940001,user=farmer)
     assert preview['net_grosze']==50 and preview['tax_review_required']
     assert 'seller_nip' not in preview and 'buyer_name' not in preview
-    first=prepare_accounting_export(940001,user=farmer)
-    second=prepare_accounting_export(940001,user=farmer)
+    first=prepare_accounting_export(940001,user=farmer,authorization=authorization_for(farmer))
+    second=prepare_accounting_export(940001,user=farmer,authorization=authorization_for(farmer))
     assert first['id']==second['id'] and first['status']=='blocked_tax_review'
     assert not first['sent'] and not first['issued']
     assert len(my_accounting_export_jobs(user=farmer)['items'])==1
     assert my_accounting_export_jobs(user=stranger)['items']==[]
     with pytest.raises(HTTPException) as exc:
-        prepare_accounting_export(940001,user=stranger)
+        prepare_accounting_export(940001,user=stranger,authorization=authorization_for(stranger))
     assert exc.value.status_code==404
 
 

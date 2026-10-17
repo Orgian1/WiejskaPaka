@@ -9,7 +9,11 @@ def test_checkout_uses_row_locks_for_postgres():
     end = source.index("@app.post('/orders'", start)
     checkout = source[start:end]
     assert "(' FOR UPDATE OF c,p' if DATABASE_URL else '')" in checkout
-    assert "if not DATABASE_URL:\n            con.execute('BEGIN IMMEDIATE')" in checkout
+    assert "with order_write_db(user, authorization, ('klient',))" in checkout
+    from backend import app
+    import inspect
+    transaction=inspect.getsource(app.order_write_db).split('    else:', 1)[1]
+    assert transaction.index('BEGIN IMMEDIATE')<transaction.index('authorize_transaction(')<transaction.index('yield con')
     assert "con.execute('BEGIN' if DATABASE_URL" not in checkout
 
 

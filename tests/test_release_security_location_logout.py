@@ -57,9 +57,10 @@ def test_logout_all_uses_verified_transaction(guarded):
     assert api.logout_all({'id': 10, 'role': 'klient'}, 'Bearer valid')['ok']
     assert guarded == [(10, 'Bearer valid', ('klient', 'rolnik', 'dostawca', 'admin'))]
     queries=guarded.connection.queries
-    assert queries[0]=='BEGIN IMMEDIATE'
-    assert queries[1].startswith('SELECT u.id,u.role,s.expires_at')
-    assert queries[2]=='DELETE FROM sessions WHERE user_id=?'
+    # The mocked order_write_db owns BEGIN; the account helper still refreshes
+    # the actor after the PostgreSQL account lock before deleting any session.
+    assert queries[0].startswith('SELECT u.id,u.role,s.expires_at')
+    assert queries[1]=='DELETE FROM sessions WHERE user_id=?'
 
 
 def test_logout_all_rejects_unverified_session(guarded):

@@ -1,3 +1,4 @@
+from tests.authorization_helpers import authorization_for
 import pytest
 from fastapi import HTTPException
 from backend.app import db, prepare_accounting_export, accounting_export_diagnostics
@@ -16,7 +17,7 @@ def test_diagnostics_private_and_blocked():
         con.execute("""INSERT INTO invoice_drafts(id,commission_draft_id,farmer_id,seller_name,seller_nip,buyer_name,description,net_grosze,created_at)
           VALUES(950001,950001,950001,'Platforma','1234567890','Rolnik','Test',50,'2026-01-01') ON CONFLICT DO NOTHING""")
     farmer={'id':950001,'role':'rolnik'}
-    job=prepare_accounting_export(950001,user=farmer)
+    job=prepare_accounting_export(950001,user=farmer,authorization=authorization_for(farmer))
     report=accounting_export_diagnostics(job['id'],user=farmer)
     assert report['snapshot_integrity_ok'] is True
     assert report['issues']==['tax_amounts_unverified','tax_review_required']

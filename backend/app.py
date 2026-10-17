@@ -260,7 +260,7 @@ def current_user(authorization: str | None = Header(default=None)):
 
 @contextmanager
 def order_write_db(user, authorization, allowed_roles):
-    """Reauthenticate PostgreSQL writes inside their own transaction."""
+    """Reauthenticate the actor in the same transaction as every mutation."""
     if DATABASE_URL:
         from backend.verified_writes import verified_order_write, WriteAuthorizationError
         from backend.neon_session_bridge import AuthenticationFailed
@@ -273,6 +273,9 @@ def order_write_db(user, authorization, allowed_roles):
             raise HTTPException(403, 'Brak uprawnień')
     else:
         with db() as con:
+            if not DATABASE_URL:
+                con.execute('BEGIN IMMEDIATE')
+            authorize_transaction(con,user,authorization,allowed_roles)
             yield con
 
 def require(user, role):
@@ -363,8 +366,7 @@ def account_session_db(user,authorization):
     """Lock with login/password changes, then recheck the actual session."""
     roles=('klient','rolnik','dostawca','admin')
     with order_write_db(user,authorization,roles) as con:
-        if not DATABASE_URL:con.execute('BEGIN IMMEDIATE')
-        else:con.execute('SELECT pg_advisory_xact_lock(hashtext(?))',(user['email'].strip().lower(),))
+        if DATABASE_URL:con.execute('SELECT pg_advisory_xact_lock(hashtext(?))',(user['email'].strip().lower(),))
         authorize_transaction(con,user,authorization,roles)
         yield con
 
@@ -495,10 +497,9 @@ def saved_cart_get(user=Depends(current_user)):
             'notice': 'Koszyk nie rezerwuje towaru ani nie gwarantuje ceny.'}
 
 @app.put('/cart/items')
-def saved_cart_put(payload: SavedCartItemIn, user=Depends(current_user)):
+def saved_cart_put(payload: SavedCartItemIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
-    with db() as con:
-        con.execute('BEGIN' if DATABASE_URL else 'BEGIN IMMEDIATE')
+    with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         product = con.execute('SELECT stock FROM products WHERE id=?', (payload.product_id,)).fetchone()
         if product is None or product['stock'] < payload.quantity:
@@ -521,20 +522,20 @@ def saved_cart_put(payload: SavedCartItemIn, user=Depends(current_user)):
     return {'saved': True, 'product_id': payload.product_id, 'quantity': payload.quantity}
 
 @app.delete('/cart/items/{product_id}')
-def saved_cart_delete(product_id: int, user=Depends(current_user)):
+def saved_cart_delete(product_id: int, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
     if product_id < 1:
         raise HTTPException(422, 'Nieprawidłowy produkt')
-    with db() as con:
+    with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         con.execute('DELETE FROM saved_cart_items WHERE buyer_id=? AND product_id=?',
                     (user['id'],product_id))
     return {'deleted': True}
 
 @app.delete('/cart/items')
-def saved_cart_clear(user=Depends(current_user)):
+def saved_cart_clear(user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
-    with db() as con:
+    with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         con.execute('DELETE FROM saved_cart_items WHERE buyer_id=?', (user['id'],))
     return {'cleared': True}
@@ -790,8 +791,6 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         raise HTTPException(422, 'Nieprawidłowy klucz Idempotency-Key (12–100 znaków)')
     payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False).encode('utf-8')).hexdigest()
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
         if idempotency_key:
@@ -934,8 +933,6 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
     request_key = 'direct:' + idempotency_key if idempotency_key else None
     payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False).encode('utf-8')).hexdigest()
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
         if request_key:
@@ -1029,8 +1026,6 @@ def confirm_shipment(shipment_id: str, payload: ConfirmIn, user=Depends(current_
     if not payload.checked_goods:
         raise HTTPException(422, 'Klient musi najpierw sprawdzić towar')
     with order_write_db(user, authorization, ('rolnik', 'dostawca')) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment:
             raise HTTPException(404, 'Brak przesyłki')
@@ -1071,8 +1066,6 @@ def confirm_order(order_id:int,payload:ConfirmIn,user=Depends(current_user), aut
     if not payload.checked_goods:
         raise HTTPException(422,'Klient musi najpierw sprawdzić towar')
     with order_write_db(user, authorization, ('rolnik', 'dostawca')) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         o=con.execute('SELECT * FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not o:
             raise HTTPException(404,'Brak zamówienia')
@@ -1115,8 +1108,6 @@ def require_unexpired_unpaid_reservation(con, order_id):
 def mark_ready_test(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         o=con.execute('SELECT farmer_id,status,fulfillment FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not o or o['farmer_id']!=user['id']:
             raise HTTPException(404,'Brak zamówienia')
@@ -1173,8 +1164,6 @@ def update_my_product(product_id: int, payload: ProductUpdateIn,
 def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment or shipment['buyer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
@@ -1202,8 +1191,6 @@ def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), auth
     if os.environ.get('WP_ENABLE_TEST_PAYMENTS') != '1':
         raise HTTPException(404, 'Symulacja płatności wyłączona')
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment or shipment['buyer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
@@ -1249,8 +1236,6 @@ def cancel_paid_order_test(order_id: int, user=Depends(current_user), authorizat
     if os.environ.get('WP_ENABLE_TEST_PAYMENTS') != '1':
         raise HTTPException(404, 'Symulacja płatności wyłączona')
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         order = con.execute('SELECT * FROM orders WHERE id=? AND buyer_id=?' + (' FOR UPDATE' if DATABASE_URL else ''),
                             (order_id, user['id'])).fetchone()
         if not order:
@@ -1285,8 +1270,6 @@ def cancel_paid_order_test(order_id: int, user=Depends(current_user), authorizat
 def cancel_order_test(order_id: int, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
     with order_write_db(user, authorization, ('klient',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         o = con.execute('SELECT * FROM orders WHERE id=? AND buyer_id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (order_id,user['id'])).fetchone()
         if not o:
             raise HTTPException(404, 'Nie znaleziono zamówienia')
@@ -1345,9 +1328,9 @@ class PickupPointUpdateIn(PickupPointIn):
 
 
 @app.put('/farmers/me/profile')
-def update_farmer_profile(payload:FarmerProfileIn,user=Depends(current_user)):
+def update_farmer_profile(payload:FarmerProfileIn,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
-    with db() as con:
+    with order_write_db(user, authorization, ('rolnik',)) as con:
         con.execute('''INSERT INTO farmer_profiles(user_id,farm_name,city,description) VALUES(?,?,?,?)
             ON CONFLICT(user_id) DO UPDATE SET farm_name=excluded.farm_name,city=excluded.city,description=excluded.description''',
             (user['id'],payload.farm_name.strip(),payload.city.strip(),payload.description.strip()))
@@ -1378,8 +1361,6 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
                         authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         point = con.execute('SELECT * FROM pickup_points WHERE id=? AND farmer_id=?' +
             (' FOR UPDATE' if DATABASE_URL else ''), (point_id,user['id'])).fetchone()
         if not point:
@@ -1488,8 +1469,6 @@ class AssignCourierIn(BaseModel):
 def assign_courier_test(order_id:int,payload:AssignCourierIn,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         order=con.execute('SELECT * FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not order or order['farmer_id']!=user['id']:
             raise HTTPException(404,'Nie znaleziono zamówienia')
@@ -1510,8 +1489,6 @@ def assign_courier_test(order_id:int,payload:AssignCourierIn,user=Depends(curren
 def dispatch_test(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         order=con.execute('SELECT * FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not order or order['farmer_id']!=user['id']:
             raise HTTPException(404,'Nie znaleziono zamówienia')
@@ -1533,8 +1510,6 @@ def assign_shipment_courier(shipment_id: str, payload: AssignCourierIn,
                             user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment or shipment['farmer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
@@ -1558,8 +1533,6 @@ def assign_shipment_courier(shipment_id: str, payload: AssignCourierIn,
 def dispatch_shipment(shipment_id: str, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment or shipment['farmer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
@@ -1590,8 +1563,6 @@ def fail_shipment_by_courier(shipment_id: str, payload: ShipmentFailureIn,
     if os.environ.get('WP_ENABLE_TEST_PAYMENTS') != '1':
         raise HTTPException(404, 'Symulacja zwrotów jest wyłączona')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         shipment = con.execute('SELECT * FROM shipment_groups WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (shipment_id,)).fetchone()
         if not shipment or shipment['farmer_id'] != user['id']:
             raise HTTPException(404, 'Nie znaleziono przesyłki')
@@ -1825,9 +1796,9 @@ def unread_notification_count(user=Depends(current_user)):
         return {'unread':row['total']}
 
 @app.post('/notifications/{notification_id}/read')
-def mark_notification_read(notification_id:int,user=Depends(current_user)):
+def mark_notification_read(notification_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):
     now=datetime.now(timezone.utc).isoformat()
-    with db() as con:
+    with order_write_db(user, authorization, ('klient','rolnik','dostawca','admin')) as con:
         found=con.execute('SELECT id FROM notifications WHERE id=? AND user_id=?',(notification_id,user['id'])).fetchone()
         if not found:
             raise HTTPException(404,'Nie znaleziono powiadomienia')
@@ -2346,8 +2317,6 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
     # Sesja jest ponownie sprawdzana w transakcji zapisu PostgreSQL.
     # SQLite pozostaje lokalną ścieżką developerską.
     with order_write_db(user, authorization, ('klient', 'rolnik')) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         order = con.execute('SELECT * FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''), (order_id,)).fetchone()
         if not order:
             raise HTTPException(404, 'Brak zamówienia')
@@ -2443,8 +2412,6 @@ def create_payout_plan_test(user=Depends(current_user), authorization: str | Non
     today = datetime.now(timezone.utc).date()
     payout_date = next_weekly_date(today).isoformat()
     with order_write_db(user, authorization, ('admin',) if user['role'] == 'admin' else ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         if DATABASE_URL:
             # Lock farmer row to serialize concurrent planning for this farmer.
             con.execute('SELECT id FROM users WHERE id=? FOR UPDATE',(user['id'],)).fetchone()
@@ -2490,8 +2457,6 @@ def reserve_payout_plan_test(payout_date: str, user=Depends(current_user), autho
     if parsed.weekday() != 0:
         raise HTTPException(422, 'Plan dotyczy poniedziałku')
     with order_write_db(user, authorization, ('admin',) if user['role'] == 'admin' else ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         if DATABASE_URL:
             con.execute('SELECT id FROM users WHERE id=? FOR UPDATE', (user['id'],)).fetchone()
         try:
@@ -2530,8 +2495,6 @@ def cancel_reservation_test(payout_date: str, user=Depends(current_user), author
     require(user, 'rolnik')
     _validate_payout_date(payout_date)
     with order_write_db(user, authorization, ('admin',) if user['role'] == 'admin' else ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         if DATABASE_URL:
             con.execute('SELECT id FROM users WHERE id=? FOR UPDATE',(user['id'],)).fetchone()
         try:
@@ -2549,8 +2512,6 @@ def reconcile_all_payout_reservations_test(user=Depends(current_user), authoriza
         raise HTTPException(404, 'Symulacja wyłączona')
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('admin',) if user['role'] == 'admin' else ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         if DATABASE_URL:
             con.execute('SELECT id FROM users WHERE id=? FOR UPDATE', (user['id'],)).fetchone()
         return invalidate_stale_reservations(con, user['id'])
@@ -2572,8 +2533,6 @@ def run_payout_schedule_test(user=Depends(current_user), authorization: str | No
     if today.weekday() != 0:
         raise HTTPException(409, 'Ręczny przebieg dozwolony wyłącznie w poniedziałek (UTC)')
     with order_write_db(user, authorization, ('admin',) if user['role'] == 'admin' else ('rolnik',)) as con:
-        if not DATABASE_URL:
-            con.execute('BEGIN IMMEDIATE')
         if DATABASE_URL:
             # Single global lock to serialize concurrent administrator runs.
             con.execute('SELECT id FROM users WHERE id=? FOR UPDATE', (user['id'],)).fetchone()
@@ -2689,7 +2648,7 @@ def courier_active_addresses(user=Depends(current_user), authorization: str | No
                 return [dict(row) for row in courier_active_delivery_addresses(con, actor_id)]
         except AuthenticationFailed:
             raise HTTPException(401, 'Sesja nieważna')
-    with db() as con:
+    with purchase_record_read_db(user,authorization,('dostawca',)) as con:
         rows = con.execute("""SELECT o.id AS order_id,
                 loc.delivery_city, loc.delivery_street, loc.delivery_postal_code
             FROM orders o
@@ -2758,11 +2717,15 @@ if not DATABASE_URL:
 @contextmanager
 def purchase_record_read_db(user,authorization,allowed_roles):
     """Authorize private records inside the same snapshot as their data."""
-    with order_write_db(user,authorization,allowed_roles) as con:
-        if not DATABASE_URL:
+    if not DATABASE_URL:
+        # Keep private reads in a consistent read snapshot without a write lock.
+        with db() as con:
             con.execute('BEGIN')
-            authorize_local_transaction(con,user,authorization,allowed_roles)
-        yield con
+            authorize_transaction(con,user,authorization,allowed_roles)
+            yield con
+    else:
+        with order_write_db(user,authorization,allowed_roles) as con:
+            yield con
 
 
 @app.get('/orders/{order_id}/purchase-record')
@@ -2827,7 +2790,6 @@ def recover_purchase_pin(payload,user,authorization,*,order_id=None,shipment_id=
     require(user,'klient')
     denial = None
     with order_write_db(user,authorization,('klient',)) as con:
-        if not DATABASE_URL:con.execute('BEGIN IMMEDIATE')
         lock_buyer_operation(con,user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
         try:

@@ -14,7 +14,8 @@ def test_logout_requires_verified_write():
     assert 'account_session_db(user,authorization)' in source
     guard=inspect.getsource(app.account_session_db)
     assert 'order_write_db(user,authorization,roles)' in guard
-    assert guard.index('BEGIN IMMEDIATE')<guard.index('authorize_transaction(')
+    transaction=inspect.getsource(app.order_write_db).split('    else:', 1)[1]
+    assert transaction.index('BEGIN IMMEDIATE')<transaction.index('authorize_transaction(')<transaction.index('yield con')
     assert guard.index('pg_advisory_xact_lock')<guard.index('authorize_transaction(')
     assert 'token_hash(authorization[7:])' in source
 

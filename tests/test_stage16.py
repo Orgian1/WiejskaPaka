@@ -1,3 +1,4 @@
+from tests.authorization_helpers import authorization_for
 import pytest
 from fastapi import HTTPException
 from backend.app import db, prepare_accounting_export, validate_accounting_export, accounting_validation_history
@@ -16,9 +17,9 @@ def test_validation_history_is_private_idempotent_and_changes_are_recorded():
           VALUES(960001,960001,960001,'Platforma','1234567890','Rolnik','Test',50,'2026-01-01') ON CONFLICT DO NOTHING""")
     farmer={'id':960001,'role':'rolnik'}
     stranger={'id':960002,'role':'rolnik'}
-    job=prepare_accounting_export(960001,user=farmer)
-    a=validate_accounting_export(job['id'],user=farmer)
-    b=validate_accounting_export(job['id'],user=farmer)
+    job=prepare_accounting_export(960001,user=farmer,authorization=authorization_for(farmer))
+    a=validate_accounting_export(job['id'],user=farmer,authorization=authorization_for(farmer))
+    b=validate_accounting_export(job['id'],user=farmer,authorization=authorization_for(farmer))
     assert a['validation_id']==b['validation_id']
     assert a['ready_for_external_api'] is False and not a['sent']
     assert len(accounting_validation_history(job['id'],user=farmer)['items'])==1
@@ -26,11 +27,11 @@ def test_validation_history_is_private_idempotent_and_changes_are_recorded():
         accounting_validation_history(job['id'],user=stranger)
     assert e.value.status_code==404
     with pytest.raises(HTTPException) as e:
-        validate_accounting_export(job['id'],user=stranger)
+        validate_accounting_export(job['id'],user=stranger,authorization=authorization_for(stranger))
     assert e.value.status_code==404
     with db() as con:
         con.execute('UPDATE accounting_export_jobs SET payload_sha256=? WHERE id=?',('0'*64,job['id']))
-    c=validate_accounting_export(job['id'],user=farmer)
+    c=validate_accounting_export(job['id'],user=farmer,authorization=authorization_for(farmer))
     assert c['validation_id']!=a['validation_id']
     assert 'snapshot_changed' in c['issues']
     assert len(accounting_validation_history(job['id'],user=farmer)['items'])==2

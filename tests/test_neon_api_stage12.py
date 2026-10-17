@@ -14,6 +14,8 @@ class FakeConn:
     def fetchall(self):
         return [{'order_id': 7, 'delivery_city': 'Testowo',
                  'delivery_street': 'Testowa 1', 'delivery_postal_code': '00-001'}]
+    def fetchone(self):
+        return {'id':91,'role':'dostawca','expires_at':'2100-01-01T00:00:00+00:00'}
 
 @contextmanager
 def fake_db(conn):
@@ -22,9 +24,11 @@ def fake_db(conn):
 def test_courier_active_addresses_uses_verified_identity_and_filters():
     con = FakeConn()
     with patch.object(api, 'db', lambda: fake_db(con)):
-        result = api.courier_active_addresses({'id': 91, 'role': 'dostawca'})
+        result = api.courier_active_addresses({'id': 91, 'role': 'dostawca'}, 'Bearer synthetic-token')
     assert result[0]['order_id'] == 7
-    sql, params = con.calls[0]
+    assert con.calls[0][0] == 'BEGIN'
+    assert con.calls[1][0].startswith('SELECT u.id,u.role,s.expires_at')
+    sql, params = con.calls[2]
     assert params == (91,)
     for fragment in ('a.courier_id=?', "o.fulfillment='dostawa'",
                      "o.status='w_drodze_testowo'", 'o.pin_used=0',

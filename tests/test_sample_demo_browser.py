@@ -12,6 +12,8 @@ def sample_browser_server(tmp_path_factory):
     playwright=pytest.importorskip('playwright.sync_api')
     sample=prepare_sample(tmp_path_factory.mktemp('sample_browser')/'sample')
     with server(Path(sample['database'])) as client,playwright.sync_playwright() as driver:
+        for credentials in sample['credentials'].values():
+            assert client.post('/auth/login',json=credentials).status_code==200
         browser=driver.chromium.launch(headless=True,executable_path=binary,args=['--no-sandbox','--no-proxy-server','--proxy-bypass-list=*'])
         try:yield browser,str(client.base_url),sample['credentials']
         finally:browser.close()
@@ -26,8 +28,11 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
     try:
         page.goto(url)
         page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
-        page.locator('#auth button[type=submit]').click()
-        page.wait_for_function("document.getElementById('identity').textContent.includes('Zalogowano:')")
+        with page.expect_response('**/auth/login') as response:
+            page.locator('#auth button[type=submit]').click()
+        assert response.value.status==200
+        assert not errors
+        page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel rolnika','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':

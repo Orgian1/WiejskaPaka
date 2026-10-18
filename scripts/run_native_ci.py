@@ -146,6 +146,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             except (ValueError, KeyError, ET.ParseError):
                 task['error'] = 'INVALID_TEST_RESULT'
             result['tasks'].append(task)
+            print(f"{gate}/{name}: {'PASS' if task['success'] else 'FAIL'}", flush=True)
             if not task['success']:
                 break
         result['complete'] = bool(tasks) and len(result['tasks']) == len(tasks)

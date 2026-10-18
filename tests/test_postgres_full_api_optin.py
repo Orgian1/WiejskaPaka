@@ -674,10 +674,16 @@ def test_native_reset_database_failure_rolls_back_password_and_sessions(pg_reset
         con.execute('CREATE TRIGGER fail_test_reset_revoke BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION fail_test_reset_revoke()')
         try:
             assert confirm(client,token).status_code == 500
-            assert client.get('/auth/me',headers=buyer).status_code == 200
-            assert client.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 200
+            assert con.execute('SELECT count(*) FROM sessions').fetchone()[0] == 1
             assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 1
+            from argon2 import PasswordHasher
+            assert PasswordHasher().verify(con.execute('SELECT password_hash FROM users').fetchone()[0],OLD)
         finally:
             con.execute('DROP TRIGGER fail_test_reset_revoke ON sessions')
             con.execute('DROP FUNCTION fail_test_reset_revoke()')
-    assert confirm(client,token).status_code == 200
+    # Uvicorn closes the connection after an unhandled 500. Validate recovery
+    # through a fresh TCP connection rather than racing that socket's closure.
+    with httpx.Client(base_url=str(client.base_url),trust_env=False,timeout=15) as recovered:
+        assert recovered.get('/auth/me',headers=buyer).status_code == 200
+        assert recovered.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 200
+        assert confirm(recovered,token).status_code == 200

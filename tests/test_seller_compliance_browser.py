@@ -23,7 +23,12 @@ def test_seller_consent_in_chromium(tmp_path,width):
                 page.fill('#email',email);page.fill('#password',password)
                 page.locator('#auth button[type=submit]').click()
                 page.locator('#seller-compliance').wait_for(state='visible')
-                page.click('#seller-compliance-refresh')
+                assert not errors
+                with page.expect_response('**/farmers/me/compliance') as refresh:
+                    page.click('#seller-compliance-refresh')
+                assert refresh.value.status==200
+                assert refresh.value.json()['completed_transaction_count']==0
+                assert not errors
                 page.wait_for_function("document.getElementById('seller-compliance-status').textContent.includes('Zakończone transakcje: 0')")
                 assert page.locator('#seller-rules-submit').is_disabled()
                 page.check('#seller-rules-check')

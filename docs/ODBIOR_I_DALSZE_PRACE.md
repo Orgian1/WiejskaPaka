@@ -52,3 +52,7 @@ pozostawić poza archiwum. Nie zbierać ani nie udostępniać telefonów użytko
 `ZAMKNIETY_PODGLAD_SSH.md` opisuje przygotowany lokalnie podgląd przez SSH
 z prywatnym plikiem kont zamiast haseł w logach. To jednorazowe demo SQLite,
 nie trwała instalacja PostgreSQL ani wynik pomiaru docelowego serwera.
+
+Kontrolę konfiguracji i rdzenia PostgreSQL przed startem opisuje
+`PREFLIGHT_POSTGRESQL_PODGLAD.md`. Nie tworzy ani nie migruje bazy, a jej
+sukces nie zastępuje testu trwałości, kopii i rzeczywistego wdrożenia.

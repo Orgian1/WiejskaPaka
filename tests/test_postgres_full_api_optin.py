@@ -404,3 +404,31 @@ def test_native_private_support_cases(pg_api):
         with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     admin,_=create_admin(client,promote)
     exercise_support(client,admin)
+
+
+def test_private_preview_probe_with_restricted_role(pg_api, tmp_path):
+    """A real disposable PostgreSQL probe must run inside a read-only transaction."""
+    _, parameters = pg_api
+    from urllib.parse import quote
+    from backend.checkout_vault import create_ring
+    from scripts.check_postgres_preview import inspect_preview
+    import psycopg
+    key = tmp_path/'preview.checkout-key';create_ring(key)
+    host = parameters['host']
+    if host == '::1':host = '[::1]'
+    dsn = ('postgresql://' + quote(parameters['user'], safe='') + ':' +
+           quote(parameters['password'], safe='') + '@' + host + ':' +
+           str(parameters.get('port', '5432')) + '/' + parameters['dbname'])
+    observed = []
+    def connect(*args, **kwargs):
+        con = psycopg.connect(*args, **kwargs)
+        try:
+            assert con.execute('SHOW transaction_read_only').fetchone()[0] == 'on'
+        except BaseException:
+            con.close();raise
+        observed.append(True)
+        return con
+    report = inspect_preview({'WP_ENV': 'test', 'WP_TEST_DATABASE_URL': dsn,
+        'WP_CHECKOUT_KEY_FILE': str(key)}, connect=connect)
+    assert observed and report['success'] and report['database_core_checked']
+    assert not report['preview_started'] and not report['ready_for_production']

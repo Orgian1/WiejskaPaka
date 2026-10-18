@@ -1,0 +1,22 @@
+{
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "application_sha256": "44a36a30d73aa4f92e392289aa0b598768029c403fc2380c0657c69f37875f3c",
+  "executed": 311,
+  "planned": 311,
+  "test_counts": {
+    "total": 3822,
+    "passed": 3784,
+    "failed": 0,
+    "skipped": 38
+  },
+  "evidence": {
+    "runtime_sha256": "25bab2dd7c3a9ce73b858cbcd7b76ef868256b26ceb1775b04c96e8aadcfa7b7",
+    "tests_sha256": "0403e4a9a480b533a113ac0e178cb600c681e629c99d4a37bea4635972bb104c",
+    "test_sources_sha256": "1df5583a84f40d2b56450e4d5defc16d72459d45a641fd17128f2b05d99c35b2",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "3d55c169ee219cdd59133a50d6502259507b9988d87c0ba458826a6ded1e9d30"
+  },
+  "source_commit": "aa0f7f6573ce3c418b5cf113975a7ecc1d846acd"
+}

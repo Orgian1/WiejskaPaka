@@ -3,7 +3,8 @@
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
 Testowy panel zgłoszeń klient–rolnik–administrator:
-`docs/ZGLOSZENIA_PROBLEMOW_TESTOWE.md`.
+`docs/ZGLOSZENIA_PROBLEMOW_TESTOWE.md`. Wyniki bieżącego pakietu:
+`docs/RAPORT_ZGLOSZEN_2026-10-18.md`.
 
 Wznowienie, połączenie prac z obu czatów i stan poprzedniego pakietu:
 `docs/RAPORT_WZNOWIENIA_2026-10-18.md`.
@@ -53,6 +54,7 @@ Otwórz adres pokazany przez skrypt, domyślnie `http://127.0.0.1:8765`.
 Podgląd tworzy jednorazową bazę SQLite i usuwa ją po zamknięciu. Nie używaj
 prawdziwych danych osobowych. Numery telefonów nie są zbierane w formularzach.
 W Windows zamiast `.venv/bin/python` użyj `.venv\Scripts\python.exe`.
+Wznowienie po wyłączeniu komputera: `docs/WZNOWIENIE_PO_WYLACZENIU_WINDOWS.md`.
 
 ## Demo z przykładowymi danymi
 

@@ -33,3 +33,9 @@ Start lokalny: około 50 sprzedawców i planowana zdolność obsługi 5000 kupuj
 ## Brama publikacji
 
 Przed uruchomieniem rzeczywistej sprzedaży należy uzupełnić dane podmiotu prowadzącego platformę, zweryfikować model prawny sprzedawców i operatora płatności, zatwierdzić dokumenty, sprawdzić ich widoczność w interfejsie, skonfigurować procedury i uzyskać wyniki testów. Brak tych działań oznacza pozostawienie trybu demonstracyjnego.
+
+## Materiały robocze po sprawdzeniu kodu
+
+- `MAPA_REGULAMINU_I_FUNKCJI_PL.md` — zakres wdrożony i niegotowe procesy.
+- `ZGLOSZENIA_PROBLEMOW_TESTOWE.md` — testowy panel zgłoszeń, bez automatycznego rozliczenia i rzeczywistej korespondencji.
+- `PRYWATNOSC_INWENTARYZACJA_I_PROJEKT_PL.md` — techniczny zakres danych i elementy do ustalenia przed docelową polityką; nie opublikowano w UI.

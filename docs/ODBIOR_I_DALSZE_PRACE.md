@@ -80,6 +80,17 @@ zakończone sukcesem; raport rozdziela zaliczenia i pominięcia.
 Żadnej usługi jeszcze nie zainstalowano na docelowym serwerze.
 
 `POCZTA_STAN_KODU_I_ODBIOR.md` rozdziela zakup skrzynki od brakującej
-integracji: obecny reset demo nie jest resetem hasła przez SMTP/PostgreSQL.
+integracji: zamknięty reset na PostgreSQL używa skrzynki plikowej, a adapter
+SMTP wymaga jeszcze połączenia z kolejką i zweryfikowanym odbiorcą.
 Podgląd ze sztucznymi danymi i rzeczywista sprzedaż mają różne warunki
 odbioru; zakup infrastruktury sam ich nie zamyka.
+
+
+## Reset PostgreSQL i przygotowanie SMTP
+
+`RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md` opisuje pakiet kodu 6fe0712.
+Reset na dedykowanej lokalnej bazie PostgreSQL wymaga jawnego opt-in;
+serializuje równoległe żądania i cofa sesje w tej samej transakcji.
+Adapter SMTP jest osobnym, domyślnie wyłączonym modułem, sprawdzanym
+wyłącznie z obiektem w pamięci. Nie uruchamia wysyłki z aplikacji.
+Raport podaje stan bramek oraz dalszy zakres kolejki i weryfikacji adresów.

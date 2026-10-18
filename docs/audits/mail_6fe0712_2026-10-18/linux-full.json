@@ -1,0 +1,23 @@
+{
+  "application_sha256": "9a6d9fcabe7731b648c303cca7c2140ae4afeb46c1aa446ec052825527fbe4e5",
+  "complete": true,
+  "evidence": {
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "runtime_sha256": "3cb4a2fc3b519054e5ea84691fd4f85c5ad759ece5b65b86b79a31919e1051f1",
+    "test_sources_sha256": "da160adfe45623449b0abd67e2077835f129e29354e6640c978ae8369e340031",
+    "tests_sha256": "eb072e391f21c171d15856bda88fb3546be85fc28bcd7983571aa6a5038c0993",
+    "workflow_sha256": "eea5594092abdd3d0320219e3bfcc77139e89cf4c6e0821a64081b2323dece10"
+  },
+  "executed": 318,
+  "failed_modules": [],
+  "planned": 318,
+  "sources_unchanged": true,
+  "success": true,
+  "test_counts": {
+    "failed": 0,
+    "passed": 3896,
+    "skipped": 49,
+    "total": 3945
+  },
+  "tested_commit": "6fe0712885a7bd2db5a43319dd205f0e2adadfd3"
+}

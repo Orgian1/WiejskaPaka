@@ -57,3 +57,6 @@ z dostawcą, DNS/SPF/DKIM/DMARC ani dostarczenia do skrzynek.
 Podstawa techniczna: oficjalna dokumentacja Python 3.12
 https://docs.python.org/3.12/library/smtplib.html oraz
 https://docs.python.org/3.12/library/ssl.html — sprawdzona 18.10.2026.
+
+Projekt atomowości, dzierżaw i obsługi niepewnego wyniku opisuje
+KONTRAKT_KOLEJKI_POCZTY.md. To wymagania następnego etapu, bez implementacji.

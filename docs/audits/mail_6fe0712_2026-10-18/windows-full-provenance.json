@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:1d0f9d9f5b7367edd2aa8494ab0608d96cf4c93e0b39c9f3c59b5126e8bc6b3e",
+  "id": 12149941825,
+  "name": "windows-summary",
+  "workflow_run": {
+    "head_branch": "preview/smtp-preparation-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "6fe0712885a7bd2db5a43319dd205f0e2adadfd3",
+    "id": 39162288218,
+    "repository_id": 1421291982
+  }
+}

@@ -12,14 +12,15 @@ powiadomień ani odzyskiwania hasła.
 | Polityka kanałów | backend/notification_policy.py dopuszcza e-mail i panel; odrzuca SMS i telefon |
 | PIN odbioru | Polityka dopuszcza wyłącznie panel; nie wysyłać go pocztą |
 | Reset hasła w demo | Losowy token, hash w bazie, 15 minut, jednorazowość, limity, cofnięcie sesji |
-| Dostarczenie resetu | Prywatny plik JSON w lokalnym demo SQLite; brak SMTP |
+| Dostarczenie resetu | Prywatny plik JSON w demo; adapter SMTP jest przygotowany oddzielnie, wyłączony i niepodłączony |
 | Reset na PostgreSQL | Domyślnie wyłączony; osobny opt-in prywatnego testu lokalnego, opis RESET_HASLA_POSTGRESQL_TESTOWY.md; bez SMTP |
 | Powiadomienia o zakupie/dostawie | Istnieje polityka kanałów; nie ma podłączonej wysyłki ani kolejki SMTP |
 | Weryfikacja e-maila | Wymieniona w polityce zdarzeń; nie stanowi wdrożonego przepływu potwierdzenia adresu |
 
 Źródła audytu: backend/app.py (RESET_TEST_ENABLED i trasy password-reset-test),
 backend/password_reset.py, backend/notification_policy.py.
-Wyników demo nie przypisywać rzeczywistej poczcie ani PostgreSQL.
+Wyniki SQLite i PostgreSQL mają oddzielne raporty; żadnego z nich nie
+przypisywać rzeczywistej poczcie.
 
 ## Dane potrzebne od dostawcy
 
@@ -36,18 +37,20 @@ Nie zmieniać rekordów ani nie wysyłać testów do cudzych adresów automatycz
 
 ## Prace programistyczne przed uruchomieniem poczty
 
-1. Wprowadzić jawnie włączany transport z TLS, bez haseł w kodzie i logach;
-   brak konfiguracji ma pozostawić funkcję wyłączoną.
+1. Połączyć przygotowany adapter TLS z autoryzowanym wyborem odbiorcy
+   i kolejką. Adapter jest już jawnie włączany i domyślnie wyłączony;
+   jego lokalne testy nie potwierdzają działania u dostawcy.
 2. Zaimplementować potwierdzanie adresu i przechowywanie stanu weryfikacji.
    Powiadomienia transakcyjne muszą respektować istniejącą politykę kanałów.
-3. Odebrać testowy protokół resetu PostgreSQL opisany w
-   RESET_HASLA_POSTGRESQL_TESTOWY.md i dostosować go do właściwego transportu.
+3. Dostosować przetestowany protokół resetu PostgreSQL opisany w
+   RESET_HASLA_POSTGRESQL_TESTOWY.md do właściwego transportu.
    Sam SMTP nie zastępuje kolejki, zasad odbiorców i odbioru całego procesu.
 4. Oddzielić wysyłkę od żądania HTTP: kolejka, kontrolowane ponowienia,
    spójność stanu i limit wysyłek. Nie wysyłać losowych kodów do nieznanych
    adresów jak w prywatnej skrzynce demo; odpowiedź HTTP nadal ma być ogólna.
-5. Przygotować link na ustalonym adresie HTTPS, bez przyjmowania hosta
-   z dowolnego nagłówka żądania; nie utrwalać tokenu w logach i analityce.
+5. Zachować ustalony adres HTTPS linku z adaptera podczas integracji
+   z aplikacją, bez przyjmowania hosta z dowolnego nagłówka żądania;
+   nie utrwalać tokenu w logach i analityce.
 6. Zapewnić ogólny komunikat przy odmowie dostawcy, błędzie TLS, limicie
    i przerwie w dostępności; brak wycieku istnienia konta lub sekretów.
 
@@ -62,3 +65,6 @@ Nie dopuszczać wysyłki PIN-u ani numerów telefonów.
 Do czasu wykonania tych prac podgląd PostgreSQL może służyć testom z
 syntetycznymi kontami, ale nie ma działającego odzyskiwania zapomnianego
 hasła przez e-mail. Tę różnicę trzeba zachować w komunikacji o gotowości.
+
+Adapter i jego ograniczenia opisuje ADAPTER_SMTP_PRZYGOTOWANIE.md; wyniki
+bieżącego pakietu zawiera RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md.

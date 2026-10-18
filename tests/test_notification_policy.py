@@ -1,5 +1,7 @@
 """Regresja polityki powiadomień bez telefonów i SMS."""
 import unittest
+from unittest.mock import patch
+from tempfile import TemporaryDirectory
 
 from backend.notification_policy import Channel, Event, RULES, allowed_channels, validate_channel
 
@@ -34,6 +36,14 @@ class NotificationPolicyTests(unittest.TestCase):
     def test_verification_and_reset_can_reach_unverified_email(self):
         for event in (Event.EMAIL_VERIFICATION, Event.PASSWORD_RESET):
             validate_channel(event, "email", email_verified=False)
+
+    def test_demo_password_reset_uses_email_policy(self):
+        from backend.password_reset import deliver_demo
+        with TemporaryDirectory() as folder:
+            with patch('backend.password_reset.validate_channel') as check:
+                deliver_demo(folder, 'TEST@example.com', 'demo-token')
+                check.assert_called_once_with(Event.PASSWORD_RESET, Channel.EMAIL,
+                                              email_verified=False)
 
     def test_unknown_events_fail_closed(self):
         with self.assertRaises(ValueError):

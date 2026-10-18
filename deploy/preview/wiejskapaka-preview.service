@@ -1,0 +1,33 @@
+[Unit]
+Description=WiejskaPaka private PostgreSQL test preview
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=wiejskapaka
+Group=wiejskapaka
+WorkingDirectory=/opt/wiejskapaka/app
+EnvironmentFile=/etc/wiejskapaka/preview.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+ExecStartPre=/opt/wiejskapaka/venv/bin/python scripts/check_postgres_preview.py
+ExecStart=/opt/wiejskapaka/venv/bin/python -m backend.test_server_launcher
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+UMask=0077
+StateDirectory=wiejskapaka
+StateDirectoryMode=0700
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/wiejskapaka
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

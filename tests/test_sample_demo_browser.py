@@ -113,8 +113,13 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==2
             settle=page.get_by_role('button',name='Przekaż pozycję do rozliczenia (TEST)',exact=True).first
             settle.wait_for(state='visible')
-            with page.expect_response('**/test/payments/*/events') as settlement:settle.click()
+            with page.expect_response('**/test/farmers/me/payout-report') as payout:
+                with page.expect_response('**/test/payments/*/events') as settlement:settle.click()
             assert settlement.value.status==200 and settlement.value.json()['state']=='completed_test'
+            assert payout.value.status==200
+            assert payout.value.json()['eligible_orders']==1
+            assert payout.value.json()['eligible_grosze']>0
+            assert not errors
             page.wait_for_function("document.getElementById('dashboard-content').textContent.includes('pozycje zamówień: 1')",polling=100)
             assert 'Do testowej wypłaty: 0,00 zł' not in page.locator('#dashboard-content').text_content()
             sign_out();sign_in('admin')

@@ -36,8 +36,30 @@ def reviewed_test_schema(root):
     return tuple(statements)
 
 
+class NativeAPI:
+    """Preserve two-value unpacking while permitting a controlled process restart."""
+    def __init__(self, client, parameters, restart):
+        self.client = client
+        self.parameters = parameters
+        self.restart = restart
+
+    def __iter__(self):
+        return iter((self.client, self.parameters))
+
+
 @pytest.fixture(scope='module')
 def pg_api():
+    yield from _postgres_api()
+
+
+@pytest.fixture
+def pg_restart_api():
+    # Restart scenarios get a separate database and key, independent of tests
+    # that intentionally corrupt encrypted rows to exercise access controls.
+    yield from _postgres_api()
+
+
+def _postgres_api():
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -90,23 +112,34 @@ def pg_api():
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
                 with tempfile.TemporaryFile() as log:
-                    process = subprocess.Popen([
-                        sys.executable, '-m', 'uvicorn', 'backend.app:app', '--host', '127.0.0.1',
-                        '--port', str(port), '--no-access-log'], cwd=ROOT, env=env,
-                        stdout=log, stderr=log)
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
-                        for _ in range(150):
-                            if process.poll() is not None:
-                                raise RuntimeError('Native PostgreSQL API server failed to start')
-                            try:
-                                if client.get('/health').status_code == 200:
-                                    break
-                            except httpx.TransportError:
-                                pass
-                            time.sleep(.1)
-                        else:
+                        def start():
+                            nonlocal process
+                            process = subprocess.Popen([
+                                sys.executable, '-m', 'uvicorn', 'backend.app:app', '--host', '127.0.0.1',
+                                '--port', str(port), '--no-access-log'], cwd=ROOT, env=env,
+                                stdout=log, stderr=log)
+                            for _ in range(150):
+                                if process.poll() is not None:
+                                    raise RuntimeError('Native PostgreSQL API server failed to start')
+                                try:
+                                    if client.get('/health').status_code == 200:
+                                        return
+                                except httpx.TransportError:
+                                    pass
+                                time.sleep(.1)
                             raise TimeoutError('Native PostgreSQL API server startup timed out')
-                        yield client, app_parameters
+
+                        def restart():
+                            process.terminate()
+                            try:
+                                process.wait(timeout=10)
+                            except subprocess.TimeoutExpired:
+                                process.kill();process.wait(timeout=5)
+                            start()
+
+                        start()
+                        yield NativeAPI(client, app_parameters, restart)
         finally:
             if process is not None:
                 process.terminate()
@@ -432,3 +465,51 @@ def test_private_preview_probe_with_restricted_role(pg_api, tmp_path):
         'WP_CHECKOUT_KEY_FILE': str(key)}, connect=connect)
     assert observed and report['success'] and report['database_core_checked']
     assert not report['preview_started'] and not report['ready_for_production']
+
+
+@pytest.mark.parametrize('kind', ['direct', 'shipment'])
+def test_native_purchase_survives_process_restart(pg_restart_api, kind):
+    """Same DB and encryption key: stable session, PIN, stock and idempotency."""
+    client, parameters = pg_restart_api
+    farmer, _ = register(client, 'rolnik')
+    buyer, buyer_id = register(client, 'klient')
+    products = [product(client, farmer, stock=5) for _ in range(1 if kind == 'direct' else 2)]
+    key = uuid4().hex
+    headers = {**buyer, 'Idempotency-Key': key}
+    if kind == 'direct':
+        path = '/orders';body = delivery(products[0]);record_key = 'direct:'+key
+    else:
+        for pid in products:
+            assert client.put('/cart/items', headers=buyer,
+                json={'product_id': pid, 'quantity': 1}).status_code == 200
+        path = '/cart/checkout-test';body = delivery(products[0]);record_key = key
+        body.pop('product_id');body.pop('quantity')
+    response = client.post(path, headers=headers, json=body)
+    assert response.status_code == 201
+    original = response.json()
+    ids = [original['id']] if kind == 'direct' else [x['id'] for x in original['orders']]
+    if kind == 'shipment':
+        assert original['delivery_grosze'] == 501
+        for oid in ids:
+            assert client.post(f'/test/payments/{oid}/events', headers=buyer,
+                json={'event_id': uuid4().hex, 'event_type': 'payment_success_test'}).status_code == 200
+    import psycopg
+    def snapshot():
+        with psycopg.connect(**parameters) as con:
+            return (
+                con.execute('SELECT id,status,total_grosze FROM orders WHERE buyer_id=%s ORDER BY id', (buyer_id,)).fetchall(),
+                con.execute('SELECT id,stock FROM products WHERE id=ANY(%s) ORDER BY id', (products,)).fetchall(),
+                con.execute('SELECT order_id,state,total_grosze,refund_grosze FROM payment_simulations WHERE order_id=ANY(%s) ORDER BY order_id', (ids,)).fetchall(),
+                con.execute('SELECT response_json FROM checkout_idempotency WHERE buyer_id=%s AND request_key=%s', (buyer_id, record_key)).fetchone(),
+            )
+    before = snapshot()
+    records = [client.get(f'/orders/{oid}/purchase-record', headers=buyer).json() for oid in ids]
+    pg_restart_api.restart()
+    assert client.get('/auth/me', headers=buyer).status_code == 200
+    replay = client.post(path, headers=headers, json=body)
+    assert replay.status_code == 201 and replay.json() == original
+    assert snapshot() == before
+    assert [client.get(f'/orders/{oid}/purchase-record', headers=buyer).json() for oid in ids] == records
+    changed = {**body, 'delivery_street': 'Inny adres testowy 123'}
+    assert client.post(path, headers=headers, json=changed).status_code == 409
+    assert snapshot() == before

@@ -11,7 +11,7 @@ DSN = 'postgresql://ci:disposable@127.0.0.1:5432/wp_test_ci'
 SENSITIVE = 'never-publish-this-value'
 
 
-def junit(command, *, passed=16, skipped=0, failed=0):
+def junit(command, *, passed=17, skipped=0, failed=0):
     path = Path(command[command.index('--junitxml')+1])
     path.write_text('<testsuite>'+('<testcase/>'*passed)+
                     ('<testcase><skipped/></testcase>'*skipped)+
@@ -44,7 +44,7 @@ def test_postgres_environment_and_report_do_not_forward_secrets(tmp_path):
         return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
     path = tmp_path/'result.json'
     result = ci.run('postgres', path, source=source(), runner=runner)
-    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 16
+    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 17
     assert SENSITIVE not in path.read_text() and DSN not in path.read_text()
 
 
@@ -102,7 +102,7 @@ def test_browser_requires_offline_and_real_http_tasks(tmp_path, http_code):
         calls.append(command)
         assert kwargs['env']['WIEJSKAPAKA_EXTENDED_BROWSER'] == '1'
         if '--junitxml' in command:
-            junit(command, passed=11)
+            junit(command, passed=13)
             return subprocess.CompletedProcess(command, 0, '', '')
         return subprocess.CompletedProcess(command, http_code, SENSITIVE, SENSITIVE)
     result = ci.run('browser', tmp_path/'result.json', source=source(), runner=runner)

@@ -67,11 +67,39 @@ def acknowledge_seller_rules(con, farmer_id, version):
     con.execute('INSERT INTO seller_compliance_events(farmer_id,actor_id,event_type,created_at) VALUES(?,?,?,?)',
                 (farmer_id,farmer_id,'rules_acknowledged',now))
 
-def review_seller_account(con, farmer_id, admin_id, decision, reason):
+def review_seller_account(con, farmer_id, admin_id, decision, reason, *, expected=None):
     now = datetime.now(timezone.utc).isoformat()
+    condition = ''
+    parameters = [decision, admin_id, now, reason, farmer_id]
+    if expected is not None:
+        condition = ''' AND rules_version=? AND review_status=?
+            AND (reviewed_at=? OR (reviewed_at IS NULL AND ?=1))'''
+        parameters.extend([expected['rules_version'], expected['review_status'],
+                           expected['reviewed_at'], int(expected['reviewed_at'] is None)])
     updated = con.execute('''UPDATE seller_compliance SET review_status=?, reviewed_by=?, reviewed_at=?, review_reason=?
-        WHERE farmer_id=?''', (decision,admin_id,now,reason,farmer_id))
+        WHERE farmer_id=?''' + condition, tuple(parameters))
     if updated.rowcount != 1:
-        raise ValueError('Sprzedawca nie potwierdził jeszcze zasad')
+        raise ValueError('Profil zmienił się lub nie potwierdzono zasad. Odśwież kolejkę.')
     con.execute('INSERT INTO seller_compliance_events(farmer_id,actor_id,event_type,created_at) VALUES(?,?,?,?)',
                 (farmer_id,admin_id,'review_'+decision,now))
+
+
+def seller_review_queue(con, status=None, limit=20, offset=0):
+    """Bounded queue without contact data, identity data or review reasons."""
+    allowed = {'pending', 'approved', 'needs_information', 'rejected'}
+    if type(limit) is not int or not 1 <= limit <= 50 or type(offset) is not int or not 0 <= offset <= 10000:
+        raise ValueError('Nieprawidłowa paginacja')
+    if status is not None and status not in allowed:
+        raise ValueError('Nieprawidłowy filtr')
+    where = " WHERE u.role='rolnik'"
+    parameters = ()
+    if status is not None:
+        where += ' AND c.review_status=?'
+        parameters = (status,)
+    source = ' FROM seller_compliance c JOIN users u ON u.id=c.farmer_id'
+    total = con.execute('SELECT COUNT(*) AS n'+source+where, parameters).fetchone()['n']
+    rows = con.execute('''SELECT c.farmer_id,c.rules_version,c.acknowledged_at,
+        c.review_status,c.reviewed_at''' + source + where + ' ORDER BY c.farmer_id LIMIT ? OFFSET ?',
+        parameters + (limit, offset)).fetchall()
+    return {'mode': 'test', 'profiles': [dict(row) for row in rows], 'total': total,
+            'limit': limit, 'offset': offset, 'has_more': offset+len(rows)<total}

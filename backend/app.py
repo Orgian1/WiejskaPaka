@@ -2624,7 +2624,7 @@ def reconcile_test_finance(entries: list[dict], user=Depends(current_user), auth
 # Pakiet 3/5: weryfikacja sprzedawców bez gromadzenia PESEL w bazie developerskiej.
 from backend.seller_compliance import (
     create_compliance_tables, seller_compliance_status, acknowledge_seller_rules,
-    review_seller_account,
+    review_seller_account, seller_review_queue,
 )
 
 if not DATABASE_URL:
@@ -2636,6 +2636,9 @@ class SellerRulesAcknowledgement(BaseModel):
     accepted: Literal[True]
 
 class SellerReview(BaseModel):
+    expected_rules_version: str | None = Field(default=None, min_length=1, max_length=80)
+    expected_review_status: Literal['pending', 'approved', 'needs_information', 'rejected'] | None = None
+    expected_reviewed_at: str | None = Field(default=None, max_length=80)
     decision: Literal['approved', 'needs_information', 'rejected']
     reason: str = Field(min_length=3, max_length=500)
 
@@ -2652,6 +2655,16 @@ def acknowledge_compliance(payload: SellerRulesAcknowledgement, user=Depends(cur
         acknowledge_seller_rules(con, user['id'], payload.rules_version)
         return seller_compliance_status(con, user['id'])
 
+@app.get('/admin/farmers/compliance-queue')
+def admin_seller_compliance_queue(status: str | None = None, limit: int = 20,
+                                   offset: int = 0, user=Depends(current_user)):
+    require(user, 'admin')
+    with db() as con:
+        try:
+            return seller_review_queue(con, status, limit, offset)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
 @app.post('/admin/farmers/{farmer_id}/compliance/review')
 def review_farmer_compliance(farmer_id: int, payload: SellerReview, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'admin')
@@ -2660,7 +2673,14 @@ def review_farmer_compliance(farmer_id: int, payload: SellerReview, user=Depends
         if not farmer:
             raise HTTPException(404, 'Nie znaleziono rolnika')
         try:
-            review_seller_account(con, farmer_id, user['id'], payload.decision, payload.reason)
+            expected = None
+            if {'expected_rules_version', 'expected_review_status', 'expected_reviewed_at'} & payload.model_fields_set:
+                if payload.expected_rules_version is None or payload.expected_review_status is None or 'expected_reviewed_at' not in payload.model_fields_set:
+                    raise ValueError('Niepełny stan profilu. Odśwież kolejkę.')
+                expected = {'rules_version': payload.expected_rules_version,
+                            'review_status': payload.expected_review_status,
+                            'reviewed_at': payload.expected_reviewed_at}
+            review_seller_account(con, farmer_id, user['id'], payload.decision, payload.reason, expected=expected)
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from exc
         return seller_compliance_status(con, farmer_id)

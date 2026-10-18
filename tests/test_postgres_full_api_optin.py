@@ -380,3 +380,16 @@ def test_native_seller_reminder_counts_received_shipment_once(pg_api):
     from tests.test_seller_profile_reminder import exercise_completed_shipment
     client,_=pg_api
     exercise_completed_shipment(client)
+
+
+def test_native_admin_seller_queue_and_concurrent_stale_decisions(pg_api):
+    import psycopg
+    from tests.test_admin_seller_review import create_admin,exercise_admin_review
+    client,parameters=pg_api
+    def promote(uid):
+        with psycopg.connect(**parameters) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+    admin,_=create_admin(client,promote)
+    fid=exercise_admin_review(client,admin)
+    with psycopg.connect(**parameters) as con:
+        assert con.execute("SELECT COUNT(*) FROM seller_compliance_events WHERE farmer_id=%s AND event_type LIKE 'review_%%'",(fid,)).fetchone()[0]==1

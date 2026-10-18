@@ -10,10 +10,11 @@ Każda brama korzysta z osobnej maszyny GitHub-hosted:
   unikalnymi przypadkami. Jego błąd zatrzymuje bramę przed długą regresją.
   Wykonanie na innym systemie jest odrzucane. Opcjonalne testy natywne są
   pomijane w tej bramie i wykonywane w osobnych zadaniach.
-- PostgreSQL: jednorazowy kontener PostgreSQL 16 i 16 przypadków adaptera,
+- PostgreSQL: jednorazowy kontener PostgreSQL 16 i 17 przypadków adaptera,
   transakcji, migracji, ograniczonej roli aplikacji i rzeczywistego HTTP.
   Dozwolony jest tylko DSN loopback z nazwą testową.
 - Chromium: wcześniejsze 7 przypadków offline, w tym cztery role, oraz
+  2 przypadki kolejki administratora (320 i 1280 px),
   2 przypadki zasad sprzedawcy (320 i 1280 px), 2 przypadki resetu hasła przez rzeczywisty HTTP (390 i 1280 px),
   a także kontrola HTTP przy pięciu rozmiarach okna. SKIP lub brak przeglądarki nie jest sukcesem.
 
@@ -40,7 +41,7 @@ tymczasowe, klucze i dane testowe nie są publikowane jako artefakty.
 Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.
 
-Natywne bramy wymagają minimum 16 przypadków PostgreSQL, 11 przeglądarkowych
+Natywne bramy wymagają minimum 17 przypadków PostgreSQL, 13 przeglądarkowych
 i 39 przypadków wstępnego testu Windows,
 bez błędów i pominięć. Windows wymaga kompletnego raportu regresji. Zmiana
 źródeł lub helperów podczas wykonania unieważnia wynik. Błąd instalacji,

@@ -36,8 +36,9 @@ wcześniejszych commitów. Gałąź `main` pozostaje bez zmian.
 Natywne dowody dla bieżącego commitu: PostgreSQL **16/16**, Chromium **11/11**
 i kontrola HTTP przy pięciu szerokościach okna. Obie bramy bez SKIP; odciski
 kodu, testów i zależności porównano z lokalnym repozytorium. Zweryfikowane
-artefakty: `audits/seller_profile_ci_2026-10-18/`. Windows w chwili zapisu
-raportu nadal wykonuje pełną regresję; nie przypisujemy mu wyniku PASS.
+artefakty: `audits/seller_profile_ci_2026-10-18/`. Windows zakończył się powodzeniem: **3671 zaliczonych, 0 błędów, 27
+pominiętych** (3698 przypadków). Wstępny podzbiór odzyskiwania: **39/39**,
+liczony ponownie w pełnej regresji. Dowód: `audits/seller_profile_ci_2026-10-18/windows.json`.
 
 Końcowa pełna regresja Linux: **3676 zaliczonych, 0 błędów, 22 pominięte**
 (3698 przypadków, 294/294 moduły). Źródła pozostały niezmienione podczas

@@ -90,7 +90,8 @@ Nie wysyła rzeczywistych e-maili; poza launcherem funkcja jest wyłączona.
 
 Rolnik może sprawdzić liczbę zakończonych transakcji i potwierdzić zasady demo.
 Przypomnienie po 20 transakcjach jest regułą produktu; wieloproduktowa przesyłka
-liczy się raz. Instrukcja: `docs/PROFIL_ROLNIKA_TESTOWY.md`.
+liczy się raz. Administrator przegląda kolejkę profili i zapisuje testowe
+decyzje z ochroną przed nadpisaniem zmiany z innego widoku. Instrukcja: `docs/PROFIL_ROLNIKA_TESTOWY.md`.
 
 ## Zmiana hasła
 

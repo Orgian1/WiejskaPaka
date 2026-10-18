@@ -69,3 +69,17 @@ Dodatkowy pakiet trwałości po restarcie API PostgreSQL również zakończono:
 Chromium 36/36 oraz pełny Linux i Windows zaliczone; odrębnie pokazano
 pominięcia i zakres dowodu. Hosting oraz prawdziwe płatności pozostają poza
 wykonanym zakresem.
+
+
+## Pakiet uruchomienia i kopii PostgreSQL
+
+`RAPORT_KOPII_POSTGRESQL_2026-10-18.md` wskazuje badany kod i aktualne
+wyniki. Natywna próba pg_dump/pg_restore 16, pełny Linux i pełny Windows
+zakończone sukcesem; raport rozdziela zaliczenia i pominięcia.
+`URUCHOMIENIE_PODGLADU_NA_SERWERZE.md` zawiera szablony na zakupiony VPS.
+Żadnej usługi jeszcze nie zainstalowano na docelowym serwerze.
+
+`POCZTA_STAN_KODU_I_ODBIOR.md` rozdziela zakup skrzynki od brakującej
+integracji: obecny reset demo nie jest resetem hasła przez SMTP/PostgreSQL.
+Podgląd ze sztucznymi danymi i rzeczywista sprzedaż mają różne warunki
+odbioru; zakup infrastruktury sam ich nie zamyka.

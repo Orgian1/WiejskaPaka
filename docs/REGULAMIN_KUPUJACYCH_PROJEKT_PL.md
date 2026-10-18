@@ -114,3 +114,14 @@ o konkretnym sprzedawcy i produkcie.
 - [ ] Zatwierdzenie wyjątków od odstąpienia dla konkretnych kategorii.
 - [ ] Zgodność regulaminu z faktycznym interfejsem i integracją płatności.
 - [ ] Weryfikacja przez prawnika przed opublikowaniem.
+
+## Materiały do dalszego przeglądu — sprawdzone 18.10.2026
+
+- [UOKiK: niezgodność towaru z umową](https://prawakonsumenta.uokik.gov.pl/reklamacja/niezgodnosc/)
+  — odpowiedzialność sprzedawcy i obowiązkowy charakter ochrony konsumenta.
+- [UOKiK: wyłączenia prawa odstąpienia](https://prawakonsumenta.uokik.gov.pl/prawo-odstapienia-od-umowy/wylaczenia-prawa-do-odstapienia/)
+  — wyjątki dotyczące m.in. produktów szybko psujących się; nie traktować ich
+  jako ogólnego zniesienia reklamacji żywności.
+
+To materiały pomocnicze do § 4 i § 6, nie zatwierdzenie całego projektu.
+Nie opublikowano regulaminu w aplikacji i nie zmieniono reguł produktu.

@@ -20,6 +20,13 @@ Serwer PostgreSQL nasłuchuje lokalnie. Aplikacja używa osobnej roli
 bez SUPERUSER, CREATEDB, CREATEROLE i BYPASSRLS oraz bez prawa tworzenia tabel.
 Konto administrujące bazą nie trafia do konfiguracji aplikacji.
 
+Prywatny plik EnvironmentFile nie jest magazynem sekretów izolowanym od
+procesu: URL bazy trafia do środowiska aplikacji. To szablon zamkniętego
+testu na sztucznych danych. Nie udostępniać konta systemowego aplikacji
+innym usługom. Przed docelowym wdrożeniem rozważyć systemd LoadCredential
+oraz dostosowanie launchera do odczytu sekretu z pliku zamiast dziedziczenia
+go w środowisku. Samo ustawienie 0600 nie rozwiązuje całej ochrony sekretów.
+
 ## Kolejność przygotowania
 
 1. Po zakupie serwera skonfigurować aktualizacje, dostęp SSH kluczem i zaporę.
@@ -108,3 +115,9 @@ launchera. Dyrektywy jednostki sprawdzono przez systemd-analyze verify
 na tymczasowej kopii z zastępczym programem, ponieważ docelowa ścieżka
 interpretera jeszcze nie istnieje. Nie jest to test startu jednostki na VPS.
 Po instalacji trzeba powtórzyć weryfikację z rzeczywistym interpreterem.
+
+Dokumentacja narzędzi sprawdzona 18.10.2026:
+[psql 16](https://www.postgresql.org/docs/16/app-psql.html) — `\ir`,
+`\password` i ON_ERROR_STOP;
+[systemd.exec](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+— EnvironmentFile i ograniczenia przekazywania sekretów.

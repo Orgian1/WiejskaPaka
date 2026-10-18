@@ -3,6 +3,7 @@
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
 Aktualny punkt wejścia przed zakupem serwera:
+`docs/RAPORT_KOPII_POSTGRESQL_2026-10-18.md` — zakończone bramki tego pakietu;
 `docs/URUCHOMIENIE_PODGLADU_NA_SERWERZE.md` — trwały prywatny podgląd,
 `docs/KOPIA_POSTGRESQL_I_PROBA_ODTWORZENIA.md` — szyfrowana kopia i izolowana próba,
 `docs/POCZTA_STAN_KODU_I_ODBIOR.md` — rzeczywisty zakres poczty i pozostałe prace.

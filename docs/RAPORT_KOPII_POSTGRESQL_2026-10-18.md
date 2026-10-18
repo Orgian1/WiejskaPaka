@@ -24,15 +24,18 @@ działa, a ponowienie źródłowego zakupu zwraca tę samą odpowiedź.
 | Bramka | Zaliczone | Błędy | Pominięte |
 | --- | ---: | ---: | ---: |
 | Pełny Linux, 316/316 modułów | 3853 | 0 | 44 |
+| Pełny Windows, kompletny | 3833 | 0 | 64 |
 | PostgreSQL 16, w tym kopia/odtworzenie i restart | 22 | 0 | 0 |
 | Chromium i osobny odbiór HTTP w 5 rozmiarach | 36 | 0 | 0 |
 | Szybki Windows | 80 | 0 | 0 |
 
-Pełna regresja Windows jest jeszcze w toku; jej wynik trzeba dopisać po
-zakończeniu. Nie zastępuje jej szybki zestaw 80 przypadków. Lokalne zestawy
+Wszystkie bramki zakończyły się sukcesem. Pełny Windows ma 3897 przypadków,
+bez błędnych, niekompletnych lub przekroczonych czasowo modułów.
+Nie zastępuje go szybki zestaw 80 przypadków. Lokalne zestawy
 celowane (101 i 73) pokrywają się ze sobą i z pełną regresją — nie sumować.
-Pominięcia Linux obejmują bramki wymagające nieobecnego lokalnie PostgreSQL,
-Windows lub przeglądarki; wyniki natywne są odrębnymi dowodami.
+Pominięcia są zależne od platformy i dostępności natywnych usług/przeglądarki.
+Windows pomija także 5 przypadków runnera pipe POSIX; PostgreSQL oraz
+Chromium mają odrębne wykonania bez SKIP. Nie uznawać pominięć za PASS.
 
 ## Przygotowanie na zakup serwera
 

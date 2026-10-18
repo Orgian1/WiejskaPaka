@@ -2680,7 +2680,7 @@ def review_farmer_compliance(farmer_id: int, payload: SellerReview, user=Depends
                 expected = {'rules_version': payload.expected_rules_version,
                             'review_status': payload.expected_review_status,
                             'reviewed_at': payload.expected_reviewed_at}
-            review_seller_account(con, farmer_id, user['id'], payload.decision, payload.reason, expected=expected)
+            review_seller_account(con, farmer_id, user['id'], payload.decision, payload.reason, expected=expected, postgres=bool(DATABASE_URL))
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from exc
         return seller_compliance_status(con, farmer_id)

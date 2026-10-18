@@ -1,5 +1,5 @@
 # Testowy proces zgodności sprzedawcy; bez danych identyfikacyjnych.
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 RULES_VERSION = '2026-10-draft'
 PROFILE_REMINDER_THRESHOLD = 20
@@ -67,8 +67,22 @@ def acknowledge_seller_rules(con, farmer_id, version):
     con.execute('INSERT INTO seller_compliance_events(farmer_id,actor_id,event_type,created_at) VALUES(?,?,?,?)',
                 (farmer_id,farmer_id,'rules_acknowledged',now))
 
-def review_seller_account(con, farmer_id, admin_id, decision, reason, *, expected=None):
-    now = datetime.now(timezone.utc).isoformat()
+def review_seller_account(con, farmer_id, admin_id, decision, reason, *, expected=None, postgres=False):
+    # Serialize the revision read with other reviewers on PostgreSQL. SQLite
+    # HTTP writes already hold BEGIN IMMEDIATE in order_write_db.
+    previous = con.execute('SELECT reviewed_at FROM seller_compliance WHERE farmer_id=?'
+        + (' FOR UPDATE' if postgres else ''), (farmer_id,)).fetchone()
+    if previous is None:
+        raise ValueError('Sprzedawca nie potwierdził jeszcze zasad')
+    current = datetime.now(timezone.utc)
+    if previous['reviewed_at'] is not None:
+        prior = datetime.fromisoformat(previous['reviewed_at'])
+        if prior.tzinfo is None:
+            prior = prior.replace(tzinfo=timezone.utc)
+        # Wall clocks may repeat or go backwards. A successful decision must
+        # always advance the row revision, even when its status returns to A.
+        current = max(current, prior + timedelta(microseconds=1))
+    now = current.isoformat()
     condition = ''
     parameters = [decision, admin_id, now, reason, farmer_id]
     if expected is not None:

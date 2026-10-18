@@ -76,7 +76,13 @@ def test_real_http_queue_concurrent_decisions_and_role_isolation(tmp_path):
         assert con.execute("SELECT COUNT(*) FROM seller_compliance_events WHERE farmer_id=? AND event_type LIKE 'review_%'",(fid,)).fetchone()[0]==1
 
 
-def test_review_timestamp_prevents_overwrite_after_status_returns_to_previous_value(con):
+def test_review_timestamp_prevents_overwrite_after_status_returns_to_previous_value(con,monkeypatch):
+    import backend.seller_compliance as compliance
+    from datetime import datetime,timezone
+    class FrozenClock(datetime):
+        @classmethod
+        def now(cls,tz=None):return cls(2026,1,1,tzinfo=timezone.utc)
+    monkeypatch.setattr(compliance,'datetime',FrozenClock)
     acknowledge_seller_rules(con,1,RULES_VERSION)
     review_seller_account(con,1,2,'approved','Decyzja pierwsza')
     old=seller_review_queue(con,'approved')['profiles'][0]

@@ -26,7 +26,7 @@ CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/39102124109
 | Testy celowane | 70 zaliczonych, 0 błędów, 2 pominięte (lokalnie brak Chromium) |
 | Natywny PostgreSQL, ograniczona rola i HTTP | 17/17, bez pominięć |
 | Natywne Chromium | 13/13, bez pominięć; dodatkowo HTTP przy pięciu szerokościach |
-| Windows dla tej paczki | Pełna regresja nadal trwa; brak deklaracji PASS |
+| Windows dla tej paczki | 3687 zaliczonych, 1 błąd, 30 pominiętych; moduł test_admin_seller_review.py |
 
 Odciski lokalnego kodu i testów porównano z artefaktami PostgreSQL i Chromium;
 pliki ZIP zweryfikowano z digestami GitHub. Oczyszczone dowody:
@@ -39,3 +39,9 @@ Poprzedni przebieg Windows dla `6ef815dec3b4043c64ec1977ce892b453b61d57c`
 zakończył się sukcesem: 3671 zaliczonych, 0 błędów, 27 pominiętych oraz
 wstępny podzbiór 39/39. Dowód uzupełniono w raporcie profilu rolnika;
 nie przenosimy tego wyniku na bieżący kod. Gałąź `main` bez zmian.
+
+Uzupełnienie wyniku Windows: przebieg zakończył się jednym niezaliczonym testem
+w module kolejki. Artefakt wskazuje moduł, nie konkretny przypadek. Po tym
+wyniku odtworzono osobno błąd powtarzającej się daty wersji przy zatrzymanym
+zegarze. Poprawkę i jej nowe dowody opisuje raport demonstracyjnych danych;
+nie oznaczamy tego wcześniejszego przebiegu jako zaliczonego.

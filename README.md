@@ -46,6 +46,17 @@ Podgląd tworzy jednorazową bazę SQLite i usuwa ją po zamknięciu. Nie używa
 prawdziwych danych osobowych. Numery telefonów nie są zbierane w formularzach.
 W Windows zamiast `.venv/bin/python` użyj `.venv\Scripts\python.exe`.
 
+## Demo z przykładowymi danymi
+
+```bash
+.venv/bin/python scripts/run_phone_demo.py --sample-data
+```
+
+Skrypt wypisze losowe dane logowania klienta, rolnika, dostawcy i administratora.
+Przygotuje dwie oferty, punkt oraz przesyłki do odbioru i dostawy, z fikcyjnymi
+płatnościami. Wszystkie dane są jednorazowe. Instrukcja dla Windows i scenariusz
+odbioru: `docs/DEMO_Z_DANYMI.md`.
+
 ## Testy
 
 ```bash

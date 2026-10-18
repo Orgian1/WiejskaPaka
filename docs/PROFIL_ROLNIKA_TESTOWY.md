@@ -69,3 +69,9 @@ Rejestracja publiczna nadal nie tworzy administratora. Konta administracyjne
 w testach są nadawane wyłącznie bezpośrednio w jednorazowej bazie. Brak
 nowych kolumn lub migracji. Decyzje nie są weryfikacją tożsamości i nigdy
 nie uruchamiają rzeczywistych wypłat.
+
+Decyzje są obecnie wersjonowane datą rosnącą co najmniej o mikrosekundę
+względem poprzedniego zapisu. Powtarzający się lub cofnięty zegar systemowy
+nie może ponownie nadać tej samej wersji. PostgreSQL blokuje wiersz profilu
+przed odczytaniem poprzedniej daty; zapis HTTP SQLite korzysta z istniejącego
+BEGIN IMMEDIATE. Test odtwarza powrót statusu przy zatrzymanym zegarze.

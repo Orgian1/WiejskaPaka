@@ -44,6 +44,10 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         elif role=='rolnik':
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==0
+            page.get_by_role('heading',name='Rozliczenia testowe',exact=True).wait_for(state='visible')
+            assert 'Do testowej wypłaty: 0,00 zł' in page.locator('#dashboard-content').text_content()
+            assert 'Nie wykonano przelewu' in page.locator('#dashboard-content').text_content()
+            assert 'eligible_grosze' not in page.locator('#dashboard-content').text_content()
         elif role=='klient':
             assert 'Liczba przesyłek: 2' in page.locator('#dashboard-content').text_content()
         else:
@@ -107,6 +111,12 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             sign_in('rolnik')
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==2
+            settle=page.get_by_role('button',name='Przekaż pozycję do rozliczenia (TEST)',exact=True).first
+            settle.wait_for(state='visible')
+            with page.expect_response('**/test/payments/*/events') as settlement:settle.click()
+            assert settlement.value.status==200 and settlement.value.json()['state']=='completed_test'
+            page.wait_for_function("document.getElementById('dashboard-content').textContent.includes('pozycje zamówień: 1')",polling=100)
+            assert 'Do testowej wypłaty: 0,00 zł' not in page.locator('#dashboard-content').text_content()
             sign_out();sign_in('admin')
             with page.expect_response('**/admin/farmers/compliance-queue?*') as response:page.click('#admin-seller-refresh')
             assert response.value.status==200 and response.value.json()['total']==1

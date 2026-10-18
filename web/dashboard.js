@@ -4,8 +4,48 @@ function dashboardCard(title, lines) {
   const card=node('article','', 'card');card.append(node('h3',title));
   for(const line of lines)card.append(node('p',line));return card;
 }
+// Format authoritative integer-grosze totals without recalculating settlement rules.
+function sellerPayoutSummaryLines(report){
+  const amounts=['eligible_grosze','pending_grosze','paid_out_grosze','platform_commission_earned_grosze','platform_commission_paid_out_grosze'];
+  const counters=['eligible_orders','paid_orders'];
+  if(!report||![...amounts,...counters].every(key=>Number.isSafeInteger(report[key])&&report[key]>=0)||report.pending_grosze!==report.eligible_grosze||report.platform_commission_paid_out_grosze>report.platform_commission_earned_grosze)throw Error('Nieprawidłowy raport testowy.');
+  const date=report.next_weekly_payout_date;
+  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)throw Error('Nieprawidłowy termin podglądu.');
+  const amount=value=>{const grosze=BigInt(value);return `${grosze/100n},${String(grosze%100n).padStart(2,'0')} zł`};
+  const [year,month,day]=date.split('-');
+  return [
+    `Do testowej wypłaty: ${amount(report.eligible_grosze)} (pozycje zamówień: ${report.eligible_orders}).`,
+    `Wypłacono w symulacji: ${amount(report.paid_out_grosze)} (pozycje zamówień: ${report.paid_orders}).`,
+    `Prowizja naliczona od zakończonych pozycji: ${amount(report.platform_commission_earned_grosze)}.`,
+    `Prowizja przypisana do testowych wypłat: ${amount(report.platform_commission_paid_out_grosze)}.`,
+    `Kolejny termin podglądu tygodniowego: ${day}.${month}.${year}.`,
+    'To wyłącznie symulacja. Nie wykonano przelewu ani nie uruchomiono automatycznych wypłat.'
+  ];
+}
 function dashboardButton(label, action) {
   const b=node('button',label);b.type='button';b.onclick=()=>act(action);return b;
+}
+// Explicit test-only settlement after receipt. Retry checks current persisted
+// state before sending an event; an unknown response cannot create a second sale.
+function farmerTestSettlementButton(orderId,active){
+  const button=node('button','Przekaż pozycję do rozliczenia (TEST)');button.type='button';
+  let eventId=null;
+  button.onclick=()=>act(async()=>{
+    if(button.disabled||!button.isConnected||!active()||role!=='rolnik')return;
+    button.disabled=true;
+    try{
+      const current=await api(`/test/payments/${orderId}`);
+      if(!active()||!button.isConnected||role!=='rolnik')return;
+      if(current.state==='paid_test'){
+        if(!eventId){if(!globalThis.crypto?.randomUUID)throw Error('Brak bezpiecznego identyfikatora operacji.');eventId=crypto.randomUUID()}
+        await api(`/test/payments/${orderId}/events`,'POST',{event_id:eventId,event_type:'order_completed_test'});
+      }else if(!['completed_test','paid_out_test'].includes(current.state))throw Error('Pozycja nie jest gotowa do testowego rozliczenia. Odśwież panel.');
+      if(!active()||!button.isConnected||role!=='rolnik')return;
+      msg('Pozycja uwzględniona w rozliczeniu testowym. Nie wykonano przelewu.');
+      await loadDashboard();
+    }finally{button.disabled=false}
+  });
+  return button;
 }
 // Szczegóły pobierane na żądanie, bez przechowywania danych przesyłki w przeglądarce.
 function shipmentDetailsButton(shipmentId, card) {
@@ -120,6 +160,7 @@ async function loadDashboard() {
       box.append(c);
     }
   }else if(role==='rolnik'){
+    const farmerOrderCards=new Map();
     const [products,orders,shipmentData]=await Promise.all([api('/products/mine'),api('/orders/me'),api('/shipments/farmer/mine')]);
     if(!active())return;
     box.append(dashboardCard('Gospodarstwo',[`Produkty: ${products.length}`,`Zamówienia: ${orders.length}`]));
@@ -165,7 +206,7 @@ async function loadDashboard() {
       inventory.append(dashboardCard(product.name,[`Dostępne: ${availability}`,`Cena: ${money(product.price_grosze)}`,`Dostawa: ${money(product.delivery_grosze)}`]));
     }
     box.append(inventory);
-    for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);
+    for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
       if(o.fulfillment==='dostawa' && o.status==='oczekuje_na_platnosc_testowa'){const dispatch=node('button','Oznacz jako wysłane (test)');dispatch.type='button';dispatch.onclick=()=>act(async()=>{if(dispatch.disabled)return;dispatch.disabled=true;try{await api(`/orders/${o.id}/dispatch-test`,'POST');if(!active())return;msg('Status zaktualizowany');await loadDashboard()}finally{dispatch.disabled=false}});c.append(dispatch)}
@@ -175,7 +216,7 @@ async function loadDashboard() {
       }
       box.append(c);
     }
-    try{const report=await api('/test/farmers/me/payout-report');if(!active())return;box.append(dashboardCard('Rozliczenia testowe',[JSON.stringify(report)]))}catch(e){if(!active())return;box.append(node('p','Podgląd rozliczeń testowych jest wyłączony.','muted'))}
+    try{const report=await api('/test/farmers/me/payout-report');if(!active())return;box.append(dashboardCard('Rozliczenia testowe',sellerPayoutSummaryLines(report)));for(const row of (report.orders||[])){const entry=farmerOrderCards.get(row.order_id);if(entry&&entry.order.status==='odebrane'&&row.state==='paid_test')entry.card.append(farmerTestSettlementButton(row.order_id,active))}}catch(e){if(!active())return;box.append(node('p','Podgląd rozliczeń testowych jest niedostępny. Odśwież panel.','muted'))}
   }else if(role==='dostawca'){
     const [orders,shipmentData]=await Promise.all([api('/couriers/me/orders'),api('/couriers/me/shipments')]);
     if(!active())return;

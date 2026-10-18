@@ -4,7 +4,11 @@ Workflow `.github/workflows/native-tests.yml` działa po aktualizacji
 `wiejskapaka-import`. Nie wdraża aplikacji i nie zmienia `main`.
 Każda brama korzysta z osobnej maszyny GitHub-hosted:
 
-- Windows: najpierw 48 przypadków kopii/odtwarzania i resetu hasła, następnie
+- Windows: osobne szybkie zadanie `windows_recovery` uruchamia 80 przypadków
+  kopii/odtwarzania, resetu hasła, przeglądu profilu rolnika, nowego demo
+  i interfejsu rozliczeń; publikuje własny
+  raport. Jego powodzenie jest warunkiem startu pełnego zadania `windows`.
+  Pełne zadanie powtarza najpierw 80 przypadków kopii/odtwarzania i resetu hasła, następnie
   pełna regresja; Python 3.12, Node 24 i `requirements-lock.txt`.
   Pierwszy zestaw jest powtarzanym podzbiorem pełnego, nie dodatkowymi
   unikalnymi przypadkami. Jego błąd zatrzymuje bramę przed długą regresją.
@@ -34,7 +38,7 @@ setup-node v7.1.0 i upload-artifact v7.0.2. Pełne SHA znajdują się w workflow
 
 ## Dowody wykonania
 
-`python -m scripts.run_native_ci <windows|postgres|browser> --report wynik.json`
+`python -m scripts.run_native_ci <windows-recovery|windows|postgres|browser> --report wynik.json`
 zapisuje odciski kodu, workflow, zależności, testów i helperów oraz liczniki
 i kody zakończenia. Błędy pełnej regresji dodatkowo podają wyłącznie nazwy
 modułów należących do repozytorium, bez zawartości `output_tail`. Surowe stdout/stderr, XML, zmienne środowiska, ścieżki
@@ -43,7 +47,7 @@ Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.
 
 Natywne bramy wymagają minimum 17 przypadków PostgreSQL, 23 przeglądarkowych
-i 48 przypadków wstępnego testu Windows,
+i 80 przypadków wstępnego testu Windows,
 bez błędów i pominięć. Windows wymaga kompletnego raportu regresji. Zmiana
 źródeł lub helperów podczas wykonania unieważnia wynik. Błąd instalacji,
 brak wyniku, timeout, SKIP i anulowanie nie są zaliczeniem.
@@ -59,3 +63,8 @@ wydajności oraz kopii i odtwarzania. Nie oznaczają gotowości produkcyjnej.
 Oficjalne źródła konfiguracji:
 https://docs.github.com/en/actions/tutorials/use-containerized-services/create-postgresql-service-containers
 https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+
+Szybki raport Windows nie jest pełną regresją. Te same 80 przypadków
+wykonuje się w osobnym zadaniu, na początku pełnego zadania i w pełnej
+regresji; nie sumować ich jako nowych testów. Wynik etapu PASS/FAIL jest
+wypisywany na bieżąco bez logów procesów i bez danych kont.

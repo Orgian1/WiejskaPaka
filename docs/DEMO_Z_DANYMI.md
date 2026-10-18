@@ -41,7 +41,10 @@ Przygotowywane dane:
    odbiór po sprawdzeniu towaru. Dostawca powinien utracić dostęp do adresu
    zakończonej dostawy. Nie wykonano rzeczywistego transportu ani płatności.
 4. W panelu rolnika sprawdź stan profilu: dwa zakończone zakupy, po jednym
-   za każdą przesyłkę. Cztery produkty nie oznaczają czterech transakcji.
+   za każdą przesyłkę. Cztery produkty nie oznaczają czterech transakcji. Po odbiorze przy pozycji
+   zamówienia pojawi się „Przekaż pozycję do rozliczenia (TEST)”. To jawny
+   krok symulacji finansowej; po jego wykonaniu podgląd rolnika pokaże
+   dodatnią kwotę do testowej wypłaty. Nie wykonuje się przelewu.
 5. Zaloguj administratora, pobierz kolejkę, wpisz fikcyjne uzasadnienie i zapisz
    decyzję testową. Po zapisie odśwież kolejkę. Zatwierdzenie nie włącza wypłat.
 6. Możesz sprawdzić zmianę hasła, sesje oraz odzyskiwanie hasła. Ścieżkę

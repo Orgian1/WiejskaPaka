@@ -18,7 +18,7 @@ from scripts.run_tests_isolated import test_environment as isolated_environment
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_integration_optional.py',
                   'test_postgres_full_api_optin.py')
-RECOVERY_TESTS = ('test_admin_seller_review.py', 'test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
+RECOVERY_TESTS = ('test_sample_demo.py', 'test_sample_demo_launcher.py', 'test_seller_payout_ui.py', 'test_seller_settlement_ui.py', 'test_admin_seller_review.py', 'test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
                   'test_password_reset_http.py')
 BROWSER_TESTS = ('test_sample_demo_browser.py', 'test_admin_seller_review_browser.py', 'test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
@@ -91,13 +91,15 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
         tasks = []
         raw = folder / 'raw.json'
         xml = folder / 'cases.xml'
-        if gate == 'windows':
+        if gate in ('windows', 'windows-recovery'):
             if platform.system() != 'Windows':
                 result['error'] = 'WINDOWS_REQUIRED'
             else:
                 tasks = [('windows_recovery', [sys.executable, '-m', 'pytest', '-q',
                     *[str(root/'tests'/name) for name in RECOVERY_TESTS], '--junitxml', str(xml)], 'junit'),
                          ('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--report', str(raw)], 'full')]
+                if gate == 'windows-recovery':
+                    tasks = tasks[:1]
         elif gate == 'postgres':
             dsn = source.get('WP_TEST_POSTGRES_DSN')
             try:
@@ -135,7 +137,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 17 if gate == 'postgres' else 48 if gate == 'windows' else 23
+                    minimum = 17 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 23
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0
@@ -160,7 +162,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('gate', choices=('windows', 'postgres', 'browser'))
+    parser.add_argument('gate', choices=('windows', 'windows-recovery', 'postgres', 'browser'))
     parser.add_argument('--report', type=Path, required=True)
     args = parser.parse_args()
     result = run(args.gate, args.report)

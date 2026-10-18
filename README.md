@@ -105,6 +105,13 @@ Przypomnienie po 20 transakcjach jest regułą produktu; wieloproduktowa przesy�
 liczy się raz. Administrator przegląda kolejkę profili i zapisuje testowe
 decyzje z ochroną przed nadpisaniem zmiany z innego widoku. Instrukcja: `docs/PROFIL_ROLNIKA_TESTOWY.md`.
 
+## Rozliczenia rolnika w demo
+
+Panel pokazuje kwoty w złotych, liczbę pozycji zamówień i termin podglądu
+tygodniowego. Po odbiorze opłaconej testowo pozycji rolnik może jawnie
+przekazać ją do rozliczenia testowego. Ponowienie po utracie odpowiedzi
+sprawdza istniejący zapis. Nie wykonuje żadnego przelewu.
+
 ## Zmiana hasła
 
 Sekcja Bezpieczeństwo konta zmienia hasło po ponownym podaniu obecnego hasła

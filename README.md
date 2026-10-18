@@ -12,7 +12,7 @@ Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
 Natywne bramy Windows/PostgreSQL/Chromium: `docs/NATYWNE_TESTY_CI.md`.
 Narzędzie lokalnej kopii i odtworzenia SQLite, próba WAL oraz ograniczenia procedury: `docs/ODTWARZANIE_SQLITE.md`.
 Bieżące wyniki Linux/Windows/PostgreSQL/Chromium:
-`docs/RAPORT_NATIVE_CI_2026-10-17.md`.
+`docs/RAPORT_NAPRAWY_KOPII_WINDOWS_2026-10-18.md`.
 Poprzedni raport audytu płatności: `docs/RAPORT_AUDYTU_PLATNOSCI_2026-10-17.md`.
 Poprzednia paczka kontekstu zwrotów: `docs/RAPORT_KONTEKSTU_ZWROTOW_2026-10-17.md`.
 Poprzednia paczka historii płatności: `docs/RAPORT_HISTORII_PLATNOSCI_2026-10-17.md`.

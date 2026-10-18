@@ -2,7 +2,7 @@
 
 Stan uzupełniony 17 października 2026. To lista warunków odbioru, nie zgoda
 na produkcyjne integracje. Wyniki natywnych testów wraz z zakresem i badanym
-commitem znajdują się w `RAPORT_NATIVE_CI_2026-10-17.md`.
+commitem znajdują się w `RAPORT_NAPRAWY_KOPII_WINDOWS_2026-10-18.md`.
 Narzędzie lokalnej kopii i odtworzenia opisuje `ODTWARZANIE_SQLITE.md`.
 
 | Obszar | Obecny stan | Warunek dalszego odbioru |

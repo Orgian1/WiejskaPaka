@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "application_sha256": "b25c4f9471cfca3c2be9e43c10be1295fc86d3133470c3f8f18f7daf7239f3e4",
+  "executed": 290,
+  "planned": 290,
+  "test_counts": {
+    "total": 3661,
+    "passed": 3642,
+    "failed": 0,
+    "skipped": 19
+  },
+  "scope": "Linux; all 290 modules in six isolated groups; no native Windows claims"
+}

@@ -2,6 +2,9 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
+Najnowsze wznowienie, połączenie prac z obu czatów i stan testów:
+`docs/RAPORT_WZNOWIENIA_2026-10-18.md`.
+
 Bieżący pakiet zarządzania sesjami opisuje `docs/ZARZADZANIE_SESJAMI.md`.
 Dowody aktualnego wydania: `docs/RAPORT_SESJE_2026-10-16.md` oraz
 `audit_sessions_final_*.json`. Poprzednie pakiety bezpieczeństwa opisują

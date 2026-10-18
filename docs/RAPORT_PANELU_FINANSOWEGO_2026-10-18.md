@@ -31,8 +31,9 @@ Istniejące testy rzeczywistego Chromium rozszerzono o pobranie CSV przy
 320 i 1280 px, odczyt jego zawartości, usunięcie raportu po zmianie miesiąca
 i dodatnie kwoty po pełnym odbiorze oraz przekazaniu jednej pozycji do
 symulowanego rozliczenia. Wynik lokalnie pominiętego testu Chromium nie jest
-wynikiem natywnej przeglądarki. Wyniki pełnej regresji i CI zostaną zapisane
-po zakończeniu kontroli dla konkretnego commitu.
+wynikiem natywnej przeglądarki. Bieżące wyniki z określeniem commitu oraz
+rozróżnieniem zakończonych i trwających kontroli zawiera
+`RAPORT_WZNOWIENIA_2026-10-18.md`.
 
 Nie zmieniono schematu bazy, zasad płatności, rozliczeń ani zwrotów.
 Nie uruchomiono integracji produkcyjnych. Zmiany dotyczą gałęzi

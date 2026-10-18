@@ -1,0 +1,30 @@
+{
+  "timestamp_utc": "2026-10-18T09:52:00.173147+00:00",
+  "scope": "local HTTP, disposable SQLite, simulated payments; no PostgreSQL/Neon",
+  "application_sha256": "273f11035db485d32f0c33f37f5cc7a2a60f5b16b8423482f1bf21a854bd0709",
+  "complete": true,
+  "passed": true,
+  "tasks": [
+    {
+      "name": "http_loopback",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "name": "http_checkout_delivery_refund",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "name": "http_multi_seller_cart",
+      "passed": true,
+      "returncode": 0
+    },
+    {
+      "name": "privacy_and_shipping_pytest",
+      "passed": true,
+      "returncode": 0
+    }
+  ],
+  "sources_unchanged": true
+}

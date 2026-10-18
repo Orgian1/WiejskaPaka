@@ -1,0 +1,5 @@
+{
+  "commit": "af832502baf162a5b459cde496942d074c881300",
+  "run_id": 39116998438,
+  "scope": "PostgreSQL, Chromium, Windows recovery before HTTP fixture readiness update; full Windows interrupted by later test-helper update"
+}

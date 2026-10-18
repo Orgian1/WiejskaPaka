@@ -1,0 +1,23 @@
+{
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "application_sha256": "692972f112db564c1ab3eada46943169c6dd3519c360983c344966be1d0afb08",
+  "executed": 308,
+  "planned": 308,
+  "test_counts": {
+    "total": 3806,
+    "passed": 3771,
+    "failed": 0,
+    "skipped": 35
+  },
+  "source_commit": "4f629cc2a9f09ea158547c3c5ebc964f9dd7089d",
+  "evidence": {
+    "runtime_sha256": "273f11035db485d32f0c33f37f5cc7a2a60f5b16b8423482f1bf21a854bd0709",
+    "tests_sha256": "419c790b2a83f542ddb9f77c8f0f4a028ed1b0313ee88f082b7d735b8f54d2dc",
+    "test_sources_sha256": "0ae2cdc88cccad74db52efa2e0c66f3e6187c141cfcd355ec1bb1405c5e62258",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "3d55c169ee219cdd59133a50d6502259507b9988d87c0ba458826a6ded1e9d30"
+  },
+  "scope": "Four parallel shards, each test module in a fresh subprocess and disposable SQLite; no captured logs retained"
+}

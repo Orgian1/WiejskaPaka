@@ -38,10 +38,11 @@ def reviewed_test_schema(root):
 
 class NativeAPI:
     """Preserve two-value unpacking while permitting a controlled process restart."""
-    def __init__(self, client, parameters, restart):
+    def __init__(self, client, parameters, restart, key_path):
         self.client = client
         self.parameters = parameters
         self.restart = restart
+        self.key_path = key_path
 
     def __iter__(self):
         return iter((self.client, self.parameters))
@@ -139,7 +140,7 @@ def _postgres_api():
                             start()
 
                         start()
-                        yield NativeAPI(client, app_parameters, restart)
+                        yield NativeAPI(client, app_parameters, restart, keyfile)
         finally:
             if process is not None:
                 process.terminate()
@@ -513,3 +514,42 @@ def test_native_purchase_survives_process_restart(pg_restart_api, kind):
     changed = {**body, 'delivery_street': 'Inny adres testowy 123'}
     assert client.post(path, headers=headers, json=changed).status_code == 409
     assert snapshot() == before
+
+
+def test_native_encrypted_postgres_backup_and_isolated_restore(pg_restart_api, tmp_path):
+    """Restore real dump + original vault key without altering the live source."""
+    from urllib.parse import quote
+    import psycopg
+    from scripts.postgres_test_backup import backup, rehearse, make_backup_key
+    client, parameters = pg_restart_api
+    farmer, _ = register(client, 'rolnik')
+    buyer, _ = register(client, 'klient')
+    pid = product(client, farmer, stock=3)
+    headers = {**buyer, 'Idempotency-Key': uuid4().hex}
+    response = client.post('/orders', headers=headers, json=delivery(pid))
+    assert response.status_code == 201
+    original = response.json()
+    assert client.post(f"/test/payments/{original['id']}/events", headers=buyer,
+        json={'event_id': uuid4().hex, 'event_type': 'payment_success_test'}).status_code == 200
+    host = parameters['host']
+    if host == '::1':host = '[::1]'
+    dsn = ('postgresql://' + quote(parameters['user'], safe='') + ':' +
+           quote(parameters['password'], safe='') + '@' + host + ':' +
+           str(parameters.get('port', '5432')) + '/' + parameters['dbname'])
+    keys = tmp_path/'keys';keys.mkdir()
+    archives = tmp_path/'archives';archives.mkdir()
+    key = keys/'independent.backup-key';make_backup_key(key)
+    archive = archives/'postgres.wpbackup'
+    with psycopg.connect(**parameters) as source:
+        before = source.execute('SELECT count(*) FROM sessions').fetchone()[0]
+    assert backup(dsn, pg_restart_api.key_path, key, archive)['encrypted_backup']
+    assert b'PGDMP' not in archive.read_bytes()[:64]
+    result = rehearse(archive, key, os.environ['WP_TEST_POSTGRES_DSN'])
+    assert result == {'orders_checked': 1, 'checkout_replies_checked': 1,
+        'sessions_revoked': before, 'success': True, 'restore_verified': True,
+        'rehearsal_database_removed': True, 'application_started': False}
+    with psycopg.connect(**parameters) as source:
+        assert source.execute('SELECT count(*) FROM sessions').fetchone()[0] == before
+    assert client.get('/auth/me', headers=buyer).status_code == 200
+    replay = client.post('/orders', headers=headers, json=delivery(pid))
+    assert replay.status_code == 201 and replay.json() == original

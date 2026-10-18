@@ -1,0 +1,42 @@
+{
+  "tested_commit": "9f5fe158fcabf828c9e611d4decf0c65875eabbc",
+  "run_id": 39141137034,
+  "run_url": "https://github.com/Orgian1/WiejskaPaka/actions/runs/39141137034",
+  "evidence": {
+    "runtime_sha256": "7ba0d24277fbcdae7822b36bc55aea205757609a4b445f65dc540a8020d1200b",
+    "tests_sha256": "4b7dd95d31d72cef11d72529ea7ea817f7474a68e9d178101ca510eb599510e8",
+    "test_sources_sha256": "6fedd3ee994895ab6ee63f2613326ad789de33db95e65774cd72c22d6c36d588",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "f2eadaf4dd935593a9e6865a9df152973d72812bdc0bfb7cacd50b9c649c1cba"
+  },
+  "verified_archives": [
+    {
+      "id": 12141951077,
+      "name": "windows-recovery-summary",
+      "digest": "80e1d1eefe01ae5d36a055efb7ab445f84e64ec3b31a1e2779c8bf9dc9ad0f9d"
+    },
+    {
+      "id": 12141557952,
+      "name": "postgres-summary",
+      "digest": "db38831b561442c9444942640e0881fc076f9ed5840efd10348080616ce58ef6"
+    },
+    {
+      "id": 12141234545,
+      "name": "chromium-summary",
+      "digest": "99a83b64772c308ab9f8b6c7355ae8b3a61218188808d94b53fcd590ae6606df"
+    },
+    {
+      "id": 12142671080,
+      "name": "windows-summary",
+      "digest": "eaf7f7dfef028a0cdc0fea5547f7e5a34ec34a0891493ec9387c7f46e8957ff3"
+    }
+  ],
+  "application_code_unchanged_from": "e83feaf449f273a203bf82c0ab44b8f2ef90b0dc",
+  "compared_directories": [
+    "backend",
+    "web",
+    "database"
+  ],
+  "all_native_gates_complete": true,
+  "linux_skips_covered_by_native_modules": true
+}

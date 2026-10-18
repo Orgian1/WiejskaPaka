@@ -63,3 +63,9 @@ sukces nie zastępuje testu trwałości, kopii i rzeczywistego wdrożenia.
 dla commitu e83feaf: pełny Windows i Linux, natywny PostgreSQL i Chromium,
 akceptację HTTP i stabilność lokalną. Wszystkie bramki zakończone sukcesem.
 To nie odbiór hostingu, rzeczywistych płatności ani brakujących funkcji.
+
+Dodatkowy pakiet trwałości po restarcie API PostgreSQL również zakończono:
+`RESTART_APLIKACJI_POSTGRESQL_2026-10-18.md` (kod 9f5fe15). PostgreSQL 21/21,
+Chromium 36/36 oraz pełny Linux i Windows zaliczone; odrębnie pokazano
+pominięcia i zakres dowodu. Hosting oraz prawdziwe płatności pozostają poza
+wykonanym zakresem.

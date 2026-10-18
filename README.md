@@ -178,3 +178,6 @@ funkcjonalne są jawnie opisane w raporcie.
 
 Końcowy wynik testów bez hostingu i rzeczywistych płatności (18.10.2026):
 `docs/WYNIK_KONCOWY_TESTOW_BEZ_HOSTINGU_2026-10-18.md`.
+
+Rozszerzony zestaw z restartami PostgreSQL, zakończony 18.10.2026:
+`docs/RESTART_APLIKACJI_POSTGRESQL_2026-10-18.md`.

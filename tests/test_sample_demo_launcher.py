@@ -1,5 +1,6 @@
 """Launcher wiring and failures must not start an empty or untrusted sample."""
 import json
+from contextlib import closing
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -16,7 +17,7 @@ def test_sample_flag_prepares_new_database_and_cleans_it_after_server_exit(capsy
         assert env['WP_ENABLE_TEST_PAYMENTS']=='1'
         assert env['WP_ENABLE_TEST_PASSWORD_RESET']=='1'
         assert command[command.index('--host')+1]=='127.0.0.1'
-        with sqlite3.connect(database) as con:
+        with closing(sqlite3.connect(database)) as con:
             assert con.execute('SELECT COUNT(*) FROM users').fetchone()[0]==4
         return 0
     with patch('scripts.run_phone_demo.subprocess.call',side_effect=server):

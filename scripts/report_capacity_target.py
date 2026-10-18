@@ -10,13 +10,14 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backend.capacity_targets import FIRST_TARGET, PILOT, planning_report
+from backend.capacity_targets import FIRST_TARGET, GROWTH_TARGET, PILOT, planning_report
 
 
 def main():
     result = {
         "pilot": planning_report(PILOT),
         "first_target": planning_report(FIRST_TARGET),
+        "growth_target": planning_report(GROWTH_TARGET),
         "production_ready": False,
         "load_test_completed": False,
         "warning": "Nie przeprowadzono pomiaru HTTP/PostgreSQL na docelowym serwerze.",

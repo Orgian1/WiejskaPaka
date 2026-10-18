@@ -6,6 +6,7 @@ Jedyna obecna aplikacja obsługuje Polskę, język polski i PLN. Nie wdrażamy z
 
 - Pilotaż lokalny: 20 sprzedawców i 1000 kupujących dziennie.
 - Pierwszy cel: 50 sprzedawców i 5000 kupujących dziennie.
+- Docelowa rozbudowa: 5000 sprzedawców i 500000 kupujących dziennie.
 - Są to cele projektowe, a nie potwierdzona wydajność.
 
 ## Jawny model ruchu
@@ -30,3 +31,9 @@ katalogu i wyszukiwania w okolicy przy planie 6 żądań/s na jednorazowej
 SQLite z 50 sprzedawcami, 5000 rekordów klientów i 1000 ofert. To pomiar
 wybranego odczytu, bez zakupów i PostgreSQL; nie zamyka warunków odbioru
 produkcyjnej skali ani nie zmienia `capacity_verified=False`.
+
+## Dobór hostingu i rozbudowa
+
+Aktualne porównanie, założenia ruchu i warunki testu serwera opisano w
+`HOSTING_I_SKALOWANIE_2026-10-18.md`. Kalkulator raportuje teraz również
+`growth_target`, zachowując `capacity_verified=False`.

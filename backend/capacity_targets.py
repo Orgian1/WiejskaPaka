@@ -40,6 +40,7 @@ class CapacityTarget:
 
 PILOT = CapacityTarget(sellers=20, buyers_per_day=1000)
 FIRST_TARGET = CapacityTarget()
+GROWTH_TARGET = CapacityTarget(sellers=5000, buyers_per_day=500000)
 
 
 def planning_report(target=FIRST_TARGET):

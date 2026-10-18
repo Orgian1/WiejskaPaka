@@ -1,7 +1,7 @@
 """Testy kontraktu planowania obciążenia; bez fikcyjnych wyników benchmarku."""
 import unittest
 
-from backend.capacity_targets import CapacityTarget, FIRST_TARGET, PILOT, planning_report
+from backend.capacity_targets import CapacityTarget, FIRST_TARGET, GROWTH_TARGET, PILOT, planning_report
 
 
 class CapacityTargetsTests(unittest.TestCase):
@@ -14,6 +14,13 @@ class CapacityTargetsTests(unittest.TestCase):
         self.assertEqual(result["estimated_requests_per_day"], 100000)
         self.assertEqual(result["estimated_peak_requests_per_second"], 6)
         self.assertIs(result["capacity_verified"], False)
+
+    def test_growth_estimates_keep_upper_scale_unverified(self):
+        result = planning_report(GROWTH_TARGET)
+        self.assertEqual((result['sellers'], result['buyers_per_day']), (5000, 500000))
+        self.assertEqual(result['estimated_requests_per_day'], 10000000)
+        self.assertEqual(result['estimated_peak_requests_per_second'], 556)
+        self.assertFalse(result['capacity_verified'])
 
     def test_pilot_is_smaller(self):
         self.assertLess(PILOT.requests_per_day, FIRST_TARGET.requests_per_day)

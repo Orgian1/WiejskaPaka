@@ -103,7 +103,7 @@ def test_browser_requires_offline_and_real_http_tasks(tmp_path, http_code):
         calls.append(command)
         assert kwargs['env']['WIEJSKAPAKA_EXTENDED_BROWSER'] == '1'
         if '--junitxml' in command:
-            junit(command, passed=27)
+            junit(command, passed=36)
             return subprocess.CompletedProcess(command, 0, '', '')
         return subprocess.CompletedProcess(command, http_code, SENSITIVE, SENSITIVE)
     result = ci.run('browser', tmp_path/'result.json', source=source(), runner=runner)

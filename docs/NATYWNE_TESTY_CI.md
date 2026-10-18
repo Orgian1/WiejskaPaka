@@ -1,7 +1,8 @@
 # Natywne bramy CI
 
 Workflow `.github/workflows/native-tests.yml` działa po aktualizacji
-`wiejskapaka-import`. Nie wdraża aplikacji i nie zmienia `main`.
+`wiejskapaka-import` oraz gałęzi `preview/**`. Każda gałąź ma osobną grupę
+przebiegów, więc jej testy nie przerywają testów innej gałęzi. Nie wdraża aplikacji i nie zmienia `main`.
 Każda brama korzysta z osobnej maszyny GitHub-hosted:
 
 - Windows: osobne szybkie zadanie `windows_recovery` uruchamia 80 przypadków
@@ -53,7 +54,8 @@ tymczasowe, klucze i dane testowe nie są publikowane jako artefakty.
 Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.
 
-Natywne bramy wymagają minimum 18 przypadków PostgreSQL, 27 przeglądarkowych
+Natywne bramy wymagają minimum 18 przypadków PostgreSQL, 36 w bramie Chromium
+(27 wcześniejszych oraz 9 prywatnego podglądu POSIX)
 i 80 przypadków wstępnego testu Windows,
 bez błędów i pominięć. Windows wymaga kompletnego raportu regresji. Zmiana
 źródeł lub helperów podczas wykonania unieważnia wynik. Błąd instalacji,

@@ -46,3 +46,9 @@ Nie korzystać z usług płatnych ani połączeń produkcyjnych.
 Nie podłączać Neon, płatności, domeny ani hostingu. Na gałąź roboczą publikować wyłącznie kod i oczyszczone dowody; nie publikować
 danych, baz ani kluczy. W ZIP przekazywać kod, testy i dowody; robocze dane oraz klucz
 pozostawić poza archiwum. Nie zbierać ani nie udostępniać telefonów użytkowników.
+
+## Zamknięty podgląd przed wdrożeniem
+
+`ZAMKNIETY_PODGLAD_SSH.md` opisuje przygotowany lokalnie podgląd przez SSH
+z prywatnym plikiem kont zamiast haseł w logach. To jednorazowe demo SQLite,
+nie trwała instalacja PostgreSQL ani wynik pomiaru docelowego serwera.

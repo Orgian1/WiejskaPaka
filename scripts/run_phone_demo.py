@@ -4,6 +4,7 @@ Użycie: python scripts/run_phone_demo.py [--port 8765]
 Podgląd jest dostępny wyłącznie na urządzeniu uruchamiającym skrypt.
 """
 import argparse
+from contextlib import contextmanager, nullcontext
 import json
 import os
 from pathlib import Path
@@ -29,11 +30,39 @@ def demo_environment(source, database):
     return env
 
 
+@contextmanager
+def private_credentials_file(path, credentials):
+    """Exclusive POSIX file; remove only the same file created by this process."""
+    if os.name != 'posix':
+        raise ValueError('Prywatny plik kont wymaga systemu POSIX')
+    path = Path(path)
+    parent = path.parent.lstat()
+    if path.parent.is_symlink() or not path.parent.is_dir() or parent.st_uid != os.getuid() or parent.st_mode & 0o077:
+        raise ValueError('Plik kont wymaga prywatnego katalogu bieżącego użytkownika')
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    identity = os.fstat(descriptor)
+    try:
+        with os.fdopen(descriptor, 'w', encoding='utf-8') as output:
+            json.dump(credentials, output, ensure_ascii=True)
+            output.write('\n')
+        yield
+    finally:
+        try:
+            current = path.lstat()
+            if (current.st_dev, current.st_ino) == (identity.st_dev, identity.st_ino):
+                path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Lokalny podgląd WiejskaPaka (bez prawdziwych płatności)')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
+    parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
     args = parser.parse_args(argv)
+    if args.credentials_file and not args.sample_data:
+        parser.error('--credentials-file wymaga --sample-data')
     if not 1024 <= args.port <= 65535:
         parser.error('Port musi być w zakresie 1024–65535')
     root = Path(__file__).resolve().parents[1]
@@ -76,17 +105,26 @@ def main(argv=None):
                    '--host', '127.0.0.1', '--port', str(args.port), '--no-access-log']
         print(f'WiejskaPaka DEMO: http://127.0.0.1:{args.port}', flush=True)
         print('Skrzynka testowa odzyskiwania hasła: '+env['WP_TEST_RESET_OUTBOX'], flush=True)
-        if credentials:
-            print('Jednorazowe konta demo — nie udostępniaj tego okna ani haseł:', flush=True)
-            for role in ('klient', 'rolnik', 'dostawca', 'admin'):
-                account = credentials[role]
-                print(f"{role}: {account['email']} | hasło: {account['password']}", flush=True)
-            print('Przygotowano 2 produkty, przesyłkę do odbioru i dostawę w drodze. Płatności są symulowane.', flush=True)
-        print('Tylko na tym urządzeniu; brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
         try:
-            return subprocess.call(command, cwd=root, env=env)
+            private_output = private_credentials_file(args.credentials_file, credentials) if args.credentials_file else nullcontext()
+            with private_output:
+                if credentials:
+                    if args.credentials_file:
+                        print('Konta demo zapisano w prywatnym pliku; plik zostanie usunięty po zakończeniu podglądu.', flush=True)
+                    else:
+                        print('Jednorazowe konta demo — nie udostępniaj tego okna ani haseł:', flush=True)
+                        for role in ('klient', 'rolnik', 'dostawca', 'admin'):
+                            account = credentials[role]
+                            print(f"{role}: {account['email']} | hasło: {account['password']}", flush=True)
+                    print('Przygotowano 2 produkty, przesyłkę do odbioru i dostawę w drodze. Płatności są symulowane.', flush=True)
+                print('Tylko na tym urządzeniu; brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
+                return subprocess.call(command, cwd=root, env=env)
         except KeyboardInterrupt:
             return 130
+        except (OSError, ValueError):
+            print('Nie można uruchomić podglądu lub utworzyć prywatnego pliku kont. Wymagany nowy plik w prywatnym katalogu POSIX.', file=sys.stderr)
+            return 1
+
 
 
 if __name__ == '__main__':

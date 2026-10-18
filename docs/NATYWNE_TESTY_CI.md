@@ -41,7 +41,11 @@ setup-node v7.1.0 i upload-artifact v7.0.2. Pełne SHA znajdują się w workflow
 `python -m scripts.run_native_ci <windows-recovery|windows|postgres|browser> --report wynik.json`
 zapisuje odciski kodu, workflow, zależności, testów i helperów oraz liczniki
 i kody zakończenia. Błędy pełnej regresji dodatkowo podają wyłącznie nazwy
-modułów należących do repozytorium, bez zawartości `output_tail`. Surowe stdout/stderr, XML, zmienne środowiska, ścieżki
+modułów należących do repozytorium, bez zawartości `output_tail`. Gdy pełne
+liczniki są niedostępne, raport jest odrzucany, a nazwy niekompletnych modułów
+i modułów z przekroczonym czasem pozostają w oczyszczonej diagnostyce.
+Brak liczników nie jest zerem wykonanych testów i nie oznacza zaliczenia.
+Surowe stdout/stderr, XML, zmienne środowiska, ścieżki
 tymczasowe, klucze i dane testowe nie są publikowane jako artefakty.
 Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.

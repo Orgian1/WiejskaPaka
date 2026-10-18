@@ -40,7 +40,7 @@ Przebieg: https://github.com/Orgian1/WiejskaPaka/actions/runs/39105133009
 | Natywna szybka kontrola Windows | 80/80, bez pominięć |
 | Natywny PostgreSQL z ograniczoną rolą i rzeczywistym HTTP | 17/17, bez pominięć |
 | Natywne Chromium | 23/23, bez pominięć; ponadto HTTP przy pięciu szerokościach okna |
-| Pełna regresja Windows | Uruchomiona po zaliczeniu szybkiej kontroli; w chwili zapisu jeszcze trwa |
+| Pełna regresja Windows | Zakończona: 3722 zaliczone, 0 błędów, 40 pominiętych; razem 3762 przypadki |
 
 Chromium sprawdza osiem widoków wszystkich ról przy 320/1280 px na rzeczywistym
 serwerze i danych demo oraz dwa pełne scenariusze: odzyskanie PIN-ów, odbiór

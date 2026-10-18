@@ -30,10 +30,14 @@ def server(database, *, reset_outbox=None):
                              cwd=ROOT,env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
         with httpx.Client(base_url=f'http://127.0.0.1:{port}',timeout=15,trust_env=False) as client:
-            for _ in range(100):
+            # Imports and SQLite startup compete with other isolated test
+            # processes. Bound readiness by elapsed time, not a five-second
+            # attempt budget; a dead child must still fail immediately.
+            deadline=time.monotonic()+20
+            while time.monotonic()<deadline:
                 assert process.poll() is None,'Disposable server exited'
                 try:
-                    if client.get('/health').status_code==200:break
+                    if client.get('/health',timeout=.5).status_code==200:break
                 except httpx.TransportError:pass
                 time.sleep(.05)
             else:raise AssertionError('Disposable HTTP startup timeout')

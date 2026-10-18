@@ -4,17 +4,17 @@ Workflow `.github/workflows/native-tests.yml` działa po aktualizacji
 `wiejskapaka-import`. Nie wdraża aplikacji i nie zmienia `main`.
 Każda brama korzysta z osobnej maszyny GitHub-hosted:
 
-- Windows: najpierw 23 przypadki kopii/odtwarzania i resetu hasła, następnie
+- Windows: najpierw 39 przypadków kopii/odtwarzania i resetu hasła, następnie
   pełna regresja; Python 3.12, Node 24 i `requirements-lock.txt`.
   Pierwszy zestaw jest powtarzanym podzbiorem pełnego, nie dodatkowymi
   unikalnymi przypadkami. Jego błąd zatrzymuje bramę przed długą regresją.
   Wykonanie na innym systemie jest odrzucane. Opcjonalne testy natywne są
   pomijane w tej bramie i wykonywane w osobnych zadaniach.
-- PostgreSQL: jednorazowy kontener PostgreSQL 16 i 15 przypadków adaptera,
+- PostgreSQL: jednorazowy kontener PostgreSQL 16 i 16 przypadków adaptera,
   transakcji, migracji, ograniczonej roli aplikacji i rzeczywistego HTTP.
   Dozwolony jest tylko DSN loopback z nazwą testową.
 - Chromium: wcześniejsze 7 przypadków offline, w tym cztery role, oraz
-  2 nowe przypadki resetu hasła przez rzeczywisty HTTP (390 i 1280 px),
+  2 przypadki zasad sprzedawcy (320 i 1280 px), 2 przypadki resetu hasła przez rzeczywisty HTTP (390 i 1280 px),
   a także kontrola HTTP przy pięciu rozmiarach okna. SKIP lub brak przeglądarki nie jest sukcesem.
 
 Hasło `disposable-ci-only` jest jawnym hasłem wyłącznie jednorazowego kontenera,
@@ -40,8 +40,8 @@ tymczasowe, klucze i dane testowe nie są publikowane jako artefakty.
 Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.
 
-Natywne bramy wymagają minimum 15 przypadków PostgreSQL, 9 przeglądarkowych
-i 23 przypadków wstępnego testu Windows,
+Natywne bramy wymagają minimum 16 przypadków PostgreSQL, 11 przeglądarkowych
+i 39 przypadków wstępnego testu Windows,
 bez błędów i pominięć. Windows wymaga kompletnego raportu regresji. Zmiana
 źródeł lub helperów podczas wykonania unieważnia wynik. Błąd instalacji,
 brak wyniku, timeout, SKIP i anulowanie nie są zaliczeniem.

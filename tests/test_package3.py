@@ -8,9 +8,11 @@ def con():
     c.row_factory=sqlite3.Row
     c.execute('PRAGMA foreign_keys=ON')
     c.executescript('''CREATE TABLE users(id INTEGER PRIMARY KEY,role TEXT);
-    CREATE TABLE orders(id INTEGER PRIMARY KEY,farmer_id INTEGER,status TEXT);
+    CREATE TABLE orders(id INTEGER PRIMARY KEY,farmer_id INTEGER,status TEXT,buyer_id INTEGER);
+    CREATE TABLE shipment_groups(id TEXT PRIMARY KEY,farmer_id INTEGER,buyer_id INTEGER);
+    CREATE TABLE shipment_order_links(order_id INTEGER PRIMARY KEY,shipment_id TEXT);
     INSERT INTO users VALUES(1,'rolnik'),(2,'admin');
-    INSERT INTO orders VALUES(1,1,'potwierdzone');''')
+    INSERT INTO orders VALUES(1,1,'potwierdzone',3);''')
     create_compliance_tables(c)
     yield c
     c.close()

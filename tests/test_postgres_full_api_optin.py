@@ -374,3 +374,9 @@ def test_native_session_revocation_serializes_two_devices(pg_api):
     assert client.get('/auth/sessions',headers=winner).json()['active_sessions']==1
     assert client.post('/auth/logout-all',headers=winner).status_code==200
     assert client.get('/auth/me',headers=winner).status_code==401
+
+
+def test_native_seller_reminder_counts_received_shipment_once(pg_api):
+    from tests.test_seller_profile_reminder import exercise_completed_shipment
+    client,_=pg_api
+    exercise_completed_shipment(client)

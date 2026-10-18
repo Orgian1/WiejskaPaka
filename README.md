@@ -85,6 +85,12 @@ Launcher lokalny udostępnia formularz oraz prywatną skrzynkę wiadomości
 testowych. Instrukcja i ograniczenia: `docs/ODZYSKIWANIE_HASLA_TESTOWE.md`.
 Nie wysyła rzeczywistych e-maili; poza launcherem funkcja jest wyłączona.
 
+## Profil i zasady sprzedaży
+
+Rolnik może sprawdzić liczbę zakończonych transakcji i potwierdzić zasady demo.
+Przypomnienie po 20 transakcjach jest regułą produktu; wieloproduktowa przesyłka
+liczy się raz. Instrukcja: `docs/PROFIL_ROLNIKA_TESTOWY.md`.
+
 ## Zmiana hasła
 
 Sekcja Bezpieczeństwo konta zmienia hasło po ponownym podaniu obecnego hasła

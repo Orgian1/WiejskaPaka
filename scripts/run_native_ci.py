@@ -20,7 +20,7 @@ POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_int
                   'test_postgres_full_api_optin.py')
 RECOVERY_TESTS = ('test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
                   'test_password_reset_http.py')
-BROWSER_TESTS = ('test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
+BROWSER_TESTS = ('test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
               'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'PROGRAMDATA', 'PROGRAMFILES',
               'PROGRAMFILES(X86)', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL',
@@ -135,7 +135,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 15 if gate == 'postgres' else 39 if gate == 'windows' else 9
+                    minimum = 16 if gate == 'postgres' else 39 if gate == 'windows' else 11
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0

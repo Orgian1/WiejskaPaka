@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 
 RULES_VERSION = '2026-10-draft'
+PROFILE_REMINDER_THRESHOLD = 20
 
 def create_compliance_tables(con):
     con.execute('''CREATE TABLE IF NOT EXISTS seller_compliance (
@@ -25,9 +26,29 @@ def seller_compliance_status(con, farmer_id):
     row = con.execute('SELECT rules_version, acknowledged_at, review_status, reviewed_at FROM seller_compliance WHERE farmer_id=?', (farmer_id,)).fetchone()
     # Nie zakładamy prawnych progów DAC7 na podstawie liczby transakcji.
     count = con.execute("SELECT COUNT(*) AS n FROM orders WHERE farmer_id=? AND status NOT IN ('anulowane_testowo')", (farmer_id,)).fetchone()['n']
+    # A completed multi-product shipment is one transaction. Every linked row
+    # must be received and belong to the shipment's buyer and seller.
+    grouped = con.execute("""SELECT COUNT(*) AS n FROM shipment_groups s
+        WHERE s.farmer_id=?
+        AND EXISTS (SELECT 1 FROM shipment_order_links l WHERE l.shipment_id=s.id)
+        AND NOT EXISTS (SELECT 1 FROM shipment_order_links l
+            JOIN orders o ON o.id=l.order_id WHERE l.shipment_id=s.id
+            AND (o.status<>'odebrane' OR o.farmer_id<>s.farmer_id OR o.buyer_id<>s.buyer_id))""",
+        (farmer_id,)).fetchone()['n']
+    standalone = con.execute("""SELECT COUNT(*) AS n FROM orders o
+        WHERE o.farmer_id=? AND o.status='odebrane'
+        AND NOT EXISTS (SELECT 1 FROM shipment_order_links l WHERE l.order_id=o.id)""",
+        (farmer_id,)).fetchone()['n']
+    completed = grouped + standalone
     return {'rules_acknowledged': bool(row), 'rules_version': row['rules_version'] if row else None,
             'review_status': row['review_status'] if row else 'not_started',
             'order_count_observed': count,
+            'current_rules_version': RULES_VERSION,
+            'completed_transaction_count': completed,
+            'profile_reminder_threshold': PROFILE_REMINDER_THRESHOLD,
+            'profile_reminder_due': completed >= PROFILE_REMINDER_THRESHOLD and
+                (not row or row['review_status'] != 'approved' or row['rules_version'] != RULES_VERSION),
+            'threshold_basis': 'product_rule_not_legal_threshold',
             'identity_data_collection': 'disabled_until_secure_provider',
             'can_receive_real_payouts': False,
             'notice': 'Weryfikacja i wymogi DAC7/KYC wymagają ustalenia z operatorem płatności i doradcą prawnym.'}

@@ -18,7 +18,7 @@ from scripts.run_tests_isolated import test_environment as isolated_environment
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_integration_optional.py',
                   'test_postgres_full_api_optin.py')
-RECOVERY_TESTS = ('test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
+RECOVERY_TESTS = ('test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
                   'test_password_reset_http.py')
 BROWSER_TESTS = ('test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
@@ -135,7 +135,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 15 if gate == 'postgres' else 23 if gate == 'windows' else 9
+                    minimum = 15 if gate == 'postgres' else 39 if gate == 'windows' else 9
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0

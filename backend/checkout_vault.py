@@ -1,7 +1,9 @@
 """Authenticated local storage for idempotent checkout replies, never a PIN log.
 
 AES-256-GCM with random nonces; row identity and retention deadline are AAD.
-The key ring is separate from the database and must never enter an archive.
+The key ring is separate from the live database; never include it in source
+archives or plaintext shared backups. Recovery containers require an independent
+backup encryption key stored outside the archive directory.
 """
 import base64
 from datetime import datetime,timedelta,timezone

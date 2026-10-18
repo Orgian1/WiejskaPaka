@@ -59,7 +59,7 @@ danych potrzebna jest sprawdzona procedura z następującymi etapami:
    Gdy kiedyś zostanie dodany operator płatności, przywrócenie lokalnego stanu
    nie może oznaczać ponownego obciążenia ani ponownego zwrotu.
 
-Nie zaimplementowano jeszcze harmonogramu, szyfrowanego magazynu, retencji,
+Nie zaimplementowano jeszcze harmonogramu, zdalnego magazynu, retencji,
 odtwarzania PostgreSQL/PITR ani procedury odtwarzania po utracie infrastruktury.
 Próba nie mierzy RTO/RPO dla rzeczywistych rozmiarów danych, nie sprawdza
 awarii zasilania, systemu plików sieciowych ani równoczesnej rotacji kluczy.
@@ -103,3 +103,41 @@ magazynu, oddzielne przechowywanie kluczy, harmonogram, retencja, Windows ACL
 i PostgreSQL nadal wymagają osobnego wdrożenia. Usunięcie sesji nie rozwiązuje
 cofnięcia haseł i uprawnień do stanu z kopii. Kontrola płatności nie zastępuje
 uzgodnienia z przyszłym operatorem. Narzędzie nie włącza ruchu po odtworzeniu.
+
+## Szyfrowany plik kopii lokalnej (wersja testowa)
+
+`scripts/encrypted_sqlite_snapshot.py` dodaje osobny kontener AES-256-GCM.
+Obejmuje całą kopię SQLite i jej pierścień kluczy zakupowych. Niezależny losowy
+klucz kopii musi znajdować się poza katalogiem archiwum; program odrzuca
+wspólne klucze kopii i bazy. Nie tworzy klucza zastępczego podczas odtwarzania.
+Poniższy przykład wymaga istniejących, zaufanych prywatnych katalogów
+`/tmp/wp-klucze` i `/tmp/wp-kopie` oraz syntetycznej bazy demonstracyjnej:
+
+```bash
+python scripts/encrypted_sqlite_snapshot.py init-key --backup-key /tmp/wp-klucze/demo.backup-key
+python scripts/encrypted_sqlite_snapshot.py backup --source /tmp/demo.sqlite3 --checkout-key /tmp/demo.sqlite3.checkout-key --backup-key /tmp/wp-klucze/demo.backup-key --destination /tmp/wp-kopie/demo.wpbackup
+python scripts/encrypted_sqlite_snapshot.py restore --archive /tmp/wp-kopie/demo.wpbackup --backup-key /tmp/wp-klucze/demo.backup-key --destination /tmp/demo-odtworzone-szyfrowane
+```
+
+Odtwarzanie najpierw uwierzytelnia cały kontener, następnie sprawdza bazę,
+zaszyfrowane rekordy zakupów i audyt płatności oraz unieważnia sesje i linki
+resetowania hasła. Nie nadpisuje istniejącego celu. Nagłówek, identyfikator
+klucza, nonce i treść są objęte uwierzytelnieniem. Publikacja kompletnego
+archiwum jest atomowa i odmawia zastąpienia istniejącego pliku.
+
+Limit bazy wynosi 64 MiB, pierścienia 16 KiB. Operacja wymaga pamięci na całą
+zawartość i jej kopie robocze. Podczas obu operacji powstają prywatne jawne
+pliki tymczasowe, usuwane przy zwykłym zakończeniu, również po błędzie.
+Nie zapewnia to bezpiecznego wymazania ani sprzątania po awarii zasilania.
+Na POSIX nowe pliki mają 0600; Windows wymaga osobnego zabezpieczenia ACL.
+Należy wstrzymać rotację kluczy na czas operacji. Oddzielny katalog nie oznacza
+oddzielnego nośnika ani ochrony przed przejęciem konta operatora.
+
+Narzędzie obsługuje lokalne kopie testowe. Harmonogram, retencja, magazyn
+zdalny, odtwarzanie PostgreSQL i procedury produkcyjne nadal wymagają wdrożenia.
+Utrata klucza uniemożliwia odtworzenie. Kluczy, archiwów i jawnych plików
+roboczych nie wolno dodawać do repozytorium lub artefaktów CI.
+Opis narzędzia `sqlite_snapshot.py` powyżej nadal dotyczy kopii jawnej.
+
+Dokumentacja zastosowanego AEAD:
+https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM

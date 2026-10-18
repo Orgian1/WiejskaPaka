@@ -47,6 +47,13 @@ Przygotowywane dane:
    dodatnią kwotę do testowej wypłaty. Nie wykonuje się przelewu.
 5. Zaloguj administratora, pobierz kolejkę, wpisz fikcyjne uzasadnienie i zapisz
    decyzję testową. Po zapisie odśwież kolejkę. Zatwierdzenie nie włącza wypłat.
+   Wybierz miesiąc i „Pokaż raport finansowy (test)”. Po przekazaniu jednej
+   pozycji przez rolnika raport powinien wykazać jedną zakwalifikowaną pozycję
+   i dodatnie kwoty. „Pobierz raport CSV (TEST)” zapisuje aktualny stan tego
+   miesiąca z API. CSV używa średnika i kwot w groszach; widok pokazuje złote.
+   Liczniki dotyczą pozycji produktów, nie całych przesyłek. Zmiana miesiąca
+   usuwa poprzedni widok. Po wylogowaniu raport znika, ale wcześniej pobrany
+   plik pozostaje w katalogu pobierania komputera.
 6. Możesz sprawdzić zmianę hasła, sesje oraz odzyskiwanie hasła. Ścieżkę
    prywatnej skrzynki resetującej skrypt pokazuje w terminalu. Instrukcja:
    `ODZYSKIWANIE_HASLA_TESTOWE.md`.

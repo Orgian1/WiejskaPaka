@@ -25,6 +25,37 @@ function sellerPayoutSummaryLines(report){
 function dashboardButton(label, action) {
   const b=node('button',label);b.type='button';b.onclick=()=>act(action);return b;
 }
+// Monthly totals come from the server; order counts here refer to product rows.
+function adminFinanceSummaryLines(report,month){
+  const keys=['eligible_order_count','products_grosze','delivery_grosze','gross_order_grosze','platform_commission_grosze','seller_due_grosze','payment_success_event_order_count','refund_event_order_count'];
+  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)||!report||report.month!==month||report.report_type!=='test_operational_snapshot_not_accounting'||!keys.every(key=>Number.isSafeInteger(report[key])&&report[key]>=0))throw Error('Nieprawidłowy raport miesięczny.');
+  if(BigInt(report.products_grosze)+BigInt(report.delivery_grosze)!==BigInt(report.gross_order_grosze)||BigInt(report.platform_commission_grosze)+BigInt(report.seller_due_grosze)!==BigInt(report.gross_order_grosze))throw Error('Niespójne kwoty raportu miesięcznego.');
+  const amount=value=>{const n=BigInt(value);return `${n/100n},${String(n%100n).padStart(2,'0')} zł`};
+  return [
+    `Miesiąc: ${month}. Zakończone pozycje zakwalifikowane do rozliczenia: ${report.eligible_order_count}.`,
+    `Produkty: ${amount(report.products_grosze)}. Dostawa: ${amount(report.delivery_grosze)}. Razem: ${amount(report.gross_order_grosze)}.`,
+    `Prowizja platformy: ${amount(report.platform_commission_grosze)}. Należności sprzedawców: ${amount(report.seller_due_grosze)}.`,
+    `Pozycje z płatnością testową w miesiącu: ${report.payment_success_event_order_count}. Pozycje ze zwrotem testowym: ${report.refund_event_order_count}.`,
+    'Raport operacyjny symulacji. Nie jest dokumentem księgowym ani potwierdzeniem przelewu. Zwroty i zmiana stanu mogą zmienić dane także po zakończeniu miesiąca.'
+  ];
+}
+async function downloadAdminFinanceCsv(month,active){
+  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw Error('Wybierz prawidłowy miesiąc');
+  const epoch=sessionEpoch;
+  const current=()=>epoch===sessionEpoch&&role==='admin'&&!!token&&active();
+  if(!current())return;
+  try{
+    const response=await fetch(`/test/admin/finance/monthly/${month}/export.csv`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
+    if(!current())return;
+    if(!response.ok)throw Error('Nie udało się pobrać testowego CSV. Spróbuj ponownie.');
+    if(!(response.headers.get('Content-Type')||'').toLowerCase().startsWith('text/csv'))throw Error('Nieprawidłowy format raportu CSV.');
+    const blob=await response.blob();
+    if(!current())return;
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=`wiejskapaka-test-${month}.csv`;
+    try{document.body.append(link);link.click()}finally{link.remove();setTimeout(()=>URL.revokeObjectURL(url),0)}
+  }catch(error){if(!current())return;throw error}
+}
 // Explicit test-only settlement after receipt. Retry checks current persisted
 // state before sending an event; an unknown response cannot create a second sale.
 function farmerTestSettlementButton(orderId,active){
@@ -333,21 +364,23 @@ async function loadDashboard() {
     await loadReconciliation();if(!active())return;
     const month=node('input');month.type='month';month.value=new Date().toISOString().slice(0,7);month.setAttribute('aria-label','Miesiąc raportu');
     let financeRequestId=0;
+    month.onchange=()=>{financeRequestId++;box.querySelectorAll('[data-test-finance-report]').forEach(n=>n.remove())};
     box.append(month,dashboardButton('Pokaż raport finansowy (test)',async()=>{
       const selectedMonth=month.value;
       if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(selectedMonth))throw Error('Wybierz prawidłowy miesiąc');
       const financeId=++financeRequestId;
       const r=await api(`/test/admin/finance/monthly/${selectedMonth}`);
       if(!active()||!box.isConnected||financeId!==financeRequestId)return;
+      if(month.value!==selectedMonth)return;
+      const lines=adminFinanceSummaryLines(r,selectedMonth);
       box.querySelectorAll('[data-test-finance-report]').forEach(n=>n.remove());
-      const report=dashboardCard('Raport testowy — dane symulacyjne',[]);
+      const report=dashboardCard('Raport testowy — dane symulacyjne',lines);
       report.dataset.testFinanceReport='true';
-      if(r && typeof r==='object' && !Array.isArray(r)){
-        for(const [key,value] of Object.entries(r)){
-          const readable=typeof value==='object'&&value!==null?JSON.stringify(value):String(value);
-          report.append(node('p',`${key.replaceAll('_',' ')}: ${readable}`));
-        }
-      }else report.append(node('p','Brak danych raportu.'));
+      const download=dashboardButton('Pobierz raport CSV (TEST)',async()=>{
+        if(download.disabled)return;download.disabled=true;
+        try{await downloadAdminFinanceCsv(selectedMonth,()=>active()&&box.isConnected&&report.isConnected&&financeId===financeRequestId&&month.value===selectedMonth)}finally{download.disabled=false}
+      });
+      report.append(download);
       box.append(report);
     }));
   }

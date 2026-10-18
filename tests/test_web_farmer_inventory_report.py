@@ -13,6 +13,6 @@ def test_farmer_dashboard_displays_inventory_and_stock():
 
 def test_admin_report_is_readable_and_replaces_previous_report():
     assert "Raport testowy — dane symulacyjne" in JS
-    assert "Object.entries(r)" in JS
-    assert "report.append(node('p'" in JS
+    assert "adminFinanceSummaryLines(r,selectedMonth)" in JS
+    assert "dashboardCard('Raport testowy — dane symulacyjne',lines)" in JS
     assert "querySelectorAll('[data-test-finance-report]').forEach(n=>n.remove())" in JS

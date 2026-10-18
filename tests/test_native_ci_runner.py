@@ -196,3 +196,28 @@ def test_standalone_windows_recovery_never_claims_full_regression(tmp_path,monke
     assert result['success'] and len(calls)==1
     assert [task['name'] for task in result['tasks']]==['windows_recovery']
     assert SENSITIVE not in path.read_text()
+
+
+@pytest.mark.parametrize('counts',[None, [], 'private-invalid-counts', 0])
+def test_windows_missing_counts_preserve_sanitized_failure_and_write_report(tmp_path,monkeypatch,counts):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    known='test_sqlite_snapshot.py'
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+        else:
+            Path(command[-1]).write_text(json.dumps({
+                'complete':True,'success':False,'sources_unchanged':True,
+                'executed':1,'planned':1,'test_counts':counts,
+                'results':[{'file':known,'returncode':None,'timeout':True,'output_tail':SENSITIVE},
+                           {'file':SENSITIVE,'returncode':1},None,{'file':[SENSITIVE]}]}))
+        return subprocess.CompletedProcess(command,1 if '--junitxml' not in command else 0,SENSITIVE,SENSITIVE)
+    path=tmp_path/'windows.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    saved=json.loads(path.read_text())
+    assert saved==result and not result['success']
+    task=result['tasks'][-1]
+    assert task['error']=='INVALID_TEST_RESULT'
+    assert task['failed_modules']==task['incomplete_modules']==task['timed_out_modules']==[known]
+    assert 'test_counts' not in task
+    assert SENSITIVE not in path.read_text() and 'private-invalid-counts' not in path.read_text()

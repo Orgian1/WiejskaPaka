@@ -12,6 +12,7 @@ Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
 Natywne bramy Windows/PostgreSQL/Chromium: `docs/NATYWNE_TESTY_CI.md`.
 Narzędzie lokalnej kopii i odtworzenia SQLite, próba WAL oraz ograniczenia procedury: `docs/ODTWARZANIE_SQLITE.md`.
 Bieżące demo wszystkich ról, rozliczenia i stan kontroli: `docs/RAPORT_DEMO_I_ROZLICZEN_2026-10-18.md`.
+Czytelny miesięczny raport administratora i pobieranie CSV: `docs/RAPORT_PANELU_FINANSOWEGO_2026-10-18.md`.
 Poprzednia kolejka administratora: `docs/RAPORT_KOLEJKI_ROLNIKOW_2026-10-18.md`.
 Poprzedni panel rolnika i pełny odbiór Windows: `docs/RAPORT_PROFILU_ROLNIKA_2026-10-18.md`.
 Szyfrowane kopie: `docs/RAPORT_SZYFROWANEJ_KOPII_2026-10-18.md`.

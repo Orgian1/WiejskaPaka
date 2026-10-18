@@ -36,6 +36,23 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel rolnika','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
+            page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True).wait_for(state='visible')
+            selected_month=page.get_by_label('Miesiąc raportu').input_value()
+            with page.expect_response(f'**/test/admin/finance/monthly/{selected_month}') as finance:
+                page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True).click()
+            assert finance.value.status==200 and finance.value.json()['eligible_order_count']==0
+            report=page.locator('[data-test-finance-report]')
+            report.get_by_text('Prowizja platformy: 0,00 zł.',exact=False).wait_for(state='visible')
+            with page.expect_download() as download:
+                report.get_by_role('button',name='Pobierz raport CSV (TEST)',exact=True).click()
+            assert download.value.suggested_filename==f'wiejskapaka-test-{selected_month}.csv'
+            content=Path(download.value.path()).read_text(encoding='utf-8-sig')
+            assert 'Miesiac;Typ raportu;' in content
+            assert selected_month+';test_operational_snapshot_not_accounting;' in content
+            assert accounts['admin']['email'] not in content
+            page.get_by_label('Miesiąc raportu').fill('2026-09')
+            page.get_by_label('Miesiąc raportu').dispatch_event('change')
+            assert page.locator('[data-test-finance-report]').count()==0
             with page.expect_response('**/admin/farmers/compliance-queue?*') as response:
                 page.locator('#admin-seller-refresh').focus();page.locator('#admin-seller-refresh').press('Enter')
             assert response.value.status==200 and response.value.json()['total']==1
@@ -123,6 +140,11 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             page.wait_for_function("document.getElementById('dashboard-content').textContent.includes('pozycje zamówień: 1')",polling=100)
             assert 'Do testowej wypłaty: 0,00 zł' not in page.locator('#dashboard-content').text_content()
             sign_out();sign_in('admin')
+            finance_button=page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True)
+            finance_button.wait_for(state='visible')
+            with page.expect_response('**/test/admin/finance/monthly/*') as finance:finance_button.click()
+            assert finance.value.status==200 and finance.value.json()['eligible_order_count']==1
+            page.locator('[data-test-finance-report]').get_by_text('Zakończone pozycje zakwalifikowane do rozliczenia: 1.',exact=False).wait_for(state='visible')
             with page.expect_response('**/admin/farmers/compliance-queue?*') as response:page.click('#admin-seller-refresh')
             assert response.value.status==200 and response.value.json()['total']==1
             page.locator('#admin-seller-results textarea').fill('Sprawdzono fikcyjne demo wszystkich ról')

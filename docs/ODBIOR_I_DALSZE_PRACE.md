@@ -2,7 +2,8 @@
 
 Stan uzupełniony 18 października 2026. To lista warunków odbioru, nie zgoda
 na produkcyjne integracje. Wyniki natywnych testów wraz z zakresem i badanym
-commitem znajdują się w `RAPORT_NAPRAWY_KOPII_WINDOWS_2026-10-18.md`.
+commitem znajdują się w `RAPORT_DEMO_I_ROZLICZEN_2026-10-18.md` oraz raporcie
+kolejnego pakietu `RAPORT_PANELU_FINANSOWEGO_2026-10-18.md`.
 Narzędzie lokalnej kopii i odtworzenia opisuje `ODTWARZANIE_SQLITE.md`.
 
 | Obszar | Obecny stan | Warunek dalszego odbioru |
@@ -20,7 +21,8 @@ Narzędzie lokalnej kopii i odtworzenia opisuje `ODTWARZANIE_SQLITE.md`.
 
 ## Co można teraz sprawdzić lokalnie
 
-Uruchomić jednorazowe demo według README, tworzyć wyłącznie syntetyczne konta,
+Uruchomić jednorazowe demo z czterema rolami według `DEMO_Z_DANYMI.md`,
+tworzyć wyłącznie syntetyczne konta,
 produkty i zakupy. Potwierdzić dodatnią opłatę przy dostawie na adres, odbiór
 w punkcie, jedną opłatę za przesyłkę, sprawdzenie towaru przed PIN-em, blokadę
 kodu po błędnych próbach oraz testowy pełny zwrot z dostawą przy winie dostawcy.

@@ -68,6 +68,8 @@ def failure_locations(path, root):
 
 
 def checked_counts(data):
+    if not isinstance(data, dict):
+        raise ValueError('Missing or invalid counts')
     result = {key: data[key] for key in ('total', 'passed', 'failed', 'skipped')}
     if (any(type(value) is not int or value < 0 for value in result.values())
             or result['total'] != sum(result[key] for key in ('passed', 'failed', 'skipped'))):
@@ -125,10 +127,18 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                 task['returncode'] = process.returncode
                 if kind == 'full':
                     data = json.loads(raw.read_text(encoding='utf-8'))
-                    task['test_counts'] = checked_counts(data['test_counts'])
+                    if not isinstance(data, dict) or not isinstance(data.get('results', []), list):
+                        raise ValueError('Invalid isolated report')
                     known = {p.name for p in (root/'tests').glob('test_*.py')}
-                    task['failed_modules'] = sorted({entry['file'] for entry in data.get('results', [])
-                        if entry.get('file') in known and entry.get('returncode') != 0})
+                    entries = [entry for entry in data.get('results', []) if isinstance(entry, dict)
+                               and isinstance(entry.get('file'), str) and entry['file'] in known]
+                    task['failed_modules'] = sorted({entry['file'] for entry in entries
+                        if entry.get('returncode') != 0})
+                    task['incomplete_modules'] = sorted({entry['file'] for entry in entries
+                        if entry.get('test_counts') is None})
+                    task['timed_out_modules'] = sorted({entry['file'] for entry in entries
+                        if entry.get('timeout') is True})
+                    task['test_counts'] = checked_counts(data['test_counts'])
                     task['success'] = bool(process.returncode == 0 and data['complete'] is True and
                         data['success'] is True and data['sources_unchanged'] is True
                         and data['executed'] == data['planned'] and data['planned'] > 0

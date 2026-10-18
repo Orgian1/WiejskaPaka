@@ -38,11 +38,12 @@ def reviewed_test_schema(root):
 
 class NativeAPI:
     """Preserve two-value unpacking while permitting a controlled process restart."""
-    def __init__(self, client, parameters, restart, key_path):
+    def __init__(self, client, parameters, restart, key_path, reset_outbox=None):
         self.client = client
         self.parameters = parameters
         self.restart = restart
         self.key_path = key_path
+        self.reset_outbox = reset_outbox
 
     def __iter__(self):
         return iter((self.client, self.parameters))
@@ -60,7 +61,12 @@ def pg_restart_api():
     yield from _postgres_api()
 
 
-def _postgres_api():
+@pytest.fixture
+def pg_reset_api():
+    yield from _postgres_api(reset=True)
+
+
+def _postgres_api(*, reset=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -112,6 +118,10 @@ def _postgres_api():
                 keyfile=Path(folder)/'api.checkout-key';create_ring(keyfile)
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
+                reset_outbox = Path(folder)/'reset-outbox' if reset else None
+                if reset:
+                    env.update(WP_ENABLE_TEST_PASSWORD_RESET='1', WP_ENABLE_PG_TEST_PASSWORD_RESET='1',
+                               WP_TEST_RESET_OUTBOX=str(reset_outbox))
                 with tempfile.TemporaryFile() as log:
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
                         def start():
@@ -140,7 +150,7 @@ def _postgres_api():
                             start()
 
                         start()
-                        yield NativeAPI(client, app_parameters, restart, keyfile)
+                        yield NativeAPI(client, app_parameters, restart, keyfile, reset_outbox)
         finally:
             if process is not None:
                 process.terminate()
@@ -553,3 +563,121 @@ def test_native_encrypted_postgres_backup_and_isolated_restore(pg_restart_api, t
     assert client.get('/auth/me', headers=buyer).status_code == 200
     replay = client.post('/orders', headers=headers, json=delivery(pid))
     assert replay.status_code == 201 and replay.json() == original
+
+
+def test_native_reset_replay_restart_and_purchase_integrity(pg_reset_api):
+    import psycopg
+    from tests.test_password_reset_http import register as reset_register, request, confirm, EMAIL, OLD, NEW
+    client, parameters = pg_reset_api
+    assert client.get('/auth/password-reset-test/options').json()['enabled']
+    farmer, _ = register(client, 'rolnik')
+    buyer = reset_register(client)
+    pid = product(client, farmer)
+    order = client.post('/orders', headers={**buyer,'Idempotency-Key':uuid4().hex}, json=delivery(pid))
+    assert order.status_code == 201
+    oid = order.json()['id']
+    record = client.get(f'/orders/{oid}/purchase-record', headers=buyer).json()
+    second = client.post('/auth/login', json={'email':EMAIL,'password':OLD}).json()['access_token']
+    token, notice = request(client, pg_reset_api.reset_outbox)
+    unknown, unknown_notice = request(client, pg_reset_api.reset_outbox, 'unknown@example.invalid')
+    assert notice == unknown_notice and confirm(client, unknown).status_code == 400
+    expired,_ = request(client, pg_reset_api.reset_outbox)
+    with psycopg.connect(**parameters) as con:
+        con.execute('UPDATE password_reset_tokens SET expires_at=%s WHERE token_hash=%s',
+                    ('2000-01-01T00:00:00+00:00',hashlib.sha256(expired.encode()).hexdigest()))
+    assert confirm(client,expired).status_code == 400
+    with psycopg.connect(**parameters) as con:
+        stored = con.execute('SELECT token_hash FROM password_reset_tokens WHERE token_hash=%s',
+                             (hashlib.sha256(token.encode()).hexdigest(),)).fetchone()[0]
+        assert stored == hashlib.sha256(token.encode()).hexdigest() and stored != token
+        before = con.execute('SELECT id,status,total_grosze,pin_hash FROM orders').fetchall()
+    pg_reset_api.restart()
+    assert client.get('/auth/me',headers=buyer).status_code == 200
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(lambda _:confirm(client,token).status_code, range(2))) == [200,400]
+    for headers in (buyer, {'Authorization':'Bearer '+second}):
+        assert client.get('/auth/me',headers=headers).status_code == 401
+    assert client.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 401
+    login = client.post('/auth/login',json={'email':EMAIL,'password':NEW})
+    assert login.status_code == 200
+    recovered=client.post(f'/orders/{oid}/recover-pin-test',headers={
+        'Authorization':'Bearer '+login.json()['access_token']},json={'password':NEW})
+    assert recovered.status_code == 200 and recovered.json()['pin_test_only'] == order.json()['pin_test_only']
+    assert client.get(f'/orders/{oid}/purchase-record',headers={
+        'Authorization':'Bearer '+login.json()['access_token']}).json() == record
+    with psycopg.connect(**parameters) as con:
+        assert con.execute('SELECT id,status,total_grosze,pin_hash FROM orders').fetchall() == before
+        assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 0
+
+
+def test_native_reset_concurrent_issuance_budget_survives_restart(pg_reset_api):
+    import json, psycopg
+    from tests.test_password_reset_http import register as reset_register, EMAIL, NEW
+    client, parameters = pg_reset_api
+    reset_register(client)
+    def issue(_):return client.post('/auth/password-reset-test/request',json={'email':EMAIL})
+    with ThreadPoolExecutor(max_workers=8) as pool:responses=list(pool.map(issue, range(8)))
+    assert all(r.status_code == 202 and r.json()==responses[0].json() for r in responses)
+    files = list(pg_reset_api.reset_outbox.glob('*.json'))
+    assert len(files) == 3
+    with psycopg.connect(**parameters) as con:
+        assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 3
+        assert con.execute('SELECT attempts FROM password_reset_limits WHERE bucket=%s',
+                           ('issue:'+hashlib.sha256(EMAIL.encode()).hexdigest(),)).fetchone()[0] == 3
+    pg_reset_api.restart()
+    assert issue(None).status_code == 202
+    assert len(list(pg_reset_api.reset_outbox.glob('*.json'))) == 3
+    tokens = [json.loads(p.read_text())['fragment'].split('=',1)[1] for p in files]
+    def consume(token):return client.post('/auth/password-reset-test/confirm',
+        json={'token':token,'new_password':NEW}).status_code
+    with ThreadPoolExecutor(max_workers=3) as pool:assert sorted(pool.map(consume,tokens)) == [200,400,400]
+
+
+def test_native_reset_serializes_old_password_login(pg_reset_api):
+    from tests.test_password_reset_http import register as reset_register, request, confirm, EMAIL, OLD, NEW
+    client, _ = pg_reset_api
+    reset_register(client)
+    token,_ = request(client, pg_reset_api.reset_outbox)
+    def race(kind):
+        return confirm(client,token) if kind=='reset' else client.post('/auth/login',json={'email':EMAIL,'password':OLD})
+    with ThreadPoolExecutor(max_workers=2) as pool:reset,login=list(pool.map(race, ('reset','login')))
+    assert reset.status_code == 200 and login.status_code in (200,401)
+    if login.status_code == 200:
+        assert client.get('/auth/me',headers={'Authorization':'Bearer '+login.json()['access_token']}).status_code == 401
+    assert client.post('/auth/login',json={'email':EMAIL,'password':NEW}).status_code == 200
+
+
+def test_native_reset_serializes_authenticated_password_change(pg_reset_api):
+    from tests.test_password_reset_http import register as reset_register, request, confirm, OLD
+    client, _ = pg_reset_api
+    buyer=reset_register(client)
+    token,_=request(client, pg_reset_api.reset_outbox)
+    def race(kind):
+        if kind=='reset':return confirm(client,token)
+        return client.post('/auth/change-password',headers=buyer,
+                           json={'current_password':OLD,'new_password':'Other-new-synthetic-password!'})
+    with ThreadPoolExecutor(max_workers=2) as pool:reset,changed=list(pool.map(race, ('reset','change')))
+    assert (reset.status_code,changed.status_code) in ((200,401),(400,200))
+    assert client.get('/auth/me',headers=buyer).status_code == 401
+
+
+def test_native_reset_database_failure_rolls_back_password_and_sessions(pg_reset_api):
+    import psycopg
+    from psycopg.conninfo import conninfo_to_dict
+    from tests.test_password_reset_http import register as reset_register, request, confirm, EMAIL, OLD
+    client, parameters = pg_reset_api
+    buyer=reset_register(client)
+    token,_=request(client,pg_reset_api.reset_outbox)
+    admin = {**conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN']), 'dbname':parameters['dbname']}
+    with psycopg.connect(**admin,autocommit=True) as con:
+        con.execute("CREATE FUNCTION fail_test_reset_revoke() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test reset rollback'; END $$")
+        con.execute('CREATE TRIGGER fail_test_reset_revoke BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION fail_test_reset_revoke()')
+        try:
+            assert confirm(client,token).status_code == 500
+            assert client.get('/auth/me',headers=buyer).status_code == 200
+            assert client.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 200
+            assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 1
+        finally:
+            con.execute('DROP TRIGGER fail_test_reset_revoke ON sessions')
+            con.execute('DROP FUNCTION fail_test_reset_revoke()')
+    assert confirm(client,token).status_code == 200

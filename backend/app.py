@@ -2894,15 +2894,21 @@ def change_account_password(payload:ChangePasswordIn,user=Depends(current_user),
 
 # Demo-only password reset: never silently enable a local mailbox on PostgreSQL.
 from backend import password_reset as reset_service
-RESET_TEST_ENABLED = os.environ.get('WP_ENABLE_TEST_PASSWORD_RESET') == '1' and not DATABASE_URL
+RESET_TEST_ENABLED = os.environ.get('WP_ENABLE_TEST_PASSWORD_RESET') == '1' and (
+    not DATABASE_URL or reset_service.postgres_demo_reset_allowed(os.environ, DATABASE_URL))
 RESET_OUTBOX = None
 if RESET_TEST_ENABLED:
     _reset_folder = os.environ.get('WP_TEST_RESET_OUTBOX', '')
     if not _reset_folder:
         raise RuntimeError('Testowe odzyskiwanie hasła wymaga prywatnej skrzynki lokalnej')
+    if DATABASE_URL:
+        _reset_path = Path(_reset_folder)
+        if not _reset_path.is_absolute() or _reset_path.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
+            raise RuntimeError('Testowa skrzynka PostgreSQL musi byc poza projektem')
     RESET_OUTBOX = reset_service.prepare_outbox(_reset_folder)
-    with db() as _reset_con:
-        _reset_con.executescript(reset_service.SCHEMA_SQLITE)
+    if not DATABASE_URL:
+        with db() as _reset_con:
+            _reset_con.executescript(reset_service.SCHEMA_SQLITE)
 
 
 class RequestPasswordResetIn(BaseModel):

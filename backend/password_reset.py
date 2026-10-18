@@ -1,4 +1,4 @@
-"""Opt-in SQLite demo reset; real delivery must use a verified external channel."""
+"""Opt-in private SQLite/PostgreSQL demo reset; real delivery must use a verified external channel."""
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
@@ -35,6 +35,47 @@ def digest(value):
     return hashlib.sha256(value.encode('utf-8')).hexdigest()
 
 
+def _postgres(con):
+    from backend.pg_adapter import PgConnection
+    return isinstance(con, PgConnection)
+
+
+def _lock_reset(con):
+    # Serialize persistent budgets and token consumption across API processes.
+    if _postgres(con):
+        con.execute('SELECT pg_advisory_xact_lock(hashtextextended(?,0))',
+                    ('wp:password-reset:global',))
+
+
+def _lock_email(con, email):
+    # Same account lock as login, password changes and session revocation.
+    if _postgres(con):
+        con.execute('SELECT pg_advisory_xact_lock(hashtext(?))', (email,))
+
+
+def postgres_demo_reset_allowed(environ, dsn):
+    """A second opt-in permits only a dedicated local PostgreSQL test target."""
+    if environ.get('WP_ENABLE_PG_TEST_PASSWORD_RESET') != '1':
+        return False
+    try:
+        if os.name != 'posix' or environ.get('WP_ENV', '').lower() not in ('test', 'testing'):
+            raise ValueError('test only')
+        from psycopg.conninfo import conninfo_to_dict
+        parameters = conninfo_to_dict(dsn)
+        allowed = {'host', 'port', 'dbname', 'user', 'password', 'sslmode',
+                   'connect_timeout', 'application_name'}
+        if set(parameters) - allowed or parameters.get('host', '').lower() not in ('127.0.0.1', '::1', 'localhost'):
+            raise ValueError('local only')
+        name = parameters.get('dbname', '')
+        if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]{0,62}', name) or not (name.startswith('wp_test_') or name.endswith('_test')):
+            raise ValueError('dedicated test database required')
+        if any(environ.get(k) for k in ('PGHOSTADDR', 'PGSERVICE', 'PGSERVICEFILE', 'PGPORT', 'PGDATABASE', 'PGUSER', 'PGPASSWORD', 'PGOPTIONS')):
+            raise ValueError('inherited routing is not allowed')
+    except Exception:
+        raise ValueError('Nieprawidlowa konfiguracja testowego resetu PostgreSQL') from None
+    return True
+
+
 def budget(con, bucket, limit, now):
     row = con.execute('SELECT attempts,window_started_at FROM password_reset_limits WHERE bucket=?',
                       (bucket,)).fetchone()
@@ -52,13 +93,15 @@ def budget(con, bucket, limit, now):
 
 
 def issue(con, email, *, now=None):
-    """Caller holds BEGIN IMMEDIATE and commits rate counters even on denial.
+    """Caller owns a transaction (BEGIN IMMEDIATE on SQLite) and commits denials.
 
     Returns an unbound random token for unknown emails, so the demo mailbox
-    and HTTP response do not disclose registration. Only hashes enter SQLite.
+    and HTTP response do not disclose registration. Only hashes enter the database.
     """
+    _lock_reset(con)
     now = now or datetime.now(timezone.utc)
     email = email.strip().lower()
+    _lock_email(con, email)
     con.execute('DELETE FROM password_reset_tokens WHERE expires_at<=?', (now.isoformat(),))
     con.execute('DELETE FROM password_reset_limits WHERE window_started_at<=?',
                 ((now-WINDOW).isoformat(),))
@@ -78,6 +121,8 @@ def issue(con, email, *, now=None):
 
 def consume(con, hasher, token, new_password, *, now=None):
     """Atomically consume all reset links, replace password, revoke all sessions."""
+    supplied_now = now
+    _lock_reset(con)
     now = now or datetime.now(timezone.utc)
     if not budget(con, 'consume:global', 100, now):
         return 429
@@ -85,6 +130,13 @@ def consume(con, hasher, token, new_password, *, now=None):
         return 400
     row = con.execute('''SELECT r.*,u.password_hash,u.email FROM password_reset_tokens r
         JOIN users u ON u.id=r.user_id WHERE r.token_hash=?''', (digest(token),)).fetchone()
+    if row and _postgres(con):
+        _lock_email(con, row['email'])
+        # A password change may have committed while waiting for that lock.
+        row = con.execute('''SELECT r.*,u.password_hash,u.email FROM password_reset_tokens r
+            JOIN users u ON u.id=r.user_id WHERE r.token_hash=?''', (digest(token),)).fetchone()
+    if supplied_now is None:
+        now = datetime.now(timezone.utc)
     if (not row or utc_datetime(row['created_at']) > now
             or utc_datetime(row['expires_at']) <= now
             or not secrets.compare_digest(row['password_version'], digest(row['password_hash']))):

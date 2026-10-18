@@ -13,7 +13,7 @@ powiadomień ani odzyskiwania hasła.
 | PIN odbioru | Polityka dopuszcza wyłącznie panel; nie wysyłać go pocztą |
 | Reset hasła w demo | Losowy token, hash w bazie, 15 minut, jednorazowość, limity, cofnięcie sesji |
 | Dostarczenie resetu | Prywatny plik JSON w lokalnym demo SQLite; brak SMTP |
-| Reset na PostgreSQL | Wyłączony w backend/app.py, także przy WP_ENABLE_TEST_PASSWORD_RESET=1 |
+| Reset na PostgreSQL | Domyślnie wyłączony; osobny opt-in prywatnego testu lokalnego, opis RESET_HASLA_POSTGRESQL_TESTOWY.md; bez SMTP |
 | Powiadomienia o zakupie/dostawie | Istnieje polityka kanałów; nie ma podłączonej wysyłki ani kolejki SMTP |
 | Weryfikacja e-maila | Wymieniona w polityce zdarzeń; nie stanowi wdrożonego przepływu potwierdzenia adresu |
 
@@ -40,8 +40,9 @@ Nie zmieniać rekordów ani nie wysyłać testów do cudzych adresów automatycz
    brak konfiguracji ma pozostawić funkcję wyłączoną.
 2. Zaimplementować potwierdzanie adresu i przechowywanie stanu weryfikacji.
    Powiadomienia transakcyjne muszą respektować istniejącą politykę kanałów.
-3. Dostosować reset do transakcji PostgreSQL i sprawdzić równoległe użycie
-   jednego tokenu. Sam transport SMTP nie wystarczy do odblokowania resetu.
+3. Odebrać testowy protokół resetu PostgreSQL opisany w
+   RESET_HASLA_POSTGRESQL_TESTOWY.md i dostosować go do właściwego transportu.
+   Sam SMTP nie zastępuje kolejki, zasad odbiorców i odbioru całego procesu.
 4. Oddzielić wysyłkę od żądania HTTP: kolejka, kontrolowane ponowienia,
    spójność stanu i limit wysyłek. Nie wysyłać losowych kodów do nieznanych
    adresów jak w prywatnej skrzynce demo; odpowiedź HTTP nadal ma być ogólna.

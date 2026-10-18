@@ -51,8 +51,9 @@ Nie wymagają sesji; potwierdzenie wymaga ważnego kodu. Audyt autoryzacji oznac
 wyłącznie te dokładne pary metoda/ścieżka jako `RECOVERY_TOKEN_FLOW`, nadal
 wymagające przeglądu. Nie zwalnia innych endpointów z autoryzacji.
 
-Funkcja pozostaje wyłączona dla PostgreSQL. Dodano wyłącznie schemat do
-manifestu nowych jednorazowych baz testowych; nie wykonano produkcyjnej migracji
+Na PostgreSQL funkcja domyślnie pozostaje wyłączona. Osobny jawny wariant
+lokalnego testu, z dodatkowymi blokadami współbieżności, opisuje
+RESET_HASLA_POSTGRESQL_TESTOWY.md. Nie wykonano produkcyjnej migracji
 ani nie podłączono zewnętrznego kanału dostarczania. Globalne limity demo nie zastępują
 produkcyjnej ochrony przed nadużyciami, kolejkowania, monitoringu i polityki
 retencji wiadomości. Nie deklarujemy odporności na wszystkie kanały czasowe.

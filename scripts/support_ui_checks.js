@@ -27,6 +27,14 @@ async function main(chosen){
   pending[0].resolve({mode:'test',cases:[{id:cid,category:'product',status:'new',kind:'order',target_id:'private-old-order'}],limit:20,offset:0,has_more:false});await first;
   assert.equal(el('support-list').children.length,0);assert.match(el('support-status').textContent,/Brak zgłoszeń/);return;
  }
+ if(chosen==='history_switch'||chosen==='history_replaced'){
+  const first=ctx.loadSupportCase(cid);
+  pending[0].resolve({...data,events:[{revision:21,actor_role:'klient',created_at:'2026-10-18',message:'Test',status_after:'new'}],has_older_events:true});await first;
+  const older=pool.find(n=>n.textContent==='Pokaż wcześniejsze wpisy');
+  if(chosen==='history_switch'){ctx.sessionEpoch++;ctx.resetSupportView(null)}
+  else {const next=ctx.loadSupportCase('b'.repeat(32));pending[1].resolve(data);await next}
+  const count=calls.length;const result=older.onclick();assert.equal(calls.length,count,'An obsolete history control must not send a request in a different view or session');await result;return;
+ }
  if(chosen==='detail_switch'){
   const result=ctx.loadSupportCase(cid);ctx.sessionEpoch++;ctx.resetSupportView(null);pending[0].resolve(data);await result;assert.equal(el('support-detail').children.length,0);return;
  }

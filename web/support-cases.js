@@ -84,7 +84,7 @@ async function loadSupportCase(id){
     const events=node('div');events.dataset.supportEvents='true';for(const event of data.events)events.append(supportEventNode(event));host.append(events);
     let before=data.events[0]?.revision;
     const older=supportButton('Pokaż wcześniejsze wpisy',async()=>{
-      if(older.disabled||!before)return;older.disabled=true;
+      if(older.disabled||!before||!supportActive(epoch,generation)||request!==supportDetailRequest||!host.isConnected)return;older.disabled=true;
       try{
         const page=await api('/test/support/cases/'+encodeURIComponent(id)+'?before_revision='+before);
         if(!supportActive(epoch,generation)||request!==supportDetailRequest||!host.isConnected)return;

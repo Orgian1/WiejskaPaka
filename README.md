@@ -175,3 +175,6 @@ Szczegóły aktualizacji bazy, zachowania i ograniczeń: `docs/REZERWACJE_MAGAZY
 Nie deklarujemy ukończenia wszystkich 360 numerowanych pozycji B/10921–B/11280
 ani procentu ukończenia bez sprawdzonej listy wymagań. Pozostałe bramy i braki
 funkcjonalne są jawnie opisane w raporcie.
+
+Końcowy wynik testów bez hostingu i rzeczywistych płatności (18.10.2026):
+`docs/WYNIK_KONCOWY_TESTOW_BEZ_HOSTINGU_2026-10-18.md`.

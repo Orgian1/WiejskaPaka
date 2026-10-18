@@ -56,3 +56,10 @@ nie trwała instalacja PostgreSQL ani wynik pomiaru docelowego serwera.
 Kontrolę konfiguracji i rdzenia PostgreSQL przed startem opisuje
 `PREFLIGHT_POSTGRESQL_PODGLAD.md`. Nie tworzy ani nie migruje bazy, a jej
 sukces nie zastępuje testu trwałości, kopii i rzeczywistego wdrożenia.
+
+## Zamknięty pakiet testowania — 18.10.2026
+
+`WYNIK_KONCOWY_TESTOW_BEZ_HOSTINGU_2026-10-18.md` zapisuje komplet wyników
+dla commitu e83feaf: pełny Windows i Linux, natywny PostgreSQL i Chromium,
+akceptację HTTP i stabilność lokalną. Wszystkie bramki zakończone sukcesem.
+To nie odbiór hostingu, rzeczywistych płatności ani brakujących funkcji.

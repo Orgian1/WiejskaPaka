@@ -1,0 +1,61 @@
+{
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "application_sha256": "5d1ca33e7d0cf4021e6d6a54d05c7802adbb712aaefe00722a1f27a565d23ec9",
+  "executed": 315,
+  "planned": 315,
+  "test_counts": {
+    "total": 3867,
+    "passed": 3826,
+    "failed": 0,
+    "skipped": 41
+  },
+  "invalid_reason": null,
+  "skipped_modules": [
+    {
+      "file": "test_admin_seller_review_browser.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_catalog_page_browser.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_mobile_offline.py",
+      "skipped": 1
+    },
+    {
+      "file": "test_password_reset_browser.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_postgres_environment.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_postgres_full_api_optin.py",
+      "skipped": 15
+    },
+    {
+      "file": "test_postgres_transaction_integration_optional.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_roles_offline.py",
+      "skipped": 1
+    },
+    {
+      "file": "test_sample_demo_browser.py",
+      "skipped": 10
+    },
+    {
+      "file": "test_seller_compliance_browser.py",
+      "skipped": 2
+    },
+    {
+      "file": "test_support_cases_browser.py",
+      "skipped": 2
+    }
+  ]
+}

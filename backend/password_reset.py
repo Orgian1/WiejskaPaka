@@ -9,6 +9,7 @@ import secrets
 import stat
 
 from backend.time_safety import utc_datetime
+from backend.notification_policy import Event, Channel, validate_channel
 
 SCHEMA_SQLITE = '''
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -109,6 +110,7 @@ def prepare_outbox(folder):
 
 def deliver_demo(folder, email, token):
     """Private local test mailbox; never expose token through API or server log."""
+    validate_channel(Event.PASSWORD_RESET, Channel.EMAIL, email_verified=False)
     folder = prepare_outbox(folder)
     path = folder / (secrets.token_hex(16)+'.json')
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

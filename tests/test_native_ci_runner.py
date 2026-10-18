@@ -79,6 +79,9 @@ def test_windows_gate_does_not_claim_linux_is_windows(tmp_path, monkeypatch):
 def test_windows_requires_a_complete_consistent_isolated_report(tmp_path, monkeypatch, variant):
     monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
     def runner(command, **kwargs):
+        if '--junitxml' in command:
+            junit(command, passed=23)
+            return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
         data = {'complete': variant!='incomplete', 'success': True, 'sources_unchanged': variant!='changed',
                 'executed': 1, 'planned': 2 if variant=='missing-modules' else 1,
                 'test_counts': {'total': 28 if variant=='bad-counts' else 27, 'passed': 10,
@@ -99,7 +102,7 @@ def test_browser_requires_offline_and_real_http_tasks(tmp_path, http_code):
         calls.append(command)
         assert kwargs['env']['WIEJSKAPAKA_EXTENDED_BROWSER'] == '1'
         if '--junitxml' in command:
-            junit(command, passed=7)
+            junit(command, passed=9)
             return subprocess.CompletedProcess(command, 0, '', '')
         return subprocess.CompletedProcess(command, http_code, SENSITIVE, SENSITIVE)
     result = ci.run('browser', tmp_path/'result.json', source=source(), runner=runner)
@@ -142,3 +145,38 @@ def test_failure_locations_exclude_logs_parameters_and_private_paths(tmp_path):
     result = ci.failure_locations(path,tmp_path)
     assert result == [{'file':'test_public_case.py','line':42}]
     assert 'private' not in json.dumps(result)
+
+
+def test_windows_recovery_failure_stops_before_full_regression(tmp_path, monkeypatch):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    calls = []
+    def runner(command, **kwargs):
+        calls.append(command)
+        assert '--junitxml' in command
+        junit(command, passed=22, failed=1)
+        return subprocess.CompletedProcess(command, 1, SENSITIVE, SENSITIVE)
+    path = tmp_path/'windows.json'
+    result = ci.run('windows', path, source={}, runner=runner)
+    assert len(calls) == 1 and not result['success'] and not result['complete']
+    assert result['tasks'][0]['name'] == 'windows_recovery'
+    assert SENSITIVE not in path.read_text()
+
+
+def test_full_windows_failure_reports_only_allowlisted_module_names(tmp_path, monkeypatch):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    known = 'test_sqlite_snapshot.py'
+    def runner(command, **kwargs):
+        if '--junitxml' in command:
+            junit(command, passed=23)
+            return subprocess.CompletedProcess(command, 0, '', '')
+        data = {'complete': True, 'success': False, 'sources_unchanged': True,
+            'executed': 1, 'planned': 1, 'test_counts': {'total':1,'passed':0,'failed':1,'skipped':0},
+            'results': [{'file':known,'returncode':1,'output_tail':SENSITIVE},
+                        {'file':SENSITIVE,'returncode':1,'output_tail':SENSITIVE}]}
+        Path(command[-1]).write_text(json.dumps(data))
+        return subprocess.CompletedProcess(command, 1, SENSITIVE, SENSITIVE)
+    path = tmp_path/'windows.json'
+    result = ci.run('windows',path,source={},runner=runner)
+    assert not result['success']
+    assert result['tasks'][-1]['failed_modules'] == [known]
+    assert SENSITIVE not in path.read_text()

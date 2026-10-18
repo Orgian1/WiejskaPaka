@@ -18,6 +18,8 @@ from scripts.run_tests_isolated import test_environment as isolated_environment
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_integration_optional.py',
                   'test_postgres_full_api_optin.py')
+RECOVERY_TESTS = ('test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
+                  'test_password_reset_http.py')
 BROWSER_TESTS = ('test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
               'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'PROGRAMDATA', 'PROGRAMFILES',
@@ -93,7 +95,9 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             if platform.system() != 'Windows':
                 result['error'] = 'WINDOWS_REQUIRED'
             else:
-                tasks = [('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--report', str(raw)], 'full')]
+                tasks = [('windows_recovery', [sys.executable, '-m', 'pytest', '-q',
+                    *[str(root/'tests'/name) for name in RECOVERY_TESTS], '--junitxml', str(xml)], 'junit'),
+                         ('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--report', str(raw)], 'full')]
         elif gate == 'postgres':
             dsn = source.get('WP_TEST_POSTGRES_DSN')
             try:
@@ -120,6 +124,9 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                 if kind == 'full':
                     data = json.loads(raw.read_text(encoding='utf-8'))
                     task['test_counts'] = checked_counts(data['test_counts'])
+                    known = {p.name for p in (root/'tests').glob('test_*.py')}
+                    task['failed_modules'] = sorted({entry['file'] for entry in data.get('results', [])
+                        if entry.get('file') in known and entry.get('returncode') != 0})
                     task['success'] = bool(process.returncode == 0 and data['complete'] is True and
                         data['success'] is True and data['sources_unchanged'] is True
                         and data['executed'] == data['planned'] and data['planned'] > 0
@@ -128,7 +135,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 15 if gate == 'postgres' else 7
+                    minimum = 15 if gate == 'postgres' else 23 if gate == 'windows' else 9
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0

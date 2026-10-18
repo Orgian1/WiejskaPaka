@@ -4,7 +4,10 @@ Workflow `.github/workflows/native-tests.yml` działa po aktualizacji
 `wiejskapaka-import`. Nie wdraża aplikacji i nie zmienia `main`.
 Każda brama korzysta z osobnej maszyny GitHub-hosted:
 
-- Windows: pełna regresja, Python 3.12, Node 24 i `requirements-lock.txt`.
+- Windows: najpierw 23 przypadki kopii/odtwarzania i resetu hasła, następnie
+  pełna regresja; Python 3.12, Node 24 i `requirements-lock.txt`.
+  Pierwszy zestaw jest powtarzanym podzbiorem pełnego, nie dodatkowymi
+  unikalnymi przypadkami. Jego błąd zatrzymuje bramę przed długą regresją.
   Wykonanie na innym systemie jest odrzucane. Opcjonalne testy natywne są
   pomijane w tej bramie i wykonywane w osobnych zadaniach.
 - PostgreSQL: jednorazowy kontener PostgreSQL 16 i 15 przypadków adaptera,
@@ -31,12 +34,14 @@ setup-node v7.1.0 i upload-artifact v7.0.2. Pełne SHA znajdują się w workflow
 
 `python -m scripts.run_native_ci <windows|postgres|browser> --report wynik.json`
 zapisuje odciski kodu, workflow, zależności, testów i helperów oraz liczniki
-i kody zakończenia. Surowe stdout/stderr, XML, zmienne środowiska, ścieżki
+i kody zakończenia. Błędy pełnej regresji dodatkowo podają wyłącznie nazwy
+modułów należących do repozytorium, bez zawartości `output_tail`. Surowe stdout/stderr, XML, zmienne środowiska, ścieżki
 tymczasowe, klucze i dane testowe nie są publikowane jako artefakty.
 Podsumowania mają retencję 7 dni. Logi procesów testowych są przechwytywane
 i odrzucane; runner wypisuje tylko PASS albo FAIL.
 
-Natywne bramy wymagają minimum 15 przypadków PostgreSQL i 7 przeglądarkowych,
+Natywne bramy wymagają minimum 15 przypadków PostgreSQL, 9 przeglądarkowych
+i 23 przypadków wstępnego testu Windows,
 bez błędów i pominięć. Windows wymaga kompletnego raportu regresji. Zmiana
 źródeł lub helperów podczas wykonania unieważnia wynik. Błąd instalacji,
 brak wyniku, timeout, SKIP i anulowanie nie są zaliczeniem.

@@ -80,7 +80,8 @@ def snapshot(source, key_file, destination, *, restore=False, timeout=30):
         # Detect a changed ring; rotation must remain stopped for the operation.
         if read_ring(key_file) != (active, keys):
             raise ValueError('Klucz zmienił się podczas kopiowania')
-        with database.open('rb') as stream:
+        # Windows FlushFileBuffers requires a handle opened for writing.
+        with database.open('r+b') as stream:
             os.fsync(stream.fileno())
         sync_directory(destination)
         sync_directory(destination.parent)

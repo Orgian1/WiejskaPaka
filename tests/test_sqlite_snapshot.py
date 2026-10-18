@@ -88,3 +88,23 @@ def test_invalid_timeout_creates_no_files(tmp_path, timeout):
     with pytest.raises(ValueError):
         snapshot(tmp_path/'absent', tmp_path/'key', tmp_path/'out', timeout=timeout)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_snapshot_sync_uses_write_capable_regular_file_handles(tmp_path, monkeypatch):
+    """Model Windows' write-handle requirement even when running on Linux."""
+    import stat
+    import scripts.sqlite_snapshot as operation
+    source = tmp_path/'source.sqlite3'
+    with server(source) as client:
+        purchase(client)
+    real_sync = os.fsync
+    regular_synced = []
+    def require_write_handle(fd):
+        if stat.S_ISREG(os.fstat(fd).st_mode):
+            # Zero bytes leave data unchanged, but a read-only fd must fail.
+            os.write(fd, b'')
+            regular_synced.append(fd)
+        return real_sync(fd)
+    monkeypatch.setattr(operation.os, 'fsync', require_write_handle)
+    result = snapshot(source, key_path(source), tmp_path/'copy', restore=True)
+    assert result['orders'] == 2 and len(regular_synced) >= 3

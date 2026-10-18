@@ -1,0 +1,18 @@
+{
+  "application_sha256": "b25c4f9471cfca3c2be9e43c10be1295fc86d3133470c3f8f18f7daf7239f3e4",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 49,
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 4,
+  "planned": 4,
+  "passed": 4,
+  "failed": 0,
+  "scope": "Linux targeted recovery, HTTP and native gate control-plane checks; not native Windows execution"
+}

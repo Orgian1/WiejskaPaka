@@ -6,7 +6,7 @@ SCRIPT = (Path(__file__).resolve().parents[1] / 'web' / 'app.js').read_text(enco
 
 def test_catalog_rejects_stale_responses_before_render():
     assert 'let productRequest = 0, orderRequest = 0' in SCRIPT
-    assert "const request=++productRequest;const epoch=sessionEpoch;const products=await api('/products');if(request!==productRequest||epoch!==sessionEpoch)return;clear('products');" in SCRIPT
+    assert "const request=++productRequest;const epoch=sessionEpoch;const products=await catalogPage(request,epoch);if(request!==productRequest||epoch!==sessionEpoch||products===null)return;clear('products');" in SCRIPT
 
 
 def test_orders_reject_stale_responses_before_render():

@@ -38,7 +38,8 @@ def check_offline(screenshot_dir=None):
                 page.evaluate('''() => {
                     window.fetch = async (url) => {
                         const path = String(url);
-                        const data = path === '/products' ? [] :
+                        const data = path.startsWith('/catalog/search?') ? {items:[],total:0,limit:24,offset:0} :
+                                     path === '/products' ? [] :
                                      path === '/orders/me' ? [] :
                                      path === '/notifications' ? [] : [];
                         return {ok:true, status:200, json:async()=>data};

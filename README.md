@@ -85,6 +85,11 @@ Dostarczony Compose nie uruchamia GitHub Actions ani usług płatnych.
 Do rzeczywistych testów przeglądarkowych potrzebne są lokalne Chromium/Chrome
 i Playwright. Ich obecność nie oznacza automatycznie zaliczenia testu.
 
+## Katalog produktów
+
+Główny katalog ma wyszukiwanie nazwy i strony po 24 produkty.
+Instrukcja: `docs/KATALOG_STRONICOWANY.md`.
+
 ## Wyszukiwanie lokalne
 
 Sekcja **Blisko mnie** wyszukuje dostępne produkty i aktywne punkty w promieniu

@@ -1,0 +1,49 @@
+{
+  "success": true,
+  "kind": "manual_local_read_http_acceptance_not_pytest",
+  "scope": "disposable SQLite and real loopback HTTP; read-only catalog and nearby endpoints; synthetic database records",
+  "seeded_sellers": 50,
+  "seeded_buyer_records": 5000,
+  "seeded_products": 1000,
+  "seeded_pickup_points": 50,
+  "buyers_are_database_records_not_active_clients": true,
+  "fixture_password_hash_reused_not_auth_benchmark": true,
+  "scheduled_requests": 360,
+  "target_rps": 6,
+  "worker_limit": 4,
+  "elapsed_seconds": 59.842,
+  "observed_rps": 6.016,
+  "counts": {
+    "valid": 360,
+    "invalid": 0,
+    "http_5xx": 0,
+    "transport_errors": 0
+  },
+  "latency_nearest_rank": {
+    "catalog": {
+      "requests": 180,
+      "p50_ms": 5.077,
+      "p95_ms": 13.463,
+      "p99_ms": 33.984,
+      "max_ms": 131.393
+    },
+    "nearby": {
+      "requests": 180,
+      "p50_ms": 6.738,
+      "p95_ms": 16.698,
+      "p99_ms": 26.688,
+      "max_ms": 39.66
+    }
+  },
+  "capacity_verified": false,
+  "production_database_tested": false,
+  "checkout_path_tested": false,
+  "application_sha256": "0890d2e866917ec8d5f981c61626ef6c9d5acb25d1a694e48ed855d73caae5e9",
+  "evidence": {
+    "runtime_sha256": "f6075bb834427329fa0a36974d5b138318b8e2384b146178646edacf6fb396a0",
+    "tests_sha256": "ca970ac26f24bb30a735c9e63ed6a5356d6e1ae890a4b22d0526d4f3ac304ffa",
+    "test_sources_sha256": "16395fec7a8e80b72feba9f78835bb8b43cc384cec3fc7ac69b9710f4a026663",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "3d55c169ee219cdd59133a50d6502259507b9988d87c0ba458826a6ded1e9d30"
+  }
+}

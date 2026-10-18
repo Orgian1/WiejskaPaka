@@ -22,3 +22,11 @@ Zakładając 20 żądań na kupującego i 20% ruchu w godzinie szczytu, szacujem
 6. Audyt bezpieczeństwa i prawny przed zdjęciem blokady produkcyjnej.
 
 Benchmark SQLite nie potwierdza wydajności HTTP/PostgreSQL. Domena jest kupiona, ale serwer, prawdziwe e-maile i płatności nie są podłączone.
+
+## Wykonany lokalny odczyt — 18.10.2026
+
+`POMIAR_ODCZYTU_HTTP_2026-10-18.md` opisuje 360 poprawnych żądań
+katalogu i wyszukiwania w okolicy przy planie 6 żądań/s na jednorazowej
+SQLite z 50 sprzedawcami, 5000 rekordów klientów i 1000 ofert. To pomiar
+wybranego odczytu, bez zakupów i PostgreSQL; nie zamyka warunków odbioru
+produkcyjnej skali ani nie zmienia `capacity_verified=False`.

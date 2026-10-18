@@ -20,6 +20,7 @@ MOCK = r'''() => {
     if(path==='/auth/login') result={access_token:'mock-token'};
     else if(path==='/auth/me') result={email:'test@example.invalid',role};
     else if(path==='/farmers/me/profile') result={farm_name:'Gospodarstwo testowe',city:'Testowo',description:''};
+    else if(path.startsWith('/catalog/search?')) result={items:[{id:1,name:'Marchew',price_grosze:350,delivery_grosze:200,stock:10,farmer_id:8}],total:1,limit:24,offset:0};
     else if(path==='/products') result=[{id:1,name:'Marchew',price_grosze:350,delivery_grosze:200,stock:10,farmer_id:8}];
     else if(path==='/farmers/8/pickup-points') result=[{id:3,name:'Punkt',city:'Testowo',street:'Polna 1',opening_hours:'9-17'}];
     else if(path==='/orders/me') result=[];

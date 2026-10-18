@@ -33,6 +33,18 @@ Konto administrujące bazą nie trafia do konfiguracji aplikacji.
    wskazane pliki z zatrzymaniem na błędzie i nadaje ograniczonej roli prawa
    do wymaganych tabel i sekwencji. Nie uruchamiać tego na istniejącej bazie.
    Samo sprawdzenie manifestu nie wykonuje migracji.
+   Przygotowany plik `deploy/preview/new-test-database.psql.example` zawiera
+   dokładną kolejność i ograniczone granty zgodne z bramką natywną. Po
+   przeglądzie administrator uruchamia go z tego checkoutu:
+   `sudo -u postgres psql -X -v ON_ERROR_STOP=1 -d postgres -f
+   /opt/wiejskapaka/app/deploy/preview/new-test-database.psql.example`.
+   To polecenie dla zakupionego lokalnego klastra, nie do wykonania dzisiaj.
+   Plik tworzy rolę i bazę, nie nadpisuje istniejących; pyta o hasło bez
+   wpisywania go do pliku. Zalecane nowe hasło z generatora o co najmniej
+   48 losowych znakach ASCII alfanumerycznych — taki URL akceptuje też
+   konserwatywne narzędzie kopii. Przy błędzie zatrzymać pracę i ustalić stan;
+   migracje mają osobne transakcje, więc nie obiecuje się cofnięcia całości.
+   Nie ponawiać automatycznie na częściowo przygotowanej bazie.
 4. Utworzyć katalog stanu i klucz przez `scripts/checkout_keys.py create --path`
    ze wskazaniem powyższej bezwzględnej ścieżki. Klucz tworzy się raz;
    kolejne restarty korzystają z niego ponownie. Zachować chronioną kopię.

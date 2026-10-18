@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:7e0b23987d7aa3fffade3d089158ba0abe5aba45b7799c11338ffbda10d678d0",
+  "id": 12143302914,
+  "name": "windows-recovery-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-backup-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "cd9ca52206111621efa462d98df55311833dad90",
+    "id": 39145936515,
+    "repository_id": 1421291982
+  }
+}

@@ -48,13 +48,19 @@ python -m pytest -q tests/test_postgres_full_api_optin.py
 
 Bez jawnego DSN natywne testy otrzymują **SKIP**, nigdy PASS.
 
-## Rzeczywisty wynik w tej sesji
+## Historyczne ograniczenie lokalnego środowiska
 
 Sterownik psycopg zainstalowano i pobrano natywne narzędzia PostgreSQL 16.
 `initdb` odmówił działania jako root. Środowisko udostępnia wyłącznie mapowanie
 UID 0 i nie pozwala przełączyć się na konto nieuprzywilejowane. Docker nie jest
-zainstalowany. Dlatego serwer nie wystartował i **integracja PostgreSQL nie jest
-zaliczona**. Przygotowany nowy pakiet również pozostaje nieuruchomiony na serwerze.
+zainstalowany. Dlatego serwer lokalny wtedy nie wystartował. To ograniczenie środowiska
+nie opisuje późniejszych wyników odizolowanego PostgreSQL w GitHub Actions.
+
+Późniejszy pakiet restartu został zaliczony na rzeczywistym PostgreSQL 16:
+21/21 przypadków, raport `RESTART_APLIKACJI_POSTGRESQL_2026-10-18.md`.
+Kolejny pakiet kopii i próby odtworzenia zaliczył 22/22 w CI dla kodu
+`cd9ca52206111621efa462d98df55311833dad90` (run 39145936515).
+Nie jest to wykonanie na komputerze użytkownika ani odbiór zakupionego VPS.
 
 Ta brama nie zastępuje testów migracji istniejących danych, przeglądu RLS,
 audytu prawnego ani weryfikacji operatora płatności.

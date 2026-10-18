@@ -85,6 +85,11 @@ Jeśli proces zostanie zabity lub klaster straci łączność, administrator
 sprawdza pozostawione bazy testowe; narzędzie nie usuwa ich zbiorczo.
 Źródłowa baza, sesje i działająca aplikacja pozostają nietknięte.
 
+Usunięcie sesji i tokenów resetu nie unieważnia samych haseł odziedziczonych
+z kopii ani nie odtwarza decyzji o blokadach podjętych po wykonaniu backupu.
+Przed ponownym udostępnieniem odzyskanych danych trzeba oddzielnie uzgodnić
+aktualne uprawnienia i procedurę przywracania dostępu.
+
 ## Granice wyniku
 
 Próba nie uruchamia odtworzonego API i nie promuje kopii do użycia.

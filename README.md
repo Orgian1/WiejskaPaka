@@ -2,6 +2,13 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
+Aktualny punkt wejścia przed zakupem serwera:
+`docs/URUCHOMIENIE_PODGLADU_NA_SERWERZE.md` — trwały prywatny podgląd,
+`docs/KOPIA_POSTGRESQL_I_PROBA_ODTWORZENIA.md` — szyfrowana kopia i izolowana próba,
+`docs/POCZTA_STAN_KODU_I_ODBIOR.md` — rzeczywisty zakres poczty i pozostałe prace.
+Rolnik i sprzedawca to ta sama rola. Zakup serwera i skrzynki nie oznacza
+ukończenia integracji poczty ani dopuszczenia do sprzedaży produkcyjnej.
+
 Testowy panel zgłoszeń klient–rolnik–administrator:
 `docs/ZGLOSZENIA_PROBLEMOW_TESTOWE.md`. Wyniki bieżącego pakietu:
 `docs/RAPORT_ZGLOSZEN_2026-10-18.md`.

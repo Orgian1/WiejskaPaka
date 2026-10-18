@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:c86b5ee39803a35b626f0387ec98980f37e81b0691406022e59e0182a1e6ffb5",
+  "id": 12143077302,
+  "name": "postgres-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-backup-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "cd9ca52206111621efa462d98df55311833dad90",
+    "id": 39145936515,
+    "repository_id": 1421291982
+  }
+}

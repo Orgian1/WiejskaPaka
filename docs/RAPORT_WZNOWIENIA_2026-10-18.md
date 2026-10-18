@@ -55,7 +55,7 @@ po błędzie klienta testowego. Nie zmieniono backendu ani kryterium zdrowia.
 | Natywny PostgreSQL | 17/17, bez błędów i pominięć |
 | Natywne Chromium | 23/23, bez błędów i pominięć; ponadto rzeczywiste HTTP przy pięciu szerokościach |
 | Natywny szybki Windows | 80/80, bez błędów i pominięć |
-| Pełny Windows | Trwa; brak jeszcze końcowego wyniku |
+| Pełny Windows | 3766 zaliczonych, 0 błędów, 40 pominiętych; razem 3806 przypadków |
 
 Artefakty dla bieżącego kodu: `audits/restored_ci_4f629cc2_2026-10-18`.
 Archiwa pobrano z Actions, sprawdzono ich SHA-256 oraz zgodność wszystkich
@@ -80,7 +80,7 @@ szybkim raportem tego samego starego kodu. Nie jest wynikiem obecnego pakietu.
 
 Końcowy pełny raport Linux: `audits/restored_linux_2026-10-18.json`.
 
-Sprawdzić pełny Windows dla bieżącego commitu. Jeśli wynik jest niekompletny,
+Pełny Windows dla wskazanego commitu jest już zaliczony. W kolejnych pakietach, jeśli wynik jest niekompletny,
 rozwiązać moduły wskazane w nowej oczyszczonej diagnostyce i ponowić kontrolę.
 Rozbieżności roboczego regulaminu z funkcjami zapisano w
 `MAPA_REGULAMINU_I_FUNKCJI_PL.md`: w szczególności panel reklamacji, częściowa

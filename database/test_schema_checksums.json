@@ -118,5 +118,10 @@
     "file": "upgrade_z_password_reset_test.sql",
     "sha256": "beebf858428c37acb53565898ad9774df1f03f101b16adb3d8cd586634aee405",
     "bytes": 721
+  },
+  {
+    "file": "upgrade_z_support_cases_test.sql",
+    "sha256": "d7b3025f3df4440fb19975e88fd122a7b52eb3cd361a0e9b3993f6042e68ac45",
+    "bytes": 1671
   }
 ]

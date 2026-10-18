@@ -54,7 +54,10 @@ Przygotowywane dane:
    Liczniki dotyczą pozycji produktów, nie całych przesyłek. Zmiana miesiąca
    usuwa poprzedni widok. Po wylogowaniu raport znika, ale wcześniej pobrany
    plik pozostaje w katalogu pobierania komputera.
-6. Możesz sprawdzić zmianę hasła, sesje oraz odzyskiwanie hasła. Ścieżkę
+6. Jako klient zgłoś fikcyjny problem z zakupem; odpowiedz jako rolnik,
+   następnie zamknij sprawę testowo jako administrator. Szczegółowy odbiór:
+   `ZGLOSZENIA_PROBLEMOW_TESTOWE.md`. Operacja nie zmienia płatności.
+7. Możesz sprawdzić zmianę hasła, sesje oraz odzyskiwanie hasła. Ścieżkę
    prywatnej skrzynki resetującej skrypt pokazuje w terminalu. Instrukcja:
    `ODZYSKIWANIE_HASLA_TESTOWE.md`.
 

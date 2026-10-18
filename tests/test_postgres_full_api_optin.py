@@ -393,3 +393,14 @@ def test_native_admin_seller_queue_and_concurrent_stale_decisions(pg_api):
     fid=exercise_admin_review(client,admin)
     with psycopg.connect(**parameters) as con:
         assert con.execute("SELECT COUNT(*) FROM seller_compliance_events WHERE farmer_id=%s AND event_type LIKE 'review_%%'",(fid,)).fetchone()[0]==1
+
+
+def test_native_private_support_cases(pg_api):
+    from tests.test_support_cases_http import exercise_support
+    from tests.test_admin_seller_review import create_admin
+    import psycopg
+    client,parameters=pg_api
+    def promote(uid):
+        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+    admin,_=create_admin(client,promote)
+    exercise_support(client,admin)

@@ -153,6 +153,7 @@ async function loadDashboard() {
     box.append(dashboardCard('Moje przesyłki',[`Liczba przesyłek: ${shipments.length}`,'Koszt dostawy naliczany raz za przesyłkę.']));
     for(const shipment of shipments){const c=dashboardCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`]);c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
       c.append(shipmentFinancialHistoryButton(shipment.id,c));
+      if(typeof supportCreateButton==='function')c.append(supportCreateButton('shipment',shipment.id,c));
       if(typeof pinRecoveryControls==='function')c.append(pinRecoveryControls('shipment',shipment.id));
       // Dwie osobne ścieżki: bez płatności oraz z pełnym zwrotem testowym.
       // Nie uruchamiamy zwrotu automatycznie po błędzie zwykłego anulowania.
@@ -176,6 +177,7 @@ async function loadDashboard() {
       box.append(c);}
     box.append(dashboardCard('Twoje zakupy',[`Liczba zamówień: ${orders.length}`,'Sprawdź towar przed przekazaniem PIN-u sprzedawcy lub dostawcy.']));
     for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Razem: ${money(o.total_grosze)}`]);
+      if(typeof supportCreateButton==='function')c.append(supportCreateButton('order',o.id,c));
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if(role==='klient'&&typeof pinRecoveryControls==='function'&&!['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(o.status))c.append(pinRecoveryControls('order',o.id));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));

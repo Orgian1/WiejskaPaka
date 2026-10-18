@@ -11,7 +11,7 @@ Projekt regulaminu pozostaje roboczy i nie został opublikowany w interfejsie.
 | § 3: cena, jedna dostawa na przesyłkę | Koszyk, podgląd kwoty, grupowanie przesyłek, dokładne grosze | Rzeczywisty operator płatności i uzgodnione przepływy środków; obecnie wyłącznie symulacja |
 | § 4: sprawdzenie towaru i PIN | Potwierdzenie sprawdzenia towaru oraz odbioru całej przesyłki; ograniczone odzyskiwanie istniejącego PIN-u | Dedykowany proces odmowy przyjęcia i rozstrzygania przyczyn; obsługa częściowego odbioru nie jest gotową funkcją demo |
 | § 5: niewykonana dostawa | Testowy pełny zwrot i historia zdarzeń | Rzeczywisty zwrot przez operatora, obsługa wyjątków i uzgodnione zasady odpowiedzialności |
-| § 6: reklamacja przez panel | Informacja o prawach kupującego, zapis zakupu i historia | Brak panelu reklamacji: przyjęcia zgłoszenia, potwierdzenia, kierowania do sprzedawcy, statusów i obsługi terminów |
+| § 6: reklamacja przez panel | Testowy panel problemów z zakupem: opis, dostęp stron, odpowiedzi, historia i administracyjny stan obsługi; opis w ZGLOSZENIA_PROBLEMOW_TESTOWE.md | Docelowa procedura reklamacji, terminy, realna komunikacja i rozliczenie; sam panel testowy ich nie zastępuje |
 | § 7: e-mail i panel | Powiadomienia w panelu, kontrakt dozwolonych kanałów, lokalna skrzynka resetu hasła | Weryfikacja adresu i rzeczywista wysyłka poczty, kolejka z ponowieniami i potwierdzonym dostarczeniem; sama polityka kanałów nie wysyła wiadomości |
 | § 8: prywatność, zgłoszenia i moderacja | Dostęp do danych według ról, cofanie sesji, izolowane kopie i testowy przegląd profilu | Docelowa polityka prywatności, mechanizm zgłoszeń treści, moderacja i odwołania; kolejka profili nie jest mechanizmem reklamacyjnym |
 
@@ -32,8 +32,9 @@ Projekt regulaminu pozostaje roboczy i nie został opublikowany w interfejsie.
 ## Kolejność dalszej implementacji
 
 1. Ustalić model sprzedawcy i umów oraz dane operatora.
-2. Zaprojektować zgłoszenia problemów i reklamacje z dostępem wyłącznie
-   stron zakupu oraz upoważnionego administratora.
+2. Rozwinąć i odebrać produkcyjną procedurę reklamacji na podstawie
+   testowego panelu problemów, z dostępem wyłącznie stron zakupu
+   oraz upoważnionego administratora.
 3. Określić odmowę całej przesyłki i części produktów wraz z wpływem na
    magazyn, jedną opłatę dostawy, historię oraz idempotencję zwrotów.
 4. Dopracować informacje o produktach i bezpieczną komunikację e-mail.

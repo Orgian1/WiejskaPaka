@@ -2,7 +2,10 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
-Najnowsze wznowienie, połączenie prac z obu czatów i stan testów:
+Testowy panel zgłoszeń klient–rolnik–administrator:
+`docs/ZGLOSZENIA_PROBLEMOW_TESTOWE.md`.
+
+Wznowienie, połączenie prac z obu czatów i stan poprzedniego pakietu:
 `docs/RAPORT_WZNOWIENIA_2026-10-18.md`.
 
 Bieżący pakiet zarządzania sesjami opisuje `docs/ZARZADZANIE_SESJAMI.md`.

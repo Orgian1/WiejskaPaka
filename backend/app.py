@@ -48,6 +48,9 @@ async def application_lifespan(application):
         con.execute('SELECT order_id,expires_at,released_at FROM inventory_reservations LIMIT 0')
     with db() as con:
         con.execute('SELECT order_id FROM order_purchase_records LIMIT 0')
+        if os.environ.get('WP_ENABLE_TEST_PAYMENTS') == '1':
+            con.execute('SELECT id,revision FROM support_cases LIMIT 0')
+            con.execute('SELECT case_id,revision FROM support_case_events LIMIT 0')
     with db() as con:
         con.execute('SELECT point_id FROM pickup_point_coordinates LIMIT 0')
         from backend.local_marketplace import refresh_product_index
@@ -2950,3 +2953,67 @@ def confirm_test_password_reset(payload: ConfirmPasswordResetIn):
     if outcome != 200:
         raise HTTPException(400, reset_service.INVALID)
     return {'changed': True, 'reauthentication_required': True}
+
+# Private test-only support cases; explicitly no monetary or order side effects.
+from uuid import UUID
+from fastapi import Query
+from backend import support_cases as support
+
+if not DATABASE_URL:
+    with db() as _support_con:
+        _support_con.executescript(support.SCHEMA)
+
+class SupportCaseIn(BaseModel):
+    model_config={'extra':'forbid'}
+    kind: Literal['order','shipment']
+    target_id: CleanText = Field(min_length=1,max_length=64)
+    category: Literal['product','pickup','delivery','other']
+    description: CleanText = Field(min_length=10,max_length=2000)
+    request_id: UUID
+
+class SupportReplyIn(BaseModel):
+    model_config={'extra':'forbid'}
+    message: CleanText = Field(min_length=1,max_length=2000)
+    request_id: UUID
+    expected_revision: int = Field(strict=True,ge=1,le=2_000_000_000)
+    status: Literal['in_review','closed_test'] | None = None
+
+
+def require_support_test():
+    if os.environ.get('WP_ENABLE_TEST_PAYMENTS')!='1':
+        raise HTTPException(404,'Obsługa testowych zgłoszeń wyłączona')
+
+
+@app.get('/test/support/cases')
+def list_support_cases(status: Literal['new','in_review','closed_test'] | None = None,
+        limit: int = Query(default=20,ge=1,le=50),offset: int = Query(default=0,ge=0,le=10000),user=Depends(current_user)):
+    require_support_test()
+    try:
+        with db() as con:return support.listing(con,user,status=status,limit=limit,offset=offset)
+    except support.CaseError as exc:raise HTTPException(exc.status,str(exc)) from exc
+
+
+@app.post('/test/support/cases',status_code=201)
+def create_support_case(body: SupportCaseIn,user=Depends(current_user),authorization: str | None = Header(default=None)):
+    require_support_test()
+    try:
+        with order_write_db(user,authorization,('klient',)) as con:
+            return support.create(con,user,body.kind,body.target_id,body.category,body.description,body.request_id.hex,postgres=bool(DATABASE_URL))
+    except support.CaseError as exc:raise HTTPException(exc.status,str(exc)) from exc
+
+
+@app.get('/test/support/cases/{case_id}')
+def support_case_detail(case_id: str,before_revision: int | None = Query(default=None,ge=1,le=2_000_000_000),user=Depends(current_user)):
+    require_support_test()
+    try:
+        with db() as con:return support.detail(con,case_id,user,before_revision=before_revision)
+    except support.CaseError as exc:raise HTTPException(exc.status,str(exc)) from exc
+
+
+@app.post('/test/support/cases/{case_id}/replies')
+def reply_support_case(case_id: str,body: SupportReplyIn,user=Depends(current_user),authorization: str | None = Header(default=None)):
+    require_support_test()
+    try:
+        with order_write_db(user,authorization,('klient','rolnik','admin')) as con:
+            return support.reply(con,case_id,user,body.message,body.request_id.hex,body.expected_revision,body.status,postgres=bool(DATABASE_URL))
+    except support.CaseError as exc:raise HTTPException(exc.status,str(exc)) from exc

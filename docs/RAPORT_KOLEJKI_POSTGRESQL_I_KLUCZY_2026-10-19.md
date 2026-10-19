@@ -44,7 +44,7 @@ Ta próba zasobów również nie jest doliczana do testów regresji.
 | Bramka połączonego kodu | Zaliczone | Błędy | Pominięte | Stan |
 | --- | ---: | ---: | ---: | --- |
 | Pełny Linux, 320/320 modułów | 3976 | 0 | 59 | sukces |
-| Pełny Windows | — | — | — | w toku |
+| Pełny Windows, 320/320 modułów | 3924 | 0 | 111 | sukces |
 | PostgreSQL 16 | 36 | 0 | 0 | sukces |
 | Chromium i HTTP | 36 | 0 | 0 | sukces; HTTP w pięciu rozmiarach |
 | Szybki Windows | 80 | 0 | 0 | sukces |
@@ -53,9 +53,14 @@ Dowody połączonego kodu: audits/mail_keys_60526b0_2026-10-19/.
 Osobny katalog pg_queue_1ed505f_2026-10-19 dokumentuje etap kolejki sprzed
 loadera; jego raportów nie przedstawiać jako testów połączonego kodu.
 Pełny Linux tego wcześniejszego etapu zaliczył 3946 przypadków, bez błędów,
-z 58 pominięciami i wykonaniem 319/319 modułów.
+z 58 pominięciami i wykonaniem 319/319 modułów. Pełny Windows wcześniejszego
+etapu: 3920 zaliczonych, 0 błędów, 84 pominięte.
 Artefakty CI są weryfikowane przez SHA-256 archiwum, zgodność odcisków
 źródeł, success, complete i sources_unchanged.
+
+Wszystkie bramki połączonego kodu zakończyły się sukcesem. Pełne przebiegi
+zachowały niezmienione źródła. Liczby pominięć są wykazane oddzielnie;
+pominięcie nie jest zaliczeniem testu wymagającego innego środowiska.
 
 ## Granice i następny etap
 

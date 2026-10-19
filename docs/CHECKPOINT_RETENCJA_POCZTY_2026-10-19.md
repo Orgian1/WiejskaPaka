@@ -22,7 +22,7 @@ retencji ani transportu. Szczegóły: RETENCJA_KOLEJKI_POCZTY.md.
 | Chromium | 36 PASS, 0 FAIL, 0 SKIP; HTTP w pięciu rozmiarach: sukces |
 | Szybki Windows | 80 PASS, 0 FAIL, 0 SKIP |
 | Lokalny pakiet kontrolny | 127 PASS, 0 FAIL, 38 SKIP (bez lokalnego PostgreSQL) |
-| Pełny Windows retencji | W trakcie przy ostatnim odczycie; nie przedstawiać jako zaliczony |
+| Pełny Windows retencji | 3965 PASS, 0 FAIL, 121 SKIP |
 
 Pakiet kontrolny nakłada się na pełną regresję; nie sumować wyników.
 Dowody: audits/queue_retention_30a632f_2026-10-19/. Wszystkie cztery
@@ -42,8 +42,9 @@ regresja nowej retencji. Checkpoint pracownika zaktualizowano.
 
 ## Następny punkt pracy
 
-Najpierw odebrać pełny Windows z przebiegu 39276035351 i zweryfikować
-artefakt windows-summary względem raportu PostgreSQL tego samego commita.
+Odebrano pełny Windows z przebiegu 39276035351: windows.json i provenance.
+Zweryfikowano SHA-256 archiwum oraz odciski względem raportu PostgreSQL
+tego samego commita. Widok statusu zadania był opóźniony względem artefaktu.
 Nie porównywać odcisków wcześniejszego przebiegu z później zmienionym kodem.
 Następnie: potwierdzanie adresów, bezpieczna kopia/rotacja kluczy i próba
 odtworzenia, osobne konto/rola/usługa pracownika oraz nadzorca procesu.

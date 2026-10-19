@@ -61,3 +61,17 @@ rotacji/archiwizacji kluczy oraz systemowe konto, rola i nadzorca pracownika.
 Kopia samych kluczy nie stanowi spójnej kopii bazy ani pełnego odbioru
 operacyjnego. Prawdziwa poczta, hosting i rzeczywiste płatności pozostają
 odłączone. Nie scalono PR #12–15.
+
+## Odbiór pełnego Windows — aktualizacja
+
+Pierwsza próba: 3965 PASS, 1 FAIL, 143 SKIP. Nieudany moduł:
+`test_checkout_vault_http.py`. Raport windows-attempt1.json i provenance
+zachowują zweryfikowany SHA-256 archiwum i zgodne odciski. Log zadania
+nie zawiera konkretnej asercji. Nie uznano wyniku za sukces ani awarię losową.
+Próba ponowienia zadania 118149503175: HTTP 403, przebieg nadal running.
+Retencja została osobno potwierdzona: 3965 PASS, 0 FAIL, 121 SKIP.
+Nowsza kwarantanna ma potwierdzone PostgreSQL 44, Chromium 36 i szybki
+Windows 80; pełny Windows tej wersji nadal do odbioru.
+
+Kontrola lokalna aktualnego modułu test_checkout_vault_http.py: 5 PASS
+w 40,39 s. Wynik Linux nie rozstrzyga przyczyny pojedynczego błędu Windows.

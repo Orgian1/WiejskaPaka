@@ -25,15 +25,19 @@ Szczegóły: ODTWARZANIE_BAZY_I_KLUCZY_POCZTY.md.
 - Pakiet kontrolny: 221 PASS, 0 FAIL, 42 SKIP.
 - Węższy pakiet odtwarzania i istniejących kopii: 63 PASS, 0 FAIL.
 - Pakiety kontrolne nakładają się na pełną regresję; nie sumować ich.
-- Nowa bramka PostgreSQL wymaga 44 zaliczeń. Przy ostatnim udanym odczycie
-  jej zadanie oraz Chromium i szybki Windows były queued. Nie są zaliczone.
+- Natywny PostgreSQL 16: 44 PASS, 0 FAIL, 0 SKIP.
+- Chromium: 36 PASS, 0 FAIL, 0 SKIP; HTTP w pięciu rozmiarach: sukces.
+- Szybki Windows: 80 PASS, 0 FAIL, 0 SKIP.
+- Raporty i provenance zapisano obok linux-full.json; SHA-256 archiwów
+  oraz odciski kodu, testów, zależności i workflow są zgodne.
+- Pełny Windows nowej kwarantanny nadal wymaga odbioru.
 
 Próba lokalna odtwarza zaszyfrowaną bazę i osobne klucze, sprawdza
 expired/expired/uncertain, brak zadań dla transportu, zachowanie zamówień,
 brak sesji/tokenów, niezmieniony skrót źródła oraz usunięcie niepełnego celu
 po wymuszonej awarii. Test natywny wykonuje pg_dump/pg_restore do nowej
 losowej bazy i kontroluje kwarantannę przed jej usunięciem — odbiór CI
-pozostaje wymagany; definicja testu nie jest dowodem jego wykonania.
+został potwierdzony raportem PostgreSQL 44/44.
 
 Drzewo lokalnego i zdalnego kodu:
 df0bb2aa49c6c061af584cbd50d8012d9bc4ae92.
@@ -51,13 +55,19 @@ zaktualizowano; pełny Windows pozostaje do osobnego odbioru.
 
 ## Punkt wznowienia
 
-1. Odebrać CI 39280581000 dla kwarantanny (oczekiwane minimum PostgreSQL 44).
-2. Odebrać pełne Windows poprzednich pakietów: 39276035351 (retencja)
-   i 39278599502 (kopia kluczy). Dla każdego zachować badany commit i porównać
-   odciski z raportem tego samego kodu; po zmianach kodu użyć worktree bazowego.
+1. Odebrać pełny Windows CI 39280581000 dla kwarantanny.
+2. Retencja: pełny Windows potwierdzony, 3965 PASS / 0 FAIL / 121 SKIP.
+   Kopia kluczy: pierwsza próba 3965 PASS / 1 FAIL / 143 SKIP, moduł
+   test_checkout_vault_http.py; wynik zachowano jako windows-attempt1.json.
+   Odciski są zgodne. Log CI nie podaje konkretnej asercji. Próba ponowienia
+   zadania 118149503175 została odrzucona HTTP 403: przebieg nadal running.
+   Nie uznawać błędu za naprawiony ani losowy bez dalszej diagnozy.
 3. Następnie potwierdzanie adresów, procedura operatora dla spójnych kopii
    i rotacji, konto/rola/nadzorca pracownika oraz osobny odbiór usług i DNS.
 
 Nowa próba nie aktywuje aplikacji, kluczy ani wysyłek. Spójny produkcyjny
 pakiet kopii i jego odbiór operacyjny pozostają osobnym zadaniem.
 Nie scalono PR #12–16. Hosting i rzeczywiste płatności pozostają odłączone.
+
+Kontrola lokalna aktualnego modułu test_checkout_vault_http.py: 5 PASS
+w 40,39 s. Wynik Linux nie rozstrzyga przyczyny pojedynczego błędu Windows.

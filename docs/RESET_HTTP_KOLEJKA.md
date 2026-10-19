@@ -17,8 +17,9 @@ SQLite inicjuje tabele testowe. PostgreSQL wymaga wcześniej zastosowanych
 kontrolowanych migracji, osobnej lokalnej bazy testowej i dodatkowego
 `WP_ENABLE_PG_TEST_PASSWORD_RESET=1`, zgodnie z ograniczeniami lokalnego
 testowego resetu. Nie wolno stosować tej konfiguracji do bazy zdalnej.
-Obsługa PostgreSQL nowych tras wymaga jeszcze natywnego odbioru HTTP;
-poprzednie wyniki testów kolejki nie zastępują tego odbioru.
+Nowe trasy przeszły natywny odbiór HTTP w bramce PostgreSQL (40 PASS,
+0 FAIL, 0 SKIP), obejmującej cztery nowe scenariusze. Raport i zgodność
+odcisków źródeł: `audits/queued_reset_pg_http_88c4cad_2026-10-19/`.
 
 ## Zachowanie
 

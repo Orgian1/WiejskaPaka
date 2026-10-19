@@ -1,4 +1,4 @@
-"""Disconnected SQLite reset outbox. No HTTP, environment, worker or network hooks.
+"""Disconnected SQLite/PostgreSQL reset outbox. No HTTP, environment, worker or network hooks.
 
 Every mutating call requires the caller's transaction; use transaction() to
 serialize writers. Commit start() before any external submission. An expired
@@ -90,9 +90,20 @@ def _aad(row):
                       separators=(',',':')).encode()
 
 
+def _postgres(con):
+    from backend.pg_adapter import PgConnection
+    return isinstance(con,PgConnection)
+
+
 def _require(con):
-    if not isinstance(con,sqlite3.Connection) or con.row_factory is not sqlite3.Row or not con.in_transaction:
-        raise ValueError('QUEUE_REQUIRES_SQLITE_TRANSACTION')
+    if _postgres(con):
+        from psycopg.pq import TransactionStatus
+        from psycopg.rows import dict_row
+        if con.connection.row_factory is dict_row and con.connection.info.transaction_status==TransactionStatus.INTRANS:
+            return
+    elif isinstance(con,sqlite3.Connection) and con.row_factory is sqlite3.Row and con.in_transaction:
+        return
+    raise ValueError('QUEUE_REQUIRES_TRANSACTION')
 
 
 def _time(now):
@@ -103,6 +114,15 @@ def _time(now):
 
 @contextmanager
 def transaction(con):
+    if _postgres(con):
+        from psycopg.pq import TransactionStatus
+        from psycopg.rows import dict_row
+        raw=con.connection
+        if raw.row_factory is not dict_row or raw.info.transaction_status!=TransactionStatus.IDLE:
+            raise ValueError('QUEUE_REQUIRES_OWN_TRANSACTION')
+        with raw.transaction():
+            yield con
+        return
     if not isinstance(con,sqlite3.Connection) or con.in_transaction:
         raise ValueError('QUEUE_REQUIRES_OWN_TRANSACTION')
     con.execute('BEGIN IMMEDIATE')
@@ -145,22 +165,30 @@ def _terminal(con, row, state, result):
 def recover(con, *, now):
     """Recover only unstarted leases. A started orphan can have reached SMTP."""
     _require(con);now=_time(now)
-    rows=con.execute("SELECT * FROM reset_mail_queue WHERE state='leased' AND lease_until<=?",(now,)).fetchall()
+    if _postgres(con):
+        rows=con.execute("""SELECT * FROM reset_mail_queue
+            WHERE (state='leased' AND lease_until<=?) OR (state='queued' AND expires_at<=?)
+            ORDER BY id FOR UPDATE SKIP LOCKED""",(now,now)).fetchall()
+    else:
+        rows=con.execute("SELECT * FROM reset_mail_queue WHERE state='leased' AND lease_until<=?",(now,)).fetchall()
     for row in rows:
-        if row['started_at'] is not None:_terminal(con,row,'uncertain','LEASE_LOST_AFTER_START')
+        if row['state']=='queued':_terminal(con,row,'expired','EXPIRED')
+        elif row['started_at'] is not None:_terminal(con,row,'uncertain','LEASE_LOST_AFTER_START')
         elif row['expires_at']<=now:_terminal(con,row,'expired','EXPIRED')
         else:
             con.execute("UPDATE reset_mail_queue SET state='queued',owner=NULL,lease_until=NULL WHERE id=?",(row['id'],))
-    con.execute("""UPDATE reset_mail_queue SET state='expired',result='EXPIRED',payload=NULL
-        WHERE state='queued' AND expires_at<=?""",(now,))
+    if not _postgres(con):
+        con.execute("""UPDATE reset_mail_queue SET state='expired',result='EXPIRED',payload=NULL
+            WHERE state='queued' AND expires_at<=?""",(now,))
 
 
 def claim(con, *, now, lease_seconds=120):
     _require(con);now=_time(now)
     if type(lease_seconds) is not int or not 30<=lease_seconds<=300:raise ValueError('QUEUE_INVALID_LEASE')
     recover(con,now=now)
+    lock=' FOR UPDATE SKIP LOCKED' if _postgres(con) else ''
     row=con.execute("""SELECT * FROM reset_mail_queue WHERE state='queued' AND available_at<=?
-        AND created_at<=? AND expires_at>? ORDER BY created_at,id LIMIT 1""",(now,now,now)).fetchone()
+        AND created_at<=? AND expires_at>? ORDER BY created_at,id LIMIT 1"""+lock,(now,now,now)).fetchone()
     if row is None:return None
     owner=secrets.token_hex(32)
     con.execute("UPDATE reset_mail_queue SET state='leased',owner=?,lease_until=? WHERE id=?",
@@ -169,8 +197,9 @@ def claim(con, *, now, lease_seconds=120):
 
 
 def _owned(con, lease, now):
+    lock=' FOR UPDATE' if _postgres(con) else ''
     return con.execute("""SELECT * FROM reset_mail_queue WHERE id=? AND owner=?
-        AND state='leased' AND lease_until>?""",(lease.job_id,lease.owner,now)).fetchone()
+        AND state='leased' AND lease_until>?"""+lock,(lease.job_id,lease.owner,now)).fetchone()
 
 
 def start(con, keys, lease, *, now):
@@ -254,4 +283,5 @@ def dispatch_once(connect, keys, transport, *, clock, lease_seconds=120):
                 recorded=finish(con,lease,result,now=clock())
         return result['status'] if recorded else 'STALE'
     finally:
-        con.close()
+        if _postgres(con):con.connection.close()
+        else:con.close()

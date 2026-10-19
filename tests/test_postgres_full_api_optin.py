@@ -712,3 +712,114 @@ def test_native_reset_mail_queue_storage_constraints_only(pg_api):
             WHERE id=%s""",(job,))
         assert con.execute('SELECT state,payload FROM reset_mail_queue WHERE id=%s',(job,)).fetchone()==('accepted',None)
         con.execute('DELETE FROM reset_mail_queue WHERE id=%s',(job,))
+
+
+@pytest.mark.parametrize('scenario',[
+    'dispatch','rollback','unknown','races','recovery','skip_locked','revoked','retry'])
+def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
+    """Explicit queue calls on disposable PG, never real mail or an HTTP mail hook."""
+    import threading
+    from datetime import datetime,timezone
+    import psycopg
+    from psycopg.rows import dict_row
+    from backend.pg_adapter import PgConnection
+    from backend import reset_mail_queue as queue,password_reset as reset
+    from backend.smtp_reset_transport import outcome
+    client,parameters=pg_restart_api
+    _,uid=register(client,'klient')
+    now=1792396800
+    keys=queue.KeyRing({'test-v1':b'a'*32},'test-v1')
+    def connect():
+        return PgConnection(psycopg.connect(**{**parameters,'options':'-c lock_timeout=2000 -c statement_timeout=5000'},row_factory=dict_row))
+    con=connect()
+    try:
+        with queue.transaction(con):
+            email=con.execute('SELECT email FROM users WHERE id=?',(uid,)).fetchone()['email']
+        def issue():
+            with queue.transaction(con):return queue.issue(con,keys,email,now=now)
+        def rows():
+            with queue.transaction(con):return con.execute('SELECT * FROM reset_mail_queue ORDER BY id').fetchall()
+        if scenario=='dispatch':
+            issue();calls=[]
+            def transport(recipient,token):
+                other=connect()
+                try:
+                    with queue.transaction(other):
+                        r=other.execute('SELECT * FROM reset_mail_queue FOR UPDATE NOWAIT').fetchone()
+                        assert r['started_at']==now and r['attempts']==1
+                    assert recipient==email and reset.digest(token)==r['token_hash']
+                finally:other.connection.close()
+                calls.append(True);return outcome('ACCEPTED',accepted=True)
+            assert queue.dispatch_once(connect,keys,transport,clock=lambda:now)=='ACCEPTED'
+            assert queue.dispatch_once(connect,keys,transport,clock=lambda:now)=='IDLE'
+            assert calls==[True] and rows()[0]['state']=='accepted' and rows()[0]['payload'] is None
+        elif scenario=='rollback':
+            with pytest.raises(psycopg.errors.DivisionByZero):
+                with queue.transaction(con):
+                    assert queue.issue(con,keys,email,now=now)
+                    con.execute('SELECT 1/0')
+            with queue.transaction(con):
+                for table in ('reset_mail_queue','password_reset_tokens','password_reset_limits'):
+                    assert con.execute('SELECT COUNT(*) AS n FROM '+table).fetchone()['n']==0
+            assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('rollback cannot send'),clock=lambda:now)=='IDLE'
+        elif scenario=='unknown':
+            with queue.transaction(con):assert queue.issue(con,keys,'missing@example.invalid',now=now) is None
+            assert rows()==[]
+            for _ in range(3):assert issue()
+            assert issue() is None and len(rows())==3
+        elif scenario=='races':
+            issue();barrier=threading.Barrier(4);calls=[];lock=threading.Lock()
+            def transport(*args):
+                with lock:calls.append(True)
+                return outcome('ACCEPTED',accepted=True)
+            def worker(_):
+                barrier.wait(timeout=10)
+                return queue.dispatch_once(connect,keys,transport,clock=lambda:now)
+            with ThreadPoolExecutor(max_workers=4) as pool:results=list(pool.map(worker,range(4)))
+            assert results.count('ACCEPTED')==1 and results.count('IDLE')==3 and calls==[True]
+        elif scenario=='recovery':
+            issue()
+            with queue.transaction(con):old=queue.claim(con,now=now)
+            with queue.transaction(con):lease=queue.claim(con,now=now+120)
+            assert old.owner!=lease.owner
+            with queue.transaction(con):assert queue.start(con,keys,old,now=now+121) is None
+            with queue.transaction(con):assert queue.start(con,keys,lease,now=now+121)
+            con.connection.close();con=connect()
+            assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('uncertain cannot resend'),clock=lambda:now+240)=='IDLE'
+            assert rows()[0]['state']=='uncertain' and rows()[0]['payload'] is None
+            with queue.transaction(con):assert not queue.finish(con,lease,outcome('ACCEPTED',accepted=True),now=now+241)
+        elif scenario=='skip_locked':
+            first=issue();second=issue();locker=connect()
+            try:
+                with queue.transaction(locker):
+                    locker.execute('SELECT * FROM reset_mail_queue WHERE id=? FOR UPDATE',(first,)).fetchone()
+                    with queue.transaction(con):lease=queue.claim(con,now=now)
+                    assert lease.job_id==second
+                # Expired queued rows must also be skipped during recovery.
+                with queue.transaction(locker):
+                    locker.execute('SELECT * FROM reset_mail_queue WHERE id=? FOR UPDATE',(first,)).fetchone()
+                    with queue.transaction(con):queue.recover(con,now=now+900)
+                with queue.transaction(con):queue.recover(con,now=now+900)
+                assert {r['state'] for r in rows()}=={'expired'}
+            finally:locker.connection.close()
+        elif scenario=='revoked':
+            issue()
+            with queue.transaction(con):lease=queue.claim(con,now=now)
+            with queue.transaction(con):delivery=queue.start(con,keys,lease,now=now)
+            issue()
+            with queue.transaction(con):
+                from argon2 import PasswordHasher
+                assert reset.consume(con,PasswordHasher(time_cost=1,memory_cost=1024,parallelism=1),
+                    delivery.token,'New-synthetic-password!',now=datetime.fromtimestamp(now,timezone.utc))==200
+                assert queue.finish(con,lease,outcome('ACCEPTED',accepted=True),now=now)
+            assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('revoked link cannot send'),clock=lambda:now)=='SKIPPED'
+            assert {r['state'] for r in rows()}=={'accepted','expired'}
+        else:
+            issue();current=now
+            for delay in (30,60,None):
+                assert queue.dispatch_once(connect,keys,lambda *args:outcome('REJECTED',retryable=True),clock=lambda:current)=='REJECTED'
+                if delay:
+                    assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('backoff'),clock=lambda:current+delay-1)=='IDLE'
+                    current+=delay
+            assert rows()[0]['state']=='failed' and rows()[0]['attempts']==3 and rows()[0]['payload'] is None
+    finally:con.connection.close()

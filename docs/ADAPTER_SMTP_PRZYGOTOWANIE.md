@@ -60,3 +60,7 @@ https://docs.python.org/3.12/library/ssl.html — sprawdzona 18.10.2026.
 
 Projekt atomowości, dzierżaw i obsługi niepewnego wyniku opisuje
 KONTRAKT_KOLEJKI_POCZTY.md. To wymagania następnego etapu, bez implementacji.
+
+Część kontraktu zrealizowano 19.10.2026 w odłączonej kolejce SQLite:
+KOLEJKA_RESETU_SQLITE.md. Adapter i kolejka współpracują w testach z
+transportem w pamięci; nie są podłączone do tras aplikacji ani dostawcy.

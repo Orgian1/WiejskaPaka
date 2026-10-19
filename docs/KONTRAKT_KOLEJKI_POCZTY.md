@@ -1,7 +1,9 @@
 # Kontrakt kolejki poczty — projekt następnego etapu
 
-Stan 18.10.2026. Ten dokument opisuje wymagania implementacji, której jeszcze
-nie ma. Nie jest migracją, włącznikiem wysyłki ani dowodem dostarczenia.
+Kontrakt z 18.10.2026. Część SQLite zaimplementowano 19.10.2026 w osobnym,
+odłączonym module; zakres opisuje KOLEJKA_RESETU_SQLITE.md. Ten dokument
+nadal obejmuje wymagania docelowe, w tym niewykonane etapy integracji.
+Nie jest migracją, włącznikiem wysyłki ani dowodem dostarczenia.
 Punkty odniesienia: backend/password_reset.py, backend/notification_policy.py,
 backend/smtp_reset_transport.py i trasy password-reset-test w backend/app.py.
 

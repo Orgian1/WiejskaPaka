@@ -1,6 +1,6 @@
 # Poczta — stan kodu i odbiór po zakupie
 
-Sprawdzenie źródeł: 18.10.2026. Nie podłączono dostawcy poczty i nie wysłano
+Sprawdzenie źródeł: 19.10.2026. Nie podłączono dostawcy poczty i nie wysłano
 wiadomości z aplikacji. Zakup skrzynki nie uruchamia automatycznie
 powiadomień ani odzyskiwania hasła.
 
@@ -68,3 +68,12 @@ hasła przez e-mail. Tę różnicę trzeba zachować w komunikacji o gotowości.
 
 Adapter i jego ograniczenia opisuje ADAPTER_SMTP_PRZYGOTOWANIE.md; wyniki
 bieżącego pakietu zawiera RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md.
+
+
+## Kolejny etap — 19.10.2026
+
+`KOLEJKA_RESETU_SQLITE.md` opisuje osobny moduł szyfrowanej kolejki SQLite.
+Nie jest podłączony do HTTP lub SMTP i nie ma procesu w tle.
+`RAPORT_KOLEJKI_POCZTY_2026-10-19.md` rozdziela jego testy od dotychczasowej
+bramki PostgreSQL. Integracja aplikacji, PostgreSQL, zarządzanie kluczami,
+retencja i potwierdzenie adresów pozostają osobnym zakresem.

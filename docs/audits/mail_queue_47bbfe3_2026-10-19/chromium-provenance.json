@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:6acad12af12f2f101110dce5a76ccbedb3ca6a5d17d09e3a943bfd0afc76df74",
+  "id": 12168297409,
+  "name": "chromium-summary",
+  "workflow_run": {
+    "head_branch": "preview/mail-queue-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "47bbfe3c98b2f5bb191b1f91cb44910d7688b46b",
+    "id": 39212529571,
+    "repository_id": 1421291982
+  }
+}

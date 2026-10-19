@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "case": "uncommitted_start",
+      "final_state": "accepted",
+      "process_exit": 73,
+      "success": true,
+      "transport_calls": 1
+    },
+    {
+      "case": "after_transport",
+      "final_state": "uncertain",
+      "process_exit": 73,
+      "success": true,
+      "transport_calls": 1
+    }
+  ],
+  "evidence": {
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "runtime_sha256": "b0c6f0319d3b99cd6263de699552503c27f604803c777563cb3ebab5ff7f9b9f",
+    "test_sources_sha256": "ebb33de3f270919b88c59b8120035a50bbe38a0caa5c0fcbf538da4f11061ef8",
+    "tests_sha256": "fb941f225af890960ebafa51ee54eae20a2a73503587af05509d56310548f3d9",
+    "workflow_sha256": "eea5594092abdd3d0320219e3bfcc77139e89cf4c6e0821a64081b2323dece10"
+  },
+  "scope": "local Linux subprocess termination, synthetic SQLite and in-memory transport; no SMTP",
+  "success": true,
+  "tested_commit": "47bbfe3c98b2f5bb191b1f91cb44910d7688b46b"
+}

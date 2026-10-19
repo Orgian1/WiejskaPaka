@@ -7,8 +7,6 @@ CREATE ROLE wp_preview_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT N
 \password wp_preview_app
 CREATE DATABASE wp_test_preview;
 \connect wp_test_preview
--- SHA256 8dbf4ca1353d3ee962179cb0cfbc16a6be57e2b2824550f04892f7db9404a305
-\ir ../../database/upgrade_z_reset_mail_queue.sql
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- Immutable ordered schema reviewed against database/test_schema_checksums.json.
 -- SHA256 c4e3deba7f535001212e83e83509331f972ff72721d74a69e995367b2756ea97

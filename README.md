@@ -3,6 +3,7 @@
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
 Aktualny punkt wejścia przed zakupem serwera:
+`docs/RAPORT_KOLEJKI_POCZTY_2026-10-19.md` — odłączona kolejka resetu SQLite i granice integracji;
 `docs/RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md` — reset na testowym PostgreSQL i osobny adapter SMTP;
 `docs/RAPORT_KOPII_POSTGRESQL_2026-10-18.md` — zakończone bramki tego pakietu;
 `docs/URUCHOMIENIE_PODGLADU_NA_SERWERZE.md` — trwały prywatny podgląd,

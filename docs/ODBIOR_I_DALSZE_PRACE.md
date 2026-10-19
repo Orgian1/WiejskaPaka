@@ -94,3 +94,12 @@ serializuje równoległe żądania i cofa sesje w tej samej transakcji.
 Adapter SMTP jest osobnym, domyślnie wyłączonym modułem, sprawdzanym
 wyłącznie z obiektem w pamięci. Nie uruchamia wysyłki z aplikacji.
 Raport podaje stan bramek oraz dalszy zakres kolejki i weryfikacji adresów.
+
+
+## Odłączona kolejka resetu SQLite — 19.10.2026
+
+`RAPORT_KOLEJKI_POCZTY_2026-10-19.md` dokumentuje kod 47bbfe3.
+Szyfrowane zadanie, dzierżawy i pojedyncze wykonanie są zaimplementowane
+w osobnym module SQLite. Nie ma integracji HTTP ani domyślnego transportu.
+Nadal wymagane są PostgreSQL, zarządzanie kluczami, retencja, właściwy
+pracownik i potwierdzanie adresów. Nowy moduł nie uruchamia poczty aplikacji.

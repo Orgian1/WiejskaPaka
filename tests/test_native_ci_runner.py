@@ -11,7 +11,7 @@ DSN = 'postgresql://ci:disposable@127.0.0.1:5432/wp_test_ci'
 SENSITIVE = 'never-publish-this-value'
 
 
-def junit(command, *, passed=43, skipped=0, failed=0):
+def junit(command, *, passed=44, skipped=0, failed=0):
     path = Path(command[command.index('--junitxml')+1])
     path.write_text('<testsuite>'+('<testcase/>'*passed)+
                     ('<testcase><skipped/></testcase>'*skipped)+
@@ -44,7 +44,7 @@ def test_postgres_environment_and_report_do_not_forward_secrets(tmp_path):
         return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
     path = tmp_path/'result.json'
     result = ci.run('postgres', path, source=source(), runner=runner)
-    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 43
+    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 44
     assert SENSITIVE not in path.read_text() and DSN not in path.read_text()
 
 
@@ -172,7 +172,11 @@ def test_full_windows_failure_reports_only_allowlisted_module_names(tmp_path, mo
             return subprocess.CompletedProcess(command, 0, '', '')
         data = {'complete': True, 'success': False, 'sources_unchanged': True,
             'executed': 1, 'planned': 1, 'test_counts': {'total':1,'passed':0,'failed':1,'skipped':0},
-            'results': [{'file':known,'returncode':1,'output_tail':SENSITIVE},
+            'results': [{'file':known,'returncode':1,'output_tail':
+                        f'C:\\private\\{known}:42: AssertionError {SENSITIVE}\n'
+                        f'tests/{known}:42: {SENSITIVE}\n'
+                        f'tests/test_unknown_private.py:7: {SENSITIVE}'},
+                        {'file':known,'returncode':0,'output_tail':f'tests/{known}:99: ignored'},
                         {'file':SENSITIVE,'returncode':1,'output_tail':SENSITIVE}]}
         Path(command[-1]).write_text(json.dumps(data))
         return subprocess.CompletedProcess(command, 1, SENSITIVE, SENSITIVE)
@@ -180,7 +184,15 @@ def test_full_windows_failure_reports_only_allowlisted_module_names(tmp_path, mo
     result = ci.run('windows',path,source={},runner=runner)
     assert not result['success']
     assert result['tasks'][-1]['failed_modules'] == [known]
+    assert result['tasks'][-1]['failure_locations'] == [{'file':known,'line':42}]
     assert SENSITIVE not in path.read_text()
+    assert 'private' not in path.read_text() and 'ignored' not in path.read_text()
+
+
+@pytest.mark.parametrize('text', [None, {}, [], 42, 'test_sqlite_snapshot.py:0: invalid',
+    'test_sqlite_snapshot.py:'+'9'*5000+': invalid'])
+def test_failure_location_parser_ignores_invalid_or_unbounded_input(text):
+    assert ci.failure_locations_from_text(text, ci.ROOT) == []
 
 
 def test_standalone_windows_recovery_never_claims_full_regression(tmp_path,monkeypatch):

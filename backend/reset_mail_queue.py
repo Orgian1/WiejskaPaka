@@ -310,3 +310,18 @@ def purge_terminal(con, *, now, retention_seconds=30*86400, limit=100):
             AND state IN ('accepted','uncertain','failed','expired')
             AND payload IS NULL AND expires_at<=?""",(row['id'],cutoff))
     return {'deleted':len(rows)}
+
+
+def quarantine_restored(con):
+    """Offline restored copy only; caller commits alongside token/session revocation.
+
+    A started historical attempt remains uncertain. Other active jobs expire.
+    No delivery, recovery or key access occurs. Terminal history is preserved.
+    """
+    _require(con)
+    count=con.execute("""UPDATE reset_mail_queue SET
+        state=CASE WHEN state='leased' AND started_at IS NOT NULL
+            THEN 'uncertain' ELSE 'expired' END,
+        result='RESTORE_QUARANTINED',payload=NULL,owner=NULL,lease_until=NULL,started_at=NULL
+        WHERE state IN ('queued','leased')""").rowcount
+    return {'quarantined':count}

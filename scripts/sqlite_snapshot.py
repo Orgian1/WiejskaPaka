@@ -73,6 +73,11 @@ def snapshot(source, key_file, destination, *, restore=False, timeout=30):
                         revoked = dst.execute('DELETE FROM sessions').rowcount
                         if dst.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='password_reset_tokens'").fetchone():
                             dst.execute('DELETE FROM password_reset_tokens')
+                        if dst.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='reset_mail_queue'").fetchone():
+                            from backend.reset_mail_queue import quarantine_restored
+                            quarantine_restored(dst)
+                            if dst.execute("SELECT COUNT(*) FROM reset_mail_queue WHERE state IN ('queued','leased') OR payload IS NOT NULL").fetchone()[0]:
+                                raise ValueError('Nie udało się zablokować historycznej kolejki')
                     if dst.execute('SELECT COUNT(*) FROM sessions').fetchone()[0]:
                         raise ValueError('Nie udało się unieważnić sesji')
                 else:

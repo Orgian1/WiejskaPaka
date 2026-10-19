@@ -50,9 +50,20 @@ def counts(path):
 
 
 
-def failure_locations(path, root):
+def failure_locations_from_text(text, root):
     """Return only allowlisted repository filenames and line numbers, never logs."""
     known = {p.name for p in (Path(root)/'tests').glob('test_*.py')}
+    found = set()
+    if not isinstance(text, str):
+        return []
+    for name, line in re.findall(r'(?:^|[/\\ ])(test_[A-Za-z0-9_]+\.py):(\d{1,7}):',
+                                 text, re.MULTILINE):
+        if name in known and int(line) > 0:
+            found.add((name, int(line)))
+    return [{'file': name, 'line': line} for name,line in sorted(found)[:30]]
+
+
+def failure_locations(path, root):
     found = set()
     for case in ET.parse(path).getroot().iter('testcase'):
         for tag in ('failure', 'error'):
@@ -60,10 +71,8 @@ def failure_locations(path, root):
             if failure is None:
                 continue
             # Do not emit assertion text, parameter values, absolute paths or locals.
-            for name, line in re.findall(r'(?:^|[/\\ ])(test_[A-Za-z0-9_]+\.py):(\d+):',
-                                         failure.text or '', re.MULTILINE):
-                if name in known:
-                    found.add((name, int(line)))
+            for location in failure_locations_from_text(failure.text, root):
+                found.add((location['file'], location['line']))
     return [{'file': name, 'line': line} for name,line in sorted(found)[:30]]
 
 
@@ -138,6 +147,11 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                         if entry.get('test_counts') is None})
                     task['timed_out_modules'] = sorted({entry['file'] for entry in entries
                         if entry.get('timeout') is True})
+                    locations = {(location['file'], location['line'])
+                        for entry in entries if entry.get('returncode') != 0
+                        for location in failure_locations_from_text(entry.get('output_tail'), root)}
+                    task['failure_locations'] = [{'file': name, 'line': line}
+                        for name, line in sorted(locations)[:30]]
                     task['test_counts'] = checked_counts(data['test_counts'])
                     task['success'] = bool(process.returncode == 0 and data['complete'] is True and
                         data['success'] is True and data['sources_unchanged'] is True
@@ -147,7 +161,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 43 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
+                    minimum = 44 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0

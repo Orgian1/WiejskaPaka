@@ -1,0 +1,33 @@
+{
+  "gate": "browser",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "system": "Linux",
+  "evidence": {
+    "runtime_sha256": "1170fa239e947888953ab0e4d8732286194ff9c9d384cfc0653979f71a862476",
+    "tests_sha256": "359429d04eb85b07841c915f312d6b756506a6081ee0aae3cd254e09f013789c",
+    "test_sources_sha256": "a13f6b933e0d03836d085bf9e127c668ca42b6390413e9c628fc89d7430f547f",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "eea5594092abdd3d0320219e3bfcc77139e89cf4c6e0821a64081b2323dece10"
+  },
+  "tasks": [
+    {
+      "name": "offline_browser",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 36,
+        "passed": 36,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "http_viewports",
+      "success": true,
+      "returncode": 0
+    }
+  ]
+}

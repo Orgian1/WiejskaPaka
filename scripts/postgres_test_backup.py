@@ -199,6 +199,11 @@ def validate_restored(connection, keyring):
     orders = con.execute('SELECT count(*) AS n FROM orders').fetchone()['n']
     revoked = con.execute('DELETE FROM sessions').rowcount
     con.execute('DELETE FROM password_reset_tokens')
+    if con.execute("SELECT to_regclass('public.reset_mail_queue') AS queue_table").fetchone()['queue_table'] is not None:
+        from backend.reset_mail_queue import quarantine_restored
+        quarantine_restored(con)
+        if con.execute("SELECT count(*) AS n FROM reset_mail_queue WHERE state IN ('queued','leased') OR payload IS NOT NULL").fetchone()['n']:
+            raise ValueError('Restored mail queue remains active')
     if (con.execute('SELECT count(*) AS n FROM sessions').fetchone()['n']
             or con.execute('SELECT count(*) AS n FROM password_reset_tokens').fetchone()['n']):
         raise ValueError('Restored sessions remain')

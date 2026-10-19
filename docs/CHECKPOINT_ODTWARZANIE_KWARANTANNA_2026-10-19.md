@@ -30,7 +30,8 @@ Szczegóły: ODTWARZANIE_BAZY_I_KLUCZY_POCZTY.md.
 - Szybki Windows: 80 PASS, 0 FAIL, 0 SKIP.
 - Raporty i provenance zapisano obok linux-full.json; SHA-256 archiwów
   oraz odciski kodu, testów, zależności i workflow są zgodne.
-- Pełny Windows nowej kwarantanny nadal wymaga odbioru.
+- Pełny Windows: 3972 PASS, 0 FAIL, 146 SKIP; complete/success/
+  sources_unchanged. Archiwum SHA-256 i wszystkie odciski zgodne z PostgreSQL.
 
 Próba lokalna odtwarza zaszyfrowaną bazę i osobne klucze, sprawdza
 expired/expired/uncertain, brak zadań dla transportu, zachowanie zamówień,
@@ -51,11 +52,11 @@ szybki Windows 80 PASS / 0 FAIL / 0 SKIP. Raporty i provenance są w
 Sprawdzono SHA-256 archiwów i wszystkie odciski źródeł/testów/zależności
 względem izolowanego worktree badanego commita. Tych wyników nie wolno
 przedstawiać jako odbioru nowej kwarantanny. Checkpoint kopii kluczy
-zaktualizowano; pełny Windows pozostaje do osobnego odbioru.
+zaktualizowano; starsza próba pełnego Windows ma pojedynczy błąd opisany niżej.
 
 ## Punkt wznowienia
 
-1. Odebrać pełny Windows CI 39280581000 dla kwarantanny.
+1. Odbiór CI 39280581000 dla kodu 30de9b8 zamknięty: wszystkie bramki PASS.
 2. Retencja: pełny Windows potwierdzony, 3965 PASS / 0 FAIL / 121 SKIP.
    Kopia kluczy: pierwsza próba 3965 PASS / 1 FAIL / 143 SKIP, moduł
    test_checkout_vault_http.py; wynik zachowano jako windows-attempt1.json.
@@ -71,3 +72,14 @@ Nie scalono PR #12–16. Hosting i rzeczywiste płatności pozostają odłączon
 
 Kontrola lokalna aktualnego modułu test_checkout_vault_http.py: 5 PASS
 w 40,39 s. Wynik Linux nie rozstrzyga przyczyny pojedynczego błędu Windows.
+
+## Aktualizacja 19.10, po 18:22 Europe/Warsaw
+
+GitHub przyjął ponowienie starszego zadania Windows 118149503175.
+Nie oznacza to zaliczenia: wynik drugiej próby pozostaje do odbioru.
+Dla kodu 30de9b8 zapisano windows.json i windows-provenance.json.
+Dodano diagnostykę pełnej regresji: tylko znane nazwy plików i numery
+linii z ogona błędu, bez treści asercji, parametrów i ścieżek prywatnych.
+Diagnostyka z kontrolami izolacji: 41 PASS. To zmiana runnera po odebranym
+kodzie 30de9b8; wyniki wcześniejszego CI nie są dowodem jej wykonania.
+Nowy przebieg uruchomi publikacja commita bez skip ci.

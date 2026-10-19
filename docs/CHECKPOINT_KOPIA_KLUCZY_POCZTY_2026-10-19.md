@@ -75,3 +75,8 @@ Windows 80; pełny Windows tej wersji nadal do odbioru.
 
 Kontrola lokalna aktualnego modułu test_checkout_vault_http.py: 5 PASS
 w 40,39 s. Wynik Linux nie rozstrzyga przyczyny pojedynczego błędu Windows.
+
+Aktualizacja po 18:22: ponowienie zadania 118149503175 przyjęte.
+Wynik nadal do odbioru. Pełny Windows nowszej kwarantanny 30de9b8
+zweryfikowany: 3972 PASS, 0 FAIL, 146 SKIP; nie rozstrzyga to
+przyczyny pojedynczej awarii starszej próby 20df26b.

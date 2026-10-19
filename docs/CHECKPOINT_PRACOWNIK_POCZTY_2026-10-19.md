@@ -30,7 +30,7 @@ i transportem w pamięci. Bramka wymaga teraz co najmniej 41 zaliczeń.
 | Natywny PostgreSQL 16 | 41 PASS, 0 FAIL, 0 SKIP |
 | Chromium | 36 PASS, 0 FAIL, 0 SKIP; HTTP w pięciu rozmiarach: sukces |
 | Szybki Windows | 80 PASS, 0 FAIL, 0 SKIP |
-| Pełny Windows pracownika | W trakcie w momencie zapisu |
+| Pełny Windows pracownika | 3950 PASS, 0 FAIL, 120 SKIP; sukces |
 
 Lokalne przebiegi nakładają się — nie sumować. Raporty trzech zakończonych
 bramek: `audits/bounded_worker_f4ddd02_2026-10-19/`. Zweryfikowano SHA-256
@@ -41,9 +41,11 @@ Zdalne drzewo kodu zgadzało się z lokalnym git: d71871a321793d5b92dca70e17bd2b
 
 ## Stan poprzedniego pakietu
 
-Pełny Windows kodu HTTP, przebieg 39253492205, nadal był w trakcie przy
-ostatnim odczycie (19.10.2026, około 14:57 Europe/Warsaw).
-Nie oznaczać żadnego z dwóch pełnych przebiegów jako zaliczonego.
+Aktualizacja 19.10.2026, po 17:08 Europe/Warsaw: pełny Windows kodu HTTP,
+przebieg 39253492205, zakończył się sukcesem: 3931 PASS, 0 FAIL, 119 SKIP.
+Pełny Windows pracownika również zakończył się sukcesem: 3950 PASS,
+0 FAIL, 120 SKIP. Raporty windows.json i ich provenance pobrano i
+zweryfikowano względem odcisków PostgreSQL tego samego badanego commita.
 Raporty poprzednich zakończonych bramek dotyczą kodu 88c4cad, a nie pracownika.
 
 ## Granice i dalsza praca
@@ -53,10 +55,10 @@ Nie ma domyślnego SMTP lub połączenia z bazą; wszystkie funkcje dostarcza
 jawnie wywołujący. Testy nie wysyłają prawdziwej poczty. Ograniczenia procesu
 nie stanowią systemowej izolacji uprawnień lub sieci.
 
-Najpierw odebrać wyniki pełnego Windows dla obu przebiegów. Przy pobraniu
-windows-summary sprawdzić SHA-256 archiwum i zgodność odcisków z raportami
-tego samego badanego commita, nie z później zmienionym drzewem kodu.
-W razie błędu naprawić wskazane moduły przed scaleniem PR.
+Oba wyniki pełnego Windows zostały odebrane; success, complete oraz
+sources_unchanged są prawdziwe. Pominięcia pozostają pominięciami, nie
+zaliczeniami natywnych testów innych środowisk. Nie sumować wyników
+nakładających się przebiegów.
 
 Następnie: osobna rola i konto usługi, uprawnienia i nadzorca procesu,
 retencja metadanych, potwierdzanie adresów, kopie/rotacja kluczy i bezpieczne

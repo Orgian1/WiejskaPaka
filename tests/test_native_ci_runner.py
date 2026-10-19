@@ -11,7 +11,7 @@ DSN = 'postgresql://ci:disposable@127.0.0.1:5432/wp_test_ci'
 SENSITIVE = 'never-publish-this-value'
 
 
-def junit(command, *, passed=41, skipped=0, failed=0):
+def junit(command, *, passed=42, skipped=0, failed=0):
     path = Path(command[command.index('--junitxml')+1])
     path.write_text('<testsuite>'+('<testcase/>'*passed)+
                     ('<testcase><skipped/></testcase>'*skipped)+
@@ -44,7 +44,7 @@ def test_postgres_environment_and_report_do_not_forward_secrets(tmp_path):
         return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
     path = tmp_path/'result.json'
     result = ci.run('postgres', path, source=source(), runner=runner)
-    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 41
+    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 42
     assert SENSITIVE not in path.read_text() and DSN not in path.read_text()
 
 

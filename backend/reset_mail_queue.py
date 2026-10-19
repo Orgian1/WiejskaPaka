@@ -286,3 +286,27 @@ def dispatch_once(connect, keys, transport, *, clock, lease_seconds=120):
     finally:
         if _postgres(con):con.connection.close()
         else:con.close()
+
+
+def purge_terminal(con, *, now, retention_seconds=30*86400, limit=100):
+    """Explicit bounded metadata deletion; never removes queued or leased jobs.
+
+    Age is measured from expiry, not issuance. Payloads must already have been
+    removed by terminal transitions. This call never recovers leases, sends
+    messages, deletes reset tokens or commits the caller's transaction.
+    """
+    _require(con);now=_time(now)
+    if (type(retention_seconds) is not int or not 86400<=retention_seconds<=365*86400
+            or type(limit) is not int or not 1<=limit<=1000):
+        raise ValueError('QUEUE_RETENTION_CONFIGURATION_REJECTED')
+    cutoff=now-retention_seconds
+    lock=' FOR UPDATE SKIP LOCKED' if _postgres(con) else ''
+    rows=con.execute("""SELECT id FROM reset_mail_queue
+        WHERE state IN ('accepted','uncertain','failed','expired')
+        AND payload IS NULL AND expires_at<=?
+        ORDER BY expires_at,id LIMIT ?"""+lock,(cutoff,limit)).fetchall()
+    for row in rows:
+        con.execute("""DELETE FROM reset_mail_queue WHERE id=?
+            AND state IN ('accepted','uncertain','failed','expired')
+            AND payload IS NULL AND expires_at<=?""",(row['id'],cutoff))
+    return {'deleted':len(rows)}

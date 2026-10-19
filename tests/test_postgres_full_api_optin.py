@@ -834,7 +834,7 @@ def test_native_reset_mail_queue_storage_constraints_only(pg_api):
 
 
 @pytest.mark.parametrize('scenario',[
-    'dispatch','rollback','unknown','races','recovery','skip_locked','revoked','retry'])
+    'dispatch','rollback','unknown','races','recovery','skip_locked','revoked','retry','retention'])
 def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
     """Explicit queue calls on disposable PG, never real mail or an HTTP mail hook."""
     import threading
@@ -933,6 +933,25 @@ def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
                 assert queue.finish(con,lease,outcome('ACCEPTED',accepted=True),now=now)
             assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('revoked link cannot send'),clock=lambda:now)=='SKIPPED'
             assert {r['state'] for r in rows()}=={'accepted','expired'}
+        elif scenario=='retention':
+            first=issue();second=issue();pending=issue()
+            with queue.transaction(con):
+                for job in (first,second):
+                    con.execute("UPDATE reset_mail_queue SET state='expired',payload=NULL WHERE id=?",(job,))
+            locker=connect()
+            try:
+                with queue.transaction(locker):
+                    locker.execute('SELECT id FROM reset_mail_queue WHERE id=? FOR UPDATE',(first,)).fetchone()
+                    with queue.transaction(con):
+                        assert queue.purge_terminal(con,now=now+900+86400,
+                            retention_seconds=86400,limit=1)=={'deleted':1}
+                with queue.transaction(con):
+                    assert queue.purge_terminal(con,now=now+900+86400,
+                        retention_seconds=86400,limit=1)=={'deleted':1}
+                remaining=rows()
+                assert len(remaining)==1 and remaining[0]['id']==pending
+                assert remaining[0]['state']=='queued' and remaining[0]['payload'] is not None
+            finally:locker.connection.close()
         else:
             issue();current=now
             for delay in (30,60,None):

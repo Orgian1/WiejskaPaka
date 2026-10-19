@@ -57,6 +57,7 @@ tests/test_postgres_test_guard_hardening.py
 # Prywatne szyfrowane kopie i ich oddzielne klucze
 *.wpbackup
 *.backup-key
+*.mailkeybackup
 .wp-backup-*
 .wp-snapshot-*
 .wp-restore-*

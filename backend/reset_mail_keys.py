@@ -23,6 +23,26 @@ def _unique(pairs):
     return result
 
 
+def _decode_keys(raw):
+    """Shared bounded document validator; callers redact errors at their boundary."""
+    if len(raw)>MAX_BYTES:raise ValueError('oversized key file')
+    obj=json.loads(raw.decode('utf-8'),object_pairs_hook=_unique)
+    if (not isinstance(obj,dict) or set(obj)!={'format','active','keys'}
+            or type(obj['format']) is not int or obj['format']!=1
+            or not isinstance(obj['active'],str) or not isinstance(obj['keys'],dict)
+            or not 1<=len(obj['keys'])<=8):
+        raise ValueError('invalid key format')
+    keys={}
+    for key,value in obj['keys'].items():
+        if not isinstance(value,str):raise ValueError('invalid key encoding')
+        decoded=base64.b64decode(value,validate=True)
+        if len(decoded)!=32 or base64.b64encode(decoded).decode('ascii')!=value:
+            raise ValueError('noncanonical 256-bit key')
+        keys[key]=decoded
+    if len(set(keys.values()))!=len(keys):raise ValueError('duplicate key material')
+    return KeyRing(keys,obj['active'])
+
+
 def load_keys(path, *, root=ROOT):
     """Read a private external POSIX file. Every failure is secret-free."""
     try:
@@ -39,22 +59,7 @@ def load_keys(path, *, root=ROOT):
             raw=os.read(fd,MAX_BYTES+1)
         finally:
             os.close(fd)
-        if len(raw)>MAX_BYTES:raise ValueError('oversized key file')
-        obj=json.loads(raw.decode('utf-8'),object_pairs_hook=_unique)
-        if (not isinstance(obj,dict) or set(obj)!={'format','active','keys'}
-                or type(obj['format']) is not int or obj['format']!=1
-                or not isinstance(obj['active'],str) or not isinstance(obj['keys'],dict)
-                or not 1<=len(obj['keys'])<=8):
-            raise ValueError('invalid key format')
-        keys={}
-        for key,value in obj['keys'].items():
-            if not isinstance(value,str):raise ValueError('invalid key encoding')
-            decoded=base64.b64decode(value,validate=True)
-            if len(decoded)!=32 or base64.b64encode(decoded).decode('ascii')!=value:
-                raise ValueError('noncanonical 256-bit key')
-            keys[key]=decoded
-        if len(set(keys.values()))!=len(keys):raise ValueError('duplicate key material')
-        return KeyRing(keys,obj['active'])
+        return _decode_keys(raw)
     except Exception:
         raise ValueError('MAIL_QUEUE_KEYS_REJECTED') from None
 

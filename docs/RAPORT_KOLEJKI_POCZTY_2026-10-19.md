@@ -57,10 +57,14 @@ Pobierane artefakty CI są sprawdzane przez sumę SHA-256 archiwum, odciski
 | Bramka | Zaliczone | Błędy | Pominięte | Stan |
 | --- | ---: | ---: | ---: | --- |
 | Pełny Linux, 319/319 modułów | 3946 | 0 | 50 | sukces |
-| Pełny Windows | — | — | — | w toku |
+| Pełny Windows, 319/319 modułów | 3920 | 0 | 76 | sukces |
 | PostgreSQL 16, aplikacja i ograniczenia tabeli | 28 | 0 | 0 | sukces |
 | Chromium i realny HTTP | 36 | 0 | 0 | sukces; HTTP w pięciu rozmiarach |
 | Szybki Windows | 80 | 0 | 0 | sukces |
+
+Wszystkie bramki zakończyły się sukcesem. Pełne przebiegi zachowały
+niezmienione źródła. Liczby zaliczeń i pominięć są rozdzielone; natywne
+bramki nie są doliczane do sum regresji.
 
 ## Granice
 

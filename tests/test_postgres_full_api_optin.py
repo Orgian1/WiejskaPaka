@@ -716,8 +716,8 @@ def queued_worker_accept(recipient, token):
     return outcome('ACCEPTED', accepted=True)
 
 
-@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race', 'worker-process'])
-def test_native_queued_reset_http(pg_queued_reset_api, scenario):
+@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race', 'worker-process', 'keys-recovery'])
+def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path):
     """Real HTTP and restricted PostgreSQL; synthetic keys, no mail transport."""
     import psycopg
     from psycopg.rows import dict_row
@@ -781,9 +781,22 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario):
     assert len(stored) == 1 and stored[0]['state'] == 'queued' and stored[0]['attempts'] == 0
     token = keys.decrypt(stored[0]).token
     assert token.encode() not in bytes(stored[0]['payload']) and EMAIL.encode() not in bytes(stored[0]['payload'])
-    if scenario == 'worker-process':
+    if scenario in ('worker-process','keys-recovery'):
         from functools import partial
         from backend.reset_mail_worker import run_process
+        if scenario=='keys-recovery':
+            from scripts import mail_queue_key_backup as key_backup
+            for name in ('wrapping','archives','restored'):
+                (tmp_path/name).mkdir(mode=0o700)
+            wrapper=tmp_path/'wrapping'/'key.json'
+            archive=tmp_path/'archives'/'keys.mailkeybackup'
+            recovered=tmp_path/'restored'/'keys.json'
+            assert key_backup.init_backup_key(wrapper)=={'created':True}
+            assert key_backup.backup(pg_queued_reset_api.mail_keys,wrapper,archive)=={'encrypted_backup':True}
+            assert key_backup.restore(archive,wrapper,recovered)=={'restored':True}
+            keys=reset_mail_keys.load_keys(recovered)
+            assert keys.decrypt(rows()[0]).token==token
+            assert rows()[0]['state']=='queued' and rows()[0]['attempts']==0
         result = run_process(partial(queued_worker_connection,parameters),keys,
             queued_worker_accept,max_jobs=1,timeout_seconds=10)
         assert result == {'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}

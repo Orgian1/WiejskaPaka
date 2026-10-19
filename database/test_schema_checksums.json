@@ -123,5 +123,10 @@
     "file": "upgrade_z_support_cases_test.sql",
     "sha256": "d7b3025f3df4440fb19975e88fd122a7b52eb3cd361a0e9b3993f6042e68ac45",
     "bytes": 1671
+  },
+  {
+    "file": "upgrade_z_reset_mail_queue.sql",
+    "sha256": "8dbf4ca1353d3ee962179cb0cfbc16a6be57e2b2824550f04892f7db9404a305",
+    "bytes": 1166
   }
 ]

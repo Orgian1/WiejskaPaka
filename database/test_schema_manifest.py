@@ -23,6 +23,7 @@ UPGRADES = (
     'upgrade_b10921_purchase_records.sql',
     'upgrade_z_password_reset_test.sql',
     'upgrade_z_support_cases_test.sql',
+    'upgrade_z_reset_mail_queue.sql',
 )
 
 

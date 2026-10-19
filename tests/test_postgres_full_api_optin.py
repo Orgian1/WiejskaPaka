@@ -687,3 +687,28 @@ def test_native_reset_database_failure_rolls_back_password_and_sessions(pg_reset
         assert recovered.get('/auth/me',headers=buyer).status_code == 200
         assert recovered.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 200
         assert confirm(recovered,token).status_code == 200
+
+
+def test_native_reset_mail_queue_storage_constraints_only(pg_api):
+    """Provisioning proof, not a claim that the SQLite worker supports PostgreSQL."""
+    import psycopg
+    client,parameters=pg_api
+    _,uid=register(client,'klient')
+    job=uuid4().hex
+    with psycopg.connect(**parameters) as con:
+        con.execute('''INSERT INTO reset_mail_queue
+            (id,user_id,token_hash,event,key_id,payload,created_at,expires_at,state,available_at)
+            VALUES(%s,%s,%s,'password_reset','synthetic-key',%s,1000,1900,'queued',1000)''',
+            (job,uid,uuid4().hex,b'synthetic-encrypted-payload'))
+        payload,user_type,payload_type=con.execute('''SELECT payload,pg_typeof(user_id)::text,
+            pg_typeof(payload)::text FROM reset_mail_queue WHERE id=%s''',(job,)).fetchone()
+        assert bytes(payload)==b'synthetic-encrypted-payload' and (user_type,payload_type)==('bigint','bytea')
+        for mutation in ("state='accepted'", "state='leased'", "attempts=4",
+                         "event='pickup_pin'", "expires_at=1000", "user_id=-999999"):
+            with pytest.raises(psycopg.IntegrityError):
+                with con.transaction():
+                    con.execute('UPDATE reset_mail_queue SET '+mutation+' WHERE id=%s',(job,))
+        con.execute("""UPDATE reset_mail_queue SET state='accepted',payload=NULL,result='ACCEPTED'
+            WHERE id=%s""",(job,))
+        assert con.execute('SELECT state,payload FROM reset_mail_queue WHERE id=%s',(job,)).fetchone()==('accepted',None)
+        con.execute('DELETE FROM reset_mail_queue WHERE id=%s',(job,))

@@ -4,7 +4,9 @@ Stan: 19.10.2026. Implementacja backend/reset_mail_queue.py stanowi osobny
 moduł testowany na syntetycznej bazie SQLite. Nie jest wywoływana przez
 backend/app.py, nie tworzy tabel przy starcie aplikacji i nie ma domyślnego
 transportu, konfiguracji środowiskowej, harmonogramu ani procesu w tle.
-Nie podłączono SMTP, PostgreSQL, hostingu ani płatności w ramach tego etapu.
+Nie podłączono dostawcy SMTP, hostingu ani płatności. Dodano osobną
+migrację deklarującą odpowiednik tabeli PostgreSQL oraz test jej ograniczeń;
+moduł wykonywania kolejki nadal dopuszcza wyłącznie SQLite.
 
 ## Co działa w module
 

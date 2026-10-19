@@ -3,6 +3,7 @@
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
 Aktualny punkt wejścia przed zakupem serwera:
+`docs/RAPORT_RESETU_HTTP_KOLEJKI_2026-10-19.md` — prywatny przepływ HTTP zapisujący zaszyfrowaną kolejkę;
 `docs/RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md` — wykonywanie kolejki PostgreSQL i jawne ładowanie kluczy;
 `docs/RAPORT_KOLEJKI_POCZTY_2026-10-19.md` — odłączona kolejka resetu SQLite i granice integracji;
 `docs/RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md` — reset na testowym PostgreSQL i osobny adapter SMTP;

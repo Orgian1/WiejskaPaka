@@ -57,3 +57,10 @@ nie zmienia faktu, że moduł pozostaje odłączony od aplikacji.
 Jawny loader prywatnych wersjonowanych kluczy opisuje
 KLUCZE_KOLEJKI_POCZTY.md. Odczyt pliku nie stanowi pełnego zarządzania kluczami
 i nie uruchamia pracownika.
+
+
+Kolejny pakiet 19.10.2026 dodał prywatny testowy przepływ HTTP zapisujący
+zaszyfrowane zadania. Aktualne włączenie i ograniczenia opisuje
+RESET_HASLA_KOLEJKA_HTTP_TEST.md; wyniki wskazuje
+RAPORT_RESETU_HTTP_KOLEJKI_2026-10-19.md. Pracownik i prawdziwa wysyłka
+pozostają poza tym zakresem.

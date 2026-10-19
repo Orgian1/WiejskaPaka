@@ -14,7 +14,10 @@ WP_ENABLE_MAIL_QUEUE=1 i WP_MAIL_QUEUE_KEYS_FILE wskazującego poprawny
 prywatny plik POSIX opisany w KLUCZE_KOLEJKI_POCZTY.md. WP_TEST_RESET_OUTBOX
 musi pozostać nieustawiony. Błędny tryb, niepełne flagi lub nieprawidłowe
 klucze przerywają start ze stałym, nieujawniającym sekretów błędem.
-Nie generować zastępczego klucza przy restarcie.
+Nie generować zastępczego klucza przy restarcie. Klucze są ładowane przy
+starcie procesu; zmiana pliku wymaga kontrolowanego restartu API, aby
+nowe żądania korzystały z nowej aktywnej wersji. Zachować wersje potrzebne
+wcześniejszym zadaniom.
 
 PostgreSQL wymaga dodatkowo istniejącego opt-in
 WP_ENABLE_PG_TEST_PASSWORD_RESET=1 i dedykowanej lokalnej bazy testowej.

@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:b5d268017ee91f71ed429fe3eda070b5c558e7747963356f3c54ef2c604d404a",
+  "id": 12172791082,
+  "name": "windows-recovery-summary",
+  "workflow_run": {
+    "head_branch": "preview/queued-reset-http-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "8caa2817d88e35e1b19ef7f709c7db0705a2397b",
+    "id": 39222927451,
+    "repository_id": 1421291982
+  }
+}

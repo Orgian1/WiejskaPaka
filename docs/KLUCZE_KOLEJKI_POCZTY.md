@@ -1,13 +1,15 @@
 # Prywatne wersjonowane klucze kolejki
 
 Stan: 19.10.2026. Osobny moduł reset_mail_keys odczytuje klucze dla KeyRing.
-Nie jest podłączony do aplikacji ani procesu w tle. Nie generuje kluczy,
+Po pełnym testowym opt-in API może go jawnie wywołać przy starcie, zgodnie
+z RESET_HASLA_KOLEJKA_HTTP_TEST.md. Nie ma procesu w tle. Nie generuje kluczy,
 nie zapisuje plików, nie wykonuje połączeń i niczego nie odczytuje przy imporcie.
 
 load_config(environ) domyślnie zwraca None. Dopiero jawny wpis
 WP_ENABLE_MAIL_QUEUE=1 pozwala mu odczytać ścieżkę WP_MAIL_QUEUE_KEYS_FILE.
-Samo ustawienie tych zmiennych nie uruchamia wysyłki lub pracownika: żadna
-trasa aplikacji nie wywołuje loadera. load_keys(path) służy jawnym wywołaniom.
+Samo ustawienie tych zmiennych nie uruchamia wysyłki lub pracownika: loader jest wywoływany przy starcie API wyłącznie po dodatkowym testowym
+opt-in. Trasy nie odczytują pliku przy każdym żądaniu. load_keys(path)
+służy jawnym wywołaniom.
 
 Plik musi mieć bezwzględną ścieżkę poza projektem, należeć do użytkownika
 procesu i nie mieć praw grupy lub innych użytkowników (np. 0600 lub 0400).

@@ -1,0 +1,20 @@
+{
+  "evidence": {
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "runtime_sha256": "43eaa6ee380979516c5829373559b9de90f226635307953bab641bec14440c5d",
+    "test_sources_sha256": "568e4e127ecabea951a394912e5f62fd02ddf5553fa13b21d4e937cf285ffa9a",
+    "tests_sha256": "61624e3232dfa50a287d9a59202800e1b33157c23a64ab8b5a2140294997d94d",
+    "workflow_sha256": "eea5594092abdd3d0320219e3bfcc77139e89cf4c6e0821a64081b2323dece10"
+  },
+  "existing_reset_and_pg_config": {
+    "failed": 0,
+    "passed": 19
+  },
+  "new_http_config_runner": {
+    "failed": 0,
+    "passed": 53
+  },
+  "scope": "separate targeted invocations; synthetic HTTP and configuration only",
+  "success": true,
+  "tested_commit": "8caa2817d88e35e1b19ef7f709c7db0705a2397b"
+}

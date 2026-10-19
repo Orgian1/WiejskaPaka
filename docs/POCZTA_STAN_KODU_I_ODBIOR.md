@@ -12,7 +12,7 @@ powiadomień ani odzyskiwania hasła.
 | Polityka kanałów | backend/notification_policy.py dopuszcza e-mail i panel; odrzuca SMS i telefon |
 | PIN odbioru | Polityka dopuszcza wyłącznie panel; nie wysyłać go pocztą |
 | Reset hasła w demo | Losowy token, hash w bazie, 15 minut, jednorazowość, limity, cofnięcie sesji |
-| Dostarczenie resetu | Prywatny plik JSON w demo; adapter SMTP jest przygotowany oddzielnie, wyłączony i niepodłączony |
+| Dostarczenie resetu | Prywatny plik JSON lub testowa zaszyfrowana kolejka po pełnym opt-in; adapter SMTP nie jest wywoływany z HTTP |
 | Reset na PostgreSQL | Domyślnie wyłączony; osobny opt-in prywatnego testu lokalnego, opis RESET_HASLA_POSTGRESQL_TESTOWY.md; bez SMTP |
 | Powiadomienia o zakupie/dostawie | Istnieje polityka kanałów; nie ma podłączonej wysyłki ani kolejki SMTP |
 | Weryfikacja e-maila | Wymieniona w polityce zdarzeń; nie stanowi wdrożonego przepływu potwierdzenia adresu |
@@ -87,3 +87,13 @@ kluczy. Moduły pozostają poza trasami HTTP i bez procesu w tle.
 Integracja aplikacji, potwierdzanie adresów, retencja, kopie kluczy i odbiór
 u dostawcy pozostają dalszym zakresem. Aktualne dowody zawiera
 `RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md`.
+
+
+## Prywatny przepływ HTTP kolejki — kolejny pakiet 19.10.2026
+
+`RESET_HASLA_KOLEJKA_HTTP_TEST.md` opisuje jawne połączenie żądania resetu
+z szyfrowaną kolejką i ogólną odpowiedzią 202 także po błędzie zapisu.
+`RAPORT_RESETU_HTTP_KOLEJKI_2026-10-19.md` zawiera aktualne dowody.
+Nie ma automatycznej wysyłki: kolejka testowa jest wykonywana ręcznie
+z transportem w pamięci. Pracownik, potwierdzanie adresów, retencja,
+kopie kluczy i odbiór dostawcy wymagają dalszych prac.

@@ -1,0 +1,10 @@
+{
+  "tested_commit": "ee4b1a3deedd621d94de1b06dbc7c6ff033fe718",
+  "moved_function": "test_running_server_purges_expired_secret_without_restart",
+  "function_ast_unchanged": true,
+  "per_module_timeout_seconds": 90,
+  "tests_retained": 5,
+  "modules_before": 322,
+  "modules_after": 323,
+  "new_module_sha256": "fe4647db27c20b176d1f3e1cef67d99367e8ba3100fd7332e8835211fefa92d7"
+}

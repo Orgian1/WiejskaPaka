@@ -112,3 +112,11 @@ Wykonywanie na PgConnection, transakcje i blokady wierszy oraz jawny odczyt
 prywatnych wersjonowanych kluczy są objęte oddzielnym odbiorem. Nie uruchamiają
 poczty z aplikacji. Pozostają integracja HTTP, pracownik, retencja, kopie
 kluczy, potwierdzenie adresów i odbiór rzeczywistych dostarczeń.
+
+
+## HTTP resetu i zaszyfrowana kolejka — kolejny pakiet 19.10.2026
+
+`RAPORT_RESETU_HTTP_KOLEJKI_2026-10-19.md` dotyczy kodu 8caa281.
+Po pełnym testowym opt-in API atomowo zapisuje token i zaszyfrowane zadanie,
+z ogólną odpowiedzią również po błędzie transakcji. Bez uruchomionego
+pracownika i rzeczywistej wysyłki. Dalszy zakres opisuje raport.

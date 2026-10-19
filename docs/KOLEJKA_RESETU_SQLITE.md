@@ -77,3 +77,10 @@ powiadomień o zamówieniach. Rolnik i sprzedawca pozostają tą samą rolą.
 
 Kontrakt docelowy: KONTRAKT_KOLEJKI_POCZTY.md. Ten etap realizuje jego
 część SQLite; pozostałe wymagania nie są uznane za wykonane.
+
+
+Kolejny pakiet 19.10.2026 dodał prywatny testowy przepływ HTTP zapisujący
+zaszyfrowane zadania. Aktualne włączenie i ograniczenia opisuje
+RESET_HASLA_KOLEJKA_HTTP_TEST.md; wyniki wskazuje
+RAPORT_RESETU_HTTP_KOLEJKI_2026-10-19.md. Pracownik i prawdziwa wysyłka
+pozostają poza tym zakresem.

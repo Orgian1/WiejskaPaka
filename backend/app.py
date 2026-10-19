@@ -51,6 +51,9 @@ async def application_lifespan(application):
         if os.environ.get('WP_ENABLE_TEST_PAYMENTS') == '1':
             con.execute('SELECT id,revision FROM support_cases LIMIT 0')
             con.execute('SELECT case_id,revision FROM support_case_events LIMIT 0')
+    if RESET_QUEUE_KEYS is not None:
+        with db() as con:
+            con.execute('SELECT id,token_hash,key_id,payload,state FROM reset_mail_queue LIMIT 0')
     with db() as con:
         con.execute('SELECT point_id FROM pickup_point_coordinates LIMIT 0')
         from backend.local_marketplace import refresh_product_index
@@ -2896,19 +2899,25 @@ def change_account_password(payload:ChangePasswordIn,user=Depends(current_user),
 from backend import password_reset as reset_service
 RESET_TEST_ENABLED = os.environ.get('WP_ENABLE_TEST_PASSWORD_RESET') == '1' and (
     not DATABASE_URL or reset_service.postgres_demo_reset_allowed(os.environ, DATABASE_URL))
+from backend import reset_mail_queue as reset_queue
+from backend.reset_mail_flow import load_test_queue_keys
+RESET_QUEUE_KEYS = load_test_queue_keys(os.environ, DATABASE_URL, reset_enabled=RESET_TEST_ENABLED)
 RESET_OUTBOX = None
 if RESET_TEST_ENABLED:
-    _reset_folder = os.environ.get('WP_TEST_RESET_OUTBOX', '')
-    if not _reset_folder:
-        raise RuntimeError('Testowe odzyskiwanie hasła wymaga prywatnej skrzynki lokalnej')
-    if DATABASE_URL:
-        _reset_path = Path(_reset_folder)
-        if not _reset_path.is_absolute() or _reset_path.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
-            raise RuntimeError('Testowa skrzynka PostgreSQL musi byc poza projektem')
-    RESET_OUTBOX = reset_service.prepare_outbox(_reset_folder)
+    if RESET_QUEUE_KEYS is None:
+        _reset_folder = os.environ.get('WP_TEST_RESET_OUTBOX', '')
+        if not _reset_folder:
+            raise RuntimeError('Testowe odzyskiwanie hasła wymaga prywatnej skrzynki lokalnej')
+        if DATABASE_URL:
+            _reset_path = Path(_reset_folder)
+            if not _reset_path.is_absolute() or _reset_path.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
+                raise RuntimeError('Testowa skrzynka PostgreSQL musi byc poza projektem')
+        RESET_OUTBOX = reset_service.prepare_outbox(_reset_folder)
     if not DATABASE_URL:
         with db() as _reset_con:
             _reset_con.executescript(reset_service.SCHEMA_SQLITE)
+            if RESET_QUEUE_KEYS is not None:
+                _reset_con.executescript(reset_queue.SCHEMA)
 
 
 class RequestPasswordResetIn(BaseModel):
@@ -2931,6 +2940,19 @@ def password_reset_options():
 def request_test_password_reset(payload: RequestPasswordResetIn):
     if not RESET_TEST_ENABLED:
         raise HTTPException(404, 'Odzyskiwanie hasła jest niedostępne.')
+    if RESET_QUEUE_KEYS is not None:
+        try:
+            with db() as con:
+                if not DATABASE_URL:
+                    con.execute('BEGIN IMMEDIATE')
+                reset_queue.issue(con, RESET_QUEUE_KEYS, payload.email,
+                                  now=int(datetime.now(timezone.utc).timestamp()))
+        except Exception:
+            # Keep rollback and the public response identical for all accounts.
+            # No raw database errors, addresses, tokens or keys enter logs.
+            import logging
+            logging.getLogger(__name__).error('Test reset queue persistence failed')
+        return {'message': reset_service.NOTICE}
     message_file = None
     try:
         with db() as con:

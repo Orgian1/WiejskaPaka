@@ -19,11 +19,14 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def server(database, *, reset_outbox=None):
+def server(database, *, reset_outbox=None, queued_keys=None):
     env=demo_environment(os.environ,database);env['WP_ENABLE_TEST_PAYMENTS']='1'
     if reset_outbox is not None:
         env['WP_ENABLE_TEST_PASSWORD_RESET']='1'
         env['WP_TEST_RESET_OUTBOX']=str(reset_outbox)
+    if queued_keys is not None:
+        env.update(WP_ENV='test', WP_ENABLE_TEST_PASSWORD_RESET='1', WP_ENABLE_TEST_RESET_QUEUE='1',
+                   WP_ENABLE_MAIL_QUEUE='1', WP_MAIL_QUEUE_KEYS_FILE=str(queued_keys))
     with socket.socket() as sock:
         sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
     process=subprocess.Popen([sys.executable,'-m','uvicorn','backend.app:app','--host','127.0.0.1','--port',str(port),'--no-access-log'],

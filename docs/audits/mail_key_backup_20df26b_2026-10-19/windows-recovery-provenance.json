@@ -1,0 +1,8 @@
+{
+  "tested_commit": "20df26b139fb402ce67912a38b2ef0be9c81944f",
+  "run_id": 39278599502,
+  "artifact_id": 12198422288,
+  "archive_digest": "sha256:f7c5f0a255d2a7ad317e8e81233c066790062a9958fa1b99268b874ccb1b61d1",
+  "hashes_match": true,
+  "baseline": "isolated git worktree of tested commit"
+}

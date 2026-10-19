@@ -34,11 +34,14 @@ Szczegóły: KOPIA_KLUCZY_KOLEJKI_POCZTY.md.
   zadanie i jawnie uruchamia proces ze sztucznym transportem. Próg bramki
   został podniesiony do 43. To przygotowany test, a nie wynik odbioru.
 
-Ostatni udany odczyt CI 39278599502: PostgreSQL, Chromium i szybki Windows
-miały stan queued. Nie przedstawiać ich jako zaliczonych. Przy próbie
-ponownego odczytu wcześniejszego przebiegu retencji wystąpił ReadTimeout;
-nie zmienia to potwierdzonych wcześniej wyników, ale nie potwierdza jego
-końcowego Windows. Narzędzie nie wymaga własnego serwera użytkownika.
+Aktualizacja po 17:39 Europe/Warsaw: odebrano i zweryfikowano trzy bramki
+CI 39278599502: PostgreSQL 43 PASS, 0 FAIL, 0 SKIP; Chromium 36 PASS,
+0 FAIL, 0 SKIP i HTTP w pięciu rozmiarach; szybki Windows 80 PASS,
+0 FAIL, 0 SKIP. Raporty i provenance są w tym samym katalogu audits.
+Zweryfikowano SHA-256 archiwów oraz wszystkie odciski względem izolowanego
+worktree badanego commita 20df26b, a nie nowszej kwarantanny kolejki.
+Pełny Windows kopii kluczy oraz retencji nadal wymagają osobnego odbioru.
+Narzędzie nie wymaga własnego serwera użytkownika.
 
 Drzewo lokalnego i zdalnego kodu jest identyczne:
 d5550e4f8d10528256f9beb356b61ff1080677f1.

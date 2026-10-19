@@ -29,3 +29,29 @@ Punkt wznowienia: odebrać powyższe Windows oraz nowy CI narzędzia
 konfiguracji. Po aktywacji usług wykonać plan podłączenia na sztucznych
 danych; konfiguracja konta i nadzorcy pracownika nadal pozostaje do wykonania.
 Nie scalono PR, nie podłączono SMTP, publicznego hostingu ani płatności.
+
+## Odbiór pełnej regresji i CI
+
+Kod: a9d7cbbb6a2c806ef4099f24be37d48e97bff83a, roboczy PR #17.
+CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/39287988285
+Pełny Linux: 4066 PASS / 0 FAIL / 68 SKIP, 326/326 modułów.
+Wszystkie cztery części complete/success/sources_unchanged, jeden odcisk
+aplikacji, komplet unikalnych modułów, zgodne SHA-256 każdego testu.
+Zapisano moduły i liczniki bez przechwyconych logów w linux-full.json.
+
+Natywny PostgreSQL: 44/44, Chromium: 36/36 plus pięć rozmiarów HTTP,
+szybki Windows: 80/80. Zweryfikowano SHA-256 archiwów oraz wszystkie
+odciski kodu, testów, zależności i workflow. Dowody:
+audits/mail_config_a9d7cbb_2026-10-19/.
+Pełny Windows tego kodu pozostaje do odbioru; nie sumować wyników
+nakładających się pakietów.
+
+Bazowa diagnostyka 0030dcf: pełny Windows zweryfikowany, 3978 PASS /
+0 FAIL / 146 SKIP. Dowody dodano do audits/ci_diagnostics_0030dcf_2026-10-19/.
+Starszy przebieg 39278599502, próba 2: startup_failure, lista zadań pusta.
+To brak nowego wykonania testów, a nie ponowiony błąd checkoutu. Pierwszy
+nieudany raport pozostaje zachowany i przyczyna nadal nie jest ustalona.
+Nie ponawiać bez końca całej starszej gałęzi zamiast diagnozy.
+
+Następny punkt: pełny Windows 39287988285, następnie podłączenie usług
+po aktywacji. Zbiorczy zakres: POZOSTALE_PRACE_DO_PODGLADU_2026-10-19.md.

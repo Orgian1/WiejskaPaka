@@ -138,7 +138,8 @@ def issue(con, keys, email, *, now):
     """Issue token and encrypted job atomically; unknown accounts never get a job.
 
     The caller must return the same public response regardless of this internal
-    result. The existing demo API is deliberately not connected to this method.
+    result. The separate opt-in test HTTP route calls this method; the legacy
+    local-mailbox demo API remains independent.
     """
     _require(con);now=_time(now)
     token=reset.issue(con,email,now=datetime.fromtimestamp(now,timezone.utc))

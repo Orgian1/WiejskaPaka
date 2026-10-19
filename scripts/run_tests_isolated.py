@@ -17,6 +17,7 @@ def test_environment(source, db_path):
     env = dict(source)
     # Nie pozwalamy, by DATABASE_URL przekierował testy na PostgreSQL/Neon.
     for key in (
+        'WP_ENABLE_QUEUED_PASSWORD_RESET', 'WP_ENABLE_MAIL_QUEUE', 'WP_MAIL_QUEUE_KEYS_FILE',
         'DATABASE_URL', 'NEON_DATABASE_URL', 'WP_CHECKOUT_KEY_FILE',
         'WP_ENABLE_TEST_PASSWORD_RESET', 'WP_ENABLE_PG_TEST_PASSWORD_RESET', 'WP_TEST_RESET_OUTBOX',
         'WP_TEST_POSTGRES_DSN', 'WP_TEST_DATABASE_URL',

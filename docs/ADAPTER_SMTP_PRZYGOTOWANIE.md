@@ -64,3 +64,8 @@ KONTRAKT_KOLEJKI_POCZTY.md. To wymagania następnego etapu, bez implementacji.
 Część kontraktu zrealizowano 19.10.2026 w odłączonej kolejce SQLite:
 KOLEJKA_RESETU_SQLITE.md. Adapter i kolejka współpracują w testach z
 transportem w pamięci; nie są podłączone do tras aplikacji ani dostawcy.
+
+Kolejny etap obejmuje odłączone wykonywanie PostgreSQL i prywatny loader
+kluczy; aktualny zakres i wyniki wskazuje
+RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md. Wysyłka aplikacji
+i odbiór u dostawcy pozostają oddzielnym zadaniem.

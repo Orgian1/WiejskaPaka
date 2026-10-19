@@ -103,3 +103,12 @@ Szyfrowane zadanie, dzierżawy i pojedyncze wykonanie są zaimplementowane
 w osobnym module SQLite. Nie ma integracji HTTP ani domyślnego transportu.
 Nadal wymagane są PostgreSQL, zarządzanie kluczami, retencja, właściwy
 pracownik i potwierdzanie adresów. Nowy moduł nie uruchamia poczty aplikacji.
+
+
+## Wykonywanie PostgreSQL i prywatne klucze — kolejny pakiet 19.10.2026
+
+`RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md` dotyczy kodu 60526b0.
+Wykonywanie na PgConnection, transakcje i blokady wierszy oraz jawny odczyt
+prywatnych wersjonowanych kluczy są objęte oddzielnym odbiorem. Nie uruchamiają
+poczty z aplikacji. Pozostają integracja HTTP, pracownik, retencja, kopie
+kluczy, potwierdzenie adresów i odbiór rzeczywistych dostarczeń.

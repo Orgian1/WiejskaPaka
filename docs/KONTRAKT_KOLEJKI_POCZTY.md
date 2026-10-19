@@ -91,3 +91,9 @@ Przed podłączeniem usług zewnętrznych kolejne testy powinny potwierdzić:
 Odbiór DNS, certyfikatu serwera SMTP i dostarczeń wymaga potem osobnego testu
 u wybranego dostawcy na kontrolowanych skrzynkach. Lokalne zastąpienie SMTP
 nie może być przedstawione jako dowód tych właściwości.
+
+
+Aktualizacja kolejnego pakietu 19.10.2026: KOLEJKA_RESETU_POSTGRESQL.md
+opisuje także odłączone wykonywanie na PostgreSQL, a
+KLUCZE_KOLEJKI_POCZTY.md prywatny odczyt kluczy. Kontrakt nadal obejmuje
+niewykonane etapy integracji aplikacji, retencji, pracownika i odtwarzania.

@@ -43,8 +43,8 @@ transakcji przed transportem; nie jest testem rzeczywistego serwera SMTP.
 
 ## Co pozostaje
 
-Potrzebne są integracja bezpiecznego ogólnego endpointu HTTP, prywatne
-ładowanie wersjonowanych kluczy, potwierdzanie adresów, retencja metadanych,
+Potrzebne są integracja bezpiecznego ogólnego endpointu HTTP,
+potwierdzanie adresów, retencja metadanych,
 zasady odtwarzania kopii bez ponownych wysyłek oraz ograniczony proces
 pracownika z uprawnieniami dobranymi do wdrożenia. Klucza kolejki nie ma
 w istniejącym pakiecie kopii samej bazy i klucza sejfu zamówień.
@@ -53,3 +53,7 @@ Testy dostawcy, DNS i rzeczywistego dostarczenia wymagają osobnego odbioru.
 Podstawy SQLite opisuje KOLEJKA_RESETU_SQLITE.md. Dla aktualnego wykonania
 PostgreSQL ten dokument zastępuje jego wcześniejsze ograniczenie do SQLite;
 nie zmienia faktu, że moduł pozostaje odłączony od aplikacji.
+
+Jawny loader prywatnych wersjonowanych kluczy opisuje
+KLUCZE_KOLEJKI_POCZTY.md. Odczyt pliku nie stanowi pełnego zarządzania kluczami
+i nie uruchamia pracownika.

@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:70e47eeb07982efb36f23ae039a331db61e1b63a047ee5c630e5447093840f9c",
+  "id": 12169369848,
+  "name": "windows-recovery-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-mail-queue-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "1ed505faafaf1833f7b60c4d6a5a03361a0eebbf",
+    "id": 39216513926,
+    "repository_id": 1421291982
+  }
+}

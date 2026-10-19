@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:f6eaebaf3f9b233ead71a786b7f3896a39f78d7d986f00685c0b6bc62bba5ae5",
+  "id": 12170420023,
+  "name": "chromium-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-mail-queue-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "1ed505faafaf1833f7b60c4d6a5a03361a0eebbf",
+    "id": 39216513926,
+    "repository_id": 1421291982
+  }
+}

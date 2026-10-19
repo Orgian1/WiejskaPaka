@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:fc2f60014628cc7b062f70aa6de5f47a57089214fb100f342a3ba13a4a763c55",
+  "id": 12169678903,
+  "name": "windows-recovery-summary",
+  "workflow_run": {
+    "head_branch": "preview/mail-key-loading-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "60526b06681e3f54a58b1a2a5638adbf40d0127f",
+    "id": 39216884076,
+    "repository_id": 1421291982
+  }
+}

@@ -6,7 +6,8 @@ backend/app.py, nie tworzy tabel przy starcie aplikacji i nie ma domyślnego
 transportu, konfiguracji środowiskowej, harmonogramu ani procesu w tle.
 Nie podłączono dostawcy SMTP, hostingu ani płatności. Dodano osobną
 migrację deklarującą odpowiednik tabeli PostgreSQL oraz test jej ograniczeń;
-moduł wykonywania kolejki nadal dopuszcza wyłącznie SQLite.
+wykonywanie PostgreSQL dodano w następnym pakiecie, opisanym w
+KOLEJKA_RESETU_POSTGRESQL.md. Ten dokument opisuje wariant SQLite.
 
 ## Co działa w module
 
@@ -19,8 +20,8 @@ moduł wykonywania kolejki nadal dopuszcza wyłącznie SQLite.
   hashem tokenu, wersją klucza oraz czasem utworzenia i wygaśnięcia.
 - Osobny KeyRing jest przekazywany jawnie przez wywołującego. Dopuszcza
   zachowanie starszych wersji przy rotacji; nie tworzy klucza po restarcie.
-  Nie korzysta z klucza sejfu zamówień lub hasła SMTP. Kod nie ma jeszcze
-  produkcyjnego ładowania i zarządzania kluczami; nie wprowadzać ich do repo.
+  Nie korzysta z klucza sejfu zamówień lub hasła SMTP. Jawne ładowanie prywatnego pliku opisuje KLUCZE_KOLEJKI_POCZTY.md;
+  pełne zarządzanie kluczami nadal wymaga prac. Nie wprowadzać ich do repo.
 - BEGIN IMMEDIATE serializuje piszących pracowników. Zadanie ma losowego
   właściciela dzierżawy. Spóźniony właściciel nie może zatwierdzić wyniku.
 - Tuż przed próbą sprawdzane są ważność linku, wersja hasła i zgodność konta
@@ -67,8 +68,8 @@ też awarie commit przed wysyłką i po potwierdzonym przyjęciu, integralność
 szyfrowania, rotację kluczy, limity oraz unieważnienie przez reset hasła.
 Nie odbierają dostarczenia, DNS, certyfikatu dostawcy ani obciążenia produkcji.
 
-Przed użyciem aplikacyjnym potrzebne są implementacja i odbiór PostgreSQL,
-wersjonowane migracje i uprawnienia, prywatne ładowanie kluczy, retencja
+Wykonanie PostgreSQL i ładowanie kluczy opisują nowsze dokumenty powyżej.
+Przed użyciem aplikacyjnym potrzebne są uprawnienia pracownika, retencja
 metadanych/audytu, zasady odtwarzania kopii bez ponownego wysłania starych
 zadań, ograniczona pętla pracownika i bezpieczne ogólne odpowiedzi HTTP.
 Sam moduł nie implementuje potwierdzania własności adresu e-mail ani

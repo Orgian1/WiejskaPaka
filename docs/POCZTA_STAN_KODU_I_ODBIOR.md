@@ -77,3 +77,13 @@ Nie jest podłączony do HTTP lub SMTP i nie ma procesu w tle.
 `RAPORT_KOLEJKI_POCZTY_2026-10-19.md` rozdziela jego testy od dotychczasowej
 bramki PostgreSQL. Integracja aplikacji, PostgreSQL, zarządzanie kluczami,
 retencja i potwierdzenie adresów pozostają osobnym zakresem.
+
+
+## Wykonanie PostgreSQL i klucze — kolejny pakiet 19.10.2026
+
+`KOLEJKA_RESETU_POSTGRESQL.md` opisuje odłączone wykonywanie na PgConnection,
+a `KLUCZE_KOLEJKI_POCZTY.md` jawny odczyt prywatnego pliku wersjonowanych
+kluczy. Moduły pozostają poza trasami HTTP i bez procesu w tle.
+Integracja aplikacji, potwierdzanie adresów, retencja, kopie kluczy i odbiór
+u dostawcy pozostają dalszym zakresem. Aktualne dowody zawiera
+`RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md`.

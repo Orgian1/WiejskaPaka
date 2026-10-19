@@ -1,57 +1,60 @@
-# Checkpoint przygotowania konfiguracji poczty — 19.10.2026
+# Checkpoint — zamknięcie testów przed serwerem, 19.10.2026
 
+Kod: a9d7cbbb6a2c806ef4099f24be37d48e97bff83a.
 Gałąź: preview/mail-configuration-check-20261019.
-Baza: 0030dcfda4d71abc1b47c0da65afc6e5f6212908, PR #16.
-Domena już jest, serwer opłacony; aktywacja serwera i poczty oczekiwana 20.10.
-
-Dodano scripts/check_mail_configuration.py: lokalny odczyt i walidacja
-konfiguracji SMTP oraz kluczy kolejki istniejącymi walidatorami. Raport
-zawiera stałe statusy, bez sekretów. Brak sieci, wysyłki, zapisów i startu
-pracownika. Nie aktywuje konfiguracji. Kod 0 tylko gdy oba komponenty VALID;
-nie jest dowodem połączenia z dostawcą ani dostarczenia wiadomości.
-
-Plan: PODLACZENIE_SERWERA_I_POCZTY_2026-10-20.md.
-Kontrola lokalna: 108 PASS / 0 FAIL / 1 SKIP (kontrola konfiguracji,
-adapter SMTP, klucze kolejki i runner CI). Testy blokują próby sieciowe,
-sprawdzają błędne pliki, prywatność raportu i brak zmiany plików.
-To pakiet kontrolny; nie zastępuje pełnej regresji nowego kodu.
-
-Odebrano trzy bramki CI 39285078185 dla bazowej poprawki 0030dcf:
-PostgreSQL 44/44, Chromium 36/36 plus HTTP w pięciu rozmiarach,
-szybki Windows 80/80. SHA-256 archiwów i wszystkie odciski zgodne
-z izolowanym archiwum badanego commita. Raporty:
-audits/ci_diagnostics_0030dcf_2026-10-19/.
-Pełny Windows tej poprawki oraz ponowiony Windows starszej kopii kluczy
-39278599502 nadal wymagają odbioru. Oddzielna gałąź zachowuje bieżący CI.
-Pełny Windows kwarantanny 30de9b8 potwierdzony wcześniej: 3972/0/146.
-
-Punkt wznowienia: odebrać powyższe Windows oraz nowy CI narzędzia
-konfiguracji. Po aktywacji usług wykonać plan podłączenia na sztucznych
-danych; konfiguracja konta i nadzorcy pracownika nadal pozostaje do wykonania.
-Nie scalono PR, nie podłączono SMTP, publicznego hostingu ani płatności.
-
-## Odbiór pełnej regresji i CI
-
-Kod: a9d7cbbb6a2c806ef4099f24be37d48e97bff83a, roboczy PR #17.
+Roboczy PR: https://github.com/Orgian1/WiejskaPaka/pull/17
 CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/39287988285
-Pełny Linux: 4066 PASS / 0 FAIL / 68 SKIP, 326/326 modułów.
-Wszystkie cztery części complete/success/sources_unchanged, jeden odcisk
-aplikacji, komplet unikalnych modułów, zgodne SHA-256 każdego testu.
-Zapisano moduły i liczniki bez przechwyconych logów w linux-full.json.
+Status całego przebiegu: completed / success.
 
-Natywny PostgreSQL: 44/44, Chromium: 36/36 plus pięć rozmiarów HTTP,
-szybki Windows: 80/80. Zweryfikowano SHA-256 archiwów oraz wszystkie
-odciski kodu, testów, zależności i workflow. Dowody:
-audits/mail_config_a9d7cbb_2026-10-19/.
-Pełny Windows tego kodu pozostaje do odbioru; nie sumować wyników
-nakładających się pakietów.
+## Wyniki badanego kodu
 
-Bazowa diagnostyka 0030dcf: pełny Windows zweryfikowany, 3978 PASS /
-0 FAIL / 146 SKIP. Dowody dodano do audits/ci_diagnostics_0030dcf_2026-10-19/.
-Starszy przebieg 39278599502, próba 2: startup_failure, lista zadań pusta.
-To brak nowego wykonania testów, a nie ponowiony błąd checkoutu. Pierwszy
-nieudany raport pozostaje zachowany i przyczyna nadal nie jest ustalona.
-Nie ponawiać bez końca całej starszej gałęzi zamiast diagnozy.
+| Bramka | Wynik |
+| --- | --- |
+| Pełny Linux, 326/326 modułów | 4066 PASS, 0 FAIL, 68 SKIP |
+| Pełny Windows | 3982 PASS, 0 FAIL, 152 SKIP |
+| Natywny PostgreSQL 16 | 44 PASS, 0 FAIL, 0 SKIP |
+| Chromium | 36 PASS, 0 FAIL, 0 SKIP; HTTP w pięciu rozmiarach: sukces |
+| Szybki Windows | 80 PASS, 0 FAIL, 0 SKIP |
+| Lokalny pakiet kontrolny | 108 PASS, 0 FAIL, 1 SKIP |
 
-Następny punkt: pełny Windows 39287988285, następnie podłączenie usług
-po aktywacji. Zbiorczy zakres: POZOSTALE_PRACE_DO_PODGLADU_2026-10-19.md.
+Pakiety nakładają się — nie sumować wyników i nie liczyć SKIP jako PASS.
+Dowody i provenance: audits/mail_config_a9d7cbb_2026-10-19/.
+Zweryfikowano SHA-256 archiwów, zgodność odcisków kodu, testów, zależności
+oraz workflow. Wszystkie bramki complete/success/sources_unchanged.
+Linux: cztery izolowane części, jeden odcisk aplikacji, komplet unikalnych
+modułów i odciski każdego testu; raport nie publikuje przechwyconych logów.
+
+## Wykonany zakres
+
+Lokalna kontrola konfiguracji SMTP i kluczy kolejki używa istniejących
+walidatorów. Stałe statusy, brak sieci, wysyłki, zapisów i startu pracownika.
+Nie aktywuje konfiguracji. Kod wyjścia 0 oznacza tylko gotowość lokalnych
+ustawień do kolejnej próby połączenia, nie dowód działania dostawcy.
+Plan: PODLACZENIE_SERWERA_I_POCZTY_2026-10-20.md.
+
+Bazowa poprawka diagnostyczna 0030dcf ma także zamknięty odbiór:
+pełny Windows 3978 PASS / 0 FAIL / 146 SKIP, PostgreSQL 44, Chromium 36,
+szybki Windows 80. Dowody: audits/ci_diagnostics_0030dcf_2026-10-19/.
+
+## Starszy błąd — zachowany, nie uznany za naprawiony
+
+Pierwsza próba kodu 20df26b: pojedynczy błąd test_checkout_vault_http.py;
+raport pozostaje w audits/mail_key_backup_20df26b_2026-10-19/.
+Próba 2 przebiegu 39278599502: startup_failure, pusta lista zadań.
+Nie jest to ponowne wykonanie testu. Nowsze pełne regresje przeszły, ale
+nie ustalają przyczyny tamtej awarii. Nie ponawiać starych testów bez końca;
+przy powtórzeniu wykorzystać diagnostykę pliku/linii nowego runnera.
+
+## Punkt wznowienia
+
+Zaplanowana seria testów bez zakupionego VPS jest zamknięta. Bez nowej
+zmiany kodu lub konkretnego problemu nie powtarzać zaliczonych regresji.
+Domena już jest, serwer opłacony; dostęp do serwera i poczty oczekiwany 20.10.
+Następny etap: rzeczywisty prywatny podgląd według instrukcji podłączenia,
+kontrola restartu, uprawnień, kopii i próba dostarczenia poczty.
+Zakres: POZOSTALE_PRACE_DO_PODGLADU_2026-10-19.md.
+
+Zamknięcie testów nie oznacza zakończenia wszystkich prac przed publiczną
+sprzedażą. Konto/rola/nadzorca pracownika, potwierdzanie adresów, odbiór
+usług i kopii oraz zakres publicznego startu pozostają opisane w planie.
+Nie scalono PR, nie uruchomiono SMTP, publicznego hostingu ani płatności.

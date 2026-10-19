@@ -18,7 +18,7 @@ wynik jednego commita nie jest wynikiem kolejnej zmiany.
 
 | Zadanie | Co jest przygotowane | Warunek zamknięcia |
 | --- | --- | --- |
-| Odbiór ostatniego pakietu | Testy kontrolne; uruchomiona pełna regresja Linux i CI | Zweryfikowane raporty dla badanego commita |
+| Odbiór ostatniego pakietu — zamknięty | Pełny Linux 4066/0/68, Windows 3982/0/152; PostgreSQL 44, Chromium 36, szybki Windows 80 | Raporty i provenance kodu a9d7cbb zapisane; CI success |
 | Prywatny podgląd na VPS | Szablon jednostki, manifest SQL, ograniczona rola API, preflight i tunel SSH | Faktyczny start, kontrola uprawnień i trwałość po restarcie na zakupionym serwerze |
 | Konfiguracja i próba poczty | Adapter TLS, kolejka i lokalny walidator | Parametry dostawcy, poprawne DNS i odebrana własna wiadomość próbna |
 | Uruchamianie pracownika | Ograniczony proces i trwały rejestr prób | Oddzielne konto, minimalne prawa bazy, launcher/nadzorca i test przerwania usługi |

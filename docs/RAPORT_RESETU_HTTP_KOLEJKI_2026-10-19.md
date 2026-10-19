@@ -1,7 +1,7 @@
 # Reset HTTP z zaszyfrowaną kolejką — 19.10.2026
 
-Kod: 8caa2817d88e35e1b19ef7f709c7db0705a2397b.
-CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/39222927451
+Kod aktualnej próby: ee4b1a3deedd621d94de1b06dbc7c6ff033fe718.
+CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/39226979147
 PR: https://github.com/Orgian1/WiejskaPaka/pull/10
 
 ## Zrealizowany zakres
@@ -10,8 +10,9 @@ Istniejący prywatny testowy reset HTTP ma jawny wariant kolejki. Żądanie
 zapisuje hash tokenu, limit i zaszyfrowane zadanie w jednej transakcji.
 Nie tworzy pliku z jawnym linkiem. Odbiorca pochodzi z zapisanego konta;
 nieznany adres nie otrzymuje zadania. Odpowiedź 202/no-store jest ogólna
-również przy limicie i błędzie zapisu; wyjątek bazy powoduje rollback oraz
-wyłącznie stały komunikat diagnostyczny bez danych użytkownika lub sekretów.
+również przy limicie i błędzie zapisu. Wymuszony błąd zapisu przed commit
+cofa całość transakcji; diagnostyka ma wyłącznie stały komunikat bez danych
+użytkownika lub sekretów.
 
 Pełny opt-in wymaga testowego środowiska, flag resetu i kolejki oraz poprawnego
 prywatnego pliku kluczy. Łączenie z testowym filebox jest odrzucane. PostgreSQL
@@ -40,23 +41,41 @@ podstawiony transport. Potwierdzenie jednego linku zwróciło 200, drugiego
 po tym resecie 400. To próba testowego przepływu, nie rzeczywistego dostarczenia.
 Nie jest doliczana do regresji.
 
-## Wyniki bramek
+## Korekta organizacji testów
+
+Pierwszy przebieg, kod 8caa2817d88e35e1b19ef7f709c7db0705a2397b i CI
+39222927451, zakończył się przekroczeniem limitu 90 sekund przez moduł
+`test_checkout_vault_http.py` na Windowsie. Pełny wynik Windows jest przez
+to nieważny; nie traktujemy go jako sukcesu. Dowód błędu pozostaje w plikach
+windows-initial.json i windows-initial-provenance.json w katalogu pierwszej próby.
+
+Test cyklicznego usuwania wygasłego PIN-u przeniesiono do osobnego modułu.
+Łączył wcześniej oczekiwanie na cykl retencji z wieloma restartami serwera.
+Zachowano wszystkie asercje, pięć przypadków i limit 90 sekund na moduł.
+Bezpośrednia próba obu modułów: 5 zaliczonych w 45,57 sekundy na Linuksie.
+Pełne bramki uruchomiono ponownie dla nowej wersji; starych wyników nie
+przypisujemy do nowego kodu. Liczba modułów wzrosła z 322 do 323.
+
+## Wyniki pierwszej próby (historyczne)
 
 | Bramka | Zaliczone | Błędy | Pominięte | Stan |
 | --- | ---: | ---: | ---: | --- |
 | Pełny Linux, 322/322 modułów | 3997 | 0 | 63 | sukces |
-| Pełny Windows | — | — | — | w toku |
+| Pełny Windows | — | — | — | niezaliczony: timeout modułu; wynik niepełny |
 | PostgreSQL 16 | 40 | 0 | 0 | sukces |
 | Chromium i HTTP | 36 | 0 | 0 | sukces; HTTP w pięciu rozmiarach |
 | Szybki Windows | 80 | 0 | 0 | sukces |
 
-Dowody: audits/queued_http_8caa281_2026-10-19/. Artefakty CI mają sprawdzony
+Aktualna pełna regresja Linux i nowe CI są w toku.
+
+Dowody pierwszej próby: audits/queued_http_8caa281_2026-10-19/. Udane artefakty CI mają sprawdzony
 SHA-256 archiwum, zgodność odcisków źródeł, success, complete oraz
 sources_unchanged. Pominięcia są wykazane oddzielnie.
 
 ## Następny etap
 
-Tryb pozostaje prywatnym testem. Odpowiedź HTTP nie potwierdza dostarczenia,
+Tryb pozostaje prywatnym testem. Odpowiedź HTTP nie potwierdza zapisu zadania
+lub dostarczenia,
 a ogólna treść nie stanowi gwarancji stałego czasu przetwarzania.
 Nie uruchomiono dostawcy SMTP, harmonogramu ani procesu pracownika.
 Pozostają odbiór pracownika, potwierdzanie adresów, retencja, operacyjne

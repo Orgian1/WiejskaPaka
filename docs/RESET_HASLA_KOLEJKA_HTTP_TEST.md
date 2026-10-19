@@ -38,13 +38,16 @@ Nie powstaje plik JSON z jawnym linkiem. Potwierdzenie wykorzystuje ten sam
 protokół jednorazowego tokenu i cofania sesji co dotychczasowy reset.
 
 Dla poprawnego żądania odpowiedź ma ogólną treść i HTTP 202/no-store,
-niezależnie od istnienia konta, limitu lub błędu zapisu. Błąd bazy cofa
-transakcję i zapisuje wyłącznie stały komunikat diagnostyczny, bez danych
+niezależnie od istnienia konta, limitu lub błędu zapisu. Błędy zapisu przed
+zatwierdzeniem cofają transakcję. Obsługa błędu zapisuje wyłącznie stały
+komunikat diagnostyczny, bez danych
 odbiorcy, tokenu, kluczy i odpowiedzi bazy. Odpowiedź nie zawiera linku,
 identyfikatora zadania lub stanu transportu. Walidacja struktury żądania
 nadal może zwrócić HTTP 422; wyłączony reset zwraca HTTP 404.
 
-Odpowiedź HTTP nie dowodzi wysłania lub dostarczenia wiadomości. Kolejka
+Odpowiedź HTTP nie dowodzi zapisu zadania, wysłania lub dostarczenia wiadomości.
+Przy utracie połączenia podczas commit wynik zatwierdzenia może być niepewny;
+stan trzeba ustalić na podstawie bazy, bez ponawiania wysyłki z HTTP. Kolejka
 oczekuje na osobno uruchomione wykonanie. W tym etapie nie ma harmonogramu,
 pętli pracownika ani wywołania adaptera SMTP z żądania HTTP.
 

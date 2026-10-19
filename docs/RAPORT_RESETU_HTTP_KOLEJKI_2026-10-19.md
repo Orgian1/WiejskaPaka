@@ -70,7 +70,7 @@ przypisujemy do nowego kodu. Liczba modułów wzrosła z 322 do 323.
 
 | Bramka | Zaliczone | Błędy | Pominięte | Stan |
 | --- | ---: | ---: | ---: | --- |
-| Pełny Linux, 323 moduły | — | — | — | w toku |
+| Pełny Linux, 323/323 modułów | 3997 | 0 | 63 | sukces |
 | Pełny Windows, 323 moduły | — | — | — | w toku |
 | PostgreSQL 16 | 40 | 0 | 0 | sukces |
 | Chromium i HTTP | 36 | 0 | 0 | sukces; HTTP w pięciu rozmiarach |
@@ -79,7 +79,7 @@ przypisujemy do nowego kodu. Liczba modułów wzrosła z 322 do 323.
 Dowody aktualnej próby: audits/queued_http_ee4b1a3_2026-10-19/.
 Pobrane udane artefakty sprawdzono względem SHA-256 archiwów i odcisków
 bieżących źródeł. Dowód test-split.json potwierdza niezmienione drzewo AST
-przeniesionej funkcji i zachowany limit czasu. Pełne regresje nadal trwają.
+przeniesionej funkcji i zachowany limit czasu. Pełny Linux zakończył się sukcesem; pełny Windows nadal trwa.
 
 Dowody pierwszej próby: audits/queued_http_8caa281_2026-10-19/. Udane artefakty CI mają sprawdzony
 SHA-256 archiwum, zgodność odcisków źródeł, success, complete oraz

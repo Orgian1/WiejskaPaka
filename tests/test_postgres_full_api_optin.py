@@ -716,8 +716,8 @@ def queued_worker_accept(recipient, token):
     return outcome('ACCEPTED', accepted=True)
 
 
-@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race', 'worker-process', 'keys-recovery'])
-def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path):
+@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race', 'worker-process', 'keys-recovery', 'database-keys-recovery'])
+def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path, monkeypatch):
     """Real HTTP and restricted PostgreSQL; synthetic keys, no mail transport."""
     import psycopg
     from psycopg.rows import dict_row
@@ -781,10 +781,10 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path):
     assert len(stored) == 1 and stored[0]['state'] == 'queued' and stored[0]['attempts'] == 0
     token = keys.decrypt(stored[0]).token
     assert token.encode() not in bytes(stored[0]['payload']) and EMAIL.encode() not in bytes(stored[0]['payload'])
-    if scenario in ('worker-process','keys-recovery'):
+    if scenario in ('worker-process','keys-recovery','database-keys-recovery'):
         from functools import partial
         from backend.reset_mail_worker import run_process
-        if scenario=='keys-recovery':
+        if scenario in ('keys-recovery','database-keys-recovery'):
             from scripts import mail_queue_key_backup as key_backup
             for name in ('wrapping','archives','restored'):
                 (tmp_path/name).mkdir(mode=0o700)
@@ -797,6 +797,37 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path):
             keys=reset_mail_keys.load_keys(recovered)
             assert keys.decrypt(rows()[0]).token==token
             assert rows()[0]['state']=='queued' and rows()[0]['attempts']==0
+        if scenario=='database-keys-recovery':
+            from urllib.parse import quote
+            from scripts import postgres_test_backup as pg_backup
+            host=parameters['host']
+            if host=='::1':host='[::1]'
+            dsn=('postgresql://'+quote(parameters['user'],safe='')+':'+
+                quote(parameters['password'],safe='')+'@'+host+':'+
+                str(parameters.get('port','5432'))+'/'+parameters['dbname'])
+            db_wrapper=tmp_path/'wrapping'/'database.backup-key'
+            db_archive=tmp_path/'archives'/'database.wpbackup'
+            pg_backup.make_backup_key(db_wrapper)
+            source_before=rows()[0]
+            assert pg_backup.backup(dsn,pg_queued_reset_api.key_path,db_wrapper,db_archive)['encrypted_backup']
+            validate=pg_backup.validate_restored
+            observed=[]
+            def check_restored(connection,keyring):
+                result=validate(connection,keyring)
+                restored=PgConnection(connection)
+                historical=restored.execute('SELECT * FROM reset_mail_queue').fetchone()
+                assert historical['state']=='expired' and historical['payload'] is None
+                assert historical['result']=='RESTORE_QUARANTINED'
+                assert restored.execute('SELECT COUNT(*) AS n FROM password_reset_tokens').fetchone()['n']==0
+                assert queue.claim(restored,now=int(time.time())) is None
+                observed.append(True)
+                return result
+            monkeypatch.setattr(pg_backup,'validate_restored',check_restored)
+            result=pg_backup.rehearse(db_archive,db_wrapper,os.environ['WP_TEST_POSTGRES_DSN'])
+            assert result['restore_verified'] and result['rehearsal_database_removed']
+            assert not result['application_started'] and result['orders_checked']==1
+            assert observed==[True] and rows()[0]==source_before
+            return
         result = run_process(partial(queued_worker_connection,parameters),keys,
             queued_worker_accept,max_jobs=1,timeout_seconds=10)
         assert result == {'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}

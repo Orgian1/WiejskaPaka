@@ -731,7 +731,7 @@ def test_native_reset_mail_queue_storage_constraints_only(pg_api):
 
 
 @pytest.mark.parametrize('scenario',[
-    'dispatch','rollback','unknown','races','recovery','skip_locked','revoked','retry'])
+    'dispatch','rollback','unknown','races','recovery','skip_locked','revoked','retry','restore_quarantine'])
 def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
     """Explicit queue calls on disposable PG, never real mail or an HTTP mail hook."""
     import threading
@@ -755,7 +755,24 @@ def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
             with queue.transaction(con):return queue.issue(con,keys,email,now=now)
         def rows():
             with queue.transaction(con):return con.execute('SELECT * FROM reset_mail_queue ORDER BY id').fetchall()
-        if scenario=='dispatch':
+        if scenario=='restore_quarantine':
+            issue()
+            with queue.transaction(con):lease=queue.claim(con,now=now)
+            with queue.transaction(con):assert queue.start(con,keys,lease,now=now)
+            issue()
+            before=[dict(r) for r in rows()]
+            with pytest.raises(RuntimeError):
+                with queue.transaction(con):
+                    assert queue.quarantine_restored(con)==2
+                    raise RuntimeError('synthetic restore rollback')
+            assert [dict(r) for r in rows()]==before
+            with queue.transaction(con):assert queue.quarantine_restored(con)==2
+            with queue.transaction(con):assert queue.quarantine_restored(con)==0
+            assert all(r['state']=='uncertain' and r['result']=='RESTORE_QUARANTINE'
+                       and all(r[k] is None for k in ('payload','owner','lease_until','started_at')) for r in rows())
+            with queue.transaction(con):assert not queue.finish(con,lease,outcome('ACCEPTED',accepted=True),now=now)
+            assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('restore cannot send'),clock=lambda:now+120)=='IDLE'
+        elif scenario=='dispatch':
             issue();calls=[]
             def transport(recipient,token):
                 other=connect()

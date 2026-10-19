@@ -704,7 +704,19 @@ def test_native_reset_database_failure_rolls_back_password_and_sessions(pg_reset
         assert confirm(recovered,token).status_code == 200
 
 
-@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race'])
+def queued_worker_connection(parameters):
+    import psycopg
+    from psycopg.rows import dict_row
+    from backend.pg_adapter import PgConnection
+    return PgConnection(psycopg.connect(**parameters, row_factory=dict_row))
+
+
+def queued_worker_accept(recipient, token):
+    from backend.smtp_reset_transport import outcome
+    return outcome('ACCEPTED', accepted=True)
+
+
+@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race', 'worker-process'])
 def test_native_queued_reset_http(pg_queued_reset_api, scenario):
     """Real HTTP and restricted PostgreSQL; synthetic keys, no mail transport."""
     import psycopg
@@ -769,6 +781,15 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario):
     assert len(stored) == 1 and stored[0]['state'] == 'queued' and stored[0]['attempts'] == 0
     token = keys.decrypt(stored[0]).token
     assert token.encode() not in bytes(stored[0]['payload']) and EMAIL.encode() not in bytes(stored[0]['payload'])
+    if scenario == 'worker-process':
+        from functools import partial
+        from backend.reset_mail_worker import run_process
+        result = run_process(partial(queued_worker_connection,parameters),keys,
+            queued_worker_accept,max_jobs=1,timeout_seconds=10)
+        assert result == {'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}
+        assert rows()[0]['state']=='accepted' and rows()[0]['payload'] is None
+        assert confirm(client,token).status_code == 200
+        return
     pg_queued_reset_api.restart()
     if scenario == 'confirm-race':
         with ThreadPoolExecutor(max_workers=2) as pool:

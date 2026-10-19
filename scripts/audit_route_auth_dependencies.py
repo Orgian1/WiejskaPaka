@@ -13,11 +13,13 @@ from backend.app import app
 PUBLIC_PREFIXES = ('/auth/register', '/auth/login', '/products', '/catalog/', '/health', '/marketplace/accounting-policy')
 PUBLIC_EXACT = {'/', '/products', '/health', '/auth/register', '/auth/login', '/marketplace/accounting-policy'}
 
-# These three routes intentionally work without a session: demo opt-in and
+# These exact routes intentionally work without a session: explicit test opt-in and
 # a single-use reset token replace session authentication for confirmation.
 RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset-test/request'),
-                   ('POST', '/auth/password-reset-test/confirm')}
+                   ('POST', '/auth/password-reset-test/confirm'),
+                   ('POST', '/auth/password-reset/request'),
+                   ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
     if (method, path) in RECOVERY_ROUTES:

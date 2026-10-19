@@ -38,12 +38,13 @@ def reviewed_test_schema(root):
 
 class NativeAPI:
     """Preserve two-value unpacking while permitting a controlled process restart."""
-    def __init__(self, client, parameters, restart, key_path, reset_outbox=None):
+    def __init__(self, client, parameters, restart, key_path, reset_outbox=None, mail_keys=None):
         self.client = client
         self.parameters = parameters
         self.restart = restart
         self.key_path = key_path
         self.reset_outbox = reset_outbox
+        self.mail_keys = mail_keys
 
     def __iter__(self):
         return iter((self.client, self.parameters))
@@ -66,7 +67,12 @@ def pg_reset_api():
     yield from _postgres_api(reset=True)
 
 
-def _postgres_api(*, reset=False):
+@pytest.fixture
+def pg_queued_reset_api():
+    yield from _postgres_api(queued_reset=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -122,6 +128,15 @@ def _postgres_api(*, reset=False):
                 if reset:
                     env.update(WP_ENABLE_TEST_PASSWORD_RESET='1', WP_ENABLE_PG_TEST_PASSWORD_RESET='1',
                                WP_TEST_RESET_OUTBOX=str(reset_outbox))
+                mail_keys = None
+                if queued_reset:
+                    import base64, json
+                    mail_keys = Path(folder)/'synthetic-mail-keys.json'
+                    mail_keys.write_text(json.dumps({'format':1,'active':'test-v1',
+                        'keys':{'test-v1':base64.b64encode(b'm'*32).decode('ascii')}}))
+                    mail_keys.chmod(0o600)
+                    env.update(WP_ENABLE_QUEUED_PASSWORD_RESET='1', WP_ENABLE_MAIL_QUEUE='1',
+                               WP_ENABLE_PG_TEST_PASSWORD_RESET='1', WP_MAIL_QUEUE_KEYS_FILE=str(mail_keys))
                 with tempfile.TemporaryFile() as log:
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
                         def start():
@@ -150,7 +165,7 @@ def _postgres_api(*, reset=False):
                             start()
 
                         start()
-                        yield NativeAPI(client, app_parameters, restart, keyfile, reset_outbox)
+                        yield NativeAPI(client, app_parameters, restart, keyfile, reset_outbox, mail_keys)
         finally:
             if process is not None:
                 process.terminate()
@@ -687,6 +702,89 @@ def test_native_reset_database_failure_rolls_back_password_and_sessions(pg_reset
         assert recovered.get('/auth/me',headers=buyer).status_code == 200
         assert recovered.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 200
         assert confirm(recovered,token).status_code == 200
+
+
+@pytest.mark.parametrize('scenario', ['lifecycle', 'budget', 'rollback', 'confirm-race'])
+def test_native_queued_reset_http(pg_queued_reset_api, scenario):
+    """Real HTTP and restricted PostgreSQL; synthetic keys, no mail transport."""
+    import psycopg
+    from psycopg.rows import dict_row
+    from psycopg.conninfo import conninfo_to_dict
+    from backend import reset_mail_keys, reset_mail_queue as queue
+    from backend.pg_adapter import PgConnection
+    from tests.test_queued_reset_http import request, confirm
+    from tests.test_password_reset_http import register as reset_register, EMAIL, OLD, NEW
+
+    client, parameters = pg_queued_reset_api
+    session = reset_register(client)
+    keys = reset_mail_keys.load_keys(pg_queued_reset_api.mail_keys)
+
+    def rows():
+        with psycopg.connect(**parameters, row_factory=dict_row) as con:
+            return con.execute('SELECT * FROM reset_mail_queue ORDER BY id').fetchall()
+
+    def connect():
+        return PgConnection(psycopg.connect(**parameters, row_factory=dict_row))
+
+    assert client.get('/auth/password-reset-test/options').json()['enabled'] is False
+    if scenario == 'budget':
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            bodies = list(pool.map(lambda _: request(client, EMAIL.upper()), range(8)))
+        assert all(body == bodies[0] for body in bodies) and len(rows()) == 3
+        pg_queued_reset_api.restart()
+        assert request(client) == bodies[0] and len(rows()) == 3
+        with psycopg.connect(**parameters) as con:
+            assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 3
+        assert all(row['state'] == 'queued' and row['attempts'] == 0 for row in rows())
+        return
+
+    if scenario == 'rollback':
+        admin = {**conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN']), 'dbname':parameters['dbname']}
+        with psycopg.connect(**admin, autocommit=True) as con:
+            con.execute("CREATE FUNCTION fail_queue_insert() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic-private-queue-error'; END $$")
+            con.execute('CREATE TRIGGER fail_queue_insert BEFORE INSERT ON reset_mail_queue FOR EACH ROW EXECUTE FUNCTION fail_queue_insert()')
+            try:
+                response = client.post('/auth/password-reset/request', json={'email':EMAIL},
+                                       headers={'Connection':'close'})
+                assert response.status_code == 500
+                assert EMAIL not in response.text and 'synthetic-private-queue-error' not in response.text
+                for table in ('reset_mail_queue', 'password_reset_tokens', 'password_reset_limits'):
+                    assert con.execute('SELECT count(*) FROM '+table).fetchone()[0] == 0
+            finally:
+                con.execute('DROP TRIGGER fail_queue_insert ON reset_mail_queue')
+                con.execute('DROP FUNCTION fail_queue_insert()')
+        with httpx.Client(base_url=str(client.base_url),trust_env=False,timeout=15) as fresh:
+            request(fresh)
+        assert len(rows()) == 1
+        return
+
+    farmer, _ = register(client, 'rolnik')
+    pid = product(client, farmer)
+    order = client.post('/orders', headers={**session,'Idempotency-Key':uuid4().hex}, json=delivery(pid))
+    assert order.status_code == 201
+    oid = order.json()['id']
+    original = client.get(f'/orders/{oid}/purchase-record', headers=session).json()
+    assert request(client) == request(client, 'unknown@example.invalid')
+    stored = rows()
+    assert len(stored) == 1 and stored[0]['state'] == 'queued' and stored[0]['attempts'] == 0
+    token = keys.decrypt(stored[0]).token
+    assert token.encode() not in bytes(stored[0]['payload']) and EMAIL.encode() not in bytes(stored[0]['payload'])
+    pg_queued_reset_api.restart()
+    if scenario == 'confirm-race':
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            assert sorted(pool.map(lambda _:confirm(client,token).status_code,range(2))) == [200,400]
+    else:
+        assert confirm(client,token).status_code == 200
+        assert confirm(client,token).status_code == 400
+    assert client.get('/auth/me', headers=session).status_code == 401
+    assert client.post('/auth/login',json={'email':EMAIL,'password':OLD}).status_code == 401
+    login = client.post('/auth/login',json={'email':EMAIL,'password':NEW})
+    assert login.status_code == 200
+    assert client.get(f'/orders/{oid}/purchase-record',headers={
+        'Authorization':'Bearer '+login.json()['access_token']}).json() == original
+    assert queue.dispatch_once(connect,keys,lambda *args:pytest.fail('consumed token cannot send'),
+                               clock=lambda:int(time.time())) == 'SKIPPED'
+    assert rows()[0]['payload'] is None
 
 
 def test_native_reset_mail_queue_storage_constraints_only(pg_api):

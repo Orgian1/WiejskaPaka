@@ -2922,6 +2922,54 @@ class ConfirmPasswordResetIn(BaseModel):
     new_password: str = Field(min_length=12, max_length=256)
 
 
+# Test-only encrypted outbox. No SMTP client or worker is started by the API.
+from backend import reset_mail_queue, reset_http_config
+QUEUED_RESET_KEYS = reset_http_config.load_config(os.environ, DATABASE_URL)
+if QUEUED_RESET_KEYS is not None:
+    with db() as _queue_con:
+        if not DATABASE_URL:
+            _queue_con.executescript(reset_service.SCHEMA_SQLITE + reset_mail_queue.SCHEMA)
+        # PostgreSQL must already have the controlled migrations applied.
+        _queue_con.execute('SELECT token_hash FROM password_reset_tokens LIMIT 0')
+        _queue_con.execute('SELECT bucket FROM password_reset_limits LIMIT 0')
+        _queue_con.execute('SELECT id,payload,key_id FROM reset_mail_queue LIMIT 0')
+
+
+class QueuedPasswordResetIn(RequestPasswordResetIn):
+    @field_validator('email')
+    @classmethod
+    def mailbox(cls, value):
+        from backend.smtp_reset_transport import address
+        return address(value.strip().lower())
+
+
+@app.post('/auth/password-reset/request', status_code=202)
+def request_queued_password_reset(payload: QueuedPasswordResetIn):
+    if QUEUED_RESET_KEYS is None:
+        raise HTTPException(404, 'Odzyskiwanie hasła jest niedostępne.')
+    with db() as con:
+        if not DATABASE_URL:
+            con.execute('BEGIN IMMEDIATE')
+        reset_mail_queue.issue(con, QUEUED_RESET_KEYS, payload.email,
+                              now=int(datetime.now(timezone.utc).timestamp()))
+    return {'message': reset_service.NOTICE}
+
+
+@app.post('/auth/password-reset/confirm')
+def confirm_queued_password_reset(payload: ConfirmPasswordResetIn):
+    if QUEUED_RESET_KEYS is None:
+        raise HTTPException(404, 'Odzyskiwanie hasła jest niedostępne.')
+    with db() as con:
+        if not DATABASE_URL:
+            con.execute('BEGIN IMMEDIATE')
+        outcome = reset_service.consume(con, ph, payload.token, payload.new_password)
+    if outcome == 429:
+        raise HTTPException(429, 'Zbyt wiele prób. Spróbuj później.', headers={'Retry-After': '900'})
+    if outcome != 200:
+        raise HTTPException(400, reset_service.INVALID)
+    return {'changed': True, 'reauthentication_required': True}
+
+
 @app.get('/auth/password-reset-test/options')
 def password_reset_options():
     return {'enabled': RESET_TEST_ENABLED, 'test_only': True}

@@ -437,6 +437,8 @@ def create_product(payload: ProductIn, user=Depends(current_user), authorization
 def product_units_configuration():
     from backend.product_units import UNITS
     return {'enabled': product_unit_storage.enabled(), 'fractional_quantities': False,
+            'fractional_quote_enabled': (product_unit_storage.enabled() and
+                os.environ.get('WP_ENABLE_FRACTIONAL_QUOTE') == '1'),
             'units': [{'code': code, 'label': unit.label, 'packaged': unit.packaged}
                       for code, unit in UNITS.items()]}
 
@@ -649,6 +651,39 @@ def cart_quote(payload: CartQuoteIn, user=Depends(current_user)):
                            'total_grosze': subtotals_by_farmer[seller] + shipment_costs[seller]}
                           for seller in sorted(shipment_costs)],
             'notice': 'Wycena orientacyjna. Każde zamówienie jest weryfikowane ponownie przed zapisem.'}
+
+class QuantityQuoteItemIn(BaseModel):
+    model_config = {'extra': 'forbid'}
+    product_id: int = Field(strict=True, ge=1)
+    quantity_text: str = Field(strict=True, min_length=1, max_length=32)
+
+
+class QuantityQuoteIn(BaseModel):
+    model_config = {'extra': 'forbid'}
+    items: list[QuantityQuoteItemIn] = Field(min_length=1, max_length=500)
+    fulfillment: Literal['odbior', 'dostawa']
+
+
+@app.post('/cart/quote-quantities-test')
+def cart_quantity_quote(payload: QuantityQuoteIn, user=Depends(current_user)):
+    require(user, 'klient')
+    if not product_unit_storage.enabled() or os.environ.get('WP_ENABLE_FRACTIONAL_QUOTE') != '1':
+        raise HTTPException(503, 'Testowa wycena ilości ułamkowych jest wyłączona')
+    from backend.fractional_quote import quote_quantities, QuoteUnavailable
+    with db() as con:
+        products = {}
+        for item in payload.items:
+            row = con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock '
+                              'FROM products WHERE id=?', (item.product_id,)).fetchone()
+            if row is not None:
+                products[item.product_id] = product_unit_storage.enrich_product(con, row)
+    try:
+        return quote_quantities([item.model_dump() for item in payload.items], products, payload.fulfillment)
+    except QuoteUnavailable as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
 
 # B/401-430: atomic checkout for a single seller; one order per basket line.
 # No real payment. Existing order fulfilment and PIN flow are reused.

@@ -151,6 +151,9 @@ async function loadDashboard() {
     if(!active())return;
     const shipments=shipmentData.shipments||[];
     box.append(dashboardCard('Moje przesyłki',[`Liczba przesyłek: ${shipments.length}`,'Koszt dostawy naliczany raz za przesyłkę.']));
+    box.append(dashboardCard('Pamiętaj przy odbiorze',[
+      'Sprawdź jakość i ilość towaru przy odbiorze, zanim podasz PIN sprzedawcy lub dostawcy.'
+    ]));
     for(const shipment of shipments){const c=dashboardCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`]);c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
       c.append(shipmentFinancialHistoryButton(shipment.id,c));
       if(typeof supportCreateButton==='function')c.append(supportCreateButton('shipment',shipment.id,c));
@@ -175,7 +178,7 @@ async function loadDashboard() {
         await loadDashboard();
       }));
       box.append(c);}
-    box.append(dashboardCard('Twoje zakupy',[`Liczba zamówień: ${orders.length}`,'Sprawdź towar przed przekazaniem PIN-u sprzedawcy lub dostawcy.']));
+    box.append(dashboardCard('Twoje zakupy',[`Liczba zamówień: ${orders.length}`]));
     for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Razem: ${money(o.total_grosze)}`]);
       if(typeof supportCreateButton==='function')c.append(supportCreateButton('order',o.id,c));
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
@@ -197,6 +200,10 @@ async function loadDashboard() {
     const [products,orders,shipmentData]=await Promise.all([api('/products/mine'),api('/orders/me'),api('/shipments/farmer/mine')]);
     if(!active())return;
     box.append(dashboardCard('Gospodarstwo',[`Produkty: ${products.length}`,`Zamówienia: ${orders.length}`]));
+    box.append(dashboardCard('Pamiętaj przed wyjazdem',[
+      'Jeśli możesz, zabierz kilka dodatkowych sztuk, np. pomidorów, aby klient mógł wybrać inny egzemplarz.',
+      'Planując godziny odbioru, uwzględnij czas przejazdów pomiędzy punktami oraz czas przygotowania i wydawania towaru.'
+    ]));
     for(const shipment of (shipmentData.shipments||[])){
       const c=dashboardCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`,`Status: ${shipment.status||'sprawdź zamówienia'}`]);
       if(shipment.fulfillment==='dostawa'){
@@ -255,6 +262,10 @@ async function loadDashboard() {
     if(!active())return;
     const shipments=shipmentData.shipments||[];
     box.append(dashboardCard('Moje dostawy',[`Przesyłki: ${shipments.length}`,`Zamówienia: ${orders.length}`]));
+    box.append(dashboardCard('Pamiętaj przy planowaniu dostaw',[
+      'Uwzględnij czas przejazdów pomiędzy punktami oraz czas załadunku i odbioru towaru.',
+      'Daj klientowi czas na sprawdzenie towaru, zanim przyjmiesz PIN potwierdzający odbiór.'
+    ]));
     for(const shipment of shipments){
       const c=dashboardCard(`Przesyłka ${shipment.shipment_id}`,[`Status: ${shipment.status}`,`Produkty: ${shipment.item_count}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Razem: ${money(shipment.total_grosze)}`]);
       if(shipment.status==='w_drodze_testowo'){

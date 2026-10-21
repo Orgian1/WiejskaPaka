@@ -6,3 +6,4 @@ httpx>=0.27,<1
 pytest>=8,<10
 psycopg[binary]>=3.2,<4
 cryptography>=50,<51
+Pillow>=13,<14

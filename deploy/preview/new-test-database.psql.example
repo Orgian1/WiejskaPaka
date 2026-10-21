@@ -65,6 +65,8 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 \ir ../../database/optional_product_sale_units.sql
 -- SHA256 8a0d13830341aae86175283533536dd5db9483b9b161c12124f9b7ca59c2dd39
 \ir ../../database/optional_address_delivery.sql
+-- SHA256 d3e8f63f9d624caddf66a070fde5400689b48c47d986608483e57cbd091a0fdd
+\ir ../../database/optional_user_photos.sql
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT CONNECT ON DATABASE wp_test_preview TO wp_preview_app;
 GRANT USAGE ON SCHEMA public TO wp_preview_app;

@@ -82,7 +82,12 @@ def pg_address_delivery_api():
     yield from _postgres_api(delivery_options=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False):
+@pytest.fixture(scope='module')
+def pg_photo_api():
+    yield from _postgres_api(photos=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -135,6 +140,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 if units:
                     env['WP_ENABLE_PRODUCT_UNITS'] = '1'
+                if photos:
+                    env['WP_ENABLE_USER_PHOTOS'] = '1'
                 if delivery_options:
                     env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
@@ -1111,3 +1118,26 @@ def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
                     current+=delay
             assert rows()[0]['state']=='failed' and rows()[0]['attempts']==3 and rows()[0]['payload'] is None
     finally:con.connection.close()
+
+
+def test_native_photo_upload_restart_and_hard_limit(pg_photo_api):
+    import io
+    import psycopg
+    from PIL import Image
+    client, parameters = pg_photo_api
+    farmer, uid = register(client, 'rolnik')
+    source=io.BytesIO();Image.new('RGB',(2200,1600),'red').save(source,'PNG')
+    url=f'/user-photos/profile/{uid}'
+    response=client.put(url,headers=farmer,content=source.getvalue())
+    assert response.status_code==200,response.text
+    assert response.json()['bytes']<=1_000_000
+    before=client.get(url).content
+    pg_photo_api.restart()
+    assert client.get(url).content==before
+    assert client.put(url,headers=farmer,content=b'invalid').status_code==422
+    assert client.get(url).content==before
+    with psycopg.connect(**parameters) as con:
+        with pytest.raises(psycopg.errors.CheckViolation):
+            con.execute('UPDATE user_photos SET data=%s WHERE owner_id=%s',(b'x'*1_000_001,uid))
+    assert client.delete(url,headers=farmer).status_code==200
+    assert client.get(url).status_code==404

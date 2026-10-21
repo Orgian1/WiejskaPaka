@@ -45,3 +45,15 @@ PostgreSQL (restart/indeks i równoczesne zajęcie loginu).
 Wynik pełnej regresji i natywnego CI należy potwierdzić osobno.
 
 Uzupełniono izolowany test katalogu o nowy stan catalogSellerId (domyślnie null) i kontrolę parametru farmer_id. Dotychczasowe asercje paginacji, błędnych odpowiedzi i zmian sesji pozostają zachowane; 17/17 przypadków zaliczonych.
+
+## Potwierdzone wyniki
+
+Lokalny commit 90f04d6 / GitHub 48535e9: pełna izolowana regresja 4275 passed,
+0 failed, 85 skipped, 342/342 modułów. Zgodny fingerprint we wszystkich
+częściach, sources_unchanged=true. Raporty w docs/audits/seller_search_2026-10-21/.
+Natywny CI 39657001437: PostgreSQL 16 i 17 po 53/53; Chromium 2 testy zdjęć +
+42 pozostałe (łącznie 44/44, bez błędów i pominięć) oraz kontrola viewportów;
+Windows recovery 80/80. Raporty JSON w native_48535e9/ mają zgodne fingerprinty.
+Pełna regresja Windows dla tej zmiany nadal trwa w chwili zapisu; nie jest
+liczona jako zaliczona. Funkcja pozostaje domyślnie wyłączona, bez wdrożenia
+na VPS.

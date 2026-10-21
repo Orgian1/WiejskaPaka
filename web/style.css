@@ -34,3 +34,6 @@ html{scroll-padding-top:12px}
 #nearby-results .card{padding:12px;border:1px solid #d8e3d8;border-radius:8px}
 
 .user-photo{display:block;max-width:100%;width:240px;max-height:240px;object-fit:contain;border-radius:8px}#user-photo-editors input[type=file]{max-width:100%;min-width:0}
+
+.account-session{display:flex;align-items:center;gap:10px;min-width:0}#identity{overflow-wrap:anywhere;min-width:0}#logout{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:44px;min-height:44px}#logout[hidden]{display:none}#account-section.account-compact{grid-column:1/-1;justify-self:end;max-width:100%;padding:6px 12px;box-shadow:none;background:transparent}#account-section.account-compact .account-title{display:none}#account-section.account-compact #identity{font-weight:600}
+#account-section.account-compact #identity{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 130px)}

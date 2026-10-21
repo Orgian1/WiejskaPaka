@@ -37,6 +37,9 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert response.value.status==200
             page.get_by_text('Publiczny login zapisany: @'+handle,exact=True).wait_for(state='visible')
             assert page.locator('#seller-public-login').input_value()==handle
+            assert page.locator('#identity').inner_text()=='@'+handle
+            assert page.locator('#auth').is_hidden()
+            assert page.locator('#logout').is_visible()
             assert client.put('/sellers/me/login',headers=actors[1][1],json={'login':handle.upper()}).status_code==409
             page.click('#logout');page.wait_for_function("document.querySelector('#identity').textContent==='Nie zalogowano'")
             assert page.locator('#seller-public-login').input_value()==''

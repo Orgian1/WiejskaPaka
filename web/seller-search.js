@@ -52,7 +52,7 @@ async function loadSellerLoginEditor(){
   if(!sellerSearchEnabled||role!=='rolnik')return;
   const data=await api('/sellers/me/login');
   if(serial!==sellerEditorSerial||epoch!==sessionEpoch||role!=='rolnik')return;
-  el('seller-login-panel').hidden=false;el('seller-public-login').value=data.login||'';el('seller-login-status').textContent=data.login?'Twój publiczny login: @'+data.login:'Ustaw login, aby klienci mogli znaleźć Cię w wyszukiwarce sprzedawców.';
+  el('seller-login-panel').hidden=false;if(data.login){el('identity').textContent='@'+data.login;el('identity').title='@'+data.login;}el('seller-public-login').value=data.login||'';el('seller-login-status').textContent=data.login?'Twój publiczny login: @'+data.login:'Ustaw login, aby klienci mogli znaleźć Cię w wyszukiwarce sprzedawców.';
 }
 async function initializeSellerDirectory(){
   try{const response=await fetch('/sellers/config',{cache:'no-store'});if(!response.ok||(await response.json()).enabled!==true)return;}catch{return;}
@@ -71,7 +71,7 @@ async function initializeSellerDirectory(){
     if(role!=='rolnik')return;const epoch=sessionEpoch;
     const data=await api('/sellers/me/login','PUT',{login:el('seller-public-login').value.trim()});
     if(epoch!==sessionEpoch||role!=='rolnik')return;
-    el('seller-public-login').value=data.login;el('seller-login-status').textContent='Publiczny login zapisany: @'+data.login;
+    el('identity').textContent='@'+data.login;el('identity').title='@'+data.login;el('seller-public-login').value=data.login;el('seller-login-status').textContent='Publiczny login zapisany: @'+data.login;
     if(sellerSearchMode()){sellerOffset=0;await loadSellerDirectory();}
   }))};
   act(loadSellerLoginEditor);

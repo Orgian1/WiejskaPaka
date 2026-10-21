@@ -33,6 +33,10 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert response.value.status==200
         assert not errors
         page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
+        assert page.locator('#auth').is_hidden()
+        assert page.locator('#logout').is_visible()
+        assert page.locator('#identity').text_content()==accounts[role]['email']
+        assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=80
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel rolnika','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
@@ -77,6 +81,8 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.locator('#admin-seller-results').text_content()==''
         assert page.locator('#admin-seller-review').is_hidden()
         assert page.locator('#seller-compliance').is_hidden()
+        assert page.locator('#auth').is_visible()
+        assert page.locator('#logout').is_hidden()
         assert page.locator('#password').input_value()==''
         assert not errors
     finally:page.close()

@@ -43,3 +43,5 @@ scenariusze rzeczywistego Chromium (320 i 1280 px, obrót widoku, ustawienie
 loginu, wyszukiwanie, produkty sprzedawcy i koszyk) oraz dwa natywnego
 PostgreSQL (restart/indeks i równoczesne zajęcie loginu).
 Wynik pełnej regresji i natywnego CI należy potwierdzić osobno.
+
+Uzupełniono izolowany test katalogu o nowy stan catalogSellerId (domyślnie null) i kontrolę parametru farmer_id. Dotychczasowe asercje paginacji, błędnych odpowiedzi i zmian sesji pozostają zachowane; 17/17 przypadków zaliczonych.

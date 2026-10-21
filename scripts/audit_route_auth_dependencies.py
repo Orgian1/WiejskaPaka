@@ -22,6 +22,8 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    if method == 'GET' and path in ('/sellers/config', '/sellers/search'):
+        return True
     if method == 'GET' and path in ('/user-photos/config', '/user-photos/{kind}/{subject_id}'):
         return True
     if method == 'GET' and path in ('/address-delivery/config', '/farmers/{farmer_id}/delivery-windows'):

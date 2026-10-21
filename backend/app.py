@@ -47,7 +47,9 @@ async def application_lifespan(application):
     import asyncio
     import logging
     with db() as con:
-        from backend import user_photos
+        from backend import user_photos, seller_directory
+        if seller_directory.enabled():
+            seller_directory.refresh_index(con, postgres=bool(DATABASE_URL))
         if user_photos.enabled():
             con.execute('SELECT kind,subject_id,owner_id,data,digest,width,height FROM user_photos WHERE 1=0')
         if address_delivery.enabled():
@@ -463,7 +465,7 @@ def products():
 @app.get('/catalog/search')
 def catalog_search(q: str = '', min_price_grosze: int | None = None,
                    max_price_grosze: int | None = None, limit: int = 24,
-                   offset: int = 0):
+                   offset: int = 0, farmer_id: int | None = None):
     """Public product search with bounded pagination; amounts are integer grosze."""
     if len(q) > 120 or not (1 <= limit <= 100) or not (0 <= offset <= 10000):
         raise HTTPException(422, 'Nieprawidłowe parametry wyszukiwania')
@@ -474,6 +476,11 @@ def catalog_search(q: str = '', min_price_grosze: int | None = None,
         raise HTTPException(422, 'Nieprawidłowy zakres cen')
     clauses = ['stock > 0']
     params = []
+    if farmer_id is not None:
+        if not 1 <= farmer_id <= 9_000_000_000_000_000_000:
+            raise HTTPException(422, 'Nieprawidłowy sprzedawca')
+        clauses.append('p.farmer_id = ?')
+        params.append(farmer_id)
     if q.strip():
         # Escape SQL LIKE wildcards: a customer search is literal, not a pattern.
         from backend.local_marketplace import search_key
@@ -1463,6 +1470,9 @@ def update_farmer_profile(payload:FarmerProfileIn,user=Depends(current_user), au
         con.execute('''INSERT INTO farmer_profiles(user_id,farm_name,city,description) VALUES(?,?,?,?)
             ON CONFLICT(user_id) DO UPDATE SET farm_name=excluded.farm_name,city=excluded.city,description=excluded.description''',
             (user['id'],payload.farm_name.strip(),payload.city.strip(),payload.description.strip()))
+        from backend import seller_directory
+        if seller_directory.enabled():
+            seller_directory.sync_name(con, user['id'], payload.farm_name)
     return {'saved':True}
 
 @app.get('/farmers/me/profile')
@@ -3193,3 +3203,9 @@ if user_photos.enabled() and not DATABASE_URL:
     with db() as _photo_con:
         _photo_con.executescript(user_photos.SCHEMA_SQLITE)
 user_photos.register_routes(app, db, order_write_db, current_user)
+
+from backend import seller_directory
+if seller_directory.enabled() and not DATABASE_URL:
+    with db() as _seller_con:
+        _seller_con.executescript(seller_directory.SCHEMA_SQLITE)
+seller_directory.register_routes(app, db, order_write_db, current_user)

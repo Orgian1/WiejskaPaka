@@ -87,7 +87,12 @@ def pg_photo_api():
     yield from _postgres_api(photos=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False):
+@pytest.fixture(scope='module')
+def pg_seller_api():
+    yield from _postgres_api(sellers=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -140,6 +145,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 if units:
                     env['WP_ENABLE_PRODUCT_UNITS'] = '1'
+                if sellers:
+                    env['WP_ENABLE_SELLER_SEARCH'] = '1'
                 if photos:
                     env['WP_ENABLE_USER_PHOTOS'] = '1'
                 if delivery_options:
@@ -1141,3 +1148,35 @@ def test_native_photo_upload_restart_and_hard_limit(pg_photo_api):
             con.execute('UPDATE user_photos SET data=%s WHERE owner_id=%s',(b'x'*1_000_001,uid))
     assert client.delete(url,headers=farmer).status_code==200
     assert client.get(url).status_code==404
+
+
+def test_native_seller_directory_restart_and_profile_index(pg_seller_api):
+    import psycopg
+    client, parameters=pg_seller_api
+    farmer,uid=register(client,'rolnik');alias='p_'+uuid4().hex[:12]
+    assert client.put('/farmers/me/profile',headers=farmer,json={'farm_name':'Żółta Łąka','city':'Legnica','description':'Opis'}).status_code==200
+    response=client.put('/sellers/me/login',headers=farmer,json={'login':alias.upper()})
+    assert response.status_code==200 and response.json()['login']==alias
+    data=client.get('/sellers/search',params={'q':'zolta laka'}).json()
+    assert next(s for s in data['items'] if s['farmer_id']==uid)['login']==alias
+    with psycopg.connect(**parameters) as con:
+        with pytest.raises(psycopg.errors.CheckViolation):
+            con.execute('UPDATE seller_public_logins SET login=%s WHERE user_id=%s',('UPPERCASE',uid))
+    # Simulate a profile edited while discovery was disabled; startup rebuilds its key.
+    with psycopg.connect(**parameters) as con:
+        con.execute('UPDATE farmer_profiles SET farm_name=%s WHERE user_id=%s',('Nowy Sad '+alias,uid))
+    pg_seller_api.restart()
+    result=client.get('/sellers/search',params={'q':'nowy sad '+alias}).json()
+    assert result['items']==[{'farmer_id':uid,'login':alias,'farm_name':'Nowy Sad '+alias,'city':'Legnica'}]
+    pid=client.post('/products',headers=farmer,json={'name':'Towar sprzedawcy','stock':5,'price_grosze':200,'delivery_grosze':500}).json()['id']
+    assert client.get('/catalog/search',params={'farmer_id':uid}).json()['items'][0]['id']==pid
+
+
+def test_native_seller_login_concurrent_unique_claim(pg_seller_api):
+    client,_=pg_seller_api;farmers=[register(client,'rolnik')[0] for _ in range(2)]
+    alias='race_'+uuid4().hex[:12]
+    def claim(headers):
+        return client.put('/sellers/me/login',headers=headers,json={'login':alias.upper()}).status_code
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(claim,farmers))==[200,409]
+    assert client.get('/sellers/search',params={'q':'@'+alias}).json()['total']==1

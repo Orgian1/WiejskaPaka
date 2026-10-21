@@ -106,6 +106,14 @@ jobs:
       - run: python -m pip install -r requirements-lock.txt
       - name: Install matching PostgreSQL backup clients
         run: |
+          # Ubuntu 24.04 ships client 16; 17 comes from the official PGDG repo.
+          if [ "${{ matrix.postgres-version }}" = "17" ]; then
+            sudo install -d /usr/share/postgresql-common/pgdg
+            sudo curl --fail --silent --show-error --location \
+              --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+              https://www.postgresql.org/media/keys/ACCC4CF8.asc
+            echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
+          fi
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-client-${{ matrix.postgres-version }}
           echo "/usr/lib/postgresql/${{ matrix.postgres-version }}/bin" >> "$GITHUB_PATH"

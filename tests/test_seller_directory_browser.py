@@ -1,4 +1,5 @@
 """Real HTTP seller discovery and selection on phone and desktop."""
+from playwright.sync_api import expect
 from uuid import uuid4
 from urllib.parse import urlsplit, parse_qs
 import pytest
@@ -66,7 +67,9 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             with page.expect_response('**/cart/items') as response:
                 card.get_by_role('button',name='Dodaj do koszyka',exact=True).click()
             assert response.value.status==200
-            with page.expect_response('**/catalog/search?*') as response:page.click('#catalog-clear-seller')
+            expect(card.get_by_role('button',name='Dodaj do koszyka',exact=True)).to_be_enabled()
+            assert page.get_by_role('dialog').count()==0
+            with page.expect_response(lambda r:'/catalog/search?' in r.url and 'farmer_id' not in parse_qs(urlsplit(r.url).query)) as response:page.click('#catalog-clear-seller')
             assert response.value.status==200
             page.wait_for_function('document.querySelectorAll("#products > .card").length===2')
             page.select_option('#catalog-search-mode','seller');page.fill('#catalog-query','ZOLTA LAKA '+suffix)

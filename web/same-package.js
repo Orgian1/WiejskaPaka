@@ -23,6 +23,7 @@ async function offerSamePackage(product,quantity,direct=false){
   return new Promise(resolve=>{
     const finish=result=>{if(dialog.open)dialog.close();dialog.remove();if(packageOffer?.dialog===dialog)packageOffer=null;resolve(result)};
     packageOffer={dialog,finish};
+    const show=()=>{if(!dialog.open){document.body.append(dialog);dialog.showModal();}};
     const cart=()=>{finish(false);el('cart-farmer-select').value=String(product.farmer_id);act(loadCart);el('cart-section').scrollIntoView({block:'start'});};
     done.onclick=()=>{if(busy)return;if(direct&&!baseQueued)finish(true);else cart()};
     cancel.onclick=()=>{if(!busy)finish(false)};
@@ -35,7 +36,7 @@ async function offerSamePackage(product,quantity,direct=false){
         if(!data||!Array.isArray(data.items)||data.items.length>24||!Number.isSafeInteger(data.total)||data.total<0||data.offset!==offset||data.limit!==24||!data.items.every(p=>p&&p.farmer_id===product.farmer_id&&Number.isSafeInteger(p.id)&&p.id>0&&typeof p.name==='string'&&Number.isSafeInteger(p.stock)&&p.stock>0&&Number.isSafeInteger(p.price_grosze)&&p.price_grosze>0))throw Error('Nieprawidłowe produkty');
         const products=data.items.filter(p=>p.id!==product.id);
         if(!products.length&&offset===0&&data.total<=24){finish(direct);return;}
-        status.textContent='Produkty tego sprzedawcy. Strona '+(offset/24+1)+'.';
+        show();status.textContent='Produkty tego sprzedawcy. Strona '+(offset/24+1)+'.';
         for(const p of products){
           const row=node('article','','card');row.append(node('h3',p.name),node('p',money(p.price_grosze)+' / '+saleUnitLabel(p)+packageLabel(p)));
           const qty=node('input');qty.type='number';qty.min='1';qty.max=String(Math.min(1000,p.stock));qty.value='1';qty.setAttribute('aria-label','Dobierz ilość: '+p.name);
@@ -60,10 +61,10 @@ async function offerSamePackage(product,quantity,direct=false){
           });row.append(qty,add);list.append(row);
         }
         previous.disabled=offset===0;next.disabled=offset+24>=data.total||offset+24>10000;
-      }catch{if(current()&&request===serial){status.textContent='Nie udało się pobrać propozycji. Możesz wrócić do produktów lub kontynuować.';}}
+      }catch{if(current()&&request===serial){show();status.textContent='Nie udało się pobrać propozycji. Możesz wrócić do produktów lub kontynuować.';}}
     };
     previous.onclick=()=>{if(!busy&&offset>0){offset-=24;page()}};
     next.onclick=()=>{if(!busy){offset+=24;page()}};
-    document.body.append(dialog);dialog.showModal();page();
+    page();
   });
 }

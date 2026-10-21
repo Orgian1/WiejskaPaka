@@ -23,7 +23,7 @@ async function offerSamePackage(product,quantity,direct=false){
   return new Promise(resolve=>{
     const finish=result=>{if(dialog.open)dialog.close();dialog.remove();if(packageOffer?.dialog===dialog)packageOffer=null;resolve(result)};
     packageOffer={dialog,finish};
-    const cart=()=>{finish(false);el('cart-section').scrollIntoView({block:'start'});};
+    const cart=()=>{finish(false);el('cart-farmer-select').value=String(product.farmer_id);act(loadCart);el('cart-section').scrollIntoView({block:'start'});};
     done.onclick=()=>{if(busy)return;if(direct&&!baseQueued)finish(true);else cart()};
     cancel.onclick=()=>{if(!busy)finish(false)};
     dialog.addEventListener('cancel',event=>{event.preventDefault();if(!busy)finish(false)});

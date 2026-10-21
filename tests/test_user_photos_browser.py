@@ -38,8 +38,10 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                 print('PHOTO_STAGE upload response',flush=True)
                 assert response.value.status==200
                 print('PHOTO_STAGE status checked',flush=True)
-                assert response.value.json()['bytes']<=1_000_000
-                print('PHOTO_STAGE JSON checked',flush=True)
+                stored=client.get(response.value.url)
+                assert stored.status_code==200 and stored.headers['content-type']=='image/jpeg'
+                assert 0<len(stored.content)<=1_000_000
+                print('PHOTO_STAGE stored JPEG checked',flush=True)
                 card.locator('img').wait_for(state='visible')
                 print('PHOTO_STAGE image visible',flush=True)
                 page.wait_for_function('Array.from(document.querySelectorAll("#user-photo-editors img")).every(i=>i.complete&&i.naturalWidth>0)')

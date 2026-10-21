@@ -37,8 +37,11 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                     card.get_by_role('button',name='Zapisz zdjęcie',exact=True).click()
                 print('PHOTO_STAGE upload response',flush=True)
                 assert response.value.status==200
+                print('PHOTO_STAGE status checked',flush=True)
                 assert response.value.json()['bytes']<=1_000_000
+                print('PHOTO_STAGE JSON checked',flush=True)
                 card.locator('img').wait_for(state='visible')
+                print('PHOTO_STAGE image visible',flush=True)
                 page.wait_for_function('Array.from(document.querySelectorAll("#user-photo-editors img")).every(i=>i.complete&&i.naturalWidth>0)')
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 print('PHOTO_STAGE image rendered',flush=True)
@@ -59,4 +62,7 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
             page.click('#logout');page.locator('#user-photo-panel').wait_for(state='hidden')
             assert page.locator('#user-photo-editors').inner_text()==''
             assert not errors
-        finally:page.close()
+        finally:
+            print('PHOTO_STAGE closing page',flush=True)
+            page.close()
+            print('PHOTO_STAGE page closed',flush=True)

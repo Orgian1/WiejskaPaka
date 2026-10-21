@@ -133,5 +133,10 @@
     "file": "optional_product_sale_units.sql",
     "sha256": "95bda88d01a1a5f27d8ad5d738ffc9d3d22176e8052dc36a5fc87a0f76b26194",
     "bytes": 1324
+  },
+  {
+    "file": "optional_address_delivery.sql",
+    "sha256": "8a0d13830341aae86175283533536dd5db9483b9b161c12124f9b7ca59c2dd39",
+    "bytes": 1384
   }
 ]

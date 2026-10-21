@@ -46,3 +46,15 @@ Oddzielna kontrola wersji serwera wewnątrz backup() i rehearse()
 dopuszczała wyłącznie 16. Rozszerzono ją do jawnej listy 16/17;
 pozostałe wersje nadal są odrzucane. Wynik po tej poprawce wymaga
 ponownego CI. Nie uznawać 45/47 za pełne potwierdzenie PostgreSQL 17.
+
+## PostgreSQL 17 potwierdzony
+
+Run 39592966980 / commit 21829b5518874a779691fdca280423943ec32dd3:
+PostgreSQL 16: 47 passed, 0 failed, 0 skipped.
+PostgreSQL 17: 47 passed, 0 failed, 0 skipped.
+Oba raporty native_21829b5/ mają complete=true, success=true oraz
+sources_unchanged=true i zgodne fingerprinty. Obejmuje to rzeczywistą migrację
+nowej losowej bazy, ograniczoną rolę aplikacji, HTTP zakupu w jednostkach,
+restart procesu i szyfrowany backup/odtwarzanie w odrębnej bazie.
+Nie jest to test konfiguracji ani danych VPS; VPS pozostał bez zmian.
+Pełny Windows tego nowego przebiegu wymaga jeszcze osobnego odczytu.

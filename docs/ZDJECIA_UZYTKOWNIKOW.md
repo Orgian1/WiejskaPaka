@@ -86,3 +86,16 @@ wyłącznie sprawdzoną nazwę pliku/funkcji testowej, bez stdout i parametrów.
 39/39 lokalnych testów mechanizmu CI zaliczonych. Wynik całej nowej bramki
 należy odczytać osobno; dedykowany workflow diagnostyczny nie jest częścią
 kodu tej gałęzi.
+
+## Wynik końcowej weryfikacji
+
+Kod 1f96389 / GitHub 9538725: lokalnie 4254 passed, 0 failed, 81 skipped,
+339/339 modułów, zgodny fingerprint we wszystkich częściach i
+sources_unchanged=true. Raporty w final_9538725/.
+CI 39652876736: zdjęcia Chromium 2/2 + pozostałe 40/40 + kontrola viewportów,
+bez błędów i pominięć; PostgreSQL 16 i 17 po 51/51; Windows recovery 80/80.
+Fingerprinty dowodów natywnych są zgodne. Raporty w native_9538725/.
+Pełny Windows dla tego ostatniego zestawu testów nadal trwa w chwili zapisu;
+nie jest mylony z wcześniej potwierdzonym 4169/0/165 dla identycznych plików
+backend/web/database/zależności z 25aa015 (ostatnie zmiany dotyczą testów i CI).
+Funkcja jest nadal domyślnie wyłączona i nie trafiła na VPS.

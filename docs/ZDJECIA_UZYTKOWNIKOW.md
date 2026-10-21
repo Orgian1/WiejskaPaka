@@ -68,3 +68,21 @@ Natywny CI 39648310801 dla 3f4fbd3: PostgreSQL 16 i 17 po 51/51, Windows
 recovery 80/80. Raporty w native_3f4fbd3/. Poprawka oczekiwania w teście
 Chromium toleruje chwilowo pusty edytor podczas odświeżania po usunięciu;
 nie zmienia kodu aplikacji. Przeglądarka wymaga wyniku po tej poprawce.
+
+Pełny Windows dla 25aa015: 4169 passed, 0 failed, 165 skipped (4334 łącznie),
+bez błędnych, niekompletnych ani przekroczonych czasowo modułów. W tym samym
+przebiegu 39649018368 Chromium przekroczył 600 s; nie zaliczono go.
+Oddzielna diagnostyka wskazała zatrzymanie na Response.json() w teście po
+otrzymaniu odpowiedzi PUT. Test teraz pobiera rzeczywisty zapisany JPEG
+przez niezależne HTTP i sprawdza liczbę bajtów, zamiast metadanych odpowiedzi.
+Kod aplikacji pozostał taki sam. Scenariusze zdjęć na 320/1280 px: 2/2,
+0 błędów, 0 pominięć (diagnostyczny CI 39652429785, commit 4ab8e2e).
+JUnit i podsumowanie zachowano w native_4ab8e2e/; nieudany przebieg w
+native_25aa015/chromium-summary.json pozostaje zapisany, bez nadpisania.
+
+Bramka browser uruchamia teraz zdjęcia osobno (limit 180 s), następnie
+pozostałe 40 przypadków i kontrolę viewportów. Diagnostyka timeoutu publikuje
+wyłącznie sprawdzoną nazwę pliku/funkcji testowej, bez stdout i parametrów.
+39/39 lokalnych testów mechanizmu CI zaliczonych. Wynik całej nowej bramki
+należy odczytać osobno; dedykowany workflow diagnostyczny nie jest częścią
+kodu tej gałęzi.

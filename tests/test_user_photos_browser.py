@@ -16,6 +16,7 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
         headers={'Authorization':'Bearer '+client.post('/auth/login',json=account).json()['access_token']}
         assert client.post('/products',headers=headers,json={'name':'Pomidor ze zdjęciem','stock':5,'price_grosze':200,'delivery_grosze':500}).status_code==201
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
+        page.set_default_timeout(15_000)
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
             page.goto(str(client.base_url));page.fill('#email',account['email']);page.fill('#password',account['password'])
@@ -28,7 +29,9 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                 with page.expect_response(lambda r:r.request.method=='PUT' and '/user-photos/' in r.url) as response:
                     card.get_by_role('button',name='Zapisz zdjęcie',exact=True).click()
                 assert response.value.status==200
-                assert response.value.json()['bytes']<=1_000_000
+                stored=client.get(response.value.url)
+                assert stored.status_code==200 and stored.headers['content-type']=='image/jpeg'
+                assert 0<len(stored.content)<=1_000_000
                 card.locator('img').wait_for(state='visible')
                 page.wait_for_function('Array.from(document.querySelectorAll("#user-photo-editors img")).every(i=>i.complete&&i.naturalWidth>0)')
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
@@ -46,4 +49,5 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
             page.click('#logout');page.locator('#user-photo-panel').wait_for(state='hidden')
             assert page.locator('#user-photo-editors').inner_text()==''
             assert not errors
-        finally:page.close()
+        finally:
+            page.close()

@@ -38,3 +38,11 @@ Starszy run 39585853702 miał timeout modułu test_crash_checkout_http.py
 na Windows (brak wyniku modułu), a nie potwierdzony błąd asercji.
 Nowszy run 39587072873 zakończył pełny Windows bez timeoutów i błędów.
 Nie przypisujemy poprawki logiki aplikacji temu pojedynczemu timeoutowi.
+
+Run 39590809353 / commit 5f445df: PostgreSQL 17 uruchomił 47 testów,
+45 passed i 2 failed. Lokalizacje błędów wskazują wywołanie backup()
+w scenariuszu odtwarzania zakupu i odtwarzania kolejki poczty.
+Oddzielna kontrola wersji serwera wewnątrz backup() i rehearse()
+dopuszczała wyłącznie 16. Rozszerzono ją do jawnej listy 16/17;
+pozostałe wersje nadal są odrzucane. Wynik po tej poprawce wymaga
+ponownego CI. Nie uznawać 45/47 za pełne potwierdzenie PostgreSQL 17.

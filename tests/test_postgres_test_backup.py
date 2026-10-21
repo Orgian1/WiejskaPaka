@@ -136,6 +136,17 @@ def test_only_reviewed_backup_client_versions_are_accepted(monkeypatch, program,
             pg.require_supported_client(program)
 
 
+@pytest.mark.parametrize('version,accepted', [(160000, True), (160013, True),
+    (170000, True), (170009, True), (150017, False), (180000, False),
+    (None, False), (True, False), ('170009', False)])
+def test_only_reviewed_backup_server_versions_are_accepted(version, accepted):
+    if accepted:
+        pg.require_supported_server(version)
+    else:
+        with pytest.raises(ValueError):
+            pg.require_supported_server(version)
+
+
 def test_python_database_endpoint_is_pinned_against_inherited_hostaddr(monkeypatch):
     monkeypatch.setenv('PGHOSTADDR', '198.51.100.1')
     parameters = pg.local_parameters('postgresql://a:b@localhost/wp_test_x')

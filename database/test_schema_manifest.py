@@ -27,6 +27,7 @@ UPGRADES = (
     'optional_product_sale_units.sql',
     'optional_address_delivery.sql',
     'optional_user_photos.sql',
+    'optional_seller_directory.sql',
 )
 
 

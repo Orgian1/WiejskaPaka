@@ -143,5 +143,10 @@
     "file": "optional_user_photos.sql",
     "sha256": "d3e8f63f9d624caddf66a070fde5400689b48c47d986608483e57cbd091a0fdd",
     "bytes": 566
+  },
+  {
+    "file": "optional_seller_directory.sql",
+    "sha256": "51acda156b660cffcfa2645782a22dcab0fc836b1d7d3a9c0a7c8ff9029ea84f",
+    "bytes": 282
   }
 ]

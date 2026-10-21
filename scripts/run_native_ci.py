@@ -20,7 +20,7 @@ POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_int
                   'test_postgres_full_api_optin.py')
 RECOVERY_TESTS = ('test_sample_demo.py', 'test_sample_demo_launcher.py', 'test_seller_payout_ui.py', 'test_seller_settlement_ui.py', 'test_admin_seller_review.py', 'test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
                   'test_password_reset_http.py')
-BROWSER_TESTS = ('test_address_delivery_browser.py', 'test_preview_credentials.py', 'test_catalog_page_browser.py', 'test_support_cases_browser.py', 'test_sample_demo_browser.py', 'test_admin_seller_review_browser.py', 'test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
+BROWSER_TESTS = ('test_seller_directory_browser.py', 'test_address_delivery_browser.py', 'test_preview_credentials.py', 'test_catalog_page_browser.py', 'test_support_cases_browser.py', 'test_sample_demo_browser.py', 'test_admin_seller_review_browser.py', 'test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
               'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'PROGRAMDATA', 'PROGRAMFILES',
               'PROGRAMFILES(X86)', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL',

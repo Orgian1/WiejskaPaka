@@ -42,7 +42,7 @@ jobs:
               output.write(str(folder) + "\n")
           PY
       - name: Photo file picker over real HTTP
-        run: python -m pytest -vv --tb=short -o faulthandler_timeout=60 -o faulthandler_exit_on_timeout=true tests/test_user_photos_browser.py --junitxml "${{ runner.temp }}/photo-browser.xml"
+        run: python -m pytest -vv -s --tb=short -o faulthandler_timeout=60 -o faulthandler_exit_on_timeout=true tests/test_user_photos_browser.py --junitxml "${{ runner.temp }}/photo-browser.xml"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

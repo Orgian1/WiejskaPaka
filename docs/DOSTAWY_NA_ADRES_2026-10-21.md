@@ -64,3 +64,7 @@ testu konfiguracji i danych na VPS. Funkcja nie jest gotowością produkcyjną.
 Pełna regresja lokalna commitu 4a59fad (na GitHub bb9133b): 4238 passed, 0 failed, 74 skipped; 336/336 modułów. Wszystkie części mają zgodny fingerprint i sources_unchanged=true. Raporty w docs/audits/address_delivery_2026-10-21/. 
 
 CI GitHub Actions 39612932781 dla bb9133b: PostgreSQL 16 i 17 — po 50/50 testów; Windows recovery — 80/80; Chromium — 36/36 i kontrola viewportów zaliczone. Raporty JSON zapisano w native_bb9133b/. Pełna regresja Windows zakończona: 4154 passed, 0 failed, 158 skipped (4312 łącznie); bez błędnych, niekompletnych ani przekroczonych czasowo modułów. Wszystkie pięć zadań CI zakończone sukcesem. Źródła pozostały niezmienione; fingerprinty dowodów zgodne z pozostałymi zadaniami CI. Pominięte testy nie są liczone jako zaliczone. Raport windows-summary.json zawiera szczegóły.
+
+## Rozszerzenie testów przeglądarkowych
+
+Dodano cztery scenariusze rzeczywistego HTTP/Chromium z włączoną funkcją: akceptacja i odrzucenie, szerokości 320 i 1280 px, obrót do 844×390, formularz terminów sprzedawcy, formularz klienta, prywatność telefonu i czyszczenie po wylogowaniu. Scenariusze są częścią bramki browser w CI. Lokalna instalacja Chromium nie powiodła się (uszkodzona odpowiedź pobierania); nowe przypadki wymagają wyniku nowego przebiegu CI i nie są objęte wcześniejszymi wynikami.

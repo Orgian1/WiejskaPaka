@@ -60,3 +60,7 @@ Dodano trzy scenariusze realnego HTTP/PostgreSQL do istniejącej macierzy 16/17
 (zakup bezpośredni, przesyłka zaakceptowana i przesyłka odrzucona z restartem).
 Wynik pełnej regresji i nowej macierzy należy odczytać osobno; nie zastępują
 testu konfiguracji i danych na VPS. Funkcja nie jest gotowością produkcyjną.
+
+Pełna regresja lokalna commitu 4a59fad (na GitHub bb9133b): 4238 passed, 0 failed, 74 skipped; 336/336 modułów. Wszystkie części mają zgodny fingerprint i sources_unchanged=true. Raporty w docs/audits/address_delivery_2026-10-21/. 
+
+CI GitHub Actions 39612932781 dla bb9133b: PostgreSQL 16 i 17 — po 50/50 testów; Windows recovery — 80/80; Chromium — 36/36 i kontrola viewportów zaliczone. Raporty JSON zapisano w native_bb9133b/. Pełna regresja Windows nadal trwa w chwili zapisu; nie jest uznawana za zaliczoną.

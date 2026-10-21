@@ -22,6 +22,12 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    # Explicit, disabled-by-default address lookup; no account data returned.
+    if (method, path) in {('GET', '/address-search/config'), ('POST', '/address-search')}:
+        return True
+    # Public unit vocabulary/config only; no accounts, products or credentials.
+    if method == 'GET' and path == '/product-units':
+        return True
     if (method, path) in RECOVERY_ROUTES:
         return True
     if method == 'POST' and path == '/marketplace/nearby':

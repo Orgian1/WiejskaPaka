@@ -13,7 +13,7 @@ function purchaseRecordControls(kind,id,container){
   return controls;
 }
 function appendOriginalTerms(host,original,{location=true}={}){
-  host.append(node('p',`${original.product.name} • ${original.quantity} szt. × ${money(original.product.unit_price_grosze)}`),
+  host.append(node('p',`${original.product.name} • ${original.quantity} ${saleUnitLabel(original.product)} × ${money(original.product.unit_price_grosze)} / ${saleUnitLabel(original.product)}${packageLabel(original.product)}`),
     node('p',`Produkty: ${money(original.subtotal_grosze)}; dostawa przypisana do pozycji: ${money(original.delivery_grosze)}; razem: ${money(original.total_grosze)}.`),
     node('p',`Warunki z dnia: ${original.ordered_at}; termin rezerwacji bez płatności: ${original.reservation_expires_at}`));
   if(location&&original.pickup_point){const point=original.pickup_point;

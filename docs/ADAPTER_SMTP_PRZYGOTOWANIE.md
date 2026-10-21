@@ -42,9 +42,14 @@ tokenów, loginu lub hasła. Adapter nie wypisuje transkryptu SMTP.
 
 ## Co pozostaje do integracji
 
-Potrzebne są wciąż uprawniony wybór odbiorcy, kolejka zapisywana atomowo
-z wydaniem linku, ochrona sekretów w kolejce, ograniczone ponowienia,
-retencja, obserwacja błędów i odebranie dostarczeń u wybranego dostawcy.
+Aktualizacja 19.10: wybór odbiorcy dla istniejącego konta, kolejka zapisywana
+atomowo z linkiem, zaszyfrowane ładunki, ograniczone ponowienia, retencja
+i kwarantanna po odtworzeniu są już zaimplementowane i przetestowane.
+Testowa trasa HTTP potrafi zapisać zadanie w PostgreSQL. Nie należy ponownie
+otwierać tych prac jako brakujących funkcji adaptera.
+
+Pozostają uruchomienie adaptera przez jawnie skonfigurowany proces usługowy,
+jego konto i ograniczona rola, nadzorca oraz odbiór dostarczeń u dostawcy.
 Nie łączyć wprost testowego issue() z SMTP: demo generuje losowe linki
 również dla nieznanych adresów. Trzeba zachować ogólną odpowiedź HTTP,
 bez wysyłania wiadomości do nieuprawnionych odbiorców.
@@ -60,6 +65,10 @@ https://docs.python.org/3.12/library/ssl.html — sprawdzona 18.10.2026.
 
 Projekt atomowości, dzierżaw i obsługi niepewnego wyniku opisuje
 KONTRAKT_KOLEJKI_POCZTY.md. To wymagania następnego etapu, bez implementacji.
+
+Powyższy opis kontraktu jest historycznym stanem przygotowania adaptera.
+Aktualne wykonanie opisują checkpointy z 19.10 oraz
+POZOSTALE_PRACE_DO_PODGLADU_2026-10-19.md.
 
 Część kontraktu zrealizowano 19.10.2026 w odłączonej kolejce SQLite:
 KOLEJKA_RESETU_SQLITE.md. Adapter i kolejka współpracują w testach z

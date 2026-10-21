@@ -16,6 +16,7 @@ function env(){
   money:n=>String(n)+' gr',api:path=>{calls.push(path);return new Promise((resolve,reject)=>pending.push({resolve,reject}));},
   document:{body,createElement:tag=>new Element(tag)},URL:{createObjectURL:blob=>{urls.push(blob);return 'blob:private-'+urls.length;},revokeObjectURL:url=>revoked.push(url)},Blob,
   setTimeout:fn=>timers.push(fn),act:fn=>Promise.resolve().then(fn)});
+ vm.runInContext(fs.readFileSync('web/app.js','utf8').split('let saleUnitsEnabled=false;')[0],c);
  vm.runInContext(fs.readFileSync('web/purchase-records.js','utf8'),c);
  const original={product:{id:1,name:'<img src=x onerror=alert(1)>',unit_price_grosze:199},quantity:2,subtotal_grosze:398,delivery_grosze:501,total_grosze:899,
   ordered_at:'2026-10-16T10:00:00+00:00',reservation_expires_at:'2026-10-16T10:30:00+00:00',pickup_point:{id:1,name:'Stary punkt',city:'Opole',street:'Pierwotna 1',opening_hours:'9–17'}};

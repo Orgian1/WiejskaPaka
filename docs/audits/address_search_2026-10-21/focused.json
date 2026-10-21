@@ -1,0 +1,110 @@
+{
+  "application_sha256": "218633550e5d0244de5bd21d93215b4791bdddf4d01a51199091988d2821524c",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 51,
+    "passed": 51,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 7,
+  "planned": 7,
+  "passed": 7,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_local_marketplace_ui.py",
+      "sha256": "b53b9153a9aa6abc25bf9a291ae364b0d3d30a64d2eb70fb7c17ff413194e8b6",
+      "returncode": 0,
+      "seconds": 1.65,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..............                                                           [100%]\n14 passed in 1.31s\n"
+    },
+    {
+      "file": "test_address_search.py",
+      "sha256": "e5a240042a46b43e543a485a89ac7b4512e9fbb4bc954e54e13cc6c0676139a2",
+      "returncode": 0,
+      "seconds": 1.15,
+      "test_counts": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....................                                                     [100%]\n20 passed, 1 warning in 0.77s\n"
+    },
+    {
+      "file": "test_address_search_ui.py",
+      "sha256": "04cfe9f9c4e050ed6757d75582f5bf2b9ac2c837c3a418150c207eb261fd5744",
+      "returncode": 0,
+      "seconds": 0.5,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 0.17s\n"
+    },
+    {
+      "file": "test_b6961_auth_dependency_inventory.py",
+      "sha256": "d328202d14c2b596b3391f41704964aa2d0f6f91f18ec6c89d560d8b9926a847",
+      "returncode": 0,
+      "seconds": 1.26,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.80s\n"
+    },
+    {
+      "file": "test_b7321_anonymous_route_http.py",
+      "sha256": "2f778988d8cff3f69fd6d58955b69d271f747f7c1f3d9e2998667124271c9327",
+      "returncode": 0,
+      "seconds": 1.32,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.90s\n"
+    },
+    {
+      "file": "test_audit_mobile_markup.py",
+      "sha256": "ed1ad61497073ed917f9522fcc2b58a3c4753a5e7fc29393c5d518207068537c",
+      "returncode": 0,
+      "seconds": 0.42,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.11s\n"
+    },
+    {
+      "file": "test_mobile_markup_regression_b9121.py",
+      "sha256": "ff2d7f5be9be142b72003bc674f0a21eadbe9aff0f3c9249b1cc4f5fe90585cd",
+      "returncode": 0,
+      "seconds": 0.41,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 0.08s\n"
+    }
+  ]
+}

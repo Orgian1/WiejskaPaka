@@ -21,6 +21,7 @@ function env(){
     api:async(...args)=>{calls.push({api:args});return [];},loadCart:async()=>{},loadFarmer:async()=>{},msg:()=>{},requireResolvedCheckout:()=>{},
     act:fn=>Promise.resolve().then(fn),singleWrite:async(key,button,fn)=>fn(),
     navigator:{geolocation:{getCurrentPosition:(...args)=>geoCalls.push(args)}},localStorage:storage,sessionStorage:storage});
+  vm.runInContext(fs.readFileSync('web/app.js','utf8').split('let saleUnitsEnabled=false;')[0],context);
   vm.runInContext(code,context);el('nearby-lat').value='52';el('nearby-lon').value='16';el('nearby-radius').value='1000';
   const result=(name='<img src=x onerror=alert(1)>')=>({ok:true,json:async()=>({items:[{distance_m:12,distance_bucket_m:100,product:{id:1,name,price_grosze:199,stock:10},pickup_point:{id:2,name:'Punkt',city:'Opole',street:'Polna 1',opening_hours:'9-17'}}],has_more:false})});
   return {context,el,calls,pending,geoCalls,result,run:s=>vm.runInContext(s,context)};

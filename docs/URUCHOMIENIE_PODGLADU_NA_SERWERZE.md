@@ -97,7 +97,9 @@ Bez tego punktu podgląd pozostaje środowiskiem sztucznych danych.
 
 ## Poczta i publikacja
 
-Jutro potrzebne będą domena, skrzynka obsługi i parametry dostawcy wysyłki
+Aktualizacja 19.10: domena już jest, serwer opłacono; serwer i poczta
+spodziewane są 20.10. Szczegóły: PODLACZENIE_SERWERA_I_POCZTY_2026-10-20.md.
+Po aktywacji potrzebne będą skrzynka obsługi i parametry dostawcy wysyłki
 wiadomości aplikacyjnych: host, port, TLS oraz możliwość ustawienia
 SPF/DKIM/DMARC. Sama skrzynka nie potwierdza działania wiadomości z aplikacji.
 Hasła wprowadza administrator poza repozytorium i czatem. Podłączenie,

@@ -107,7 +107,7 @@ def test_browser_requires_offline_and_real_http_tasks(tmp_path, http_code):
             return subprocess.CompletedProcess(command, 0, '', '')
         return subprocess.CompletedProcess(command, http_code, SENSITIVE, SENSITIVE)
     result = ci.run('browser', tmp_path/'result.json', source=source(), runner=runner)
-    assert len(calls) == 2 and result['success'] == (http_code == 0)
+    assert len(calls) == 3 and result['success'] == (http_code == 0)
 
 
 def test_browser_skip_prevents_http_and_green_gate(tmp_path):
@@ -233,3 +233,16 @@ def test_windows_missing_counts_preserve_sanitized_failure_and_write_report(tmp_
     assert task['failed_modules']==task['incomplete_modules']==task['timed_out_modules']==[known]
     assert 'test_counts' not in task
     assert SENSITIVE not in path.read_text() and 'private-invalid-counts' not in path.read_text()
+
+
+def test_photo_timeout_records_only_known_test_name_without_output(tmp_path):
+    def runner(command, **kwargs):
+        assert 'test_user_photos_browser.py' in ' '.join(command)
+        assert kwargs['timeout'] == 180
+        raise subprocess.TimeoutExpired(command,180,output=(
+            b'tests/test_user_photos_browser.py::test_photo_upload_replace_error_delete_and_logout[private-phone] '+SENSITIVE.encode()))
+    path=tmp_path/'report.json'
+    result=ci.run('browser',path,source=source(),runner=runner)
+    assert not result['success']
+    assert result['tasks'][0]['last_test']=={'file':'test_user_photos_browser.py','function':'test_photo_upload_replace_error_delete_and_logout'}
+    assert SENSITIVE not in path.read_text() and 'private-phone' not in path.read_text()

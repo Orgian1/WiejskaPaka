@@ -47,6 +47,9 @@ async def application_lifespan(application):
     import asyncio
     import logging
     with db() as con:
+        from backend import user_photos
+        if user_photos.enabled():
+            con.execute('SELECT kind,subject_id,owner_id,data,digest,width,height FROM user_photos WHERE 1=0')
         if address_delivery.enabled():
             con.execute('SELECT id FROM seller_delivery_windows LIMIT 0')
             con.execute('SELECT order_id FROM address_delivery_requests LIMIT 0')
@@ -3184,3 +3187,9 @@ if address_delivery.enabled() and not DATABASE_URL:
     with db() as _delivery_con:
         _delivery_con.executescript(address_delivery.SCHEMA_SQLITE)
 address_delivery.register_routes(app, db, order_write_db, current_user, record_order_event, postgres=bool(DATABASE_URL))
+
+from backend import user_photos
+if user_photos.enabled() and not DATABASE_URL:
+    with db() as _photo_con:
+        _photo_con.executescript(user_photos.SCHEMA_SQLITE)
+user_photos.register_routes(app, db, order_write_db, current_user)

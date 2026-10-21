@@ -32,3 +32,5 @@ html{scroll-padding-top:12px}
 .inline-check{display:flex;align-items:flex-start;gap:8px}.inline-check input{width:auto;flex:0 0 auto;margin-top:6px}
 #nearby-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
 #nearby-results .card{padding:12px;border:1px solid #d8e3d8;border-radius:8px}
+
+.user-photo{display:block;max-width:100%;width:240px;max-height:240px;object-fit:contain;border-radius:8px}#user-photo-editors input[type=file]{max-width:100%;min-width:0}

@@ -1,0 +1,38 @@
+{
+  "complete": true,
+  "success": true,
+  "expected": 336,
+  "executed": 336,
+  "passed": 336,
+  "failed": 0,
+  "missing": [],
+  "failures": [],
+  "shards": [
+    {
+      "report": "wp-delivery-verified-1-20261021.json",
+      "modules": 84
+    },
+    {
+      "report": "wp-delivery-verified-2-20261021.json",
+      "modules": 84
+    },
+    {
+      "report": "wp-delivery-verified-3-20261021.json",
+      "modules": 84
+    },
+    {
+      "report": "wp-delivery-verified-4-20261021.json",
+      "modules": 84
+    }
+  ],
+  "application_sha256": "60e4a632d9d8c3aa26b9eabe8b74b93e6c1850b8cb5a5a4c6f5f8fbfe988e7c0",
+  "sources_unchanged": true,
+  "local_commit": "4a59fad",
+  "github_commit": "bb9133b19695d779e3869def75e49b4cd39d3459",
+  "test_counts": {
+    "total": 4312,
+    "passed": 4238,
+    "failed": 0,
+    "skipped": 74
+  }
+}

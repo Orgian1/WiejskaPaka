@@ -33,5 +33,5 @@ def test_scripts_load_after_document_in_dependency_order():
         def handle_starttag(self,tag,attrs):
             if tag=='script':self.scripts.append(dict(attrs))
     doc=Scripts();doc.feed((ROOT/'web/index.html').read_text())
-    assert [s['src'] for s in doc.scripts]==['/assets/app.js','/assets/dashboard.js','/assets/nearby.js','/assets/address-search.js','/assets/purchase-records.js','/assets/pin-recovery.js','/assets/account-security.js','/assets/session-security.js','/assets/password-reset.js','/assets/seller-compliance.js','/assets/admin-seller-review.js','/assets/support-cases.js']
+    assert [s['src'] for s in doc.scripts]==['/assets/app.js','/assets/dashboard.js','/assets/nearby.js','/assets/address-search.js','/assets/address-delivery.js','/assets/purchase-records.js','/assets/pin-recovery.js','/assets/account-security.js','/assets/session-security.js','/assets/password-reset.js','/assets/seller-compliance.js','/assets/admin-seller-review.js','/assets/support-cases.js']
     assert all('defer' in s for s in doc.scripts)

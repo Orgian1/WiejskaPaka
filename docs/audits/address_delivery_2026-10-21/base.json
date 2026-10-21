@@ -1,0 +1,97 @@
+{
+  "application_sha256": "7878ce5ddd260f999056773696bd7796d2c8bd42b6a9836ae4a22e459527f08e",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 6,
+  "planned": 6,
+  "passed": 6,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_b361_cart_quote.py",
+      "sha256": "866fb2527c8f11cda6c75e40e3a4be05e93b7a5cf61f521dbbcd8aad698123d8",
+      "returncode": 0,
+      "seconds": 2.11,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 1.25s\n"
+    },
+    {
+      "file": "test_b6961_auth_dependency_inventory.py",
+      "sha256": "d328202d14c2b596b3391f41704964aa2d0f6f91f18ec6c89d560d8b9926a847",
+      "returncode": 0,
+      "seconds": 1.04,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.58s\n"
+    },
+    {
+      "file": "test_b7321_anonymous_route_http.py",
+      "sha256": "2f778988d8cff3f69fd6d58955b69d271f747f7c1f3d9e2998667124271c9327",
+      "returncode": 0,
+      "seconds": 1.25,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.74s\n"
+    },
+    {
+      "file": "test_local_marketplace_ui.py",
+      "sha256": "1e89d4203adb3ec5e27a532cb5182c6fa96bd927431fae61c9b05fd884e6408c",
+      "returncode": 0,
+      "seconds": 1.28,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..............                                                           [100%]\n14 passed in 0.96s\n"
+    },
+    {
+      "file": "test_b11306_migration_cli.py",
+      "sha256": "d1eb5fdbdb9c61d9ef8e1bd813521c3610f6dc04da364e7ba724b3ceb4b7b22a",
+      "returncode": 0,
+      "seconds": 0.41,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.09s\n"
+    },
+    {
+      "file": "test_b11307_schema_lock.py",
+      "sha256": "4229a3a9bdf814b0e6a25ca278a146375d86e2ac9a80833338cc77314bd8943d",
+      "returncode": 0,
+      "seconds": 0.39,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.08s\n"
+    }
+  ]
+}

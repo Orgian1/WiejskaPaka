@@ -77,7 +77,12 @@ def pg_units_api():
     yield from _postgres_api(units=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False):
+@pytest.fixture(scope='module')
+def pg_address_delivery_api():
+    yield from _postgres_api(delivery_options=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -130,6 +135,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False):
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 if units:
                     env['WP_ENABLE_PRODUCT_UNITS'] = '1'
+                if delivery_options:
+                    env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
                 reset_outbox = Path(folder)/'reset-outbox' if reset else None
                 if reset:
@@ -253,6 +260,53 @@ def test_native_sale_units_checkout_restart_and_insert_only_records(pg_units_api
     assert client.get(f'/products/{pid}').json()['stock'] == 10
     assert client.post(f'/orders/{oid}/cancel-test', headers=buyer).status_code == 409
     assert client.get(f'/products/{pid}').json()['stock'] == 10
+
+
+@pytest.mark.parametrize('kind,decision', [('direct', 'accepted'), ('shipment', 'accepted'), ('shipment', 'declined')])
+def test_native_address_delivery_acceptance_and_private_contact(pg_address_delivery_api, kind, decision):
+    client, parameters = pg_address_delivery_api
+    farmer, _ = register(client, 'rolnik')
+    buyer, _ = register(client, 'klient')
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    day = datetime.now(ZoneInfo('Europe/Warsaw')).date()+timedelta(days=7)
+    window = client.post('/address-delivery/windows', headers=farmer, json={
+        'city': 'Legnica', 'postal_code': '59-220', 'weekday': day.weekday(),
+        'from_time': '10:00', 'to_time': '16:00'})
+    assert window.status_code == 200, window.text
+    ids = [product(client, farmer, stock=5) for _ in range(1 if kind == 'direct' else 2)]
+    body = {**delivery(ids[0]), 'address_delivery': {
+        'window_id': window.json()['id'], 'delivery_date': day.isoformat(),
+        'available_from': '12:00', 'available_to': '18:00', 'phone': '+48 500 100 200'}}
+    if kind == 'shipment':
+        for pid in ids:
+            assert client.put('/cart/items', headers=buyer, json={'product_id': pid, 'quantity': 1}).status_code == 200
+        body.pop('product_id');body.pop('quantity')
+    response = client.post('/orders' if kind == 'direct' else '/cart/checkout-test', headers=buyer, json=body)
+    assert response.status_code == 201, response.text
+    orders = [response.json()['id']] if kind == 'direct' else [o['id'] for o in response.json()['orders']]
+    queue = client.get('/address-delivery/requests/mine', headers=farmer)
+    assert queue.status_code == 200, queue.text
+    assert any(r['order_id'] == orders[0] for r in queue.json()['items'])
+    assert '500100200' not in queue.text and 'phone' not in queue.text
+    event = {'event_id': uuid4().hex, 'event_type': 'payment_success_test'}
+    assert client.post(f'/test/payments/{orders[0]}/events', headers=buyer, json=event).status_code == 409
+    url = f'/address-delivery/requests/{orders[0]}/decision'
+    choice = {'decision': decision, 'revision': 0}
+    assert client.post(url, headers=farmer, json=choice).status_code == 200
+    assert client.post(url, headers=farmer, json=choice).json()['already_processed'] is True
+    pg_address_delivery_api.restart()
+    queue = client.get('/address-delivery/requests/mine', headers=buyer)
+    assert queue.status_code == 200
+    assert all(r['state'] == decision for r in queue.json()['items'] if r['order_id'] in orders)
+    import psycopg
+    with psycopg.connect(**parameters) as con:
+        encrypted = con.execute('SELECT phone_sealed FROM address_delivery_requests WHERE order_id=%s', (orders[0],)).fetchone()[0]
+        assert '500100200' not in encrypted
+    if decision == 'accepted':
+        assert client.post(f'/test/payments/{orders[0]}/events', headers=buyer, json=event).status_code == 200
+    for pid in ids:
+        assert client.get(f'/products/{pid}').json()['stock'] == (5 if decision == 'declined' else 4)
 
 
 def test_native_application_role_has_no_administrative_privileges(pg_api):

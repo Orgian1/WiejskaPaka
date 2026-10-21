@@ -30,6 +30,8 @@ DB_PATH = os.environ.get('WIEJSKAPAKA_DB', str(Path(__file__).with_name('wiejska
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
 from backend import product_unit_storage
+from backend import address_delivery
+from backend.address_delivery import DeliveryPreferenceIn
 
 
 def run_reservation_expiry(*, now=None):
@@ -44,6 +46,13 @@ def run_reservation_expiry(*, now=None):
 async def application_lifespan(application):
     import asyncio
     import logging
+    with db() as con:
+        if address_delivery.enabled():
+            con.execute('SELECT id FROM seller_delivery_windows LIMIT 0')
+            con.execute('SELECT order_id FROM address_delivery_requests LIMIT 0')
+        elif address_delivery.has_table(con, bool(DATABASE_URL)):
+            if con.execute("SELECT r.order_id FROM address_delivery_requests r JOIN orders o ON o.id=r.order_id WHERE o.status NOT IN ('odebrane','anulowane_testowo','nieudana_dostawa_testowo') LIMIT 1").fetchone():
+                raise RuntimeError('Nie można wyłączyć akceptacji przy aktywnych dostawach na adres')
     if product_unit_storage.enabled():
         with db() as con:
             con.execute('SELECT product_id,unit,content_json FROM product_sale_units LIMIT 0')
@@ -265,6 +274,7 @@ class OrderIn(BaseModel):
     product_id: int = Field(strict=True, ge=1)
     quantity: int = Field(strict=True, ge=1, le=1000)
     fulfillment: Literal['odbior','dostawa']
+    address_delivery: DeliveryPreferenceIn | None = None
 class ConfirmIn(BaseModel):
     pin: str = Field(pattern=r'^\d{6}$')
     checked_goods: bool = Field(strict=True)
@@ -665,12 +675,12 @@ class QuantityQuoteIn(BaseModel):
 
 
 @app.post('/cart/quote-quantities-test')
-def cart_quantity_quote(payload: QuantityQuoteIn, user=Depends(current_user)):
+def cart_quantity_quote(payload: QuantityQuoteIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'klient')
     if not product_unit_storage.enabled() or os.environ.get('WP_ENABLE_FRACTIONAL_QUOTE') != '1':
         raise HTTPException(503, 'Testowa wycena ilości ułamkowych jest wyłączona')
     from backend.fractional_quote import quote_quantities, QuoteUnavailable
-    with db() as con:
+    with purchase_record_read_db(user, authorization, ('klient',)) as con:
         products = {}
         for item in payload.items:
             row = con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock '
@@ -694,6 +704,7 @@ class SavedCartCheckoutIn(BaseModel):
     delivery_city: CleanText | None = Field(default=None, min_length=2, max_length=120)
     delivery_street: CleanText | None = Field(default=None, min_length=3, max_length=180)
     delivery_postal_code: CleanText | None = Field(default=None, pattern=r'^\d{2}-\d{3}$')
+    address_delivery: DeliveryPreferenceIn | None = None
 
 def migrate_shipment_links():
     """Local-only, idempotent shipment grouping schema."""
@@ -869,7 +880,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
     from backend.order_amount_limits import checked_order_total
     if idempotency_key is not None and not re.fullmatch(r'[A-Za-z0-9_-]{12,100}', idempotency_key):
         raise HTTPException(422, 'Nieprawidłowy klucz Idempotency-Key (12–100 znaków)')
-    payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False).encode('utf-8')).hexdigest()
+    payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False, exclude={'address_delivery'} if payload.address_delivery is None else set()).encode('utf-8')).hexdigest()
     with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
@@ -912,6 +923,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         else:
             if payload.pickup_point_id is not None or not all((payload.delivery_city,payload.delivery_street,payload.delivery_postal_code)):
                 raise HTTPException(422, 'Podaj pełny adres dostawy')
+        prepared_delivery = address_delivery.prepare(con, payload, farmer_id, postgres=bool(DATABASE_URL))
         # One delivery charge per seller and checkout, assigned to the first
         # order for compatibility with the existing per-order schema.
         # Use the maximum configured product delivery fee (same as /cart/quote).
@@ -959,6 +971,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                  payload.delivery_city.strip() if payload.fulfillment == 'dostawa' else None,
                  payload.delivery_street.strip() if payload.fulfillment == 'dostawa' else None,
                  payload.delivery_postal_code if payload.fulfillment == 'dostawa' else None))
+            address_delivery.capture(con, order_id, user['id'], prepared_delivery, CHECKOUT_VAULT)
             updated = con.execute('UPDATE products SET stock=stock-? WHERE id=? AND stock>=?',
                                   (r['quantity'],r['product_id'],r['quantity']))
             if updated.rowcount != 1:
@@ -1011,7 +1024,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
         raise HTTPException(422, 'Nieprawidłowy klucz Idempotency-Key (12–100 znaków)')
     # Namespace avoids collisions with keys used for multi-product checkout.
     request_key = 'direct:' + idempotency_key if idempotency_key else None
-    payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False).encode('utf-8')).hexdigest()
+    payload_hash = hashlib.sha256(payload.model_dump_json(exclude_none=False, exclude={'address_delivery'} if payload.address_delivery is None else set()).encode('utf-8')).hexdigest()
     with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
@@ -1037,6 +1050,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
         else:
             if payload.pickup_point_id is not None or not all([payload.delivery_city, payload.delivery_street, payload.delivery_postal_code]):
                 raise HTTPException(422,'Dostawa wymaga pełnego adresu, bez punktu odbioru')
+        prepared_delivery = address_delivery.prepare(con, payload, p['farmer_id'], postgres=bool(DATABASE_URL))
         from backend.order_amount_limits import checked_order_total
         delivery = p['delivery_grosze'] if payload.fulfillment=='dostawa' else 0
         if payload.fulfillment == 'dostawa' and delivery <= 0:
@@ -1060,6 +1074,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
         from backend.purchase_records import capture_purchase
         capture_purchase(con,cur.lastrowid)
         record_order_event(con,cur.lastrowid,user['id'],'order_created',None,'oczekuje_na_platnosc_testowa')
+        address_delivery.capture(con, cur.lastrowid, user['id'], prepared_delivery, CHECKOUT_VAULT)
         # PIN is returned to buyer only at creation in test mode; in production use separate secure delivery flow.
         response = {'id':cur.lastrowid,'pickup_code':code,'pin_test_only':pin,'total_grosze':total,'reservation_expires_at':reservation_expires_at,'status':'oczekuje_na_platnosc_testowa'}
         request_key = request_key or ('internal_direct_' + secrets.token_hex(16))
@@ -1188,6 +1203,8 @@ def confirm_order(order_id:int,payload:ConfirmIn,user=Depends(current_user), aut
         return {'confirmed':True}
 
 def require_unexpired_unpaid_reservation(con, order_id):
+    if address_delivery.enabled():
+        address_delivery.require_accepted(con, order_id, postgres=bool(DATABASE_URL))
     if payment_deadline_passed(con, order_id, now=datetime.now(timezone.utc)):
         payment = get_payment(con, order_id)
         if payment is None or payment.state in ('awaiting_payment', 'failed_test'):
@@ -1552,6 +1569,8 @@ def record_order_event(con, order_id, actor_id, event_type, old_status, new_stat
     if not order:
         raise ValueError('Nie istnieje zamówienie')
     messages = {
+        'address_delivery_accepted': ('Dostawa zaakceptowana', 'Sprzedawca zaakceptował termin dostawy na adres. Sprawdź termin rezerwacji przed płatnością.'),
+        'address_delivery_declined': ('Dostawa odrzucona', 'Sprzedawca odrzucił dostawę na adres. Rezerwacja towaru została zwolniona.'),
         'order_created': ('Nowe zamówienie', 'Utworzono zamówienie testowe, bez pobrania płatności.'),
         'pickup_ready': ('Gotowe do odbioru', 'Możesz sprawdzić produkty przed podaniem PIN-u.'),
         'courier_assigned': ('Przydzielono dostawcę', 'Do zamówienia testowego przydzielono dostawcę.'),
@@ -2439,6 +2458,8 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
             authorized = user['id'] == order['farmer_id']
         if not authorized:
             raise HTTPException(403, 'Brak uprawnień')
+        if address_delivery.enabled() and payload.event_type.startswith('payment_'):
+            address_delivery.require_accepted(con, order_id, postgres=bool(DATABASE_URL))
         if payload.event_type.startswith('payment_') and order['status'] != 'oczekuje_na_platnosc_testowa':
             raise HTTPException(409, 'Nie można rejestrować płatności dla zamkniętego zamówienia')
         if payload.event_type.startswith('payment_') and payment_deadline_passed(con, order_id, now=datetime.now(timezone.utc)):
@@ -3157,3 +3178,9 @@ def reply_support_case(case_id: str,body: SupportReplyIn,user=Depends(current_us
         with order_write_db(user,authorization,('klient','rolnik','admin')) as con:
             return support.reply(con,case_id,user,body.message,body.request_id.hex,body.expected_revision,body.status,postgres=bool(DATABASE_URL))
     except support.CaseError as exc:raise HTTPException(exc.status,str(exc)) from exc
+
+# Address-delivery scheduling is opt-in and requires the reviewed migration on PostgreSQL.
+if address_delivery.enabled() and not DATABASE_URL:
+    with db() as _delivery_con:
+        _delivery_con.executescript(address_delivery.SCHEMA_SQLITE)
+address_delivery.register_routes(app, db, order_write_db, current_user, record_order_event, postgres=bool(DATABASE_URL))

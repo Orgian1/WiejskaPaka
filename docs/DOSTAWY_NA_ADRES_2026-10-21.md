@@ -63,4 +63,4 @@ testu konfiguracji i danych na VPS. Funkcja nie jest gotowością produkcyjną.
 
 Pełna regresja lokalna commitu 4a59fad (na GitHub bb9133b): 4238 passed, 0 failed, 74 skipped; 336/336 modułów. Wszystkie części mają zgodny fingerprint i sources_unchanged=true. Raporty w docs/audits/address_delivery_2026-10-21/. 
 
-CI GitHub Actions 39612932781 dla bb9133b: PostgreSQL 16 i 17 — po 50/50 testów; Windows recovery — 80/80; Chromium — 36/36 i kontrola viewportów zaliczone. Raporty JSON zapisano w native_bb9133b/. Pełna regresja Windows nadal trwa w chwili zapisu; nie jest uznawana za zaliczoną.
+CI GitHub Actions 39612932781 dla bb9133b: PostgreSQL 16 i 17 — po 50/50 testów; Windows recovery — 80/80; Chromium — 36/36 i kontrola viewportów zaliczone. Raporty JSON zapisano w native_bb9133b/. Pełna regresja Windows zakończona: 4154 passed, 0 failed, 158 skipped (4312 łącznie); bez błędnych, niekompletnych ani przekroczonych czasowo modułów. Wszystkie pięć zadań CI zakończone sukcesem. Źródła pozostały niezmienione; fingerprinty dowodów zgodne z pozostałymi zadaniami CI. Pominięte testy nie są liczone jako zaliczone. Raport windows-summary.json zawiera szczegóły.

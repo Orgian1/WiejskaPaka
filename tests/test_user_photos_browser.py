@@ -16,6 +16,7 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
         headers={'Authorization':'Bearer '+client.post('/auth/login',json=account).json()['access_token']}
         assert client.post('/products',headers=headers,json={'name':'Pomidor ze zdjęciem','stock':5,'price_grosze':200,'delivery_grosze':500}).status_code==201
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
+        page.set_default_timeout(15_000)
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
             page.goto(str(client.base_url));page.fill('#email',account['email']);page.fill('#password',account['password'])

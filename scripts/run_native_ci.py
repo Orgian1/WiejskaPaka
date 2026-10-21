@@ -20,7 +20,7 @@ POSTGRES_TESTS = ('test_postgres_environment.py', 'test_postgres_transaction_int
                   'test_postgres_full_api_optin.py')
 RECOVERY_TESTS = ('test_sample_demo.py', 'test_sample_demo_launcher.py', 'test_seller_payout_ui.py', 'test_seller_settlement_ui.py', 'test_admin_seller_review.py', 'test_encrypted_sqlite_snapshot.py', 'test_sqlite_snapshot.py', 'test_sqlite_recovery_rehearsal.py',
                   'test_password_reset_http.py')
-BROWSER_TESTS = ('test_user_photos_browser.py', 'test_address_delivery_browser.py', 'test_preview_credentials.py', 'test_catalog_page_browser.py', 'test_support_cases_browser.py', 'test_sample_demo_browser.py', 'test_admin_seller_review_browser.py', 'test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
+BROWSER_TESTS = ('test_address_delivery_browser.py', 'test_preview_credentials.py', 'test_catalog_page_browser.py', 'test_support_cases_browser.py', 'test_sample_demo_browser.py', 'test_admin_seller_review_browser.py', 'test_seller_compliance_browser.py', 'test_mobile_offline.py', 'test_roles_offline.py', 'test_password_reset_browser.py')
 SYSTEM_ENV = ('PATH', 'SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT',
               'USERPROFILE', 'LOCALAPPDATA', 'APPDATA', 'PROGRAMDATA', 'PROGRAMFILES',
               'PROGRAMFILES(X86)', 'TEMP', 'TMP', 'TMPDIR', 'LANG', 'LC_ALL',
@@ -123,7 +123,9 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     *[str(root/'tests'/name) for name in POSTGRES_TESTS], '--junitxml', str(xml)], 'junit')]
         elif gate == 'browser':
             env['WIEJSKAPAKA_EXTENDED_BROWSER'] = '1'
-            tasks = [('offline_browser', [sys.executable, '-m', 'pytest', '-q',
+            tasks = [('photo_browser', [sys.executable, '-m', 'pytest', '-v',
+                    str(root/'tests/test_user_photos_browser.py'), '--junitxml', str(xml)], 'junit'),
+                     ('offline_browser', [sys.executable, '-m', 'pytest', '-v',
                     *[str(root/'tests'/name) for name in BROWSER_TESTS], '--junitxml', str(xml)], 'junit'),
                      ('http_viewports', [sys.executable, '-m', 'scripts.check_mobile_browser'], 'exit')]
         else:
@@ -132,7 +134,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             task = {'name': name, 'success': False}
             try:
                 process = runner(command, cwd=root, env=env, capture_output=True,
-                                 text=True, encoding='utf-8', timeout=1500 if kind=='full' else 600)
+                                 text=True, encoding='utf-8', timeout=1500 if kind=='full' else 180 if name=='photo_browser' else 600)
                 task['returncode'] = process.returncode
                 if kind == 'full':
                     data = json.loads(raw.read_text(encoding='utf-8'))
@@ -161,12 +163,21 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 44 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
+                    minimum = 2 if name == 'photo_browser' else 44 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0
-            except subprocess.TimeoutExpired:
+            except subprocess.TimeoutExpired as exc:
                 task['error'] = 'TIMEOUT'
+                output = exc.output or ''
+                if isinstance(output, bytes):
+                    output = output.decode('utf-8', errors='replace')
+                candidates = re.findall(r'(test_[A-Za-z0-9_]+\.py)::(test_[A-Za-z0-9_]+)', output)
+                for filename, function in reversed(candidates):
+                    path = root/'tests'/filename
+                    if path.is_file() and re.search(r'(?m)^def '+re.escape(function)+r'\(', path.read_text(encoding='utf-8')):
+                        task['last_test'] = {'file': filename, 'function': function}
+                        break
             except OSError:
                 task['error'] = 'PROCESS_OR_RESULT_UNAVAILABLE'
             except (ValueError, KeyError, ET.ParseError):

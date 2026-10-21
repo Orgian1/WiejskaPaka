@@ -1,0 +1,51 @@
+name: Photo browser diagnostic
+on:
+  push:
+    branches: ['diagnostics/user-photo-browser-20261021']
+permissions:
+  contents: read
+env:
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+  WP_ENV: test
+  DATABASE_URL: ''
+  NEON_DATABASE_URL: ''
+jobs:
+  photo_browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-lock.txt
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Expose the installed test browser to existing gates
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              binary = Path(p.chromium.executable_path)
+          assert binary.is_file()
+          folder = Path(os.environ["RUNNER_TEMP"]) / "test-browser-bin"
+          folder.mkdir()
+          (folder / "chromium").symlink_to(binary)
+          with open(os.environ["GITHUB_PATH"], "a", encoding="utf-8") as output:
+              output.write(str(folder) + "\n")
+          PY
+      - name: Photo file picker over real HTTP
+        run: python -m pytest -vv --tb=short -o faulthandler_timeout=60 -o faulthandler_exit_on_timeout=true tests/test_user_photos_browser.py --junitxml "${{ runner.temp }}/photo-browser.xml"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: photo-browser-diagnostic
+          path: ${{ runner.temp }}/photo-browser.xml
+          retention-days: 7

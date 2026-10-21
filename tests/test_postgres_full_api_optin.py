@@ -72,7 +72,12 @@ def pg_queued_reset_api():
     yield from _postgres_api(queued_reset=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False):
+@pytest.fixture(scope='module')
+def pg_units_api():
+    yield from _postgres_api(units=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -123,6 +128,8 @@ def _postgres_api(*, reset=False, queued_reset=False):
                 from backend.checkout_vault import create_ring
                 keyfile=Path(folder)/'api.checkout-key';create_ring(keyfile)
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
+                if units:
+                    env['WP_ENABLE_PRODUCT_UNITS'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
                 reset_outbox = Path(folder)/'reset-outbox' if reset else None
                 if reset:
@@ -201,6 +208,51 @@ def product(client, farmer, stock=10):
 def delivery(pid):
     return {'product_id': pid, 'quantity': 1, 'fulfillment': 'dostawa',
             'delivery_city': 'Legnica', 'delivery_street': 'Testowa 1', 'delivery_postal_code': '59-220'}
+
+
+@pytest.mark.parametrize('unit,content', [
+    ('szt', {}), ('kg', {}),
+    ('butelka', {'content_amount': '0,75', 'content_unit': 'l'}),
+])
+def test_native_sale_units_checkout_restart_and_insert_only_records(pg_units_api, unit, content):
+    client, parameters = pg_units_api
+    farmer, _ = register(client, 'rolnik')
+    buyer, _ = register(client, 'klient')
+    created = client.post('/products', headers=farmer, json={
+        'name': 'Jednostki PostgreSQL', 'price_grosze': 201,
+        'delivery_grosze': 501, 'stock': 10, 'sale_unit': unit, **content})
+    assert created.status_code == 201, created.text
+    pid = created.json()['id']
+    ordered = client.post('/orders', headers=buyer, json={**delivery(pid), 'quantity': 2})
+    assert ordered.status_code == 201, ordered.text
+    oid = ordered.json()['id']
+    url = f'/orders/{oid}/purchase-record'
+    response = client.get(url, headers=buyer)
+    assert response.status_code == 200, response.text
+    original = response.json()['original']
+    assert original['product']['sale_unit'] == unit
+    assert original['product']['package_content'] == (
+        {'amount_atoms': 750, 'unit': 'l'} if content else None)
+    assert original['quantity'] == 2 and original['subtotal_grosze'] == 402
+    assert original['delivery_grosze'] == 501 and original['total_grosze'] == 903
+    import psycopg
+    for table, key, identifier in [('product_sale_units', 'product_id', pid),
+                                    ('order_sale_units', 'order_id', oid)]:
+        from psycopg import sql
+        for operation in ('UPDATE', 'DELETE'):
+            with psycopg.connect(**parameters) as con:
+                with pytest.raises(psycopg.errors.RaiseException):
+                    with con.transaction():
+                        statement = (sql.SQL('UPDATE {} SET unit=unit WHERE {}=%s')
+                                     if operation == 'UPDATE' else sql.SQL('DELETE FROM {} WHERE {}=%s'))
+                        con.execute(statement.format(sql.Identifier(table), sql.Identifier(key)), (identifier,))
+    pg_units_api.restart()
+    assert client.get(url, headers=buyer).json()['original'] == original
+    assert client.get(f'/products/{pid}').json()['stock'] == 8
+    assert client.post(f'/orders/{oid}/cancel-test', headers=buyer).status_code == 200
+    assert client.get(f'/products/{pid}').json()['stock'] == 10
+    assert client.post(f'/orders/{oid}/cancel-test', headers=buyer).status_code == 409
+    assert client.get(f'/products/{pid}').json()['stock'] == 10
 
 
 def test_native_application_role_has_no_administrative_privileges(pg_api):

@@ -1,0 +1,28 @@
+{
+  "gate": "windows-recovery",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "969d309df93a8d633f497069ab8e2e1e1405a95fff76656197bcc0fee75e4855",
+    "tests_sha256": "8747c2294dcd023880559b911eba73b5c78d99519edea00a66484c309d48acc9",
+    "test_sources_sha256": "65ae19f984f285151ca9f06e76a50ddd9f39578386c736351d81da6440776bdb",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "d03e03cb249b50d52d31012a25f1fb6c06d47bd70af76698811ae230fab97b51"
+  },
+  "tasks": [
+    {
+      "name": "windows_recovery",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 80,
+        "passed": 80,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    }
+  ]
+}

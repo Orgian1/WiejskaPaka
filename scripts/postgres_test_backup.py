@@ -1,4 +1,4 @@
-"""Encrypted local PostgreSQL 16 test backup and isolated restore rehearsal.
+"""Encrypted local PostgreSQL 16/17 test backup and isolated restore rehearsal.
 
 Never restores over an existing database. The rehearsal database is always
 randomly created and removed; this is not a production recovery command.
@@ -39,6 +39,11 @@ MAX_RING = 16384
 MAX_ARCHIVE = HEADER_SIZE + 16 + 20 + MAX_DUMP + MAX_RING
 
 
+def require_supported_server(version_number):
+    if type(version_number) is not int or version_number // 10000 not in (16, 17):
+        raise ValueError('PostgreSQL server 16 or 17 required')
+
+
 def local_parameters(dsn):
     """Reject remote connections and all routing overrides, including PG env."""
     require_disposable_postgres(dsn, environ={})
@@ -68,18 +73,18 @@ def client_environment(parameters, *, readonly=False):
     return env
 
 
-def require_client16(program):
+def require_supported_client(program):
     result = subprocess.run([program, '--version'], stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL, timeout=5, check=True)
-    if not re.fullmatch(rb'pg_(?:dump|restore) \(PostgreSQL\) 16\.[^\r\n]+\r?\n?', result.stdout):
-        raise ValueError('PostgreSQL client 16 required')
+    if not re.fullmatch(rb'pg_(?:dump|restore) \(PostgreSQL\) (?:16|17)\.[^\r\n]+\r?\n?', result.stdout):
+        raise ValueError('PostgreSQL client 16 or 17 required')
 
 
 def bounded_dump(parameters, *, timeout=120, maximum=MAX_DUMP):
     """Bound memory/time; no plaintext dump file and no printed driver errors."""
     if os.name != 'posix':
         raise ValueError('Native backup requires POSIX')
-    require_client16('pg_dump')
+    require_supported_client('pg_dump')
     process = subprocess.Popen(['pg_dump', '--format=custom', '--no-owner', '--no-acl', '--no-password'],
                                env=client_environment(parameters, readonly=True),
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
@@ -122,9 +127,11 @@ def backup(dsn, checkout_key, backup_key, destination):
     def connect(url, **kwargs):
         connection = psycopg.connect(**{**parameters, **kwargs, 'options':
             '-c default_transaction_read_only=on -c statement_timeout=5000 -c lock_timeout=1000'})
-        if connection.info.server_version // 10000 != 16:
+        try:
+            require_supported_server(connection.info.server_version)
+        except ValueError:
             connection.close()
-            raise ValueError('PostgreSQL server 16 required')
+            raise
         return connection
     verify_test_database_connection(dsn, parameters['dbname'], connect=connect, require_schema=True)
     active, keys = _separate_key(destination, backup_key)
@@ -176,7 +183,7 @@ def authenticated_contents(archive, backup_key):
 
 
 def restore_dump(dump, parameters):
-    require_client16('pg_restore')
+    require_supported_client('pg_restore')
     result = subprocess.run(['pg_restore', '--exit-on-error', '--single-transaction',
                              '--no-owner', '--no-acl', '--no-password', '--dbname', parameters['dbname']],
                             input=dump, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -221,8 +228,7 @@ def rehearse(archive, backup_key, admin_dsn):
     created = False
     with psycopg.connect(**parameters, autocommit=True, connect_timeout=5) as admin:
         try:
-            if int(admin.execute('SHOW server_version_num').fetchone()[0]) // 10000 != 16:
-                raise ValueError('PostgreSQL server 16 required')
+            require_supported_server(int(admin.execute('SHOW server_version_num').fetchone()[0]))
             admin.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(target)))
             created = True
             restored = {**parameters, 'dbname': target}

@@ -77,9 +77,13 @@ jobs:
   postgres:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres-version: [16, 17]
     services:
       postgres:
-        image: postgres:16
+        image: postgres:${{ matrix.postgres-version }}
         env:
           POSTGRES_DB: wp_test_ci
           POSTGRES_USER: wp_ci
@@ -102,9 +106,17 @@ jobs:
       - run: python -m pip install -r requirements-lock.txt
       - name: Install matching PostgreSQL backup clients
         run: |
+          # Ubuntu 24.04 ships client 16; 17 comes from the official PGDG repo.
+          if [ "${{ matrix.postgres-version }}" = "17" ]; then
+            sudo install -d /usr/share/postgresql-common/pgdg
+            sudo curl --fail --silent --show-error --location \
+              --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+              https://www.postgresql.org/media/keys/ACCC4CF8.asc
+            echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
+          fi
           sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client-16
-          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+          sudo apt-get install -y postgresql-client-${{ matrix.postgres-version }}
+          echo "/usr/lib/postgresql/${{ matrix.postgres-version }}/bin" >> "$GITHUB_PATH"
       - name: Native PostgreSQL, restricted application role and real HTTP
         env:
           WP_TEST_POSTGRES_DSN: postgresql://wp_ci:disposable-ci-only@127.0.0.1:5432/wp_test_ci
@@ -112,7 +124,7 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
-          name: postgres-summary
+          name: postgres-${{ matrix.postgres-version }}-summary
           path: ${{ runner.temp }}/ci/postgres.json
           retention-days: 7
 

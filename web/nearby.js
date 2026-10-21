@@ -23,6 +23,7 @@ function invalidateNearby(){
 function resetNearbySearch(){
   if(!el('nearby-form'))return;
   invalidateNearby();el('nearby-form').reset();
+  if(typeof clearAddressSelection==='function')clearAddressSelection();
   // reset() respects the HTML defaults; sensitive coordinates have no defaults.
   el('nearby-lat').value='';el('nearby-lon').value='';
 }

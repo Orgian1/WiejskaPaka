@@ -96,6 +96,8 @@ ph = PasswordHasher()
 DUMMY_PASSWORD_HASH = '$argon2id$v=19$m=65536,t=3,p=4$FuCEYNBvEI5vPMxnciLIcg$/sXtzHuVlnbMmS0yL5rz+AXOzTNf8GTCQV+98Q6U2zo'
 CleanText = Annotated[str, StringConstraints(strip_whitespace=True)]
 app = FastAPI(title='WiejskaPaka API', version='0.3.0', description='Środowisko testowe. Brak prawdziwych płatności.', lifespan=application_lifespan)
+from backend.address_search import router as address_search_router
+app.include_router(address_search_router)
 SECURITY_RESPONSE_HEADERS = {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',

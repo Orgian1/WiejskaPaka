@@ -235,8 +235,8 @@ async function loadDashboard() {
     if(!products.length)inventory.append(node('p','Nie dodano jeszcze produktów. Użyj formularza Dodaj produkt.'));
     for(const product of products){
       const stock=Number(product.stock);
-      const availability=Number.isSafeInteger(stock)&&stock>=0?`${stock} szt.`:'Stan niedostępny';
-      inventory.append(dashboardCard(product.name,[`Dostępne: ${availability}`,`Cena: ${money(product.price_grosze)}`,`Dostawa: ${money(product.delivery_grosze)}`]));
+      const availability=Number.isSafeInteger(stock)&&stock>=0?`${stock} ${saleUnitLabel(product)}`:'Stan niedostępny';
+      inventory.append(dashboardCard(product.name,[`Dostępne: ${availability}`,`Cena: ${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)}`,`Dostawa: ${money(product.delivery_grosze)}`]));
     }
     box.append(inventory);
     for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});

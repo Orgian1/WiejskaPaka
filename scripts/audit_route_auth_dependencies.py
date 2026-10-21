@@ -22,6 +22,9 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    # Public unit vocabulary/config only; no accounts, products or credentials.
+    if method == 'GET' and path == '/product-units':
+        return True
     if (method, path) in RECOVERY_ROUTES:
         return True
     if method == 'POST' and path == '/marketplace/nearby':

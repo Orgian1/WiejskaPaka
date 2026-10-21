@@ -55,6 +55,9 @@ def capture_purchase(con,order_id):
     data.update(order_id=order_id,ordered_at=row['created_at'],captured_at=datetime.now(timezone.utc).isoformat())
     con.execute('INSERT INTO order_purchase_records('+','.join(COLUMNS)+') VALUES('+','.join('?' for _ in COLUMNS)+')',
                 tuple(data[key] for key in COLUMNS))
+    from backend import product_unit_storage
+    if product_unit_storage.enabled():
+        product_unit_storage.capture_order_unit(con, order_id)
 
 
 def record_issues(order,record):
@@ -92,8 +95,16 @@ def order_record(con,order):
             raise ValueError('Zapis miejsca odbioru wymaga weryfikacji zgodności')
     from backend.payment_store import get_payment
     payment=get_payment(con,order['id'])
+    original = original_terms(row) if row is not None else None
+    from backend import product_unit_storage
+    if original is not None and product_unit_storage.enabled():
+        unit_row = con.execute('SELECT unit,content_json FROM order_sale_units WHERE order_id=?', (order['id'],)).fetchone()
+        # Legacy records have no snapshot; do not consult the current listing.
+        import json
+        original['product'].update(sale_unit=unit_row['unit'] if unit_row else 'szt',
+            package_content=json.loads(unit_row['content_json']) if unit_row and unit_row['content_json'] else None)
     return {'order_id':order['id'],'pickup_code':order['pickup_code'],'mode':'test',
-        'original_available':row is not None,'original':original_terms(row) if row is not None else None,
+        'original_available':row is not None,'original':original,
         'current':{'status':order['status'],'confirmed_at':order['confirmed_at'],
                    'payment_state_test':payment.state if payment else 'not_initialized_test',
                    'refund_grosze':payment.refund_grosze if payment else 0},

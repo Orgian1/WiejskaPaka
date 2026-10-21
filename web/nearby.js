@@ -46,16 +46,16 @@ async function searchNearby(offset=0){
     for(const offer of data.items){
       const product=offer.product,point=offer.pickup_point;
       const card=node('article','', 'card');
-      card.append(node('h3',product.name),node('p',`${money(product.price_grosze)} / szt. • Dostępne: ${product.stock}`),
+      card.append(node('h3',product.name),node('p',`${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)} • Dostępne: ${product.stock}`),
         node('p',`${offer.distance_m} m w linii prostej • przedział do ${offer.distance_bucket_m} m`),
         node('p',`${point.name} — ${point.city}, ${point.street}; ${point.opening_hours}`));
       if(role==='klient'){
-        const qty=node('input');qty.type='number';qty.min='1';qty.max=String(Math.min(1000,product.stock));qty.value='1';qty.inputMode='numeric';qty.setAttribute('aria-label','Liczba sztuk produktu '+product.name);
+        const qty=node('input');qty.type='number';qty.min='1';qty.max=String(Math.min(1000,product.stock));qty.value='1';qty.inputMode='numeric';qty.setAttribute('aria-label','Ilość w jednostce '+saleUnitLabel(product)+' produktu '+product.name);
         const add=node('button','Dodaj do koszyka');add.type='button';
         add.onclick=()=>act(()=>singleWrite('nearby-cart:'+product.id,add,async()=>{
           if(serial!==nearbySerial||epoch!==sessionEpoch||role!=='klient')return;
           requireResolvedCheckout();const quantity=Number(qty.value);
-          if(!Number.isSafeInteger(quantity)||quantity<1||quantity>Math.min(1000,product.stock))throw Error('Podaj poprawną liczbę sztuk.');
+          if(!Number.isSafeInteger(quantity)||quantity<1||quantity>Math.min(1000,product.stock))throw Error('Podaj poprawną liczbę pełnych jednostek.');
           await api('/cart/items','PUT',{product_id:product.id,quantity});
           if(serial!==nearbySerial||epoch!==sessionEpoch)return;
           msg('Produkt zapisany w koszyku. Wybierz punkt odbioru przy zamówieniu.');await loadCart();

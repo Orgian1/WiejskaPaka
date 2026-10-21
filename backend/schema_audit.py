@@ -16,7 +16,9 @@ def defined_tables(paths):
 def audit_schema(root=ROOT):
     root = Path(root)
     backend_files = list((root / 'backend').glob('*.py'))
-    pg_files = [root / 'database' / 'postgres_schema.sql', *sorted((root / 'database').glob('upgrade_*.sql'))]
+    pg_files = [root / 'database' / 'postgres_schema.sql',
+                *sorted((root / 'database').glob('upgrade_*.sql')),
+                *sorted((root / 'database').glob('optional_*.sql'))]
     local = defined_tables(backend_files)
     postgres = defined_tables(pg_files)
     return {'sqlite_tables': sorted(local), 'postgres_tables': sorted(postgres),

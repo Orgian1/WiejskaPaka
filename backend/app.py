@@ -29,6 +29,7 @@ assert_safe_environment()
 DB_PATH = os.environ.get('WIEJSKAPAKA_DB', str(Path(__file__).with_name('wiejskapaka.sqlite3')))
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
+from backend import product_unit_storage
 
 
 def run_reservation_expiry(*, now=None):
@@ -43,6 +44,18 @@ def run_reservation_expiry(*, now=None):
 async def application_lifespan(application):
     import asyncio
     import logging
+    if product_unit_storage.enabled():
+        with db() as con:
+            con.execute('SELECT product_id,unit,content_json FROM product_sale_units LIMIT 0')
+            con.execute('SELECT order_id,unit,content_json FROM order_sale_units LIMIT 0')
+    else:
+        with db() as con:
+            if DATABASE_URL:
+                present = con.execute("SELECT to_regclass('public.product_sale_units') AS name").fetchone()['name'] is not None
+            else:
+                present = con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='product_sale_units'").fetchone() is not None
+            if present and con.execute("SELECT product_id FROM product_sale_units WHERE unit<>'szt' OR content_json IS NOT NULL LIMIT 1").fetchone():
+                raise RuntimeError('Nie można wyłączyć jednostek przy istniejących produktach z jednostkami')
     # A missing PostgreSQL migration must block startup, not silently disable holds.
     with db() as con:
         con.execute('SELECT order_id,expires_at,released_at FROM inventory_reservations LIMIT 0')
@@ -233,6 +246,15 @@ class ProductIn(BaseModel):
     price_grosze: int = Field(strict=True, ge=1, le=100_000_000)
     delivery_grosze: int = Field(strict=True, ge=0, le=10_000_000)
     stock: int = Field(strict=True, ge=0, le=1_000_000)
+    sale_unit: Literal['szt','kg','g','l','ml','opak','peczek','sloik','butelka','worek','skrzynka','tacka'] = 'szt'
+    content_amount: str | None = Field(default=None, max_length=32)
+    content_unit: Literal['szt','kg','g','l','ml'] | None = None
+
+    @model_validator(mode='after')
+    def validate_sale_unit(self):
+        from backend.product_units import package_content
+        package_content(self.sale_unit, self.content_amount, self.content_unit)
+        return self
 class OrderIn(BaseModel):
     pickup_point_id: int | None = Field(strict=True, default=None, ge=1)
     delivery_city: CleanText | None = Field(default=None, min_length=2, max_length=120)
@@ -398,16 +420,28 @@ def logout(authorization: str | None = Header(default=None), user=Depends(curren
 @app.post('/products',status_code=201)
 def create_product(payload: ProductIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
+    if not product_unit_storage.enabled() and (payload.sale_unit != 'szt' or payload.content_amount is not None or payload.content_unit is not None):
+        raise HTTPException(503, 'Jednostki sprzedaży nie zostały jeszcze włączone')
     with order_write_db(user, authorization, ('rolnik',)) as con:
         cur = con.execute('INSERT INTO products(farmer_id,name,price_grosze,delivery_grosze,stock) VALUES(?,?,?,?,?)',(user['id'],payload.name,payload.price_grosze,payload.delivery_grosze,payload.stock))
         from backend.local_marketplace import index_product
         index_product(con, cur.lastrowid, payload.name)
+        if product_unit_storage.enabled():
+            product_unit_storage.insert_product_unit(con, cur.lastrowid, payload.sale_unit, payload.content_amount, payload.content_unit)
         return {'id':cur.lastrowid}
+
+
+@app.get('/product-units')
+def product_units_configuration():
+    from backend.product_units import UNITS
+    return {'enabled': product_unit_storage.enabled(), 'fractional_quantities': False,
+            'units': [{'code': code, 'label': unit.label, 'packaged': unit.packaged}
+                      for code, unit in UNITS.items()]}
 
 @app.get('/products')
 def products():
     with db() as con:
-        return [dict(r) for r in con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 ORDER BY id DESC')]
+        return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 ORDER BY id DESC')]
 
 @app.get('/catalog/search')
 def catalog_search(q: str = '', min_price_grosze: int | None = None,
@@ -441,13 +475,14 @@ def catalog_search(q: str = '', min_price_grosze: int | None = None,
         total = con.execute('SELECT COUNT(*) AS n FROM ' + source + ' WHERE ' + where, tuple(params)).fetchone()['n']
         rows = con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM ' + source + ' WHERE '
                            + where + ' ORDER BY id DESC LIMIT ? OFFSET ?', tuple(params + [limit, offset])).fetchall()
-    return {'items': [dict(row) for row in rows], 'total': total, 'limit': limit, 'offset': offset}
+        items = [product_unit_storage.enrich_product(con,row) for row in rows]
+    return {'items': items, 'total': total, 'limit': limit, 'offset': offset}
 
 @app.get('/products/mine')
 def my_products(user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        return [dict(r) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
+        return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
 
 @app.get('/products/{product_id}')
 def product_details(product_id: int):
@@ -459,6 +494,8 @@ def product_details(product_id: int):
             'SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock '
             'FROM products WHERE id=? AND stock>0', (product_id,)
         ).fetchone()
+        if row is not None:
+            row = product_unit_storage.enrich_product(con,row)
     if row is None:
         raise HTTPException(404, 'Produkt niedostępny')
     return dict(row)
@@ -496,7 +533,8 @@ def saved_cart_get(user=Depends(current_user)):
             p.delivery_grosze,p.stock,p.farmer_id FROM saved_cart_items c
             LEFT JOIN products p ON p.id=c.product_id WHERE c.buyer_id=?
             ORDER BY c.product_id""", (user['id'],)).fetchall()
-    return {'items': [dict(r) for r in rows], 'payment_mode': 'test',
+        items = [product_unit_storage.enrich_product(con,r) for r in rows]
+    return {'items': items, 'payment_mode': 'test',
             'notice': 'Koszyk nie rezerwuje towaru ani nie gwarantuje ceny.'}
 
 @app.put('/cart/items')
@@ -562,7 +600,7 @@ def cart_quote(payload: CartQuoteIn, user=Depends(current_user)):
                               'FROM products WHERE id=?', (product_id,)).fetchone()
             if row is None:
                 raise HTTPException(409, 'Produkt niedostępny')
-            rows[product_id] = dict(row)
+            rows[product_id] = product_unit_storage.enrich_product(con,row)
     from collections import Counter
     per_farmer = Counter(rows[item.product_id]['farmer_id'] for item in payload.items)
     if any(count > 50 for count in per_farmer.values()):
@@ -586,6 +624,8 @@ def cart_quote(payload: CartQuoteIn, user=Depends(current_user)):
         result.append({'product_id': item.product_id, 'name': product['name'],
                        'quantity': item.quantity, 'unit_price_grosze': product['price_grosze'],
                        'line_total_grosze': line, 'farmer_id': farmer_id})
+        if product_unit_storage.enabled():
+            result[-1].update(sale_unit=product['sale_unit'], package_content=product['package_content'])
     from backend.shipping_policy import shipment_fees
     try:
         shipment_costs = shipment_fees(
@@ -1148,6 +1188,7 @@ def auth_me(user=Depends(current_user)):
     return user
 
 class ProductUpdateIn(BaseModel):
+    model_config = {'extra': 'forbid'}
     name: CleanText | None = Field(default=None, min_length=2, max_length=120)
     price_grosze: int | None = Field(strict=True, default=None, ge=1, le=100_000_000)
     delivery_grosze: int | None = Field(strict=True, default=None, ge=0, le=10_000_000)
@@ -2754,8 +2795,16 @@ class NearbySearchIn(BaseModel):
 def search_nearby(payload:NearbySearchIn):
     from backend.local_marketplace import nearby_offers
     with db() as con:
-        return nearby_offers(con,**payload.model_dump())
+        result = nearby_offers(con,**payload.model_dump())
+        if product_unit_storage.enabled():
+            for offer in result['items']:
+                offer['product'] = product_unit_storage.enrich_product(con, offer['product'])
+        return result
 
+
+if not DATABASE_URL and product_unit_storage.enabled():
+    with db() as _unit_con:
+        _unit_con.executescript(product_unit_storage.SCHEMA_SQLITE)
 
 if not DATABASE_URL:
     from backend.local_marketplace import SCHEMA_SQLITE as LOCAL_MARKET_SCHEMA, refresh_product_index

@@ -61,3 +61,10 @@ PostgreSQL z restartem i dwa testy rzeczywistego file pickera w Chromium
 (320/1280 px); ich wynik należy odczytać z nowego CI, nie z poprzedniej serii.
 
 Dokumentacja Pillow: https://pillow.readthedocs.io/en/stable/reference/ImageOps.html
+
+Pełna regresja lokalna 5d3652a / GitHub 3f4fbd3: 4253 passed, 0 failed, 81 skipped; 339/339 modułów; sources_unchanged=true we wszystkich częściach. Raporty w docs/audits/user_photos_2026-10-21/. Wyniki natywnego CI wymagają osobnego potwierdzenia.
+
+Natywny CI 39648310801 dla 3f4fbd3: PostgreSQL 16 i 17 po 51/51, Windows
+recovery 80/80. Raporty w native_3f4fbd3/. Poprawka oczekiwania w teście
+Chromium toleruje chwilowo pusty edytor podczas odświeżania po usunięciu;
+nie zmienia kodu aplikacji. Przeglądarka wymaga wyniku po tej poprawce.

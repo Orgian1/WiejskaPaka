@@ -42,7 +42,7 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                 with page.expect_response(lambda r:r.request.method=='DELETE' and '/user-photos/' in r.url) as response:
                     card.get_by_role('button',name='Usuń zdjęcie',exact=True).click()
                 assert response.value.status==200
-                page.wait_for_function('(label)=>Array.from(document.querySelectorAll("#user-photo-editors article")).find(c=>c.querySelector("h3").textContent===label).querySelectorAll("img").length===0',arg=label)
+                page.wait_for_function('(label)=>Array.from(document.querySelectorAll("#user-photo-editors article")).find(c=>c.querySelector("h3").textContent===label)?.querySelectorAll("img").length===0',arg=label)
             page.click('#logout');page.locator('#user-photo-panel').wait_for(state='hidden')
             assert page.locator('#user-photo-editors').inner_text()==''
             assert not errors

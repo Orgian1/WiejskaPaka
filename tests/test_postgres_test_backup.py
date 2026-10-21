@@ -110,7 +110,7 @@ def test_dump_process_is_bounded_and_reaped(monkeypatch, kind):
         process = real_popen([sys.executable, '-c', code], **kwargs)
         children.append(process)
         return process
-    monkeypatch.setattr(pg, 'require_client16', lambda _: None)
+    monkeypatch.setattr(pg, 'require_supported_client', lambda _: None)
     monkeypatch.setattr(pg.subprocess, 'Popen', launch)
     if kind == 'valid':
         assert pg.bounded_dump({'password':'private-password'}, timeout=2, maximum=32) == b'PGDMPtest'
@@ -118,6 +118,22 @@ def test_dump_process_is_bounded_and_reaped(monkeypatch, kind):
         with pytest.raises((ValueError, TimeoutError)):
             pg.bounded_dump({'password':'private-password'}, timeout=.2, maximum=32)
     assert children[0].poll() is not None and children[0].stdout.closed
+
+
+@pytest.mark.parametrize('program', ['pg_dump', 'pg_restore'])
+@pytest.mark.parametrize('version,accepted', [('16.13', True), ('17.9', True),
+                                             ('15.17', False), ('18.0', False), ('17beta1', False)])
+def test_only_reviewed_backup_client_versions_are_accepted(monkeypatch, program, version, accepted):
+    def version_output(command, **kwargs):
+        assert command == [program, '--version']
+        return subprocess.CompletedProcess(command, 0,
+            stdout=f'{program} (PostgreSQL) {version}\n'.encode())
+    monkeypatch.setattr(pg.subprocess, 'run', version_output)
+    if accepted:
+        pg.require_supported_client(program)
+    else:
+        with pytest.raises(ValueError):
+            pg.require_supported_client(program)
 
 
 def test_python_database_endpoint_is_pinned_against_inherited_hostaddr(monkeypatch):

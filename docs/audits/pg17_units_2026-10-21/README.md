@@ -27,3 +27,14 @@ nie znalazła pakietu w podstawowym repozytorium Ubuntu 24.04.
 Poprawka workflow dodaje oficjalny podpisany repozytorium PGDG tylko
 w zadaniu wersji 17. Wynik ponowionego zadania wymaga osobnego odczytu.
 Źródło konfiguracji: https://www.postgresql.org/download/linux/ubuntu/
+
+Kontrola skryptu postgres_test_backup wykryła również bramkę dopuszczającą
+wyłącznie klienta 16. Zmieniono ją na jawną listę wersji 16/17; dodano testy
+obu programów (pg_dump i pg_restore), w tym odrzucanie 15/18/beta.
+Lokalny preflight używa teraz requirements-lock.txt; rezultat w
+client-versions-preflight.json. Native PostgreSQL 17 nadal wymaga wyniku CI.
+
+Starszy run 39585853702 miał timeout modułu test_crash_checkout_http.py
+na Windows (brak wyniku modułu), a nie potwierdzony błąd asercji.
+Nowszy run 39587072873 zakończył pełny Windows bez timeoutów i błędów.
+Nie przypisujemy poprawki logiki aplikacji temu pojedynczemu timeoutowi.

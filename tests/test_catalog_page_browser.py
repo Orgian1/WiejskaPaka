@@ -39,11 +39,56 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
             add=page.locator('#products > .card').first.get_by_role('button',name='Dodaj do koszyka',exact=True);add.wait_for(state='visible')
             with page.expect_response('**/cart/items') as response:add.click()
             assert response.value.status==200
+            page.locator('#same-package-products article').first.wait_for(state='visible')
+            page.click('#same-package-cancel')
             page.locator('#cart-items').get_by_text('Katalog testowy 049',exact=False).wait_for(state='visible')
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.click('#logout')
             page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
             page.wait_for_function("!document.querySelector('#products button')")
             assert page.locator('#catalog-previous').is_disabled()
+            assert not errors
+        finally:page.close()
+
+
+@pytest.mark.parametrize('width',[320,1280])
+@pytest.mark.parametrize('direct',[False,True])
+def test_same_seller_recommendations_create_one_shipment(sample_browser_server,tmp_path,width,direct):
+    browser,_,_=sample_browser_server
+    sample=prepare_sample(tmp_path/'one-package');accounts=sample['credentials']
+    with server(Path(sample['database'])) as client:
+        buyer={'Authorization':'Bearer '+client.post('/auth/login',json=accounts['klient']).json()['access_token']}
+        before=len(client.get('/orders/me',headers=buyer).json())
+        page=browser.new_page(viewport={'width':width,'height':844});errors=[]
+        page.on('pageerror',lambda error:errors.append(str(error)))
+        try:
+            page.goto(str(client.base_url))
+            page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
+            page.locator('#auth button[type=submit]').click()
+            card=page.locator('#products > .card').filter(has_text='Marchew demonstracyjna')
+            card.get_by_role('button',name='Dodaj do koszyka',exact=True).wait_for(state='visible')
+            card.get_by_label('Ilość w jednostce',exact=False).fill('2')
+            if direct:
+                card.get_by_label('Punkt odbioru',exact=True).locator('option').first.wait_for(state='attached')
+            card.get_by_role('button',name='Zamów testowo' if direct else 'Dodaj do koszyka',exact=True).click()
+            dialog=page.get_by_role('dialog')
+            offer=dialog.locator('article');offer.wait_for(state='visible')
+            assert offer.count()==1
+            assert 'Ziemniaki demonstracyjne' in offer.inner_text()
+            assert 'Marchew demonstracyjna' not in dialog.locator('#same-package-products').inner_text()
+            assert len(client.get('/orders/me',headers=buyer).json())==before
+            offer.get_by_role('button',name='Dodaj do wspólnej paczki',exact=True).click()
+            dialog.get_by_text('Dodano: Ziemniaki demonstracyjne.',exact=False).wait_for(state='visible')
+            assert dialog.evaluate('(e)=>e.scrollWidth<=e.clientWidth')
+            page.click('#same-package-done');assert page.get_by_role('dialog').count()==0
+            page.select_option('#cart-mode','dostawa')
+            page.fill('#cart-city','Legnica');page.fill('#cart-street','Testowa 1');page.fill('#cart-postal','59-220')
+            with page.expect_response('**/cart/checkout-test') as response:page.click('#cart-submit')
+            assert response.value.status==201
+            result=response.value.json()
+            assert result['delivery_grosze']==501
+            assert result['total_grosze']==2*349+299+501
+            assert len(client.get('/orders/me',headers=buyer).json())==before+2
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert not errors
         finally:page.close()

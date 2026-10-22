@@ -50,3 +50,9 @@ Przebieg `39790000841` dla `d9d6df480a1e4f8eb677f1c6181807a36d47a886`: Chromium 
 Limit pojedynczego modułu w pełnym Windows zwiększono do 180 sekund. Budżet zwykłego testu wysłania dwóch syntetycznych wiadomości przez proces potomny wynosi 30 sekund. Testy wymuszonego zawieszenia nadal mają limity 1 i 3 sekund i nadal sprawdzają niepewny wynik oraz brak ponownej wysyłki. Nie zmieniono produkcyjnego mechanizmu dostarczania wiadomości.
 
 Lokalny izolowany przebieg obejmujący trzy wskazane moduły, wspólny test czterech funkcji oraz runner CI: 68 PASS, 0 FAIL, 0 SKIP, 5/5 modułów, źródła niezmienione podczas testów. Dowód: `docs/audits/combined_features_2026-10-22/local_stability_summary.json`. Wymagany jest ponowny pełny Windows; ostatnia zaliczona pełna regresja wersji bazowej pozostaje odrębnym wynikiem.
+
+## Pełny Windows po korekcie budżetów — 22.10.2026
+
+Przebieg `39794532814` dla commitu `f7a7082a74b0a47c38219d1631efb6ffd4eb5cd3`: pełna izolowana regresja Windows zakończona powodzeniem, 4369 testów łącznie — 4196 PASS, 0 FAIL, 173 SKIP. Brak timeoutów, niekompletnych i błędnych modułów; źródła niezmienione podczas przebiegu. Szybki Windows 80/80, Chromium 48/48 z HTTP na pięciu rozmiarach ekranu i PostgreSQL 16 53/53 również PASS. Raporty: `docs/audits/combined_features_2026-10-22/native_f7a7082/`.
+
+PostgreSQL 17 został przerwany przed testami na etapie instalacji klientów kopii zapasowej. Po zakończeniu Windowsa ponowiono wyłącznie to zadanie bez zmian kodu. Jego wynik jest oddzielny od zaliczonej pełnej regresji Windows.

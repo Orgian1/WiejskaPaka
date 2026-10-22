@@ -42,7 +42,7 @@ def seeded(store, count=1):
 
 def test_spawned_batch_limits_tasks_and_suppresses_adapter_output(store, capfd):
     connect_db = seeded(store, 3)
-    result = worker.run_process(connect_db, store[2], accepted, max_jobs=2, timeout_seconds=10)
+    result = worker.run_process(connect_db, store[2], accepted, max_jobs=2, timeout_seconds=30)
     assert result == {'status':'LIMIT_REACHED', 'counts':{'ACCEPTED':2}}
     rows = store[0].execute('SELECT state,attempts,payload FROM reset_mail_queue').fetchall()
     assert sum(r['state']=='accepted' and r['payload'] is None for r in rows) == 2

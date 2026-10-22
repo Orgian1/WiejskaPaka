@@ -1,0 +1,53 @@
+{
+  "gate": "windows",
+  "complete": true,
+  "success": false,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "cecab4bf557dd3f5a757ac79e4bbf12bc10edfcd3ff1bcb23d161f8920bf051a",
+    "tests_sha256": "6163c665440b498dfc86714db88aff152a88b4b52a9a8d34263b697861c67238",
+    "test_sources_sha256": "959f8c42aff0c737cffe57fc33b4ab80ecb4e74f0d5c4e29747da01192c87f43",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "3379a246dec1fc1de7b072123939495996b8702f417f50f1aa08cbac65db4bed"
+  },
+  "tasks": [
+    {
+      "name": "windows_recovery",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 80,
+        "passed": 80,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "isolated_regression",
+      "success": false,
+      "returncode": 1,
+      "failed_modules": [
+        "test_b901_reconciliation.py",
+        "test_b91_b95_http_boundaries.py",
+        "test_bounded_reset_worker.py"
+      ],
+      "incomplete_modules": [
+        "test_b901_reconciliation.py",
+        "test_b91_b95_http_boundaries.py"
+      ],
+      "timed_out_modules": [
+        "test_b901_reconciliation.py",
+        "test_b91_b95_http_boundaries.py"
+      ],
+      "failure_locations": [
+        {
+          "file": "test_bounded_reset_worker.py",
+          "line": 46
+        }
+      ],
+      "error": "INVALID_TEST_RESULT"
+    }
+  ]
+}

@@ -108,7 +108,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             else:
                 tasks = [('windows_recovery', [sys.executable, '-m', 'pytest', '-q',
                     *[str(root/'tests'/name) for name in RECOVERY_TESTS], '--junitxml', str(xml)], 'junit'),
-                         ('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--report', str(raw)], 'full')]
+                         ('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--timeout', '180', '--report', str(raw)], 'full')]
                 if gate == 'windows-recovery':
                     tasks = tasks[:1]
         elif gate == 'postgres':

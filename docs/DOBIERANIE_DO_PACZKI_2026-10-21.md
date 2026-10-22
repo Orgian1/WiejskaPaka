@@ -38,3 +38,11 @@ Zwiększono budżet gotowości jednorazowego serwera testowego z 20 do 60 sekund
 Przebieg `39776194507` zakończył pełną regresję: 4367 testów, 4192 PASS, 2 FAIL, 173 SKIP. Raport: `native_a9f33c1/windows-summary.json`. Dwa nieaktualne testy oczekiwały bezpośredniego sąsiedztwa walidacji ilości z blokadą checkout oraz dawnego 20-sekundowego budżetu startu serwera.
 
 Test blokady nadal wymaga wywołania `requireResolvedCheckout()` na początku obsługi dodawania do koszyka. Test gotowości sprawdza teraz udany start po ponad 20 sekundach oraz granicę 60 sekund, a nadal weryfikuje natychmiastowe zakończenie po śmierci procesu i sprzątanie po błędzie konsumenta. Kod aplikacji nie został zmieniony w tej korekcie. Wymagany jest kolejny pełny przebieg Windows.
+
+## Końcowy wynik — 22.10.2026
+
+Przebieg https://github.com/Orgian1/WiejskaPaka/actions/runs/39782120159 dla commitu `baa80c0ea5380900c9688bfe26ba87d5c9eed8f8` zakończył wszystkie zadania powodzeniem: pełny Windows, szybki Windows, Chromium, PostgreSQL 16 i PostgreSQL 17.
+
+Pełna izolowana regresja Windows: 4367 testów, 4194 PASS, 0 FAIL, 173 SKIP. Brak niekompletnych modułów i timeoutów; źródła nie zmieniły się podczas przebiegu. Szybki zestaw wewnątrz pełnego zadania: 80/80. Raport: `docs/audits/same_package_2026-10-21/native_baa80c0/windows-summary.json`. Pominięte testy nie są liczone jako zaliczone; środowiska przeglądarkowe i PostgreSQL mają osobne zakończone powodzeniem zadania.
+
+Wynik zamyka serię napraw testów tej zmiany. Nie oznacza wdrożenia na VPS ani włączenia rzeczywistych płatności lub poczty.

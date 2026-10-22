@@ -1,0 +1,37 @@
+{
+  "gate": "windows",
+  "complete": false,
+  "success": false,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "cecab4bf557dd3f5a757ac79e4bbf12bc10edfcd3ff1bcb23d161f8920bf051a",
+    "tests_sha256": "4db1f1338fcd3bcba6a0b4b40a5abae6b0452f2d069c0b8fe70ef906b6d23812",
+    "test_sources_sha256": "4fc74c89ad2f40ba5332b30df1bf7ac3fd350321933acb91d99f6df0e863d91d",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "3379a246dec1fc1de7b072123939495996b8702f417f50f1aa08cbac65db4bed"
+  },
+  "tasks": [
+    {
+      "name": "windows_recovery",
+      "success": false,
+      "returncode": 1,
+      "test_counts": {
+        "total": 80,
+        "passed": 79,
+        "failed": 1,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_purchase_record_http_restart.py",
+          "line": 46
+        },
+        {
+          "file": "test_sqlite_snapshot.py",
+          "line": 45
+        }
+      ]
+    }
+  ]
+}

@@ -26,3 +26,9 @@ https://github.com/Orgian1/WiejskaPaka/actions/runs/39665127913
 Draft PR: https://github.com/Orgian1/WiejskaPaka/pull/24
 
 Zmiany nie zostały wdrożone na VPS. Podgląd HTML korzysta z przykładowych danych i symulacji zakupów; nie zastępuje testów API.
+
+## Ponowny start Windows — 22.10.2026
+
+Przebieg `39774607878` zaliczył Chromium, PostgreSQL 16 i 17 oraz osobny szybki zestaw Windows. Zadanie pełnej regresji zatrzymało się w powtórzonym zestawie wstępnym: 79/80, timeout gotowości testowego serwera HTTP w `test_sqlite_snapshot.py`. Pełna regresja nie została uruchomiona. Dowód zapisano w `native_ab96f95/windows-summary.json`.
+
+Zwiększono budżet gotowości jednorazowego serwera testowego z 20 do 60 sekund. Sprawdzanie śmierci procesu nadal kończy oczekiwanie natychmiast, a limit jest liczony czasem monotonicznym. Zmiana dotyczy wyłącznie testów. Wymagany jest nowy przebieg Windows.

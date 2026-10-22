@@ -35,8 +35,9 @@ def server(database, *, reset_outbox=None, queued_keys=None):
         with httpx.Client(base_url=f'http://127.0.0.1:{port}',timeout=15,trust_env=False) as client:
             # Imports and SQLite startup compete with other isolated test
             # processes. Bound readiness by elapsed time, not a five-second
-            # attempt budget; a dead child must still fail immediately.
-            deadline=time.monotonic()+20
+            # attempt budget. Windows CI cold starts have exceeded 20 seconds;
+            # keep a bounded 60-second budget and fail dead children immediately.
+            deadline=time.monotonic()+60
             while time.monotonic()<deadline:
                 assert process.poll() is None,'Disposable server exited'
                 try:

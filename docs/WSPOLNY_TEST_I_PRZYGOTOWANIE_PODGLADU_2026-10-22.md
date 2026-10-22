@@ -56,3 +56,5 @@ Lokalny izolowany przebieg obejmujący trzy wskazane moduły, wspólny test czte
 Przebieg `39794532814` dla commitu `f7a7082a74b0a47c38219d1631efb6ffd4eb5cd3`: pełna izolowana regresja Windows zakończona powodzeniem, 4369 testów łącznie — 4196 PASS, 0 FAIL, 173 SKIP. Brak timeoutów, niekompletnych i błędnych modułów; źródła niezmienione podczas przebiegu. Szybki Windows 80/80, Chromium 48/48 z HTTP na pięciu rozmiarach ekranu i PostgreSQL 16 53/53 również PASS. Raporty: `docs/audits/combined_features_2026-10-22/native_f7a7082/`.
 
 PostgreSQL 17 został przerwany przed testami na etapie instalacji klientów kopii zapasowej. Po zakończeniu Windowsa ponowiono wyłącznie to zadanie bez zmian kodu. Jego wynik jest oddzielny od zaliczonej pełnej regresji Windows.
+
+Ponowione zadanie PostgreSQL 17 zakończyło się powodzeniem: 53 PASS, 0 FAIL, 0 SKIP. Końcowy raport: `native_f7a7082/postgres-17-summary.json`. Wszystkie zadania tej wersji są zaliczone, z uwzględnieniem ponowienia wyłącznie instalacyjnie przerwanego zadania PostgreSQL 17. VPS i poczta pozostają bez zmian.

@@ -42,3 +42,11 @@ Rzeczywiste płatności i SES pozostają odrębnym etapem integracji. Zakupy uł
 ## Weryfikacja lokalna
 
 22.10.2026: `python -m pytest tests/test_combined_marketplace_http.py -q` — 2 PASS, 0 FAIL, rzeczywisty HTTP i dwa restarty procesu (po jednym dla każdej decyzji). Kontrola `git diff --check` — PASS. Wynik dotyczy obu scenariuszy ze wszystkimi czterema flagami ustawionymi na `1`.
+
+## CI i stabilność wykonania
+
+Przebieg `39790000841` dla `d9d6df480a1e4f8eb677f1c6181807a36d47a886`: Chromium 48/48 oraz HTTP na pięciu rozmiarach ekranu PASS, PostgreSQL 16 i 17 po 53/53 PASS, szybki Windows 80/80 PASS. Pełny Windows nie został zaliczony: dwa moduły (`test_b901_reconciliation.py`, `test_b91_b95_http_boundaries.py`) przekroczyły dotychczasowe 90 sekund, a test zwykłego uruchomienia procesu pocztowego `test_bounded_reset_worker.py` nie spełnił oczekiwanego wyniku w budżecie 10 sekund. Raporty zachowano w `docs/audits/combined_features_2026-10-22/native_d9d6df4/`.
+
+Limit pojedynczego modułu w pełnym Windows zwiększono do 180 sekund. Budżet zwykłego testu wysłania dwóch syntetycznych wiadomości przez proces potomny wynosi 30 sekund. Testy wymuszonego zawieszenia nadal mają limity 1 i 3 sekund i nadal sprawdzają niepewny wynik oraz brak ponownej wysyłki. Nie zmieniono produkcyjnego mechanizmu dostarczania wiadomości.
+
+Lokalny izolowany przebieg obejmujący trzy wskazane moduły, wspólny test czterech funkcji oraz runner CI: 68 PASS, 0 FAIL, 0 SKIP, 5/5 modułów, źródła niezmienione podczas testów. Dowód: `docs/audits/combined_features_2026-10-22/local_stability_summary.json`. Wymagany jest ponowny pełny Windows; ostatnia zaliczona pełna regresja wersji bazowej pozostaje odrębnym wynikiem.

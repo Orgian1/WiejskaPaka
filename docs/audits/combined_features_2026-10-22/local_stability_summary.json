@@ -1,0 +1,71 @@
+{
+  "application_sha256": "dc284a1ab7d14b0b9b45107b5097131e5f7a2ccd990f7015c109aea6812fce29",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "test_counts": {
+    "total": 68,
+    "passed": 68,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 5,
+  "planned": 5,
+  "modules": [
+    {
+      "file": "test_b901_reconciliation.py",
+      "returncode": 0,
+      "seconds": 3.34,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b91_b95_http_boundaries.py",
+      "returncode": 0,
+      "seconds": 2.88,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_bounded_reset_worker.py",
+      "returncode": 0,
+      "seconds": 8.61,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_combined_marketplace_http.py",
+      "returncode": 0,
+      "seconds": 8.98,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "returncode": 0,
+      "seconds": 4.39,
+      "test_counts": {
+        "total": 41,
+        "passed": 41,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "gate": "windows",
+  "complete": true,
+  "success": false,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "cecab4bf557dd3f5a757ac79e4bbf12bc10edfcd3ff1bcb23d161f8920bf051a",
+    "tests_sha256": "855880e4acc003827ec7c3ce5196e327a63068ce43a62e725281d68317e47622",
+    "test_sources_sha256": "de516678312dd1a358e36f644d0059a4423a10366fcb8de36d296c4d1b1f3c61",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "3379a246dec1fc1de7b072123939495996b8702f417f50f1aa08cbac65db4bed"
+  },
+  "tasks": [
+    {
+      "name": "windows_recovery",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 80,
+        "passed": 80,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "isolated_regression",
+      "success": false,
+      "returncode": 1,
+      "failed_modules": [
+        "test_b3181_pending_checkout_cart_guard.py",
+        "test_http_server_fixture.py"
+      ],
+      "incomplete_modules": [],
+      "timed_out_modules": [],
+      "failure_locations": [
+        {
+          "file": "test_b3181_pending_checkout_cart_guard.py",
+          "line": 8
+        },
+        {
+          "file": "test_http_server_fixture.py",
+          "line": 47
+        }
+      ],
+      "test_counts": {
+        "total": 4367,
+        "passed": 4192,
+        "failed": 2,
+        "skipped": 173
+      }
+    }
+  ]
+}

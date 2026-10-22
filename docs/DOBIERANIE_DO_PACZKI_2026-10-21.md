@@ -32,3 +32,9 @@ Zmiany nie zostały wdrożone na VPS. Podgląd HTML korzysta z przykładowych da
 Przebieg `39774607878` zaliczył Chromium, PostgreSQL 16 i 17 oraz osobny szybki zestaw Windows. Zadanie pełnej regresji zatrzymało się w powtórzonym zestawie wstępnym: 79/80, timeout gotowości testowego serwera HTTP w `test_sqlite_snapshot.py`. Pełna regresja nie została uruchomiona. Dowód zapisano w `native_ab96f95/windows-summary.json`.
 
 Zwiększono budżet gotowości jednorazowego serwera testowego z 20 do 60 sekund. Sprawdzanie śmierci procesu nadal kończy oczekiwanie natychmiast, a limit jest liczony czasem monotonicznym. Zmiana dotyczy wyłącznie testów. Wymagany jest nowy przebieg Windows.
+
+## Pełna regresja Windows — wynik i korekta testów
+
+Przebieg `39776194507` zakończył pełną regresję: 4367 testów, 4192 PASS, 2 FAIL, 173 SKIP. Raport: `native_a9f33c1/windows-summary.json`. Dwa nieaktualne testy oczekiwały bezpośredniego sąsiedztwa walidacji ilości z blokadą checkout oraz dawnego 20-sekundowego budżetu startu serwera.
+
+Test blokady nadal wymaga wywołania `requireResolvedCheckout()` na początku obsługi dodawania do koszyka. Test gotowości sprawdza teraz udany start po ponad 20 sekundach oraz granicę 60 sekund, a nadal weryfikuje natychmiastowe zakończenie po śmierci procesu i sprzątanie po błędzie konsumenta. Kod aplikacji nie został zmieniony w tej korekcie. Wymagany jest kolejny pełny przebieg Windows.

@@ -5,7 +5,7 @@ SOURCE = (Path(__file__).resolve().parents[1] / 'web' / 'app.js').read_text(enco
 
 def test_unknown_checkout_result_blocks_cart_mutations():
     assert 'function requireResolvedCheckout()' in SOURCE
-    assert "requireResolvedCheckout();const quantity=Number(qty.value)" in SOURCE
+    assert "addCart.onclick=()=>act(async()=>{requireResolvedCheckout();" in SOURCE
     assert "requireResolvedCheckout();const n=Number(qty.value)" in SOURCE
     assert "del.onclick=()=>act(async()=>{requireResolvedCheckout();" in SOURCE
 

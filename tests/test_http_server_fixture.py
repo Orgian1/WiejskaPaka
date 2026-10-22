@@ -27,7 +27,7 @@ def test_disposable_http_readiness_and_cleanup(monkeypatch,tmp_path,case):
         def get(self,path,**kwargs):
             assert path=='/health' and kwargs['timeout']==.5
             state['requests']+=1
-            if case=='deadline' or (case=='slow_start' and state['requests']<=120):
+            if case=='deadline' or (case=='slow_start' and state['requests']<=900):
                 raise httpx.ConnectError('Disposable fixture not ready')
             return SimpleNamespace(status_code=200)
     monkeypatch.setattr(fixture,'time',SimpleNamespace(monotonic=lambda:state['seconds'],sleep=sleep))
@@ -42,7 +42,7 @@ def test_disposable_http_readiness_and_cleanup(monkeypatch,tmp_path,case):
             with fixture.server(tmp_path/'fixture.sqlite'):raise ValueError('consumer failed')
     else:
         with fixture.server(tmp_path/'fixture.sqlite'):
-            assert state['requests']==121 and 5<state['seconds']<20
+            assert state['requests']==901 and 20<state['seconds']<60
     assert state['terminated'] and state['waited']
-    if case=='deadline':assert 20<=state['seconds']<20.1
+    if case=='deadline':assert 60<=state['seconds']<60.1
     if case=='exited':assert state['requests']==0 and state['seconds']==0

@@ -246,3 +246,25 @@ def test_photo_timeout_records_only_known_test_name_without_output(tmp_path):
     assert not result['success']
     assert result['tasks'][0]['last_test']=={'file':'test_user_photos_browser.py','function':'test_photo_upload_replace_error_delete_and_logout'}
     assert SENSITIVE not in path.read_text() and 'private-phone' not in path.read_text()
+
+
+@pytest.mark.parametrize('valid_progress',[True,False])
+def test_full_timeout_keeps_only_safe_partial_progress(tmp_path,monkeypatch,valid_progress):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    known='test_sqlite_snapshot.py'
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+            return subprocess.CompletedProcess(command,0,'','')
+        Path(command[-1]).write_text(json.dumps({'executed':1 if valid_progress else SENSITIVE,
+            'planned':2,'results':[{'file':known,'returncode':1,'output_tail':SENSITIVE},
+                                  {'file':SENSITIVE,'returncode':1}]}))
+        raise subprocess.TimeoutExpired(command,kwargs['timeout'],output=SENSITIVE,stderr=SENSITIVE)
+    path=tmp_path/'timeout.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    task=result['tasks'][-1]
+    assert task['error']=='TIMEOUT' and not task['success'] and not result['success']
+    assert task['failed_modules']==[known]
+    assert ('progress' in task)==valid_progress
+    if valid_progress:assert task['progress']=={'executed':1,'planned':2}
+    assert SENSITIVE not in path.read_text()

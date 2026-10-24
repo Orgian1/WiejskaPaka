@@ -65,6 +65,10 @@ class Gate:
         if not isinstance(policy,Policy):raise ValueError('MAIL_SEND_POLICY_REJECTED')
         self.policy=policy;self.clock=clock;self.owner=secrets.token_hex(16)
 
+    def blocked(self,con,email):
+        from backend.mail_suppression import blocked
+        return blocked(con,email)
+
     def claim(self,con,now):
         _lock(con);now=_now(now)
         con.execute('''INSERT INTO mail_send_budget

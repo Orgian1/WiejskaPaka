@@ -101,6 +101,9 @@ def dispatch_once(connect,vault,transport,verified_recipient,*,clock,gate=None):
             except Exception:
                 con.execute("UPDATE order_mail_outbox SET state='skipped',result='INELIGIBLE' WHERE id=?",(job['id'],))
                 return 'SKIPPED'
+            if gate is not None and gate.blocked(con,user['email']):
+                con.execute("UPDATE order_mail_outbox SET state='skipped',result='RECIPIENT_BLOCKED' WHERE id=?",(job['id'],))
+                return 'SUPPRESSED'
             if gate is not None and not gate.claim(con,now):return 'RATE_LIMITED'
             updated=con.execute("UPDATE order_mail_outbox SET state='started',started_at=? WHERE id=? AND state='queued'",
                                 (now,job['id']))

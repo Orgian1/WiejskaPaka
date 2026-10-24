@@ -76,6 +76,8 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- SHA256 7303810d13fd1509fd97370fc9a5ea2ddcef87ab2331aeea58cffa0883acd6c0
 \ir ../../database/optional_mail_send_budget.sql
+-- SHA256 ea990962ec7efecc7331bc02a4cc2f251d56a2bfc2293b27427a21425557f7fc
+\ir ../../database/optional_mail_suppression.sql
 GRANT CONNECT ON DATABASE wp_test_preview TO wp_preview_app;
 GRANT USAGE ON SCHEMA public TO wp_preview_app;
 GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO wp_preview_app;

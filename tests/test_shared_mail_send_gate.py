@@ -5,7 +5,9 @@ from threading import Event
 import time
 import pytest
 from backend import email_ownership as proof,email_verification_queue as verify,order_mail_outbox as orders
-from backend.mail_send_budget import Gate,Policy,SCHEMA_SQLITE
+from backend.mail_send_budget import Gate,Policy,SCHEMA_SQLITE as BUDGET_SCHEMA
+from backend.mail_suppression import SCHEMA_SQLITE as BLOCK_SCHEMA
+SCHEMA_SQLITE=BUDGET_SCHEMA+BLOCK_SCHEMA
 from backend.reset_mail_queue import KeyRing,transaction
 from backend.smtp_reset_transport import outcome
 from tests.test_order_mail_outbox import seed,store,add
@@ -97,3 +99,19 @@ def test_snapshot_restore_pauses_budget_and_preserves_attempt_history(store,seed
     with closing(store[0]()) as con:
         if used:assert con.execute('SELECT paused FROM mail_send_budget').fetchone()[0]==0
         else:assert con.execute('SELECT count(*) FROM mail_send_budget').fetchone()[0]==0
+
+
+@pytest.mark.parametrize('reason',['permanent_bounce','complaint'])
+def test_suppressed_recipients_never_reach_either_transport_or_consume_budget(store,reason):
+    from backend import mail_suppression as blocks
+    now,keys=prepare(store);policy=Policy(1,10)
+    with closing(store[0]()) as con,transaction(con):
+        for row in con.execute('SELECT email FROM users').fetchall():blocks.block(con,row['email'],reason,now=now)
+    assert orders.dispatch_once(store[0],store[1],lambda *a,**kw:pytest.fail('Suppressed'),proof.verified_recipient,
+        clock=lambda:now,gate=Gate(policy))=='SUPPRESSED'
+    assert verify.dispatch_once(store[0],keys,lambda *a:pytest.fail('Suppressed'),now=now,gate=Gate(policy))=='SUPPRESSED'
+    with closing(store[0]()) as con:
+        assert con.execute('SELECT count(*) FROM mail_send_attempts').fetchone()[0]==0
+        assert con.execute('SELECT state FROM order_mail_outbox').fetchone()[0]=='skipped'
+        row=con.execute('SELECT state,payload FROM email_verification_queue').fetchone()
+        assert row['state']=='expired' and row['payload'] is None

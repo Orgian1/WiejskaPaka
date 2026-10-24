@@ -42,7 +42,7 @@ def execute(environ,*,send=False,max_jobs=1,timeout_seconds=30):
             raise ValueError('Explicit purchase-mail opt-ins required')
         from backend.mail_send_budget import load_policy
         policy=load_policy(environ)
-        connect=configured_connection(environ,required_tables=('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts'))
+        connect=configured_connection(environ,required_tables=('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts','mail_recipient_blocks'))
         vault=load_vault(environ)
         smtp=mail.load_ses_config(environ)
         if smtp is None:raise ValueError('Explicit purchase SMTP required')

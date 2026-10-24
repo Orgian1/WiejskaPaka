@@ -1,0 +1,17 @@
+{
+  "application_sha256": "1086acca4275aa79a200246091cef7d8e2306273c71353444c8747fb245d69d9",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 150,
+    "passed": 150,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 14,
+  "planned": 14,
+  "passed": 14,
+  "failed": 0
+}

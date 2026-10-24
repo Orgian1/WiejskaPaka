@@ -1377,7 +1377,7 @@ def test_native_purchase_spawned_worker_rechecks_real_proof(pg_email_verificatio
             with transaction(con):con.execute('DELETE FROM account_email_proofs WHERE user_id=?',(buyer_id,))
         finally:con.connection.close()
     vault=Vault(*read_ring(pg_email_verification_api.key_path))
-    connect=Connect(make_conninfo(**parameters),parameters['dbname'],('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts'))
+    connect=Connect(make_conninfo(**parameters),parameters['dbname'],('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts','mail_recipient_blocks'))
     expected='SKIPPED' if revoked else 'ACCEPTED'
     assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
         'status':'LIMIT_REACHED','counts':{expected:1}}
@@ -1411,4 +1411,32 @@ def test_native_shared_mail_budget_serializes_claims_and_preserves_spacing(pg_em
         from backend.mail_send_budget import quarantine_restored
         with transaction(con):quarantine_restored(con)
         assert con.execute('SELECT paused FROM mail_send_budget').fetchone()['paused']==1
+    finally:con.connection.close()
+
+
+def test_native_suppression_stops_verification_worker_before_smtp(pg_email_verification_api):
+    from backend import mail_suppression as blocks,email_verification_worker as worker
+    from backend.mail_send_budget import Policy
+    from backend.reset_mail_queue import transaction
+    from backend.reset_mail_keys import load_keys
+    from scripts.send_verification_batch import Connect
+    from psycopg.conninfo import make_conninfo
+    client,parameters=pg_email_verification_api
+    buyer,buyer_id=register(client,'klient')
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    con=queued_worker_connection(parameters)
+    try:
+        with transaction(con):
+            email=con.execute('SELECT email FROM users WHERE id=?',(buyer_id,)).fetchone()['email']
+            blocks.block(con,email,'complaint',now=int(time.time()))
+    finally:con.connection.close()
+    assert worker.run_process(Connect(make_conninfo(**parameters),parameters['dbname']),
+        load_keys(pg_email_verification_api.mail_keys),verification_worker_accept,
+        max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
+        'status':'LIMIT_REACHED','counts':{'SUPPRESSED':1}}
+    con=queued_worker_connection(parameters)
+    try:
+        assert con.execute('SELECT count(*) AS n FROM mail_send_attempts').fetchone()['n']==0
+        row=con.execute('SELECT state,payload FROM email_verification_queue').fetchone()
+        assert row['state']=='expired' and row['payload'] is None
     finally:con.connection.close()

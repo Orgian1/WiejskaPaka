@@ -31,7 +31,7 @@ def test_configuration_and_factories_keep_secrets_private(monkeypatch):
     monkeypatch.setattr(order_mail,'load_ses_config',lambda e:smtp)
     def run(connect,actual_vault,transport,**limits):
         assert actual_vault is vault and transport.config is smtp
-        assert connect.required_tables==('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts')
+        assert connect.required_tables==('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts','mail_recipient_blocks')
         assert 'synthetic-private-password' not in repr(connect)
         assert limits.pop('policy').daily_limit==100
         assert limits=={'max_jobs':1,'timeout_seconds':30}

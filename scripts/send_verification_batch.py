@@ -14,6 +14,7 @@ from backend import email_verification_mail as mail, email_verification_worker a
 class Connect:
     dsn:str=field(repr=False)
     database_name:str
+    required_tables:tuple=('account_email_proofs','email_verification_limits','email_verification_queue')
 
     def __call__(self):
         from backend.test_server_launcher import verify_test_database_connection
@@ -23,7 +24,7 @@ class Connect:
         # Read-only preflight runs inside the bounded child, including on every
         # fresh connection. No privileged application role or missing schema.
         verify_test_database_connection(self.dsn,self.database_name,require_schema=True,
-            required_tables=('account_email_proofs','email_verification_limits','email_verification_queue'))
+            required_tables=self.required_tables)
         return PgConnection(psycopg.connect(self.dsn,row_factory=dict_row,connect_timeout=5))
 
 
@@ -32,6 +33,17 @@ class Transport:
     config:object=field(repr=False)
 
     def __call__(self,recipient,token):return mail.send(self.config,recipient,token)
+
+
+def configured_connection(environ,*,required_tables=None):
+    from backend.test_server_launcher import prepare_test_server
+    settings=prepare_test_server(environ)
+    # Prevent inherited libpq settings from silently changing the validated target.
+    if any(environ.get(k) for k in ('PGHOST','PGHOSTADDR','PGPORT','PGDATABASE','PGUSER',
+            'PGPASSWORD','PGSERVICE','PGSERVICEFILE','PGOPTIONS')):
+        raise ValueError('Inherited database routing rejected')
+    options={} if required_tables is None else {'required_tables':required_tables}
+    return Connect(environ['WP_TEST_DATABASE_URL'],settings['database_name'],**options)
 
 
 def execute(environ,*,send=False,max_jobs=3,timeout_seconds=30):
@@ -43,17 +55,12 @@ def execute(environ,*,send=False,max_jobs=3,timeout_seconds=30):
         if (environ.get('WP_ENABLE_EMAIL_VERIFICATION')!='1' or
                 environ.get('WP_ENABLE_VERIFICATION_SMTP')!='1'):
             raise ValueError('Explicit verification opt-ins required')
-        from backend.test_server_launcher import prepare_test_server
-        settings=prepare_test_server(environ)
-        # Prevent inherited libpq settings from silently changing the validated target.
-        if any(environ.get(k) for k in ('PGHOST','PGHOSTADDR','PGPORT','PGDATABASE','PGUSER',
-                'PGPASSWORD','PGSERVICE','PGSERVICEFILE','PGOPTIONS')):
-            raise ValueError('Inherited database routing rejected')
+        connect=configured_connection(environ)
         from backend.reset_mail_keys import load_config as load_keys
         keys=load_keys(environ)
         smtp=mail.load_config(environ)
         if keys is None or smtp is None:raise ValueError('Explicit private keys and SMTP required')
-        result=worker.run_process(Connect(environ['WP_TEST_DATABASE_URL'],settings['database_name']),
+        result=worker.run_process(connect,
             keys,Transport(smtp),max_jobs=max_jobs,timeout_seconds=timeout_seconds)
         return result
     except Exception:return {'status':'WORKER_FAILED','counts':None}

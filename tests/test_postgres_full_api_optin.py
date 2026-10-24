@@ -1340,3 +1340,45 @@ def test_native_checkout_atomically_captures_one_mail_for_verified_buyer(pg_emai
     try:
         assert con.execute('SELECT count(*) AS n FROM order_mail_outbox WHERE buyer_id=?',(buyer_id,)).fetchone()['n']==1
     finally:con.connection.close()
+
+
+def purchase_worker_accept(recipient,purchase,*,email_verified):
+    from backend.smtp_reset_transport import outcome
+    assert email_verified is True and len(purchase.pin)==6
+    assert purchase.total_grosze==850 and purchase.delivery_grosze==501
+    print('synthetic-private-purchase-pin-and-recipient')
+    return outcome('ACCEPTED',accepted=True)
+
+
+@pytest.mark.parametrize('revoked',[False,True])
+def test_native_purchase_spawned_worker_rechecks_real_proof(pg_email_verification_api,capfd,revoked):
+    from backend.reset_mail_keys import load_keys
+    from backend.checkout_vault import Vault,read_ring
+    from backend import order_mail_worker as worker
+    from scripts.send_verification_batch import Connect
+    from psycopg.conninfo import make_conninfo
+    client,parameters=pg_email_verification_api
+    farmer,_=register(client,'rolnik');buyer,buyer_id=register(client,'klient')
+    pid=product(client,farmer)
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    con=queued_worker_connection(parameters)
+    try:
+        row=con.execute('SELECT * FROM email_verification_queue WHERE user_id=?',(buyer_id,)).fetchone()
+        secret=load_keys(pg_email_verification_api.mail_keys).decrypt(row).token
+    finally:con.connection.close()
+    assert client.post('/auth/email-verification/confirm',headers=buyer,json={'token':secret}).status_code==200
+    assert client.post('/orders',headers={**buyer,'Idempotency-Key':uuid4().hex},json=delivery(pid)).status_code==201
+    if revoked:
+        con=queued_worker_connection(parameters)
+        try:
+            from backend.reset_mail_queue import transaction
+            with transaction(con):con.execute('DELETE FROM account_email_proofs WHERE user_id=?',(buyer_id,))
+        finally:con.connection.close()
+    vault=Vault(*read_ring(pg_email_verification_api.key_path))
+    connect=Connect(make_conninfo(**parameters),parameters['dbname'],('account_email_proofs','order_mail_outbox'))
+    expected='SKIPPED' if revoked else 'ACCEPTED'
+    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30)=={
+        'status':'LIMIT_REACHED','counts':{expected:1}}
+    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30)=={
+        'status':'IDLE','counts':{'IDLE':1}}
+    assert 'synthetic-private' not in ''.join(capfd.readouterr())

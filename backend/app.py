@@ -1008,6 +1008,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                 (user['id'],idempotency_key,payload_hash,seal_checkout_reply(response,user['id'],idempotency_key,payload_hash),
                  datetime.now(timezone.utc).isoformat()))
             link_reply(con,user['id'],idempotency_key,response)
+            if ORDER_MAIL_CAPTURE_ENABLED:order_mail_capture.capture(con,user['id'],idempotency_key)
     return response
 
 @app.get('/orders/idempotency-status/{request_key}')
@@ -1093,6 +1094,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
                 (buyer_id,request_key,payload_hash,response_json,created_at) VALUES(?,?,?,?,?)''',
                 (user['id'],request_key,payload_hash,seal_checkout_reply(response,user['id'],request_key,payload_hash),datetime.now(timezone.utc).isoformat()))
             link_reply(con,user['id'],request_key,response)
+            if ORDER_MAIL_CAPTURE_ENABLED:order_mail_capture.capture(con,user['id'],request_key)
         return response
 
 @app.get('/orders/me')
@@ -3214,3 +3216,9 @@ seller_directory.register_routes(app, db, order_write_db, current_user)
 # Account verification is explicitly opt-in; SMTP never runs in an HTTP handler.
 from backend.email_verification_http import install as install_email_verification
 install_email_verification(app, db, current_user, order_write_db, os.environ, DATABASE_URL)
+
+from backend import order_mail_capture
+ORDER_MAIL_CAPTURE_ENABLED=False
+if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
+    with db() as _mail_capture_con:
+        ORDER_MAIL_CAPTURE_ENABLED=order_mail_capture.configure(_mail_capture_con,os.environ,postgres=bool(DATABASE_URL))

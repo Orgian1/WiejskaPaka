@@ -11,7 +11,7 @@ import time
 from backend import reset_mail_queue as queue
 
 STATUSES = frozenset({'IDLE', 'SKIPPED', 'STALE', 'ACCEPTED', 'DELIVERY_UNCERTAIN',
-    'REJECTED', 'CONNECTION_FAILED', 'TLS_FAILED', 'MESSAGE_REJECTED', 'DISABLED'})
+    'RATE_LIMITED', 'REJECTED', 'CONNECTION_FAILED', 'TLS_FAILED', 'MESSAGE_REJECTED', 'DISABLED'})
 
 
 def _limits(max_jobs, timeout_seconds):
@@ -32,8 +32,8 @@ def run_batch(connect, keys, transport, *, max_jobs, stop, clock=time.time, disp
         if status not in STATUSES:
             raise ValueError('MAIL_WORKER_RESULT_REJECTED')
         counts[status] = counts.get(status, 0) + 1
-        if status == 'IDLE':
-            return {'status': 'IDLE', 'counts': counts}
+        if status in ('IDLE','RATE_LIMITED'):
+            return {'status': status, 'counts': counts}
     return {'status': 'LIMIT_REACHED', 'counts': counts}
 
 
@@ -56,7 +56,7 @@ def _report(value, max_jobs):
     if value['status'] == 'WORKER_FAILED' and value['counts'] is None:
         return value
     counts = value['counts']
-    if (value['status'] not in {'STOPPED', 'IDLE', 'LIMIT_REACHED'} or
+    if (value['status'] not in {'STOPPED', 'IDLE', 'LIMIT_REACHED', 'RATE_LIMITED'} or
             not isinstance(counts, dict) or not set(counts) <= STATUSES or
             any(type(n) is not int or n < 1 for n in counts.values()) or
             sum(counts.values()) > max_jobs):

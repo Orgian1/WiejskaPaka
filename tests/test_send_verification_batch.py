@@ -12,7 +12,7 @@ def test_no_send_reads_no_settings_keys_or_credentials(monkeypatch):
 @pytest.mark.parametrize('env',[
     {}, {'WP_ENABLE_EMAIL_VERIFICATION':'1'},
     {'WP_ENABLE_EMAIL_VERIFICATION':'1','WP_ENABLE_VERIFICATION_SMTP':'1','WP_ENV':'production'},
-    {'WP_ENABLE_EMAIL_VERIFICATION':'1','WP_ENABLE_VERIFICATION_SMTP':'1','WP_ENV':'test',
+    {'WP_ENABLE_EMAIL_VERIFICATION':'1','WP_ENABLE_VERIFICATION_SMTP':'1','WP_ENV':'test','WP_MAIL_MIN_INTERVAL_SECONDS':'1','WP_MAIL_DAILY_LIMIT':'100',
      'WP_TEST_DATABASE_URL':'postgresql://private-user:private-secret@localhost/production'}])
 def test_bad_configuration_is_private_and_never_starts_worker(monkeypatch,env):
     monkeypatch.setattr(cli.worker,'run_process',lambda *a,**kw:pytest.fail('Worker started'))
@@ -47,7 +47,7 @@ def test_unexpected_configuration_errors_are_redacted(monkeypatch):
 def test_valid_configuration_passes_only_bounded_factories(monkeypatch):
     from backend import reset_mail_keys
     from backend.reset_mail_queue import KeyRing
-    env={'WP_ENABLE_EMAIL_VERIFICATION':'1','WP_ENABLE_VERIFICATION_SMTP':'1','WP_ENV':'test',
+    env={'WP_ENABLE_EMAIL_VERIFICATION':'1','WP_ENABLE_VERIFICATION_SMTP':'1','WP_ENV':'test','WP_MAIL_MIN_INTERVAL_SECONDS':'1','WP_MAIL_DAILY_LIMIT':'100',
          'WP_TEST_DATABASE_URL':'postgresql://test:synthetic-private-password@127.0.0.1/wp_test_mail'}
     keys=KeyRing({'test':b'q'*32},'test')
     monkeypatch.setattr(reset_mail_keys,'load_config',lambda e:keys)
@@ -56,6 +56,7 @@ def test_valid_configuration_passes_only_bounded_factories(monkeypatch):
         assert actual_keys is keys and isinstance(transport,cli.Transport)
         assert connect.database_name=='wp_test_mail'
         assert 'synthetic-private-password' not in repr(connect)
+        assert limits.pop('policy').daily_limit==100
         assert limits=={'max_jobs':2,'timeout_seconds':12}
         return {'status':'LIMIT_REACHED','counts':{'ACCEPTED':2}}
     monkeypatch.setattr(cli.worker,'run_process',run)

@@ -211,6 +211,9 @@ def validate_restored(connection, keyring):
         quarantine_restored(con)
         if con.execute("SELECT count(*) AS n FROM reset_mail_queue WHERE state IN ('queued','leased') OR payload IS NOT NULL").fetchone()['n']:
             raise ValueError('Restored mail queue remains active')
+    if con.execute("SELECT to_regclass('public.mail_send_budget') AS budget_table").fetchone()['budget_table'] is not None:
+        from backend.mail_send_budget import quarantine_restored as quarantine_budget
+        quarantine_budget(con)
     if con.execute("SELECT to_regclass('public.email_verification_queue') AS verification_table").fetchone()['verification_table'] is not None:
         from backend.email_verification_queue import quarantine_restored as quarantine_verification
         quarantine_verification(con)

@@ -1279,6 +1279,7 @@ def verification_worker_accept(recipient,token):
 
 
 def test_native_verification_spawned_worker_and_readonly_preflight(pg_email_verification_api,capfd):
+    from backend.mail_send_budget import Policy
     from backend.reset_mail_keys import load_keys
     from backend import email_verification_worker as worker
     from scripts.send_verification_batch import Connect
@@ -1288,9 +1289,9 @@ def test_native_verification_spawned_worker_and_readonly_preflight(pg_email_veri
     assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
     keys=load_keys(pg_email_verification_api.mail_keys)
     connect=Connect(make_conninfo(**parameters),parameters['dbname'])
-    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30)=={
+    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
         'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}
-    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30)=={
+    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
         'status':'IDLE','counts':{'IDLE':1}}
     assert 'synthetic-private' not in ''.join(capfd.readouterr())
 
@@ -1352,6 +1353,7 @@ def purchase_worker_accept(recipient,purchase,*,email_verified):
 
 @pytest.mark.parametrize('revoked',[False,True])
 def test_native_purchase_spawned_worker_rechecks_real_proof(pg_email_verification_api,capfd,revoked):
+    from backend.mail_send_budget import Policy
     from backend.reset_mail_keys import load_keys
     from backend.checkout_vault import Vault,read_ring
     from backend import order_mail_worker as worker
@@ -1375,10 +1377,38 @@ def test_native_purchase_spawned_worker_rechecks_real_proof(pg_email_verificatio
             with transaction(con):con.execute('DELETE FROM account_email_proofs WHERE user_id=?',(buyer_id,))
         finally:con.connection.close()
     vault=Vault(*read_ring(pg_email_verification_api.key_path))
-    connect=Connect(make_conninfo(**parameters),parameters['dbname'],('account_email_proofs','order_mail_outbox'))
+    connect=Connect(make_conninfo(**parameters),parameters['dbname'],('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts'))
     expected='SKIPPED' if revoked else 'ACCEPTED'
-    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30)=={
+    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
         'status':'LIMIT_REACHED','counts':{expected:1}}
-    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30)=={
+    assert worker.run_process(connect,vault,purchase_worker_accept,max_jobs=1,timeout_seconds=30,policy=Policy(1,10))=={
         'status':'IDLE','counts':{'IDLE':1}}
     assert 'synthetic-private' not in ''.join(capfd.readouterr())
+
+
+def test_native_shared_mail_budget_serializes_claims_and_preserves_spacing(pg_email_verification_api):
+    from backend.mail_send_budget import Gate,Policy
+    from backend.reset_mail_queue import transaction
+    _,parameters=pg_email_verification_api
+    gates=[Gate(Policy(1,10),clock=lambda:100.2) for _ in range(8)]
+    def claim(gate,now=100):
+        con=queued_worker_connection(parameters)
+        try:
+            with transaction(con):return gate.claim(con,now)
+        finally:con.connection.close()
+    with ThreadPoolExecutor(max_workers=8) as pool:results=list(pool.map(claim,gates))
+    assert sum(results)==1
+    con=queued_worker_connection(parameters)
+    try:
+        with transaction(con):gates[results.index(True)].finish(con)
+    finally:con.connection.close()
+    assert not claim(Gate(Policy(1,10)),101)
+    assert claim(Gate(Policy(1,10)),102)
+    con=queued_worker_connection(parameters)
+    try:
+        assert con.execute('SELECT count(*) AS n FROM mail_send_attempts').fetchone()['n']==2
+        con.connection.rollback()
+        from backend.mail_send_budget import quarantine_restored
+        with transaction(con):quarantine_restored(con)
+        assert con.execute('SELECT paused FROM mail_send_budget').fetchone()['paused']==1
+    finally:con.connection.close()

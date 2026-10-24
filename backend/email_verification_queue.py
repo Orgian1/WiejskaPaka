@@ -81,7 +81,7 @@ def _connection(connect):
         else:con.close()
 
 
-def dispatch_once(connect, keys, transport, *, now):
+def dispatch_once(connect, keys, transport, *, now, gate=None):
     """At most one SMTP attempt; transport takes recipient/token, no retries on uncertainty."""
     proof._time(now)
     with _connection(connect) as con:
@@ -104,6 +104,7 @@ def dispatch_once(connect, keys, transport, *, now):
             if not valid:
                 con.execute("UPDATE email_verification_queue SET payload=NULL,state='expired' WHERE id=?",(job_id,))
                 return 'SKIPPED'
+            if gate is not None and not gate.claim(con,now):return 'RATE_LIMITED'
             con.execute("UPDATE email_verification_queue SET payload=NULL,state='started',started_at=? WHERE id=?",(now,job_id))
         # Ciphertext erased and started marker committed BEFORE network I/O.
         try:
@@ -120,5 +121,6 @@ def dispatch_once(connect, keys, transport, *, now):
             else:state='uncertain'
         except Exception:state='uncertain'
         with transaction(con):
+            if gate is not None:gate.finish(con)
             con.execute("UPDATE email_verification_queue SET state=? WHERE id=? AND state='started'",(state,job_id))
         return state.upper()

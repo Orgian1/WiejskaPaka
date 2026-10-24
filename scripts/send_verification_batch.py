@@ -14,7 +14,7 @@ from backend import email_verification_mail as mail, email_verification_worker a
 class Connect:
     dsn:str=field(repr=False)
     database_name:str
-    required_tables:tuple=('account_email_proofs','email_verification_limits','email_verification_queue')
+    required_tables:tuple=('account_email_proofs','email_verification_limits','email_verification_queue','mail_send_budget','mail_send_attempts')
 
     def __call__(self):
         from backend.test_server_launcher import verify_test_database_connection
@@ -55,13 +55,15 @@ def execute(environ,*,send=False,max_jobs=3,timeout_seconds=30):
         if (environ.get('WP_ENABLE_EMAIL_VERIFICATION')!='1' or
                 environ.get('WP_ENABLE_VERIFICATION_SMTP')!='1'):
             raise ValueError('Explicit verification opt-ins required')
+        from backend.mail_send_budget import load_policy
+        policy=load_policy(environ)
         connect=configured_connection(environ)
         from backend.reset_mail_keys import load_config as load_keys
         keys=load_keys(environ)
         smtp=mail.load_config(environ)
         if keys is None or smtp is None:raise ValueError('Explicit private keys and SMTP required')
         result=worker.run_process(connect,
-            keys,Transport(smtp),max_jobs=max_jobs,timeout_seconds=timeout_seconds)
+            keys,Transport(smtp),max_jobs=max_jobs,timeout_seconds=timeout_seconds,policy=policy)
         return result
     except Exception:return {'status':'WORKER_FAILED','counts':None}
 

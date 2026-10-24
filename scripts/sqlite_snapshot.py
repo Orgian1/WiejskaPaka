@@ -78,6 +78,9 @@ def snapshot(source, key_file, destination, *, restore=False, timeout=30):
                             quarantine_restored(dst)
                             if dst.execute("SELECT COUNT(*) FROM reset_mail_queue WHERE state IN ('queued','leased') OR payload IS NOT NULL").fetchone()[0]:
                                 raise ValueError('Nie udało się zablokować historycznej kolejki')
+                        if dst.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mail_send_budget'").fetchone():
+                            from backend.mail_send_budget import quarantine_restored as quarantine_budget
+                            quarantine_budget(dst)
                         if dst.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='email_verification_queue'").fetchone():
                             from backend.email_verification_queue import quarantine_restored as quarantine_verification
                             quarantine_verification(dst)

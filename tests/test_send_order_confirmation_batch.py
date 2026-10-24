@@ -5,7 +5,7 @@ from backend import order_mail
 
 
 def valid_env():return {'WP_ENABLE_ORDER_MAIL_QUEUE':'1','WP_ENABLE_EMAIL_VERIFICATION':'1',
-    'WP_ENABLE_ORDER_SMTP':'1','WP_ENV':'test',
+    'WP_ENABLE_ORDER_SMTP':'1','WP_ENV':'test','WP_MAIL_MIN_INTERVAL_SECONDS':'1','WP_MAIL_DAILY_LIMIT':'100',
     'WP_TEST_DATABASE_URL':'postgresql://test:synthetic-private-password@127.0.0.1/wp_test_mail'}
 
 
@@ -31,8 +31,9 @@ def test_configuration_and_factories_keep_secrets_private(monkeypatch):
     monkeypatch.setattr(order_mail,'load_ses_config',lambda e:smtp)
     def run(connect,actual_vault,transport,**limits):
         assert actual_vault is vault and transport.config is smtp
-        assert connect.required_tables==('account_email_proofs','order_mail_outbox')
+        assert connect.required_tables==('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts')
         assert 'synthetic-private-password' not in repr(connect)
+        assert limits.pop('policy').daily_limit==100
         assert limits=={'max_jobs':1,'timeout_seconds':30}
         return {'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}
     monkeypatch.setattr(cli.worker,'run_process',run)

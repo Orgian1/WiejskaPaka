@@ -153,5 +153,10 @@
     "file": "optional_order_mail_outbox.sql",
     "sha256": "aa61e581d4db5779b737e988346ec8701af4a1f91465cf33dcb8281af9274345",
     "bytes": 642
+  },
+  {
+    "file": "optional_email_verification.sql",
+    "sha256": "e2544655da97b920308b28f3f418898497c237f8de9c34318bdb30f1271f00e0",
+    "bytes": 854
   }
 ]

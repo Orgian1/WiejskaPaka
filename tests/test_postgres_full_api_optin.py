@@ -92,7 +92,12 @@ def pg_seller_api():
     yield from _postgres_api(sellers=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False):
+@pytest.fixture
+def pg_email_verification_api():
+    yield from _postgres_api(email_verification=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -157,14 +162,15 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     env.update(WP_ENABLE_TEST_PASSWORD_RESET='1', WP_ENABLE_PG_TEST_PASSWORD_RESET='1',
                                WP_TEST_RESET_OUTBOX=str(reset_outbox))
                 mail_keys = None
-                if queued_reset:
+                if queued_reset or email_verification:
                     import base64, json
                     mail_keys = Path(folder)/'synthetic-mail-keys.json'
                     mail_keys.write_text(json.dumps({'format':1,'active':'test-v1',
                         'keys':{'test-v1':base64.b64encode(b'm'*32).decode('ascii')}}))
                     mail_keys.chmod(0o600)
-                    env.update(WP_ENABLE_QUEUED_PASSWORD_RESET='1', WP_ENABLE_MAIL_QUEUE='1',
-                               WP_ENABLE_PG_TEST_PASSWORD_RESET='1', WP_MAIL_QUEUE_KEYS_FILE=str(mail_keys))
+                    env.update(WP_ENABLE_MAIL_QUEUE='1',WP_MAIL_QUEUE_KEYS_FILE=str(mail_keys))
+                    if queued_reset:env.update(WP_ENABLE_QUEUED_PASSWORD_RESET='1',WP_ENABLE_PG_TEST_PASSWORD_RESET='1')
+                    if email_verification:env['WP_ENABLE_EMAIL_VERIFICATION']='1'
                 with tempfile.TemporaryFile() as log:
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
                         def start():
@@ -1215,3 +1221,51 @@ def test_native_order_mail_outbox_scoping_and_no_duplicate_submission(pg_api,sce
     assert len(calls)==(0 if scenario=='unverified' else 1)
     assert queue.dispatch_once(connect,vault,lambda *a,**kw:pytest.fail('Duplicate SMTP submission'),
                                lambda *a:True,clock=lambda:int(time.time()))=='IDLE'
+
+
+def test_native_email_confirmation_is_authenticated_single_use_and_durable(pg_email_verification_api):
+    from backend.reset_mail_keys import load_keys
+    from backend import email_verification_queue as queue
+    client,parameters=pg_email_verification_api
+    buyer,buyer_id=register(client,'klient');other,_=register(client,'klient')
+    assert client.post('/auth/email-verification/request').status_code==401
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    keys=load_keys(pg_email_verification_api.mail_keys)
+    con=queued_worker_connection(parameters)
+    try:
+        row=con.execute('SELECT * FROM email_verification_queue WHERE user_id=?',(buyer_id,)).fetchone()
+        token=keys.decrypt(row).token
+    finally:con.connection.close()
+    assert client.post('/auth/email-verification/confirm',headers=other,json={'token':token}).status_code==400
+    def confirm(_):return client.post('/auth/email-verification/confirm',headers=buyer,json={'token':token}).status_code
+    with ThreadPoolExecutor(max_workers=2) as pool:assert sorted(pool.map(confirm,range(2)))==[200,400]
+    pg_email_verification_api.restart()
+    assert client.get('/auth/email-verification/status',headers=buyer).json()=={'verified':True}
+    con=queued_worker_connection(parameters)
+    try:
+        with queue.transaction(con):
+            queue.quarantine_restored(con)
+            assert con.execute('SELECT count(*) AS n FROM account_email_proofs').fetchone()['n']==0
+    finally:con.connection.close()
+    assert client.get('/auth/email-verification/status',headers=buyer).json()=={'verified':False}
+
+
+@pytest.mark.parametrize('uncertain',[False,True])
+def test_native_email_verification_delivery_and_persistent_limits(pg_email_verification_api,uncertain):
+    from backend.reset_mail_keys import load_keys
+    from backend import email_verification_queue as queue
+    from backend.smtp_reset_transport import outcome
+    client,parameters=pg_email_verification_api
+    buyer,_=register(client,'klient')
+    for _ in range(5):assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==429
+    pg_email_verification_api.restart()
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==429
+    keys=load_keys(pg_email_verification_api.mail_keys);seen=[]
+    def submit(recipient,token):
+        assert len(token)==43;seen.append(recipient)
+        return outcome('DELIVERY_UNCERTAIN') if uncertain else outcome('ACCEPTED',accepted=True)
+    connect=lambda:queued_worker_connection(parameters)
+    assert queue.dispatch_once(connect,keys,submit,now=int(time.time()))==('UNCERTAIN' if uncertain else 'ACCEPTED')
+    assert queue.dispatch_once(connect,keys,lambda *a:pytest.fail('Duplicate'),now=int(time.time()))=='IDLE'
+    assert len(seen)==1

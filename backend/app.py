@@ -3209,3 +3209,8 @@ if seller_directory.enabled() and not DATABASE_URL:
     with db() as _seller_con:
         _seller_con.executescript(seller_directory.SCHEMA_SQLITE)
 seller_directory.register_routes(app, db, order_write_db, current_user)
+
+
+# Account verification is explicitly opt-in; SMTP never runs in an HTTP handler.
+from backend.email_verification_http import install as install_email_verification
+install_email_verification(app, db, current_user, order_write_db, os.environ, DATABASE_URL)

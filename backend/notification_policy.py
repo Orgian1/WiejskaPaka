@@ -35,7 +35,7 @@ RULES = {
     Event.PICKUP_REMINDER: NotificationRule(frozenset({Channel.EMAIL, Channel.PANEL})),
     Event.DELIVERY_STATUS: NotificationRule(frozenset({Channel.EMAIL, Channel.PANEL})),
     Event.SELLER_NEW_ORDER: NotificationRule(frozenset({Channel.EMAIL, Channel.PANEL})),
-    Event.PICKUP_PIN: NotificationRule(frozenset({Channel.PANEL})),
+    Event.PICKUP_PIN: NotificationRule(frozenset({Channel.EMAIL, Channel.PANEL})),
 }
 
 

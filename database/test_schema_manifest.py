@@ -28,6 +28,7 @@ UPGRADES = (
     'optional_address_delivery.sql',
     'optional_user_photos.sql',
     'optional_seller_directory.sql',
+    'optional_order_mail_outbox.sql',
 )
 
 

@@ -8,7 +8,8 @@ import ipaddress
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from backend.test_server_launcher import prepare_test_server, verify_test_database_connection
+from backend.test_server_launcher import (prepare_test_server, verify_test_database_connection,
+                                         required_preview_tables, OPTIONAL_PREVIEW_TABLES)
 from backend.checkout_vault import read_ring
 
 
@@ -16,6 +17,8 @@ def inspect_preview(environ=None, *, connect=None):
     env = dict(os.environ if environ is None else environ)
     result = {'configuration_checked': False, 'checkout_key_checked': False,
               'database_core_checked': False, 'success': False,
+              'database_optional_checked': False,
+              'enabled_optional_features': [],
               'ready_for_production': False, 'preview_started': False,
               'backup_restore_verified': False}
     stage = 'CONFIGURATION_REJECTED'
@@ -29,6 +32,8 @@ def inspect_preview(environ=None, *, connect=None):
         if not local:
             raise ValueError('Probe accepts local PostgreSQL only')
         result['configuration_checked'] = True
+        result['enabled_optional_features'] = [flag for flag in OPTIONAL_PREVIEW_TABLES
+                                                if env.get(flag) == '1']
         stage = 'CHECKOUT_KEY_REJECTED'
         key = Path(env.get('WP_CHECKOUT_KEY_FILE', ''))
         if not key.is_absolute() or key.resolve().is_relative_to(ROOT):
@@ -48,8 +53,10 @@ def inspect_preview(environ=None, *, connect=None):
                 '-c lock_timeout=1000 -c search_path=pg_catalog'))
 
         verify_test_database_connection(env['WP_TEST_DATABASE_URL'],
-            settings['database_name'], connect=readonly_connection, require_schema=True)
+            settings['database_name'], connect=readonly_connection, require_schema=True,
+            required_tables=required_preview_tables(env))
         result['database_core_checked'] = True
+        result['database_optional_checked'] = bool(result['enabled_optional_features'])
         result['success'] = True
     except Exception:
         # Exception messages may contain DSNs, key paths or driver credentials.

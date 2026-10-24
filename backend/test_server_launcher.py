@@ -3,6 +3,18 @@ import os
 
 from backend.test_server_preflight import check_test_server
 
+OPTIONAL_PREVIEW_TABLES = {
+    'WP_ENABLE_PRODUCT_UNITS': ('product_sale_units', 'order_sale_units'),
+    'WP_ENABLE_ADDRESS_DELIVERY': ('seller_delivery_windows', 'address_delivery_requests'),
+    'WP_ENABLE_USER_PHOTOS': ('user_photos',),
+    'WP_ENABLE_SELLER_SEARCH': ('seller_public_logins',),
+}
+
+
+def required_preview_tables(environ):
+    return tuple(table for flag, tables in OPTIONAL_PREVIEW_TABLES.items()
+                 if environ.get(flag) == '1' for table in tables)
+
 
 def prepare_test_server(environ=None):
     env = dict(os.environ if environ is None else environ)
@@ -25,7 +37,8 @@ def main():
     # The API reads DATABASE_URL at import time; use the validated test DSN.
     test_dsn = os.environ['WP_TEST_DATABASE_URL']
     try:
-        verify_test_database_connection(test_dsn, settings['database_name'], require_schema=True)
+        verify_test_database_connection(test_dsn, settings['database_name'], require_schema=True,
+                                        required_tables=required_preview_tables(os.environ))
     except Exception:
         # Drivers may include credentials, hosts and DSNs in their error text.
         # Keep the private test launcher fail-closed without exposing them.
@@ -47,7 +60,8 @@ def main():
             os.environ.pop('DATABASE_URL', None)
 
 
-def verify_test_database_connection(dsn, expected_name, connect=None, *, require_schema=False):
+def verify_test_database_connection(dsn, expected_name, connect=None, *, require_schema=False,
+                                    required_tables=()):
     """Verify the actual PostgreSQL target before starting the HTTP listener.
 
     This only performs a read-only probe; it never creates or migrates a database.
@@ -75,15 +89,16 @@ def verify_test_database_connection(dsn, expected_name, connect=None, *, require
             if role is None or len(role) != 4 or any(flag is not False for flag in role):
                 raise RuntimeError('Test PostgreSQL role must be non-privileged and cannot bypass RLS')
             from backend.postgres_schema_preflight import CORE_TABLES
+            tables = tuple(dict.fromkeys((*CORE_TABLES, *required_tables)))
             with connection.cursor() as cursor:
                 cursor.execute(
                     'SELECT table_name FROM information_schema.tables '
                     'WHERE table_schema = %s AND table_type = %s AND table_name = ANY(%s)',
-                    ('public', 'BASE TABLE', list(CORE_TABLES)),
+                    ('public', 'BASE TABLE', list(tables)),
                 )
                 rows = cursor.fetchall()
             present = {row[0] for row in rows}
-            missing = sorted(set(CORE_TABLES) - present)
+            missing = sorted(set(tables) - present)
             if missing:
                 raise RuntimeError('Test PostgreSQL schema incomplete; missing tables: ' + ', '.join(missing))
     finally:

@@ -10,7 +10,8 @@ OPTIONAL_PREVIEW_TABLES = {
     'WP_ENABLE_SELLER_SEARCH': ('seller_public_logins',),
     'WP_ENABLE_EMAIL_VERIFICATION': ('account_email_proofs', 'email_verification_limits', 'email_verification_queue'),
     'WP_ENABLE_ORDER_MAIL_QUEUE': ('order_mail_outbox',),
-    'WP_ENABLE_ORDER_SMTP': ('order_mail_outbox',),
+    'WP_ENABLE_ORDER_SMTP': ('order_mail_outbox','mail_send_budget','mail_send_attempts'),
+    'WP_ENABLE_VERIFICATION_SMTP': ('mail_send_budget','mail_send_attempts'),
 }
 
 

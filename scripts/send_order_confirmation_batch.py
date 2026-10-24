@@ -40,11 +40,13 @@ def execute(environ,*,send=False,max_jobs=1,timeout_seconds=30):
         if any(environ.get(flag)!='1' for flag in (
                 'WP_ENABLE_ORDER_MAIL_QUEUE','WP_ENABLE_EMAIL_VERIFICATION','WP_ENABLE_ORDER_SMTP')):
             raise ValueError('Explicit purchase-mail opt-ins required')
-        connect=configured_connection(environ,required_tables=('account_email_proofs','order_mail_outbox'))
+        from backend.mail_send_budget import load_policy
+        policy=load_policy(environ)
+        connect=configured_connection(environ,required_tables=('account_email_proofs','order_mail_outbox','mail_send_budget','mail_send_attempts'))
         vault=load_vault(environ)
         smtp=mail.load_ses_config(environ)
         if smtp is None:raise ValueError('Explicit purchase SMTP required')
-        return worker.run_process(connect,vault,Transport(smtp),max_jobs=max_jobs,timeout_seconds=timeout_seconds)
+        return worker.run_process(connect,vault,Transport(smtp),max_jobs=max_jobs,timeout_seconds=timeout_seconds,policy=policy)
     except Exception:return {'status':'WORKER_FAILED','counts':None}
 
 

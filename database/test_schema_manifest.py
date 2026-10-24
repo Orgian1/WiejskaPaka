@@ -30,6 +30,7 @@ UPGRADES = (
     'optional_seller_directory.sql',
     'optional_order_mail_outbox.sql',
     'optional_email_verification.sql',
+    'optional_mail_send_budget.sql',
 )
 
 

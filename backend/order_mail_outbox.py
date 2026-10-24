@@ -75,7 +75,7 @@ def enqueue(con,buyer_id,request_key,*,now):
                        (buyer_id,request_key)).fetchone()['id']
 
 
-def dispatch_once(connect,vault,transport,verified_recipient,*,clock):
+def dispatch_once(connect,vault,transport,verified_recipient,*,clock,gate=None):
     """Exactly one submission attempt, after durable start and private authorization.
 
     verified_recipient(con,buyer_id,email) must query confirmed account ownership;
@@ -101,6 +101,7 @@ def dispatch_once(connect,vault,transport,verified_recipient,*,clock):
             except Exception:
                 con.execute("UPDATE order_mail_outbox SET state='skipped',result='INELIGIBLE' WHERE id=?",(job['id'],))
                 return 'SKIPPED'
+            if gate is not None and not gate.claim(con,now):return 'RATE_LIMITED'
             updated=con.execute("UPDATE order_mail_outbox SET state='started',started_at=? WHERE id=? AND state='queued'",
                                 (now,job['id']))
             if updated.rowcount!=1:return 'STALE'
@@ -119,6 +120,7 @@ def dispatch_once(connect,vault,transport,verified_recipient,*,clock):
             else:raise ValueError('Invalid transport status')
         except Exception:state='uncertain';status='DELIVERY_UNCERTAIN'
         with transaction(con):
+            if gate is not None:gate.finish(con)
             updated=con.execute("UPDATE order_mail_outbox SET state=?,result=? WHERE id=? AND state='started'",
                                 (state,status,job['id']))
         return status if updated.rowcount==1 else 'STALE'

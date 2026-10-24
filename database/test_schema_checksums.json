@@ -158,5 +158,10 @@
     "file": "optional_email_verification.sql",
     "sha256": "e2544655da97b920308b28f3f418898497c237f8de9c34318bdb30f1271f00e0",
     "bytes": 854
+  },
+  {
+    "file": "optional_mail_send_budget.sql",
+    "sha256": "7303810d13fd1509fd97370fc9a5ea2ddcef87ab2331aeea58cffa0883acd6c0",
+    "bytes": 589
   }
 ]

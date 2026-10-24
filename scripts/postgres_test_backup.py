@@ -211,6 +211,11 @@ def validate_restored(connection, keyring):
         quarantine_restored(con)
         if con.execute("SELECT count(*) AS n FROM reset_mail_queue WHERE state IN ('queued','leased') OR payload IS NOT NULL").fetchone()['n']:
             raise ValueError('Restored mail queue remains active')
+    if con.execute("SELECT to_regclass('public.order_mail_outbox') AS outbox_table").fetchone()['outbox_table'] is not None:
+        from backend.order_mail_outbox import quarantine_restored as quarantine_orders
+        quarantine_orders(con)
+        if con.execute("SELECT count(*) AS n FROM order_mail_outbox WHERE state IN ('queued','started')").fetchone()['n']:
+            raise ValueError('Restored purchase mail remains active')
     if (con.execute('SELECT count(*) AS n FROM sessions').fetchone()['n']
             or con.execute('SELECT count(*) AS n FROM password_reset_tokens').fetchone()['n']):
         raise ValueError('Restored sessions remain')

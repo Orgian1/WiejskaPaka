@@ -116,14 +116,26 @@ def outcome(status, *, accepted=False, retryable=False):
 
 
 def send_reset(config, recipient, token, *, factory=None):
-    """One attempt. Returns only fixed codes; never logs credentials or content.
-
-    Acceptance by SMTP does not prove inbox delivery. An uncertain DATA result
-    must not be blindly retried. A QUIT failure cannot undo prior acceptance.
-    """
     if config is None:return outcome('DISABLED')
     try:
         message=reset_message(config,recipient,token)
+    except (ValueError,TypeError,AttributeError):return outcome('MESSAGE_REJECTED')
+    return submit_message(config,recipient,message,factory=factory)
+
+
+def submit_message(config, recipient, message, *, factory=None):
+    """One TLS submission; fixed status codes, no logging or automatic retries.
+
+    Callers authorize the recipient and commit a durable started marker first.
+    Acceptance is not inbox delivery; uncertain DATA must not be retried blindly.
+    """
+    if config is None:return outcome('DISABLED')
+    try:
+        recipient=address(recipient)
+        if (not isinstance(message,EmailMessage) or
+                message.get_all('From')!=[config.sender] or message.get_all('To')!=[recipient]
+                or any(message.get_all(name) for name in ('Cc','Bcc','Resent-To','Resent-Cc','Resent-Bcc'))):
+            raise ValueError('One authorized envelope recipient required')
         if (config.mode,config.port) not in (('implicit_tls',465),('starttls',587)):
             raise ValueError('TLS required')
         context=ssl.create_default_context()

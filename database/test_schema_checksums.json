@@ -148,5 +148,10 @@
     "file": "optional_seller_directory.sql",
     "sha256": "51acda156b660cffcfa2645782a22dcab0fc836b1d7d3a9c0a7c8ff9029ea84f",
     "bytes": 282
+  },
+  {
+    "file": "optional_order_mail_outbox.sql",
+    "sha256": "aa61e581d4db5779b737e988346ec8701af4a1f91465cf33dcb8281af9274345",
+    "bytes": 642
   }
 ]

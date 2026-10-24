@@ -1,0 +1,160 @@
+{
+  "application_sha256": "df7481581a9e74075d187ba301e84ebf73fbfc7c80ece2d676458eea0ad7d2dc",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "test_counts": {
+    "total": 168,
+    "passed": 168,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 12,
+  "planned": 12,
+  "modules": [
+    {
+      "file": "test_smtp_reset_transport.py",
+      "sha256": "d3049821aae7099bd886e046a840d399847dc1d02bf8875618646fc97b662af0",
+      "returncode": 0,
+      "seconds": 0.35,
+      "test_counts": {
+        "total": 30,
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_order_mail.py",
+      "sha256": "70afe37b27f3d5918610d4068626c8c7fe42223607d12ad859044cfdfe2f98d4",
+      "returncode": 0,
+      "seconds": 0.33,
+      "test_counts": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_order_mail_outbox.py",
+      "sha256": "fff29e427d680bd07b021c529fc274639fe12392dd717498b568a8ed0cca973a",
+      "returncode": 0,
+      "seconds": 1.76,
+      "test_counts": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_notification_policy.py",
+      "sha256": "b6d559b5c4f803bc3666b3a7f01fe417d702c3c266f73c1bae69b44097732091",
+      "returncode": 0,
+      "seconds": 0.26,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mail_restore_quarantine.py",
+      "sha256": "276b54391bba10dafe78bb3a3cd39ecc669571d92b67665deb3fa343d85a5608",
+      "returncode": 0,
+      "seconds": 2.89,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_test_backup.py",
+      "sha256": "c52240d352efb5903710d928cab0f45df03111441e26b2787be627f6ae72389e",
+      "returncode": 0,
+      "seconds": 0.65,
+      "test_counts": {
+        "total": 46,
+        "passed": 46,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11305_migration_manifest.py",
+      "sha256": "bb94f7c23b3b3db44694bef5bffe499731f743cb52cbe044d9e2b31d9d636391",
+      "returncode": 0,
+      "seconds": 0.31,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11306_migration_cli.py",
+      "sha256": "d1eb5fdbdb9c61d9ef8e1bd813521c3610f6dc04da364e7ba724b3ceb4b7b22a",
+      "returncode": 0,
+      "seconds": 0.27,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11307_schema_lock.py",
+      "sha256": "4229a3a9bdf814b0e6a25ca278a146375d86e2ac9a80833338cc77314bd8943d",
+      "returncode": 0,
+      "seconds": 0.27,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11309_atomic_migration_gate.py",
+      "sha256": "85c4872e8e8720d3113d1e3fce9004c4d426b7981ff46ab07ced590d93ebfa67",
+      "returncode": 0,
+      "seconds": 0.25,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_preview_probe.py",
+      "sha256": "bd3e1447726d5a46ff699db9097da3d7adc52c2021e4dc16437e19a4bb2f6d02",
+      "returncode": 0,
+      "seconds": 0.33,
+      "test_counts": {
+        "total": 23,
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11298_startup_atomicity.py",
+      "sha256": "80adf0523665effb66462c9e352a0e63b359ba2b38ddf9564543fce8ea237579",
+      "returncode": 0,
+      "seconds": 0.24,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  ]
+}

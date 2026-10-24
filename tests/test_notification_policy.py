@@ -21,11 +21,13 @@ class NotificationPolicyTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         validate_channel(event, channel, email_verified=True)
 
-    def test_pickup_pin_is_only_in_authenticated_panel(self):
+    def test_pickup_pin_email_requires_verified_ownership(self):
         self.assertEqual(allowed_channels(Event.PICKUP_PIN, email_verified=True),
+                         frozenset({Channel.EMAIL, Channel.PANEL}))
+        self.assertEqual(allowed_channels(Event.PICKUP_PIN, email_verified=False),
                          frozenset({Channel.PANEL}))
         with self.assertRaises(ValueError):
-            validate_channel(Event.PICKUP_PIN, "email", email_verified=True)
+            validate_channel(Event.PICKUP_PIN, "email", email_verified=False)
 
     def test_unverified_email_does_not_receive_order_notifications(self):
         self.assertEqual(allowed_channels(Event.ORDER_CONFIRMED, email_verified=False),

@@ -1180,3 +1180,38 @@ def test_native_seller_login_concurrent_unique_claim(pg_seller_api):
     with ThreadPoolExecutor(max_workers=2) as pool:
         assert sorted(pool.map(claim,farmers))==[200,409]
     assert client.get('/sellers/search',params={'q':'@'+alias}).json()['total']==1
+
+
+@pytest.mark.parametrize('scenario',['accepted','uncertain','unverified'])
+def test_native_order_mail_outbox_scoping_and_no_duplicate_submission(pg_api,scenario):
+    from contextlib import closing
+    from datetime import datetime, timezone
+    from backend import order_mail_outbox as queue
+    from backend.checkout_vault import Vault, read_ring
+    from backend.smtp_reset_transport import outcome
+    client,parameters=pg_api
+    farmer,_=register(client,'rolnik');buyer,buyer_id=register(client,'klient')
+    pid=product(client,farmer);key=uuid4().hex
+    created=client.post('/orders',headers={**buyer,'Idempotency-Key':key},json=delivery(pid))
+    assert created.status_code==201,created.text
+    request_key='direct:'+key
+    def connect():return queued_worker_connection(parameters)
+    con=connect()
+    try:
+        with queue.transaction(con):
+            jid=queue.enqueue(con,buyer_id,request_key,now=int(time.time()))
+            assert queue.enqueue(con,buyer_id,request_key,now=int(time.time()))==jid
+    finally:con.connection.close()
+    calls=[]
+    def submit(recipient,purchase,**kwargs):
+        assert scenario!='unverified' and kwargs=={'email_verified':True}
+        assert purchase.pin==created.json()['pin_test_only']
+        assert purchase.total_grosze==850 and purchase.delivery_grosze==501
+        calls.append(recipient)
+        return outcome('ACCEPTED',accepted=True) if scenario=='accepted' else outcome('DELIVERY_UNCERTAIN')
+    expected={'accepted':'ACCEPTED','uncertain':'DELIVERY_UNCERTAIN','unverified':'SKIPPED'}[scenario]
+    vault=Vault(*read_ring(pg_api.key_path))
+    assert queue.dispatch_once(connect,vault,submit,lambda *args:scenario!='unverified',clock=lambda:int(time.time()))==expected
+    assert len(calls)==(0 if scenario=='unverified' else 1)
+    assert queue.dispatch_once(connect,vault,lambda *a,**kw:pytest.fail('Duplicate SMTP submission'),
+                               lambda *a:True,clock=lambda:int(time.time()))=='IDLE'

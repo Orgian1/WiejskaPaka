@@ -197,3 +197,28 @@ def test_real_account_proof_controls_purchase_mail(store,confirmed):
         return outcome('ACCEPTED',accepted=True)
     assert dispatch(store,transport,verified=proof.verified_recipient)==('ACCEPTED' if confirmed else 'SKIPPED')
     assert len(seen)==int(confirmed)
+
+
+@pytest.mark.parametrize('confirmed',[False,True])
+def test_snapshot_restore_invalidates_account_proofs_and_verification_jobs(store,seed,tmp_path,confirmed):
+    from pathlib import Path
+    from backend import email_verification_queue as verification, email_ownership as proof
+    from backend.reset_mail_queue import KeyRing
+    from scripts.sqlite_snapshot import snapshot
+    with closing(store[0]()) as con:
+        source=Path(con.execute('PRAGMA database_list').fetchone()['file'])
+        con.executescript(verification.SCHEMA_SQLITE)
+        with outbox.transaction(con):
+            verification.enqueue(con,KeyRing({'test':b'q'*32},'test'),store[2],now=100)
+            if confirmed:
+                row=con.execute('SELECT * FROM email_verification_queue').fetchone()
+                token=KeyRing({'test':b'q'*32},'test').decrypt(row).token
+                assert proof.consume(con,store[2],token,now=101)
+    restored=tmp_path/'verification-restored'
+    snapshot(source,key_path(seed[0]),restored,restore=True)
+    with closing(sqlite3.connect(restored/'database.sqlite3')) as con:
+        assert con.execute('SELECT count(*) FROM account_email_proofs').fetchone()[0]==0
+        assert con.execute("SELECT count(*) FROM email_verification_queue WHERE payload IS NOT NULL OR state IN ('queued','started')").fetchone()[0]==0
+    with closing(store[0]()) as con:
+        assert con.execute('SELECT count(*) FROM account_email_proofs').fetchone()[0]==1
+        assert con.execute('SELECT payload FROM email_verification_queue').fetchone()[0] is not None

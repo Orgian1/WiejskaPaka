@@ -27,3 +27,12 @@ def test_manifest_is_read_only_no_connection(monkeypatch):
     from types import SimpleNamespace
     monkeypatch.setitem(sys.modules, 'psycopg', SimpleNamespace(connect=lambda *a, **k: pytest.fail('Unexpected DB connection')))
     assert build_manifest()
+
+
+def test_preview_psql_applies_each_reviewed_migration_once_in_manifest_order():
+    import re
+    from pathlib import Path
+    root=Path(__file__).resolve().parents[1]
+    script=(root/'deploy/preview/new-test-database.psql.example').read_text()
+    included=re.findall(r'^\\ir ../../database/(.+)$',script,re.M)
+    assert included==[item['file'] for item in build_manifest()]

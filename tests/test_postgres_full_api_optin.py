@@ -170,7 +170,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     mail_keys.chmod(0o600)
                     env.update(WP_ENABLE_MAIL_QUEUE='1',WP_MAIL_QUEUE_KEYS_FILE=str(mail_keys))
                     if queued_reset:env.update(WP_ENABLE_QUEUED_PASSWORD_RESET='1',WP_ENABLE_PG_TEST_PASSWORD_RESET='1')
-                    if email_verification:env['WP_ENABLE_EMAIL_VERIFICATION']='1'
+                    if email_verification:env.update(WP_ENABLE_EMAIL_VERIFICATION='1',WP_ENABLE_ORDER_MAIL_QUEUE='1')
                 with tempfile.TemporaryFile() as log:
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
                         def start():
@@ -1269,3 +1269,74 @@ def test_native_email_verification_delivery_and_persistent_limits(pg_email_verif
     assert queue.dispatch_once(connect,keys,submit,now=int(time.time()))==('UNCERTAIN' if uncertain else 'ACCEPTED')
     assert queue.dispatch_once(connect,keys,lambda *a:pytest.fail('Duplicate'),now=int(time.time()))=='IDLE'
     assert len(seen)==1
+
+
+def verification_worker_accept(recipient,token):
+    from backend.smtp_reset_transport import outcome
+    assert len(token)==43
+    print('synthetic-private-verification-worker-output')
+    return outcome('ACCEPTED',accepted=True)
+
+
+def test_native_verification_spawned_worker_and_readonly_preflight(pg_email_verification_api,capfd):
+    from backend.reset_mail_keys import load_keys
+    from backend import email_verification_worker as worker
+    from scripts.send_verification_batch import Connect
+    from psycopg.conninfo import make_conninfo
+    client,parameters=pg_email_verification_api
+    buyer,_=register(client,'klient')
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    keys=load_keys(pg_email_verification_api.mail_keys)
+    connect=Connect(make_conninfo(**parameters),parameters['dbname'])
+    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30)=={
+        'status':'LIMIT_REACHED','counts':{'ACCEPTED':1}}
+    assert worker.run_process(connect,keys,verification_worker_accept,max_jobs=1,timeout_seconds=30)=={
+        'status':'IDLE','counts':{'IDLE':1}}
+    assert 'synthetic-private' not in ''.join(capfd.readouterr())
+
+
+@pytest.mark.parametrize('cart',[False,True])
+@pytest.mark.parametrize('mail_failure',[False,True])
+def test_native_checkout_atomically_captures_one_mail_for_verified_buyer(pg_email_verification_api,cart,mail_failure):
+    from backend.reset_mail_keys import load_keys
+    client,parameters=pg_email_verification_api
+    farmer,_=register(client,'rolnik');buyer,buyer_id=register(client,'klient')
+    pid=product(client,farmer)
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    con=queued_worker_connection(parameters)
+    try:
+        row=con.execute('SELECT * FROM email_verification_queue WHERE user_id=?',(buyer_id,)).fetchone()
+        secret=load_keys(pg_email_verification_api.mail_keys).decrypt(row).token
+    finally:con.connection.close()
+    assert client.post('/auth/email-verification/confirm',headers=buyer,json={'token':secret}).status_code==200
+    body=delivery(pid);key=uuid4().hex
+    if cart:
+        assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
+        body.pop('product_id');body.pop('quantity')
+    path='/cart/checkout-test' if cart else '/orders'
+    if mail_failure:
+        import psycopg
+        from psycopg.conninfo import conninfo_to_dict
+        admin={**conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN']),'dbname':parameters['dbname']}
+        with psycopg.connect(**admin,autocommit=True) as con:
+            con.execute("CREATE FUNCTION fail_test_order_mail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic mail failure'; END $$")
+            con.execute('CREATE TRIGGER fail_test_order_mail BEFORE INSERT ON order_mail_outbox FOR EACH ROW EXECUTE FUNCTION fail_test_order_mail()')
+            try:
+                failed=client.post(path,headers={**buyer,'Idempotency-Key':key},json=body)
+                assert failed.status_code==500
+                assert con.execute('SELECT count(*) FROM orders WHERE buyer_id=%s',(buyer_id,)).fetchone()[0]==0
+                assert con.execute('SELECT count(*) FROM checkout_idempotency WHERE buyer_id=%s',(buyer_id,)).fetchone()[0]==0
+                assert con.execute('SELECT count(*) FROM order_mail_outbox WHERE buyer_id=%s',(buyer_id,)).fetchone()[0]==0
+                assert con.execute('SELECT stock FROM products WHERE id=%s',(pid,)).fetchone()[0]==10
+                if cart:assert con.execute('SELECT count(*) FROM saved_cart_items WHERE buyer_id=%s',(buyer_id,)).fetchone()[0]==1
+            finally:
+                con.execute('DROP TRIGGER fail_test_order_mail ON order_mail_outbox')
+                con.execute('DROP FUNCTION fail_test_order_mail()')
+        return
+    first=client.post(path,headers={**buyer,'Idempotency-Key':key},json=body)
+    second=client.post(path,headers={**buyer,'Idempotency-Key':key},json=body)
+    assert first.status_code==second.status_code==201 and first.json()==second.json()
+    con=queued_worker_connection(parameters)
+    try:
+        assert con.execute('SELECT count(*) AS n FROM order_mail_outbox WHERE buyer_id=?',(buyer_id,)).fetchone()['n']==1
+    finally:con.connection.close()

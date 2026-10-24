@@ -20,14 +20,15 @@ def _limits(max_jobs, timeout_seconds):
         raise ValueError('MAIL_WORKER_LIMITS_REJECTED')
 
 
-def run_batch(connect, keys, transport, *, max_jobs, stop, clock=time.time):
+def run_batch(connect, keys, transport, *, max_jobs, stop, clock=time.time, dispatch=None):
     """Cooperative batch; run_process additionally enforces a wall-clock limit."""
     _limits(max_jobs, 1)
+    dispatch = queue.dispatch_once if dispatch is None else dispatch
     counts = {}
     for _ in range(max_jobs):
         if stop.is_set():
             return {'status': 'STOPPED', 'counts': counts}
-        status = queue.dispatch_once(connect, keys, transport, clock=lambda: int(clock()))
+        status = dispatch(connect, keys, transport, clock=lambda: int(clock()))
         if status not in STATUSES:
             raise ValueError('MAIL_WORKER_RESULT_REJECTED')
         counts[status] = counts.get(status, 0) + 1
@@ -36,11 +37,11 @@ def run_batch(connect, keys, transport, *, max_jobs, stop, clock=time.time):
     return {'status': 'LIMIT_REACHED', 'counts': counts}
 
 
-def _child(sender, stop, connect, keys, transport, max_jobs):
+def _child(sender, stop, connect, keys, transport, max_jobs, dispatch):
     # No adapter output, traceback, recipient, token or credential crosses IPC.
     with open(os.devnull, 'w') as sink, redirect_stdout(sink), redirect_stderr(sink):
         try:
-            result = run_batch(connect, keys, transport, max_jobs=max_jobs, stop=stop)
+            result = run_batch(connect, keys, transport, max_jobs=max_jobs, stop=stop, dispatch=dispatch)
         except Exception:
             result = {'status': 'WORKER_FAILED', 'counts': None}
         try:
@@ -63,7 +64,7 @@ def _report(value, max_jobs):
     return value
 
 
-def run_process(connect, keys, transport, *, max_jobs=10, timeout_seconds=30):
+def run_process(connect, keys, transport, *, max_jobs=10, timeout_seconds=30, dispatch=None):
     """Spawn a finite worker, terminate on deadline, return secret-free counts.
 
 TIME_LIMIT/WORKER_FAILED deliberately return no counts: submission may have
@@ -74,7 +75,7 @@ This is process/time containment, not an OS privilege or network sandbox.
     context = multiprocessing.get_context('spawn')
     receiver, sender = context.Pipe(duplex=False)
     stop = context.Event()
-    child = context.Process(target=_child, args=(sender, stop, connect, keys, transport, max_jobs))
+    child = context.Process(target=_child, args=(sender, stop, connect, keys, transport, max_jobs, dispatch))
     started = False
     try:
         child.start()

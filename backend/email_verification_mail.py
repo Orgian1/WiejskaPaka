@@ -28,3 +28,13 @@ def send(config,recipient,token,*,factory=None):
     try:mail=message(config,recipient,token)
     except (ValueError,TypeError,AttributeError):return outcome('MESSAGE_REJECTED')
     return submit_message(config,recipient,mail,factory=factory)
+
+
+def load_config(environ):
+    """Separate explicit verification SMTP opt-in; never activates purchase mail."""
+    if environ.get('WP_ENABLE_VERIFICATION_SMTP')!='1':return None
+    from backend.order_mail import load_ses_config
+    settings=dict(environ)
+    settings['WP_ENABLE_ORDER_SMTP']='1'
+    try:return load_ses_config(settings)
+    except Exception:raise ValueError('VERIFICATION_SMTP_CONFIGURATION_REJECTED') from None

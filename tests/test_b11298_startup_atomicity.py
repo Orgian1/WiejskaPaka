@@ -29,9 +29,10 @@ def test_successful_probe_exports_only_after_validation(monkeypatch):
         monkeypatch.delenv(key, raising=False)
     for key,value in env().items(): monkeypatch.setenv(key,value)
     calls=[]
-    def verify(dsn,name,*,require_schema):
+    def verify(dsn,name,*,require_schema,required_tables):
         assert 'DATABASE_URL' not in os.environ
         assert name=='wp_test' and require_schema
+        assert required_tables==launcher.required_preview_tables(os.environ)
         calls.append('verified')
     fake_uvicorn=types.SimpleNamespace(run=lambda *a,**kw: calls.append(('run',os.environ['DATABASE_URL'],kw['workers'])))
     with patch.object(launcher,'verify_test_database_connection',side_effect=verify), patch.dict(sys.modules,{'uvicorn':fake_uvicorn}):

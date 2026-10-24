@@ -7,6 +7,7 @@ import pytest
 from backend.checkout_vault import create_ring
 from scripts.check_postgres_preview import inspect_preview
 from backend.postgres_schema_preflight import CORE_TABLES
+from backend.test_server_launcher import OPTIONAL_PREVIEW_TABLES
 
 
 def configuration(tmp_path):
@@ -17,12 +18,13 @@ def configuration(tmp_path):
 
 
 class Connection:
-    def __init__(self, *, privileged=False, missing=False, wrong=False):
+    def __init__(self, *, privileged=False, missing=False, wrong=False, optional=()):
         self.values = [('other' if wrong else 'wp_test_preview',),
                        (privileged, False, False, False)]
         self.missing = missing
         self.queries = []
         self.closed = False
+        self.optional = optional
     def cursor(self):return self
     def __enter__(self):return self
     def __exit__(self, *args):pass
@@ -30,7 +32,7 @@ class Connection:
         assert query.startswith('SELECT ')
         self.queries.append(query)
     def fetchone(self):return self.values.pop(0)
-    def fetchall(self):return [] if self.missing else [(x,) for x in CORE_TABLES]
+    def fetchall(self):return [] if self.missing else [(x,) for x in (*CORE_TABLES,*self.optional)]
     def close(self):self.closed = True
 
 
@@ -92,3 +94,33 @@ def test_driver_exception_never_leaks_secret(tmp_path):
     assert report['error'] == 'DATABASE_PROBE_FAILED'
     assert 'private-password' not in json.dumps(report)
     assert '/secret/key' not in json.dumps(report)
+
+
+@pytest.mark.parametrize('flag,missing',[
+    (flag,table) for flag,tables in OPTIONAL_PREVIEW_TABLES.items() for table in tables])
+def test_enabled_feature_requires_every_optional_table(tmp_path,flag,missing):
+    env=configuration(tmp_path);env[flag]='1'
+    con=Connection(optional=[table for table in OPTIONAL_PREVIEW_TABLES[flag] if table!=missing])
+    report=inspect_preview(env,connect=Mock(return_value=con))
+    assert report['enabled_optional_features']==[flag]
+    assert report['error']=='DATABASE_PROBE_FAILED' and not report['success']
+    assert not report['database_optional_checked'] and con.closed
+    assert 'private-password' not in json.dumps(report)
+
+
+def test_all_enabled_features_pass_on_readonly_complete_schema(tmp_path):
+    env=configuration(tmp_path);env.update({flag:'1' for flag in OPTIONAL_PREVIEW_TABLES})
+    tables=[table for values in OPTIONAL_PREVIEW_TABLES.values() for table in values]
+    con=Connection(optional=tables);connect=Mock(return_value=con)
+    report=inspect_preview(env,connect=connect)
+    assert report['success'] and report['database_optional_checked'] and con.closed
+    assert set(report['enabled_optional_features'])==set(OPTIONAL_PREVIEW_TABLES)
+    assert all(query.startswith('SELECT ') for query in con.queries)
+    assert 'default_transaction_read_only=on' in connect.call_args.kwargs['options']
+
+
+def test_disabled_features_do_not_require_optional_migrations(tmp_path):
+    env=configuration(tmp_path);env.update({flag:'0' for flag in OPTIONAL_PREVIEW_TABLES})
+    report=inspect_preview(env,connect=Mock(return_value=Connection()))
+    assert report['success'] and report['enabled_optional_features']==[]
+    assert not report['database_optional_checked']

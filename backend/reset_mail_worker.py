@@ -11,7 +11,7 @@ import time
 from backend import reset_mail_queue as queue
 
 STATUSES = frozenset({'IDLE', 'SKIPPED', 'STALE', 'ACCEPTED', 'DELIVERY_UNCERTAIN',
-    'RATE_LIMITED', 'REJECTED', 'CONNECTION_FAILED', 'TLS_FAILED', 'MESSAGE_REJECTED', 'DISABLED'})
+    'SUPPRESSED', 'RATE_LIMITED', 'REJECTED', 'CONNECTION_FAILED', 'TLS_FAILED', 'MESSAGE_REJECTED', 'DISABLED'})
 
 
 def _limits(max_jobs, timeout_seconds):

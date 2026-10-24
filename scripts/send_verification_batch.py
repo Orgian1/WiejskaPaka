@@ -14,7 +14,7 @@ from backend import email_verification_mail as mail, email_verification_worker a
 class Connect:
     dsn:str=field(repr=False)
     database_name:str
-    required_tables:tuple=('account_email_proofs','email_verification_limits','email_verification_queue','mail_send_budget','mail_send_attempts')
+    required_tables:tuple=('account_email_proofs','email_verification_limits','email_verification_queue','mail_send_budget','mail_send_attempts','mail_recipient_blocks')
 
     def __call__(self):
         from backend.test_server_launcher import verify_test_database_connection

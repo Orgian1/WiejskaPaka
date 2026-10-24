@@ -104,6 +104,9 @@ def dispatch_once(connect, keys, transport, *, now, gate=None):
             if not valid:
                 con.execute("UPDATE email_verification_queue SET payload=NULL,state='expired' WHERE id=?",(job_id,))
                 return 'SKIPPED'
+            if gate is not None and gate.blocked(con,delivery.recipient):
+                con.execute("UPDATE email_verification_queue SET payload=NULL,state='expired' WHERE id=?",(job_id,))
+                return 'SUPPRESSED'
             if gate is not None and not gate.claim(con,now):return 'RATE_LIMITED'
             con.execute("UPDATE email_verification_queue SET payload=NULL,state='started',started_at=? WHERE id=?",(now,job_id))
         # Ciphertext erased and started marker committed BEFORE network I/O.

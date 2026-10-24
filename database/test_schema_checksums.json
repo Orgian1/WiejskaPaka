@@ -163,5 +163,10 @@
     "file": "optional_mail_send_budget.sql",
     "sha256": "7303810d13fd1509fd97370fc9a5ea2ddcef87ab2331aeea58cffa0883acd6c0",
     "bytes": 589
+  },
+  {
+    "file": "optional_mail_suppression.sql",
+    "sha256": "ea990962ec7efecc7331bc02a4cc2f251d56a2bfc2293b27427a21425557f7fc",
+    "bytes": 268
   }
 ]

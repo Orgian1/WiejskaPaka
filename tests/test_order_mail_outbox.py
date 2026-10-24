@@ -179,3 +179,21 @@ def test_actual_snapshot_restore_quarantines_purchase_mail_without_changing_sour
         assert con.execute('SELECT state FROM order_mail_outbox').fetchone()[0]==('uncertain' if started else 'skipped')
         assert con.execute('SELECT COUNT(*) FROM sessions').fetchone()[0]==0
     assert state(store)['state']==('started' if started else 'queued')
+
+
+@pytest.mark.parametrize('confirmed',[True,False])
+def test_real_account_proof_controls_purchase_mail(store,confirmed):
+    from backend import email_ownership as proof
+    now=int(datetime.now(timezone.utc).timestamp())
+    with closing(store[0]()) as con:
+        con.executescript(proof.SCHEMA_SQLITE)
+        with outbox.transaction(con):
+            token=proof.issue(con,store[2],now=now)
+            if confirmed:assert proof.consume(con,store[2],token,now=now)
+    add(store)
+    seen=[]
+    def transport(*args,**kwargs):
+        seen.append(True)
+        return outcome('ACCEPTED',accepted=True)
+    assert dispatch(store,transport,verified=proof.verified_recipient)==('ACCEPTED' if confirmed else 'SKIPPED')
+    assert len(seen)==int(confirmed)

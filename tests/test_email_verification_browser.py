@@ -21,6 +21,7 @@ def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
             page.wait_for_function('location.hash===""')
             page.fill('#email',body['email']);page.fill('#password',body['password'])
             page.locator('#auth button[type=submit]').click()
+            page.locator('#account-security summary').click()
             page.locator('#email-verification-confirm').wait_for(state='visible')
             with page.expect_response(lambda r:'/auth/email-verification/confirm' in r.url) as result:
                 page.click('#email-verification-confirm')

@@ -26,6 +26,7 @@ function main(name){
  }
  el('cart-point').append(new Element());el('cart-farmer-select').append(new Element());el('cart-total').textContent='PRIVATE-TOTAL';
  const user=name.startsWith('switch_')?{id:2,email:'new@example.invalid',role:{client:'klient',farmer:'rolnik',courier:'dostawca',admin:'admin'}[name.slice(7)]}:null;
+ el('role').value=user?.role==='rolnik'?'klient':'rolnik'; // Registration choice cannot change the authenticated role.
  // No refresh is allowed to complete: cleanup must happen before any network result.
  c.logged(user);if(name==='repeat_reset')c.logged(null);
  for(const id of fields)assert.equal(el(id).value,'',id);
@@ -36,6 +37,13 @@ function main(name){
  assert.equal(c.pendingCartCheckout,null);assert.equal(c.checkoutOwner,user?.id??null);
  assert.equal(c.cartQuoteItems.length,0);assert.equal(c.role,user?.role??null);
  if(user){assert.match(el('identity').textContent,/new@example.invalid/)}else assert.equal(el('identity').textContent,'Nie zalogowano');
+ assert.equal(el('auth').hidden,Boolean(user));
+ assert.equal(el('cart-section').hidden,user?.role!=='klient');
+ assert.equal(el('farmer').hidden,user?.role!=='rolnik');
+ assert.equal(el('seller-nav-link').hidden,user?.role!=='rolnik');
+ assert.equal(el('cart-nav-link').hidden,user?.role!=='klient');
+ assert.equal(el('account-security').open,false);
+ if(user)assert.equal(el('account-section').className,'account-compact');
  assert(requests.includes('loadProducts'));
 }
 try{main(process.argv[2]);process.stdout.write('PASS\n')}catch(error){console.error(error);process.exitCode=1}

@@ -92,3 +92,41 @@ def test_same_seller_recommendations_create_one_shipment(sample_browser_server,t
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert not errors
         finally:page.close()
+
+
+@pytest.mark.parametrize('width',[320,1280])
+def test_customer_to_seller_switch_clears_cart_and_compacts_login(sample_browser_server,tmp_path,width):
+    browser,_,_=sample_browser_server
+    sample=prepare_sample(tmp_path/'account-panels');accounts=sample['credentials']
+    with server(Path(sample['database'])) as client:
+        buyer={'Authorization':'Bearer '+client.post('/auth/login',json=accounts['klient']).json()['access_token']}
+        product=client.get('/catalog/search').json()['items'][0]
+        assert client.put('/cart/items',headers=buyer,json={'product_id':product['id'],'quantity':1}).status_code==200
+        page=browser.new_page(viewport={'width':width,'height':844})
+        errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
+        try:
+            page.goto(str(client.base_url))
+            assert page.locator('#role option').evaluate_all('(items)=>items.map(x=>x.value)')==['klient','rolnik']
+            for role in ('klient','rolnik'):
+                page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+                page.locator('#auth button[type=submit]').click()
+                page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=accounts[role]['email'])
+                assert page.locator('#auth').is_hidden()
+                assert page.locator('#logout').is_visible()
+                assert not page.locator('#account-security').evaluate('(node)=>node.open')
+                assert page.locator('#account-section').bounding_box()['height']<150
+                if role=='klient':
+                    page.locator('#cart-items > .card').first.wait_for(state='visible')
+                    page.click('#logout')
+                    page.locator('#auth').wait_for(state='visible')
+                    assert page.locator('#cart-items').inner_text()==''
+                else:
+                    assert page.locator('#cart-section').is_hidden()
+                    assert page.locator('#cart-items').inner_text()==''
+                    assert page.locator('#farmer').is_visible()
+                    assert page.locator('#new-product').is_visible()
+                    assert page.locator('#seller-nav-link').is_visible()
+                    assert page.locator('#account-panel-name').inner_text()=='Panel sprzedawcy'
+                assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            assert not errors
+        finally:page.close()

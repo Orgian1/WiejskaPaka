@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Annotated, Literal
 from fastapi import FastAPI, HTTPException, Depends, Header, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -1250,7 +1250,8 @@ app.mount('/assets', StaticFiles(directory=str(WEB_DIR)), name='assets')
 
 @app.get('/', include_in_schema=False)
 def index():
-    return FileResponse(WEB_DIR / 'index.html')
+    from backend.ui_assets import versioned_index
+    return HTMLResponse(versioned_index(WEB_DIR))
 
 @app.get('/auth/me')
 def auth_me(user=Depends(current_user)):

@@ -1,6 +1,6 @@
 # Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/ses-feedback-trust-config-20261025. Repo Orgian1/WiejskaPaka.
+Aktualna gałąź: preview/encrypted-ses-review-20261025. Repo Orgian1/WiejskaPaka.
 Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
 niezacommitowane zmiany przy odzyskiwaniu workspace.
 
@@ -54,3 +54,17 @@ Aktualizacja diagnostyki Windows 2026-10-25:
   Raport publikowany nadal nie zawiera treści asercji, parametrów ani ścieżek.
 - Lokalnie 101/101, 5 izolowanych modułów, bez błędów/pominięć.
   Dowody: docs/audits/windows_sns_2026-10-25/. Wysyłka i VPS bez zmian.
+
+
+Najnowszy etap: szyfrowane REVIEW — 2026-10-25
+- Poprzednik cb3af15 ma WSZYSTKIE CI SUCCESS (40169232883): Windows 4395 passed,
+  0 failed, 205 skipped; PostgreSQL 16/17 po 70/70; Chromium 50/50 i viewporty.
+  Poprawka krótkich identyfikatorów testów SNS potwierdzona pełnym Windowsem.
+- Nowy moduł ses_feedback_archive: jawna transakcja + savepoint, AES-256-GCM,
+  osobne klucze, limit pojemności, retencja i rotacja; brak HTTP/aktywacji.
+- Nowa migracja optional_ses_feedback_review.sql w manifeście/checksumach/psql.
+- Nowy lokalny pakiet 99/99, bez błędów/pominięć, 7 izolowanych modułów.
+- Nowy native test współbieżnej pojemności PostgreSQL czeka na wykonanie CI.
+- Dalej: potwierdzić nowe CI, loader kluczy archiwum, listener z limitem body
+  i ACK po commit, obsługa starych/niezatwierdzonych zgłoszeń i monitorowanie.
+Szczegóły: ARCHIWUM_ZGLOSZEN_SES_2026-10-25.md. VPS pozostaje bez zmian.

@@ -5,8 +5,15 @@ from backend import app
 
 def test_product_create_requires_verified_write():
     source = inspect.getsource(app.create_product)
-    assert "order_write_db(user, authorization, ('rolnik',))" in source
-    assert 'user[\'id\']' in source
+    assert 'save_product(payload, user, authorization)' in source
+    photo_source = inspect.getsource(app.create_product_with_photo)
+    assert 'save_product(payload, user, authorization, photo)' in photo_source
+    guard = inspect.getsource(app.save_product)
+    assert "order_write_db(user, authorization, ('rolnik',))" in guard
+    assert "require(user,'rolnik')" in guard
+    assert "user['id']" in guard
+    assert guard.index('with order_write_db(') < guard.index('INSERT INTO products')
+    assert guard.index('with order_write_db(') < guard.index('INSERT INTO user_photos')
 
 
 def test_logout_requires_verified_write():

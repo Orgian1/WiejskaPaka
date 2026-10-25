@@ -7,7 +7,7 @@ def test_farmer_dashboard_displays_inventory_and_stock():
     assert "Moje produkty i stany magazynowe" in JS
     assert "for(const product of products)" in JS
     assert "Number.isSafeInteger(stock)&&stock>=0" in JS
-    assert "Dostępne: ${availability}" in JS
+    assert "Dostępne w magazynie: ${availability}" in JS
     assert "Cena: ${money(product.price_grosze)}" in JS
 
 

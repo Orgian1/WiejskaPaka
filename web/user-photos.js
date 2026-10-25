@@ -1,11 +1,22 @@
 // All upload kinds use the same authenticated raw-body endpoint and server sanitizer.
 let userPhotosEnabled=false,photoViewSerial=0;
+async function newProductPhotoPayload(){
+  if(!userPhotosEnabled)return null;
+  const file=el('product-photo-file').files?.[0];
+  if(!file||!file.size||file.size>20000000)throw Error('Wybierz jedno zdjęcie produktu JPEG, PNG lub WebP do 20 MB. Zmniejszymy je do 500 KB.');
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result).split(',')[1]);
+    reader.onerror=()=>reject(Error('Nie udało się odczytać zdjęcia. Wybierz je ponownie.'));
+    reader.readAsDataURL(file);
+  });
+}
 function photoImage(kind,id,digest=''){
   const image=node('img');image.alt=kind==='product'?'Zdjęcie produktu':kind==='farm'?'Zdjęcie gospodarstwa':'Zdjęcie profilowe';
-  image.loading='lazy';image.className='user-photo';image.src=`/user-photos/${kind}/${id}${digest?'?v='+digest:''}`;
+  image.loading='lazy';image.width=240;image.height=240;image.className='user-photo';image.src=`/user-photos/${kind}/${id}${digest?'?v='+digest:''}`;
   image.onerror=()=>image.remove();return image;
 }
-function resetUserPhotoViews(){photoViewSerial++;const host=el('user-photo-editors');if(host)host.replaceChildren();if(el('user-photo-panel'))el('user-photo-panel').hidden=true;}
+function resetUserPhotoViews(){photoViewSerial++;const host=el('user-photo-editors');if(host)host.replaceChildren();if(el('user-photo-panel'))el('user-photo-panel').hidden=true;if(el('product-photo-file'))el('product-photo-file').value='';}
 async function loadUserPhotoViews(){
   resetUserPhotoViews();if(!userPhotosEnabled||!role)return;
   const epoch=sessionEpoch,serial=photoViewSerial,actorToken=token;
@@ -46,6 +57,8 @@ async function loadUserPhotoViews(){
 async function initializeUserPhotos(){
   try{const response=await fetch('/user-photos/config',{cache:'no-store'});if(!response.ok||(await response.json()).enabled!==true)return;}catch{return;}
   userPhotosEnabled=true;el('user-photo-refresh').onclick=()=>act(loadUserPhotoViews);
+  el('product-photo-field').hidden=false;el('product-photo-file').required=true;
+  el('product-photo-help').textContent='Jedno zdjęcie JPEG, PNG lub WebP do 20 MB. Automatycznie zmniejszymy je do maksymalnie 500 KB.';
   if(role)act(loadUserPhotoViews);act(loadProducts);
 }
 initializeUserPhotos();

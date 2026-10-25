@@ -204,8 +204,12 @@ el('new-product').onsubmit=e=>{e.preventDefault();act(()=>singleWrite('new-produ
   const epoch=sessionEpoch;
   const payload={name:el('pname').value,price_grosze:parseGrosze(el('price').value),delivery_grosze:parseGrosze(el('delivery').value),stock:Number(el('stock').value)};
   if(saleUnitsEnabled){payload.sale_unit=el('sale-unit').value;if(!el('package-content-fields').hidden){payload.content_amount=el('content-amount').value;payload.content_unit=el('content-unit').value}}
-  await api('/products','POST',payload);
+  const photo=typeof newProductPhotoPayload==='function'?await newProductPhotoPayload():null;
   if(epoch!==sessionEpoch)return;
+  if(photo)payload.photo_base64=photo;
+  await api(photo?'/products/with-photo':'/products','POST',payload);
+  if(epoch!==sessionEpoch)return;
+  if(el('product-photo-file'))el('product-photo-file').value='';
   msg('Produkt dodany');await loadProducts();if(typeof loadDashboard==='function')await loadDashboard();
 }))};
 el('refresh').onclick=()=>{catalogOffset=0;return act(loadProducts)};

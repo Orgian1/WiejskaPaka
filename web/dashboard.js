@@ -244,7 +244,9 @@ async function loadDashboard() {
     for(const product of products){
       const stock=Number(product.stock);
       const availability=Number.isSafeInteger(stock)&&stock>=0?`${stock} ${saleUnitLabel(product)}`:'Stan niedostępny';
-      inventory.append(dashboardCard(product.name,[`Dostępne: ${availability}`,`Cena: ${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)}`,`Dostawa: ${money(product.delivery_grosze)}`]));
+      const item=dashboardCard(product.name,[`Dostępne w magazynie: ${availability}`,`Cena: ${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)}`,`Dostawa: ${money(product.delivery_grosze)}`]);
+      if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)item.prepend(photoImage('product',product.id));
+      inventory.append(item);
     }
     box.append(inventory);
     for(const o of orders){const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});

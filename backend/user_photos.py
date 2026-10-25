@@ -11,6 +11,7 @@ from starlette.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 MAX_BYTES = 1_000_000
+MAX_PRODUCT_BYTES = 500_000
 MAX_SOURCE_BYTES = 20_000_000
 MAX_PIXELS = 50_000_000
 _PROCESSOR = threading.BoundedSemaphore(1)
@@ -30,7 +31,8 @@ def enabled():
     return os.environ.get('WP_ENABLE_USER_PHOTOS') == '1'
 
 
-def compress_photo(source):
+def compress_photo(source, *, max_bytes=None):
+    max_bytes = MAX_BYTES if max_bytes is None else max_bytes
     if not source or len(source) > MAX_SOURCE_BYTES:
         raise HTTPException(413, 'Zdjęcie źródłowe musi mieć od 1 bajta do 20 MB.')
     with _PROCESSOR, warnings.catch_warnings():
@@ -53,7 +55,7 @@ def compress_photo(source):
                         result = io.BytesIO()
                         image.save(result, 'JPEG', quality=quality, optimize=True)
                         data = result.getvalue()
-                        if len(data) <= MAX_BYTES:
+                        if len(data) <= max_bytes:
                             return data, image.width, image.height
                     image = image.resize((max(1, image.width*3//4), max(1, image.height*3//4)), Image.Resampling.LANCZOS)
         except HTTPException:
@@ -61,7 +63,7 @@ def compress_photo(source):
         except (UnidentifiedImageError, OSError, ValueError, SyntaxError,
                 Image.DecompressionBombWarning, Image.DecompressionBombError):
             raise HTTPException(422, 'Nie można odczytać zdjęcia. Wybierz poprawny JPEG, PNG lub WebP.') from None
-    raise HTTPException(422, 'Nie udało się zmniejszyć zdjęcia do 1 MB.')
+    raise HTTPException(422, 'Nie udało się zmniejszyć zdjęcia do wymaganego limitu.')
 
 
 def register_routes(app, db, write_db, current_user):
@@ -82,7 +84,7 @@ def register_routes(app, db, write_db, current_user):
 
     @app.get('/user-photos/config')
     def photo_config():
-        return {'enabled': enabled(), 'max_bytes': MAX_BYTES, 'max_source_bytes': MAX_SOURCE_BYTES}
+        return {'enabled': enabled(), 'max_bytes': MAX_BYTES, 'max_product_bytes': MAX_PRODUCT_BYTES, 'max_source_bytes': MAX_SOURCE_BYTES}
 
     @app.get('/user-photos/{kind}/{subject_id}')
     def photo_read(kind: str, subject_id: int):
@@ -120,7 +122,8 @@ def register_routes(app, db, write_db, current_user):
                 raise HTTPException(413, 'Zdjęcie źródłowe przekracza 20 MB.')
             source.extend(chunk)
         def save():
-            data, width, height = compress_photo(bytes(source))
+            data, width, height = (compress_photo(bytes(source), max_bytes=MAX_PRODUCT_BYTES)
+                                   if kind == 'product' else compress_photo(bytes(source)))
             digest = hashlib.sha256(data).hexdigest()
             with write_db(user, authorization, (user['role'],)) as con:
                 owns(con, kind, subject_id, user)

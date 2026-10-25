@@ -137,3 +137,51 @@ def test_database_enforces_exact_byte_ceiling(api):
         con.execute('INSERT INTO user_photos VALUES(?,?,?,?,?,?,?)',('profile',users[2][1],users[2][1],b'x'*1_000_000,'a'*64,1,1))
         with pytest.raises(sqlite3.IntegrityError):
             con.execute('UPDATE user_photos SET data=? WHERE kind=? AND subject_id=?',(b'x'*1_000_001,'profile',users[2][1]))
+
+
+def test_product_created_with_one_bounded_photo_and_invalid_photo_creates_nothing(api):
+    import base64
+    client, users, module = api
+    payload={'name':'Produkt ze zdjęciem','price_grosze':200,'delivery_grosze':0,'stock':7,
+             'photo_base64':base64.b64encode(picture()).decode()}
+    response=client.post('/products/with-photo',headers=users[0][0],json=payload)
+    assert response.status_code==201, response.text
+    product_id=response.json()['id']
+    image=client.get(f'/user-photos/product/{product_id}')
+    assert image.status_code==200 and 0<len(image.content)<=500_000
+    products=client.get('/products/mine',headers=users[0][0]).json()
+    assert next(p for p in products if p['id']==product_id)['stock']==7
+    with module.db() as con:
+        before=con.execute('SELECT COUNT(*) AS n FROM products').fetchone()['n']
+        assert con.execute("SELECT COUNT(*) AS n FROM user_photos WHERE kind='product' AND subject_id=?",(product_id,)).fetchone()['n']==1
+    for invalid in ('!!!!',base64.b64encode(b'not an image').decode()):
+        assert client.post('/products/with-photo',headers=users[0][0],json={**payload,'photo_base64':invalid}).status_code==422
+    assert client.post('/products/with-photo',headers=users[2][0],json=payload).status_code==403
+    with module.db() as con:
+        assert con.execute('SELECT COUNT(*) AS n FROM products').fetchone()['n']==before
+
+
+def test_product_noise_compression_limit_is_500kb():
+    image=Image.effect_noise((2048,2048),100).convert('RGB')
+    source=io.BytesIO();image.save(source,'PNG')
+    data,width,height=photos.compress_photo(source.getvalue(),max_bytes=photos.MAX_PRODUCT_BYTES)
+    assert 0<len(data)<=500_000
+    assert width<=2048 and height<=2048
+
+
+def test_product_photo_storage_failure_rolls_back_product(api):
+    import base64
+    client,users,module=api
+    with module.db() as con:
+        before=con.execute('SELECT COUNT(*) AS n FROM products').fetchone()['n']
+        con.execute("CREATE TRIGGER fail_photo_test BEFORE INSERT ON user_photos BEGIN SELECT RAISE(ABORT,'synthetic failure'); END")
+    try:
+        with TestClient(module.app,raise_server_exceptions=False) as failing:
+            result=failing.post('/products/with-photo',headers=users[0][0],json={
+                'name':'Atomiczny produkt','price_grosze':100,'delivery_grosze':0,'stock':4,
+                'photo_base64':base64.b64encode(picture()).decode()})
+            assert result.status_code==500
+        with module.db() as con:
+            assert con.execute('SELECT COUNT(*) AS n FROM products').fetchone()['n']==before
+    finally:
+        with module.db() as con:con.execute('DROP TRIGGER fail_photo_test')

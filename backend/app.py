@@ -439,6 +439,30 @@ def logout(authorization: str | None = Header(default=None), user=Depends(curren
 
 @app.post('/products',status_code=201)
 def create_product(payload: ProductIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
+    return save_product(payload, user, authorization)
+
+
+class ProductWithPhotoIn(ProductIn):
+    photo_base64: str = Field(min_length=4, max_length=26_666_668)
+
+
+@app.post('/products/with-photo',status_code=201)
+def create_product_with_photo(payload: ProductWithPhotoIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
+    import base64
+    import binascii
+    from backend import user_photos
+    require(user, 'rolnik')
+    if not user_photos.enabled():
+        raise HTTPException(503, 'Dodawanie zdjęć nie zostało jeszcze włączone')
+    try:
+        source = base64.b64decode(payload.photo_base64, validate=True)
+    except (ValueError, binascii.Error):
+        raise HTTPException(422, 'Nieprawidłowe zdjęcie') from None
+    photo = user_photos.compress_photo(source, max_bytes=user_photos.MAX_PRODUCT_BYTES)
+    return save_product(payload, user, authorization, photo)
+
+
+def save_product(payload, user, authorization, photo=None):
     require(user,'rolnik')
     if not product_unit_storage.enabled() and (payload.sale_unit != 'szt' or payload.content_amount is not None or payload.content_unit is not None):
         raise HTTPException(503, 'Jednostki sprzedaży nie zostały jeszcze włączone')
@@ -448,6 +472,11 @@ def create_product(payload: ProductIn, user=Depends(current_user), authorization
         index_product(con, cur.lastrowid, payload.name)
         if product_unit_storage.enabled():
             product_unit_storage.insert_product_unit(con, cur.lastrowid, payload.sale_unit, payload.content_amount, payload.content_unit)
+        if photo is not None:
+            import hashlib
+            data, width, height = photo
+            con.execute('INSERT INTO user_photos(kind,subject_id,owner_id,data,digest,width,height) VALUES(?,?,?,?,?,?,?)',
+                        ('product', cur.lastrowid, user['id'], data, hashlib.sha256(data).hexdigest(), width, height))
         return {'id':cur.lastrowid}
 
 

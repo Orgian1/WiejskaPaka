@@ -102,7 +102,7 @@ def pg_verified_checkout_api():
     yield from _postgres_api(email_verification=True,require_email=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False):
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -161,6 +161,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     env['WP_ENABLE_SELLER_SEARCH'] = '1'
                 if photos:
                     env['WP_ENABLE_USER_PHOTOS'] = '1'
+                if wallet:env['WP_ENABLE_WALLET_PREVIEW']='1'
                 if delivery_options:
                     env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
@@ -222,9 +223,9 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 admin.execute(sql.SQL('DROP ROLE {}').format(sql.Identifier(role)))
 
 
-def register(client, role):
+def register(client, role, *, password=None):
     email = uuid4().hex + '@example.invalid'
-    password = secrets.token_urlsafe(24)
+    password = password or secrets.token_urlsafe(24)
     response = client.post('/auth/register', json={'email': email, 'password': password, 'role': role})
     assert response.status_code == 201, response.text
     uid = response.json()['id']
@@ -1686,3 +1687,39 @@ def test_native_checkout_requires_current_confirmed_email(pg_verified_checkout_a
     assert first.status_code==201,first.text
     pg_verified_checkout_api.restart()
     assert client.post(path,headers=headers,json=body).json()==first.json()
+
+
+@pytest.fixture
+def pg_wallet_api():
+    yield from _postgres_api(wallet=True)
+
+
+def test_native_wallet_retries_pin_and_restart(pg_wallet_api):
+    client,_=pg_wallet_api
+    password='SyntheticWalletPassword2026!'
+    buyer,_=register(client,'klient',password=password);other,_=register(client,'klient')
+    amount={'amount_grosze':10000,'request_key':uuid4().hex}
+    assert client.post('/wallet/topups',headers=buyer,json=amount).status_code==201
+    assert client.post('/wallet/topups',headers=buyer,json=amount).status_code==200
+    assert client.put('/wallet/pin',headers=buyer,json={'password':password,'pin':'123456'}).status_code==200
+    payload={'amount_grosze':4000,'request_key':uuid4().hex,'pin':'123456'}
+    assert client.post('/wallet/withdrawals',headers=buyer,json=payload).status_code==201
+    assert client.post('/wallet/withdrawals',headers=buyer,json=payload).status_code==200
+    assert client.get('/wallet',headers=other).json()['available_grosze']==0
+    pg_wallet_api.restart()
+    state=client.get('/wallet',headers=buyer).json()
+    assert (state['available_grosze'],state['reserved_grosze'])==(6000,4000)
+    assert len(state['entries'])==2 and state['pin_configured']
+
+
+def test_native_wallet_parallel_debits_do_not_overspend(pg_wallet_api):
+    client,_=pg_wallet_api
+    password='SyntheticWalletPassword2026!'
+    buyer,_=register(client,'klient',password=password)
+    assert client.post('/wallet/topups',headers=buyer,json={'amount_grosze':10000,'request_key':uuid4().hex}).status_code==201
+    assert client.put('/wallet/pin',headers=buyer,json={'password':password,'pin':'123456'}).status_code==200
+    def spend(_):
+        return client.post('/wallet/withdrawals',headers=buyer,json={'amount_grosze':7000,'request_key':uuid4().hex,'pin':'123456'}).status_code
+    with ThreadPoolExecutor(max_workers=2) as pool:assert sorted(pool.map(spend,range(2)))==[201,409]
+    state=client.get('/wallet',headers=buyer).json()
+    assert (state['available_grosze'],state['reserved_grosze'])==(3000,7000)

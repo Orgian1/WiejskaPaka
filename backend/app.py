@@ -3292,3 +3292,7 @@ ORDER_MAIL_CAPTURE_ENABLED=False
 if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
     with db() as _mail_capture_con:
         ORDER_MAIL_CAPTURE_ENABLED=order_mail_capture.configure(_mail_capture_con,os.environ,postgres=bool(DATABASE_URL))
+
+# Isolated persistent wallet preview: never a real payment authorization path.
+from backend.wallet_preview import install as install_wallet_preview
+install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)

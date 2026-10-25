@@ -183,5 +183,10 @@
     "file": "optional_pickup_dates.sql",
     "sha256": "237922440e7ac3d4ed270c59a74010c3f3e0665cf6879a3b3453dcd6e964692c",
     "bytes": 410
+  },
+  {
+    "file": "optional_wallet_preview.sql",
+    "sha256": "5cc1d0a7976be5a9849a3844bc139861f2f61aea1f88ff6d1c70f38a26faa0d0",
+    "bytes": 1355
   }
 ]

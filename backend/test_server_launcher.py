@@ -4,6 +4,7 @@ import os
 from backend.test_server_preflight import check_test_server
 
 OPTIONAL_PREVIEW_TABLES = {
+    'WP_ENABLE_WALLET_PREVIEW': ('wallet_preview_accounts','wallet_preview_entries'),
     'WP_ENABLE_PICKUP_DATES': ('pickup_point_dates',),
     'WP_ENABLE_PRODUCT_UNITS': ('product_sale_units', 'order_sale_units'),
     'WP_ENABLE_ADDRESS_DELIVERY': ('seller_delivery_windows', 'address_delivery_requests'),
@@ -25,6 +26,8 @@ def prepare_test_server(environ=None):
     env = dict(os.environ if environ is None else environ)
     if env.get('WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT')=='1' and env.get('WP_ENABLE_EMAIL_VERIFICATION')!='1':
         raise ValueError('Checkout requires enabled email verification')
+    from backend.wallet_preview import validate_environment
+    validate_environment(env)
     settings = check_test_server(env)
     if env.get('DATABASE_URL') and env['DATABASE_URL'] != env['WP_TEST_DATABASE_URL']:
         raise ValueError('DATABASE_URL must match dedicated WP_TEST_DATABASE_URL')

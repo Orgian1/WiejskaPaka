@@ -22,6 +22,9 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    # Public feature availability only; account status/request/confirm require a session.
+    if method == 'GET' and path == '/auth/email-verification/options':
+        return True
     if method == 'GET' and path in ('/sellers/config', '/sellers/search'):
         return True
     if method == 'GET' and path in ('/user-photos/config', '/user-photos/{kind}/{subject_id}'):

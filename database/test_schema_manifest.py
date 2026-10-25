@@ -32,6 +32,7 @@ UPGRADES = (
     'optional_email_verification.sql',
     'optional_mail_send_budget.sql',
     'optional_mail_suppression.sql',
+    'optional_ses_feedback.sql',
 )
 
 

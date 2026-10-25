@@ -1440,3 +1440,26 @@ def test_native_suppression_stops_verification_worker_before_smtp(pg_email_verif
         row=con.execute('SELECT state,payload FROM email_verification_queue').fetchone()
         assert row['state']=='expired' and row['payload'] is None
     finally:con.connection.close()
+
+
+def test_native_pinned_feedback_is_atomic_and_deduplicated(pg_email_verification_api):
+    import json
+    from backend import ses_feedback as feedback,mail_suppression as blocks
+    from backend.reset_mail_queue import transaction
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed,SOURCE
+    # Use the synthetic test certificate factory, never an AWS/network key.
+    signer=make_signer()
+    _,parameters=pg_email_verification_api
+    raw=signed(signer,event())
+    def receive(_):
+        con=queued_worker_connection(parameters)
+        try:
+            with transaction(con):return feedback.apply(con,raw,signer[1],source_arn=SOURCE,now=NOW)
+        finally:con.connection.close()
+    with ThreadPoolExecutor(max_workers=2) as pool:assert sorted(pool.map(receive,range(2)))==['APPLIED','DUPLICATE']
+    con=queued_worker_connection(parameters)
+    try:
+        assert blocks.blocked(con,'buyer@example.invalid')
+        assert con.execute('SELECT count(*) AS n FROM ses_feedback_events').fetchone()['n']==1
+    finally:con.connection.close()

@@ -1,6 +1,6 @@
 # Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/ses-feedback-database-20261025. Repo Orgian1/WiejskaPaka.
+Aktualna gałąź: preview/ses-feedback-service-preflight-20261025. Repo Orgian1/WiejskaPaka.
 Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
 niezacommitowane zmiany przy odzyskiwaniu workspace.
 
@@ -121,3 +121,20 @@ Najnowszy etap — baza odbiornika:
   zachowanych rekordów, launcher, HTTPS/proxy, prawdziwe piny/polityka SNS,
   procedura subskrypcji/monitoringu i retencji. Serwer niezmieniony.
 Szczegóły: BAZA_ODBIORNIKA_SES_2026-10-25.md.
+
+
+Najnowszy etap — wspólne przygotowanie i launcher:
+- ses_feedback_service.prepare: jeden opt-in + trzy dotychczasowe, test-only;
+  wczytuje snapshoty i politykę, bez połączeń. check: ważność pinów + Target +
+  rzeczywista kontrola kluczy retained w READ ONLY. build_app dopiero po sukcesie.
+- check_ses_feedback_service --check to jawna sonda, domyślnie DISABLED.
+- serve_ses_feedback --serve: tylko loopback, preflight przed bindem, 1 worker,
+  limity i brak proxy_headers/access_log; domyślnie DISABLED. Nie wywołano --serve.
+- 203/203 lokalnie, 11 modułów, bez błędów/pominięć. Nowy native test trzech
+  chronionych plików + PG/ASGI i złej rotacji czeka na CI; moduł ma 71 zebranych.
+- Poprzednik 40176933757 PG16/17, Chromium, szybki Windows SUCCESS; full Windows
+  nadal w toku podczas sprawdzania. Nie uznawać tego za pełne CI obecnej gałęzi.
+- Dalej: nowe CI, konfiguracja systemd/HTTPS/proxy, prawdziwe piny i SNS policy,
+  subskrypcja/monitoring/retencja, zatwierdzone wdrożenie/próba własnej skrzynki,
+  potem integracja płatności. VPS, AWS i SMTP bez zmian.
+Szczegóły: PRZYGOTOWANIE_PROCESU_SES_2026-10-25.md.

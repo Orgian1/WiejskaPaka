@@ -914,6 +914,17 @@ def shipment_financial_history_test(shipment_id: str, user=Depends(current_user)
             'delivery_consistent':delivery == shipment['delivery_grosze'],
             'notice':'Płatności i zwroty są wyłącznie symulowane.'}
 
+def require_checkout_email(con,user):
+    if os.environ.get('WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT')!='1':return
+    if os.environ.get('WP_ENABLE_EMAIL_VERIFICATION')!='1':
+        raise HTTPException(503,'Potwierdzanie adresu e-mail jest niedostępne.')
+    # Serialize with issuing/consuming proofs and changes to the stored address.
+    if DATABASE_URL:con.execute('SELECT id FROM users WHERE id=? FOR SHARE',(user['id'],)).fetchone()
+    from backend.email_ownership import verified_recipient
+    if not verified_recipient(con,user['id'],user['email']):
+        raise HTTPException(403,'Potwierdź adres e-mail przed złożeniem zamówienia. W sekcji konta wyślij link potwierdzający.')
+
+
 @app.post('/cart/checkout-test', status_code=201)
 def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user),
                         authorization: str | None = Header(default=None),
@@ -926,6 +937,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
     with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
+        require_checkout_email(con,user)
         if idempotency_key:
             previous = con.execute('''SELECT payload_hash,response_json FROM checkout_idempotency
                 WHERE buyer_id=? AND request_key=?''', (user['id'], idempotency_key)).fetchone()
@@ -1071,6 +1083,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
     with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
         authorize_local_transaction(con,user,authorization,('klient',))
+        require_checkout_email(con,user)
         if request_key:
             previous = con.execute('''SELECT payload_hash,response_json FROM checkout_idempotency
                 WHERE buyer_id=? AND request_key=?''', (user['id'], request_key)).fetchone()

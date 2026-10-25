@@ -23,6 +23,8 @@ def required_preview_tables(environ):
 
 def prepare_test_server(environ=None):
     env = dict(os.environ if environ is None else environ)
+    if env.get('WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT')=='1' and env.get('WP_ENABLE_EMAIL_VERIFICATION')!='1':
+        raise ValueError('Checkout requires enabled email verification')
     settings = check_test_server(env)
     if env.get('DATABASE_URL') and env['DATABASE_URL'] != env['WP_TEST_DATABASE_URL']:
         raise ValueError('DATABASE_URL must match dedicated WP_TEST_DATABASE_URL')

@@ -21,3 +21,12 @@ Skonfigurowany geokoder zachowuje dotychczasową obsługę adresów, kodów pocz
 Walidacja lokalna: testy adresów/API/JS 24 passed, test pełnego lokalnego marketplace HTTP 1 passed, testy czyszczenia lokalizacji po wylogowaniu 4 passed, node syntax checks i git diff --check poprawne. Chromium lokalnie niedostępne; ta poprawka nie ma jeszcze potwierdzonego pełnego CI ani testu na VPS.
 
 Wdrażać jako nowy worktree i nowe wskazanie `90-release.conf`, bez zmiany istniejących jednostek poczty i ich venv. Nie resetować starego katalogu ani bazy. Po wdrożeniu sprawdzić wyszukiwanie GPS i miasta; wynik pusty jest prawidłowy, gdy brak aktywnych punktów z zapisanymi współrzędnymi.
+
+## Potwierdzenie wdrożenia poprawki
+
+- Operator pobrał commit `9e8e4c2b4a14bc794bd4fa473bf7514031f12896` do `/opt/wiejskapaka/releases/9e8e4c2b`.
+- Preflight jako wiejskapaka z preview.env i mail-test.env: success, core i cztery opcjonalne funkcje pocztowe sprawdzone.
+- Drop-in `92-location.conf` nadpisuje tylko WorkingDirectory. Venv pozostaje `/opt/wiejskapaka/venv-8ff9bafd`; zależności bez zmian.
+- Operator otrzymał LOKALIZACJA_WDROZONA i potwierdził formularz po odświeżeniu strony. Nie wymagano zmiany jednostek poczty.
+- Pełne CI commit 9e8e4c2b, run 40195884453: windows_recovery, pełny Windows, PostgreSQL 16/17 i Chromium zakończone SUCCESS. Wrapper fetch_commit_workflow_runs filtruje PR i zwraca pustą listę; workflow jest wyzwalany przez push. Sprawdzać kolekcję actions/runs?head_sha=... przez github.fetch.
+- Kolejny krok: odczyt stanu modułu jednostek sprzedaży na VPS, następnie jego migracja/aktywacja, jeżeli nadal wyłączony. Inne wcześniejsze moduły (zdjęcia, wyszukiwanie sprzedawcy, dostawa na adres) też wymagają sprawdzenia flag/tabel.

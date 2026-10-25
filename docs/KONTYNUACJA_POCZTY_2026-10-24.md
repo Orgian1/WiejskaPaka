@@ -138,3 +138,13 @@ Najnowszy etap — wspólne przygotowanie i launcher:
   subskrypcja/monitoring/retencja, zatwierdzone wdrożenie/próba własnej skrzynki,
   potem integracja płatności. VPS, AWS i SMTP bez zmian.
 Szczegóły: PRZYGOTOWANIE_PROCESU_SES_2026-10-25.md.
+
+
+Aktualny stan operacyjny po testach z operatorem (25 października):
+- AWS SES SMTP i odbiór we własnej skrzynce sprawdzone. Weryfikacja e-maila i automatyczne potwierdzenie zamówienia działają na VPS; wspólny limit testowy 10 wiadomości/24h.
+- Prywatny adres test.wiejskapaka.pl chroniony Cloudflare Access i walidacją JWT w tunelu. Główna domena pozostaje dotychczasowa.
+- Aplikacja działa z release 9e8e4c2b (poprawka lokalizacji), venv 8ff9bafd. Timery poczty nadal używają release 8ff9bafd.
+- CI 40195884453 wszystkich pięciu zadań SUCCESS; formularz lokalizacji potwierdzony przez operatora na VPS.
+- Nie traktować wcześniejszych wpisów „VPS/AWS/SMTP bez zmian” jako bieżącego stanu: opisują poprzednie etapy.
+- PayU, konfiguracja feedback SNS, test odtworzenia kopii oraz aktywacja pozostałych gotowych funkcji nadal nieukończone.
+Szczegółowy punkt kontynuacji: LOKALIZACJA_I_WDROZENIE_2026-10-25.md.

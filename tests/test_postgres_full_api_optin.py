@@ -1463,3 +1463,22 @@ def test_native_pinned_feedback_is_atomic_and_deduplicated(pg_email_verification
         assert blocks.blocked(con,'buyer@example.invalid')
         assert con.execute('SELECT count(*) AS n FROM ses_feedback_events').fetchone()['n']==1
     finally:con.connection.close()
+
+
+def test_native_feedback_private_configuration_snapshot(pg_email_verification_api,tmp_path):
+    import json
+    from backend import ses_feedback_config as config,mail_suppression as blocks
+    from backend.reset_mail_queue import transaction
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed
+    from tests.test_ses_feedback_config import document
+    signer=make_signer();path=tmp_path/'synthetic-pins.json'
+    path.write_text(json.dumps(document(signer[1])));path.chmod(0o600)
+    loaded=config.load_config({'WP_ENABLE_SES_FEEDBACK_CONFIG':'1','WP_SES_FEEDBACK_CONFIG_FILE':str(path)},now=NOW)
+    _,parameters=pg_email_verification_api
+    con=queued_worker_connection(parameters)
+    try:
+        with transaction(con):assert config.apply(con,signed(signer,event()),loaded,now=NOW)=='APPLIED'
+        with transaction(con):assert config.apply(con,signed(signer,event()),loaded,now=NOW)=='DUPLICATE'
+        assert blocks.blocked(con,'buyer@example.invalid')
+    finally:con.connection.close()

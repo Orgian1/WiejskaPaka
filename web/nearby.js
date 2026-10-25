@@ -28,6 +28,7 @@ function resetNearbySearch(){
   el('nearby-lat').value='';el('nearby-lon').value='';
 }
 async function searchNearby(offset=0){
+  if(!el('nearby-lat').value||!el('nearby-lon').value){el('nearby-status').textContent='Wpisz miejscowość i wybierz miejsce lub użyj swojej lokalizacji.';return;}
   const payload={latitude_e6:coordinateE6(el('nearby-lat').value,90),longitude_e6:coordinateE6(el('nearby-lon').value,180),
     radius_m:Number(el('nearby-radius').value),q:el('nearby-query').value.trim(),limit:24,offset};
   if(el('nearby-min-price').value.trim())payload.min_price_grosze=parseGrosze(el('nearby-min-price').value);
@@ -75,18 +76,18 @@ async function searchNearby(offset=0){
 }
 function locateNearby(){
   invalidateNearby();const serial=nearbySerial,epoch=sessionEpoch;
-  if(!globalThis.navigator?.geolocation){el('nearby-status').textContent='Lokalizacja urządzenia jest niedostępna. Wpisz współrzędne ręcznie.';return;}
+  if(!globalThis.navigator?.geolocation){el('nearby-status').textContent='Lokalizacja urządzenia jest niedostępna. Wpisz miejscowość i wybierz miejsce.';return;}
   el('nearby-geolocate').disabled=true;el('nearby-status').textContent='Oczekuję na zgodę przeglądarki na bieżącą lokalizację…';
   navigator.geolocation.getCurrentPosition(position=>{
     if(serial!==nearbySerial||epoch!==sessionEpoch)return;
     el('nearby-geolocate').disabled=false;
     const lat=Math.round(position.coords.latitude*1000000),lon=Math.round(position.coords.longitude*1000000);
-    if(!Number.isSafeInteger(lat)||!Number.isSafeInteger(lon)||Math.abs(lat)>90000000||Math.abs(lon)>180000000){el('nearby-status').textContent='Nieprawidłowa lokalizacja urządzenia. Wpisz współrzędne ręcznie.';return;}
+    if(!Number.isSafeInteger(lat)||!Number.isSafeInteger(lon)||Math.abs(lat)>90000000||Math.abs(lon)>180000000){el('nearby-status').textContent='Nieprawidłowa lokalizacja urządzenia. Wpisz miejscowość i wybierz miejsce.';return;}
     el('nearby-lat').value=coordinateText(lat);el('nearby-lon').value=coordinateText(lon);act(()=>searchNearby());
   },error=>{
     if(serial!==nearbySerial||epoch!==sessionEpoch)return;
     el('nearby-geolocate').disabled=false;
-    el('nearby-status').textContent=error.code===1?'Nie udzielono zgody na lokalizację. Możesz wpisać współrzędne ręcznie.':'Nie udało się ustalić lokalizacji. Wpisz współrzędne ręcznie.';
+    el('nearby-status').textContent=error.code===1?'Nie udzielono zgody na lokalizację. Możesz wpisać miejscowość i wybrać miejsce.':'Nie udało się ustalić lokalizacji. Wpisz miejscowość i wybierz miejsce.';
   },{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
 }
 

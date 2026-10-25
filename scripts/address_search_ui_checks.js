@@ -39,3 +39,30 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   assert(stopped);
   console.log('Address selection, invalidation and stale responses: PASS');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+// With no geocoder (or an unavailable config endpoint), keep city/GPS usable.
+(async()=>{
+  for(const failure of [false,true]){
+    const map=new Map(),get=id=>{if(!map.has(id))map.set(id,element());return map.get(id)};
+    const ctx=vm.createContext({el:get,node:()=>element(),sessionEpoch:1,AbortController,
+      invalidateNearby(){},coordinateText:String,act:fn=>fn(),fetch:async(url,options)=>{
+        if(url==='/address-search/config'){
+          if(failure)throw Error('offline');
+          return {ok:true,json:async()=>({enabled:false})};
+        }
+        assert.equal(url,'/address-search/pickup-locations');
+        assert.equal(JSON.parse(options.body).city,'Legnica');
+        return {ok:true,json:async()=>({items:[]})};
+      }});
+    vm.runInContext(fs.readFileSync('web/address-search.js','utf8'),ctx);
+    await tick();
+    assert.equal(get('nearby-manual-coordinates').hidden,true);
+    assert.equal(get('nearby-lat').required,false);
+    assert.equal(get('address-fields').hidden,false);
+    assert.equal(get('address-postcode-field').hidden,true);
+    assert.equal(get('address-find').disabled,false);
+    get('address-city').value='Legnica';await ctx.findAddress();
+    assert.match(get('address-status').textContent,/Brak zapisanych punktów/);
+  }
+  console.log('No-provider and offline-config city/GPS fallback: PASS');
+})().catch(error=>{console.error(error);process.exitCode=1});

@@ -1,32 +1,35 @@
-# Punkt wznowienia — WiejskaPaka
+# Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/mail-suppression-core-20261024. Zmiany są przygotowywane
-w stosie draft PR, bez scalania i bez wdrożenia VPS. Nie zastępować lokalnych
-niezacommitowanych zmian przy odtwarzaniu workspace.
+Aktualna gałąź: preview/pinned-ses-feedback-20261025. Repo Orgian1/WiejskaPaka.
+Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
+niezacommitowane zmiany przy odzyskiwaniu workspace.
 
-Gotowe w kodzie: rejestr potwierdzeń adresu + uwierzytelnione API/panel,
-szyfrowana kolejka linków, atomowe kolejkowanie potwierdzeń przy obu zakupach,
-ograniczone procesy i jawne komendy SES, zaufana kwalifikacja adresata/PIN-u,
-wspólna dzierżawa i kroczący limit 24 godzin, wstrzymanie wysyłki po restore,
-prywatna lista blokad sprawdzana przez obie komendy.
+Gotowe: uwierzytelnione API/panel potwierdzania adresu, szyfrowane linki,
+atomowe kolejkowanie obu checkoutów, ograniczone procesy SES, wspólna blokada
+wysyłki i limit kroczący, blokady odbiorców, offline weryfikacja podpisu SNS v2
+z jawnie zatwierdzonym pinem oraz transakcyjne przetwarzanie jednoznacznego SES
+z deduplikacją. Brak listenera HTTP, prawdziwych pinów i aktywacji na serwerze.
 
-Ostatni lokalny pakiet: 150/150, 0 błędów/pominięć, 14 izolowanych modułów;
-raport docs/audits/mail_suppression_2026-10-24/local-summary.json.
-CI poprzedniego PR #32: PostgreSQL 16/17, Chromium i szybki Windows zaliczone;
-pełny Windows jeszcze trwał przy ostatnim sprawdzeniu. Nowy pakiet wymaga
-własnego CI, szczególnie nowego natywnego testu blokad. Nie utożsamiać zaliczonych
-wyników przodka z wynikami ostatniego commitu.
+Bieżący pakiet lokalny: 99/99, bez błędów/pominięć, 13 izolowanych modułów.
+Anonimowy audyt rzeczywistego HTTP: 107/107 tras niepublicznych zablokowanych.
+Raporty: docs/audits/pinned_feedback_2026-10-25/.
 
-Kolejne zadania:
-1. Sprawdzić CI tej gałęzi i pełną regresję Windows poprzedników.
-2. Zbudować uwierzytelniony odbiór zdarzeń SES/SNS lub prywatny odbiór kolejki,
-   z weryfikacją pochodzenia i idempotencją. Nie wystawiać block jako surowego API.
-3. Powiązać zdarzenia bez jawnego adresu z identyfikatorem wiadomości dostawcy.
-4. Dodać monitorowanie, kontrolę gotowości i ograniczone uruchamianie partii.
-5. Dopiero po konfiguracji sekretów poza kodem wykonać test własnej skrzynki,
-   następnie wdrożenie z kopią bezpieczeństwa i testami na VPS.
+W Windows poprzednika (40119699868) były 3 błędy: dwa audyty nie uwzględniały
+publicznego GET opcji weryfikacji, trzeci oczekiwał starej listy skryptów.
+Odtworzono i naprawiono je, zachowując autoryzację tras prywatnych. Nie deklarować
+zakończenia aktualnej pełnej regresji przed sprawdzeniem nowego CI.
 
-Nie mamy tutaj skonfigurowanych rzeczywistych danych SMTP. Użytkownik potwierdził
-w SES domenę wiejskapaka.pl; region eu-north-1. Nie uznawać tego za potwierdzenie
-trybu produkcyjnego/limitów konta ani własności adresów klientów. Wszystkie flagi
-są domyślnie wyłączone. Nie zmieniać VPS bez aktualnej autoryzacji do wdrożenia.
+Następne zadania:
+1. Sprawdzić CI tej gałęzi, w tym native PostgreSQL i pełny Windows.
+2. Dostarczanie/rotacja pinów przez zaufaną konfigurację, nie przez żądanie.
+   Weryfikator nie zastępuje zatwierdzenia łańcucha CA/przypięcia certyfikatu.
+3. Odbiornik zdarzeń z ograniczoną polityką SNS i prywatnym archiwum REVIEW/starych
+   zgłoszeń. Nie udostępniać bezpośrednio funkcji block ani przyjmować flag verified.
+4. Korelacja identyfikatora SES dla ukrytych odbiorców, monitorowanie i harmonogram.
+5. Sekrety SMTP poza kodem, rzeczywisty test własnej skrzynki, wdrożenie po kopii
+   i pełne testy na VPS. Wszystkie funkcje nadal domyślnie wyłączone.
+
+Domena wiejskapaka.pl została potwierdzona przez użytkownika w SES eu-north-1.
+Nie oznacza to potwierdzenia limitów/trybu produkcyjnego konta ani adresów klientów.
+Nie mamy tutaj rzeczywistych danych SMTP. Nie modyfikować VPS bez aktualnego
+zakresu wdrożenia. Szczegóły: PODPISY_SNS_I_ZDARZENIA_SES_2026-10-25.md.

@@ -1,0 +1,653 @@
+{
+  "scope": "Anonymous HTTP requests only; 404/422 are inconclusive, not authorization proofs",
+  "total": 107,
+  "summary": {
+    "BLOCKED": 107,
+    "INCONCLUSIVE": 0,
+    "REVIEW": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "path": "/accounting/audit/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/commission-drafts",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/commission-drafts/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/correction-requests",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/correction-requests/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{draft_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{job_id}/acknowledge-validation",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/diagnostics",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/review-status",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{job_id}/validate",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/validation-history",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-preview/{draft_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/invoice-drafts",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/invoice-drafts/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/address-delivery/requests/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/address-delivery/requests/{order_id}/decision",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/address-delivery/windows",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/address-delivery/windows/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PATCH",
+      "path": "/address-delivery/windows/{window_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/farmers/compliance-queue",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/farmers/{farmer_id}/compliance/review",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/orders/purchase-record-audit",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/overview",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/reconciliation",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/{shipment_id}/audit",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/change-password",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/email-verification/confirm",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/email-verification/request",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/email-verification/status",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout-all",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout-others",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/sessions",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/checkout-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "DELETE",
+      "path": "/cart/items",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/cart/items",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PUT",
+      "path": "/cart/items",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "DELETE",
+      "path": "/cart/items/{product_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/quote",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/quote-quantities-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/active-addresses",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/orders",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/shipments",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/compliance",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/farmers/me/compliance/acknowledge",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/pickup-points",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/profile",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PUT",
+      "path": "/farmers/me/profile",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/marketplace/orders/{order_id}/settlement-preview",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/me/unread-count",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/{notification_id}/read",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/idempotency-status/{request_key}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/me",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/assign-courier-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/cancel-paid-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/cancel-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/confirm",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/dispatch-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/events",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/location",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/purchase-record",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/recover-pin-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/pickup-points",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PUT",
+      "path": "/pickup-points/{point_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/products",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/products/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PATCH",
+      "path": "/products/mine/{product_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/login",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PUT",
+      "path": "/sellers/me/login",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/farmer/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/assign-courier-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/cancel-paid-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/cancel-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/confirm",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/courier-failure-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/details",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/dispatch-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/financial-history-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/purchase-record",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/recover-pin-test",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/admin/finance/monthly/{month}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/admin/finance/monthly/{month}/export.csv",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/admin/finance/reconcile",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/admin/payout-schedule/run",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/cancel-reservation",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reconciliation",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reservation-review",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reserve",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-report",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-reservations/reconcile-all",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/orders/{order_id}/ready",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/payments/{order_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/payments/{order_id}/events",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/support/cases",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/support/cases",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/test/support/cases/{case_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "POST",
+      "path": "/test/support/cases/{case_id}/replies",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "GET",
+      "path": "/user-photos/mine",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "DELETE",
+      "path": "/user-photos/{kind}/{subject_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    },
+    {
+      "method": "PUT",
+      "path": "/user-photos/{kind}/{subject_id}",
+      "status": 401,
+      "verdict": "BLOCKED"
+    }
+  ]
+}

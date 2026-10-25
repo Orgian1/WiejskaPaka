@@ -22,3 +22,17 @@ def test_recovery_exceptions_are_exact_methods_and_paths():
     assert not is_public('POST','/auth/password-reset-test/options')
     assert not is_public('GET','/auth/password-reset-test/confirm')
     assert not is_public('POST','/auth/password-reset-test/future-handler')
+
+
+def test_email_verification_public_exception_is_exact_and_other_routes_authenticated():
+    from scripts.audit_route_auth_dependencies import is_public
+    assert is_public('GET','/auth/email-verification/options')
+    for method,path in [('POST','/auth/email-verification/options'),
+                        ('GET','/auth/email-verification/status'),
+                        ('POST','/auth/email-verification/request'),
+                        ('POST','/auth/email-verification/confirm')]:
+        assert not is_public(method,path)
+    rows=[row for row in audit()['routes'] if row['path'].startswith('/auth/email-verification/')
+          and row['path']!='/auth/email-verification/options']
+    assert len(rows)==3
+    assert all('current_user' in row['dependencies'] for row in rows)

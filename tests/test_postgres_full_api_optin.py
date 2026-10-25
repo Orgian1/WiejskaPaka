@@ -97,7 +97,12 @@ def pg_email_verification_api():
     yield from _postgres_api(email_verification=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False):
+@pytest.fixture
+def pg_verified_checkout_api():
+    yield from _postgres_api(email_verification=True,require_email=True)
+
+
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -173,6 +178,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     env.update(WP_ENABLE_MAIL_QUEUE='1',WP_MAIL_QUEUE_KEYS_FILE=str(mail_keys))
                     if queued_reset:env.update(WP_ENABLE_QUEUED_PASSWORD_RESET='1',WP_ENABLE_PG_TEST_PASSWORD_RESET='1')
                     if email_verification:env.update(WP_ENABLE_EMAIL_VERIFICATION='1',WP_ENABLE_ORDER_MAIL_QUEUE='1')
+                    if require_email:env['WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT']='1'
                 with tempfile.TemporaryFile() as log:
                     with httpx.Client(base_url=f'http://127.0.0.1:{port}', trust_env=False, timeout=15) as client:
                         def start():
@@ -1649,3 +1655,34 @@ def test_native_pickup_attendance_dates(pg_pickup_calendar_api):
     assert client.put(f'/pickup-points/{point}',headers=other,json={**body,'active':True}).status_code==404
     assert client.put(f'/pickup-points/{point}',headers=seller,json={**body,'active':True,'attendance_dates':dates[:1]}).status_code==200
     assert client.get('/farmers/me/pickup-points',headers=seller).json()[0]['attendance_dates']==dates[:1]
+
+
+@pytest.mark.parametrize('cart',[False,True])
+def test_native_checkout_requires_current_confirmed_email(pg_verified_checkout_api,cart):
+    from backend.reset_mail_keys import load_keys
+    client,parameters=pg_verified_checkout_api
+    farmer,_=register(client,'rolnik');buyer,buyer_id=register(client,'klient')
+    pid=product(client,farmer);body=delivery(pid);headers={**buyer,'Idempotency-Key':uuid4().hex}
+    if cart:
+        assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
+        body.pop('product_id');body.pop('quantity')
+    path='/cart/checkout-test' if cart else '/orders'
+    assert client.post(path,headers=headers,json=body).status_code==403
+    con=queued_worker_connection(parameters)
+    try:
+        for table in ('orders','inventory_reservations','checkout_idempotency','order_mail_outbox'):
+            assert con.execute('SELECT count(*) AS n FROM '+table).fetchone()['n']==0
+        assert con.execute('SELECT stock FROM products WHERE id=?',(pid,)).fetchone()['stock']==10
+    finally:con.connection.close()
+    assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
+    con=queued_worker_connection(parameters)
+    try:
+        row=con.execute('SELECT * FROM email_verification_queue WHERE user_id=?',(buyer_id,)).fetchone()
+        secret=load_keys(pg_verified_checkout_api.mail_keys).decrypt(row).token
+    finally:con.connection.close()
+    assert client.post(path,headers=headers,json=body).status_code==403
+    assert client.post('/auth/email-verification/confirm',headers=buyer,json={'token':secret}).status_code==200
+    first=client.post(path,headers=headers,json=body)
+    assert first.status_code==201,first.text
+    pg_verified_checkout_api.restart()
+    assert client.post(path,headers=headers,json=body).json()==first.json()

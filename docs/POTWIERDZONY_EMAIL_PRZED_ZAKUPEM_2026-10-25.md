@@ -1,0 +1,11 @@
+# Potwierdzenie e-maila przed zakupem
+
+Wykryta luka funkcjonalna: wysyłka PIN-u wymagała potwierdzonego adresu, ale zakup bez potwierdzenia nadal mógł utworzyć zamówienie i rezerwację magazynu. Nowa opcja WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT=1 wymaga potwierdzenia aktualnego adresu przed utworzeniem pojedynczego zamówienia i zakupem koszyka. Domyślnie wyłączona, aby oddzielić wdrożenie kodu od zmiany działania istniejących środowisk demonstracyjnych. Na VPS trzeba ją jawnie włączyć po preflight.
+
+Kontrola odbywa się wewnątrz autoryzowanej transakcji, przed odczytem zapisanej odpowiedzi idempotencyjnej, rezerwacją towaru i tworzeniem zamówienia/kolejki. PostgreSQL blokuje wiersz konta na czas kontroli, aby serializować ją z potwierdzaniem adresu. Brak potwierdzenia daje HTTP 403 i instrukcję wysłania linku. Samo wysłanie linku nie wystarcza. Dowód potwierdzenia musi odpowiadać aktualnemu adresowi w bazie. Kontrola obejmuje ponowienia zakupów; nie zwraca zapisanego PIN-u kontu bez ważnego potwierdzenia.
+
+Rejestracja tworzy konto oczekujące na potwierdzenie. Logowanie, oglądanie produktów, koszyk i wysłanie linku pozostają dostępne. Nie dodano dopłaty ani wyjątku pozwalającego kupować bez potwierdzenia. Istniejące zamówienia nie są anulowane ani przepisywane. Osobna ochrona wysyłki PIN-u do potwierdzonego odbiorcy pozostaje aktywna.
+
+Wymagane: WP_ENABLE_EMAIL_VERIFICATION=1, działająca weryfikacja i tabela account_email_proofs. Preflight odrzuca wymaganie potwierdzenia przy wyłączonej weryfikacji i sprawdza tabelę. Nie ma migracji ani zmiany kluczy. Wdrożyć nowe wydanie głównej aplikacji, zachować istniejące flagi zdjęć, jednostek, kalendarza i poczty, dodać flagę wymagania potwierdzenia. Odbiornik SNS i procesy poczty nie wymagają restartu. Dotychczasowi klienci bez potwierdzenia muszą potwierdzić adres przed kolejnym zakupem.
+
+Walidacja: 19 lokalnych testów prawdziwego HTTP i autoryzacji przeszło. Nowe scenariusze obejmują odmowę bez zmian zamówień, rezerwacji, magazynu, kolejki i idempotencji; wysłanie linku bez kliknięcia; poprawne potwierdzenie; utratę dowodu; dowód dla innego adresu; ponowienia wcześniejszych zakupów. Dodano dwa natywne testy PostgreSQL z ponownym uruchomieniem procesu (wymagają CI, lokalnie sprawdzono kolekcję). Brak zmian VPS w trakcie implementacji.

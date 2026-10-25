@@ -1560,3 +1560,34 @@ def test_native_read_only_retained_key_material_check(pg_email_verification_api)
             with pytest.raises(ValueError,match='^SES_RETAINED_KEYS_REJECTED$'):
                 check.check_retained(con,wrong,now=NOW)
     finally:con.connection.close()
+
+
+def test_native_protected_feedback_target_and_http_commit(pg_email_verification_api,tmp_path):
+    import json
+    from fastapi.testclient import TestClient
+    from backend import ses_feedback_database as database,ses_feedback_http as http
+    from backend import ses_feedback_archive as archive,ses_feedback_config
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed,SOURCE
+    _,parameters=pg_email_verification_api
+    path=tmp_path/'feedback-db.json'
+    obj={'format':1,'purpose':'ses-feedback-database-v1','connection':{
+        'host':parameters['host'],'port':int(parameters.get('port',5432)),
+        'database':parameters['dbname'],'user':parameters['user'],
+        'password':parameters['password'],'sslmode':'disable'}}
+    path.write_text(json.dumps(obj));path.chmod(0o600)
+    target=database.load_config({'WP_ENV':'test','WP_ENABLE_SES_FEEDBACK_DATABASE':'1',
+                                'WP_SES_FEEDBACK_DATABASE_FILE':str(path)})
+    con=target()
+    try:
+        assert con.execute('SHOW statement_timeout').fetchone()['statement_timeout']=='5s'
+        con.connection.rollback()
+    finally:con.connection.close()
+    signer=make_signer()
+    config=ses_feedback_config.FeedbackConfig(signer[1].topic_arn,SOURCE,(signer[1],))
+    cipher=archive.ArchiveCipher({'archive':b'a'*32},'archive')
+    with TestClient(http.create_app(config,cipher,target,clock=lambda:NOW)) as client:
+        assert client.post('/sns/feedback',content=signed(signer,event())).status_code==204
+    con=target()
+    try:assert con.execute('SELECT count(*) AS n FROM ses_feedback_events').fetchone()['n']==1
+    finally:con.connection.close()

@@ -34,6 +34,9 @@ def is_public(method, path):
     # Explicit, disabled-by-default address lookup; no account data returned.
     if (method, path) in {('GET', '/address-search/config'), ('POST', '/address-search')}:
         return True
+    # Public attendance-calendar availability only; no account or location data.
+    if method == 'GET' and path == '/pickup-point-dates/config':
+        return True
     # Public unit vocabulary/config only; no accounts, products or credentials.
     if method == 'GET' and path == '/product-units':
         return True

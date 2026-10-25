@@ -144,7 +144,7 @@ async function loadDashboard() {
   section.hidden=!role;notifications.hidden=!role;
   if(!role){clear('dashboard-content');clear('notifications-list');return;}
   const box=el('dashboard-content');box.replaceChildren();
-  const titles={klient:'Panel klienta',rolnik:'Panel rolnika',dostawca:'Panel dostawcy',admin:'Panel administratora'};
+  const titles={klient:'Panel klienta',rolnik:'Panel sprzedawcy',dostawca:'Panel dostawcy',admin:'Panel administratora'};
   el('dashboard-title').textContent=titles[role]||'Mój panel';
   if(role==='klient'){
     const [orders, shipmentData]=await Promise.all([api('/orders/me'),api('/shipments/mine')]);

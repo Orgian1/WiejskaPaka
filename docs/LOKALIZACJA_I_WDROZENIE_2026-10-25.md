@@ -30,3 +30,11 @@ Wdrażać jako nowy worktree i nowe wskazanie `90-release.conf`, bez zmiany istn
 - Operator otrzymał LOKALIZACJA_WDROZONA i potwierdził formularz po odświeżeniu strony. Nie wymagano zmiany jednostek poczty.
 - Pełne CI commit 9e8e4c2b, run 40195884453: windows_recovery, pełny Windows, PostgreSQL 16/17 i Chromium zakończone SUCCESS. Wrapper fetch_commit_workflow_runs filtruje PR i zwraca pustą listę; workflow jest wyzwalany przez push. Sprawdzać kolekcję actions/runs?head_sha=... przez github.fetch.
 - Kolejny krok: odczyt stanu modułu jednostek sprzedaży na VPS, następnie jego migracja/aktywacja, jeżeli nadal wyłączony. Inne wcześniejsze moduły (zdjęcia, wyszukiwanie sprzedawcy, dostawa na adres) też wymagają sprawdzenia flag/tabel.
+
+## Jednostki i poprawka paneli konta
+
+Operator wykonał optional_product_sale_units.sql na wp_test_preview w jednej transakcji i nadał wp_preview_app wyłącznie SELECT,INSERT do obu tabel. Preflight z WP_ENABLE_PRODUCT_UNITS=1 zakończony success. Drop-in 93-product-units.conf aktywny; /product-units zwraca enabled=true, fractional_quantities=false. Dodanie produktu w kg przez sprzedawcę nie zostało jeszcze potwierdzone: operator zgłosił niejasny wybór ról i duży panel konta.
+
+Poprawka paneli: publiczna rejestracja wyłącznie Klient/Sprzedawca; rola w API nadal klient/rolnik dla zgodności danych. Wybór typu przy rejestracji nie przełącza istniejącego konta przy logowaniu. Dodano widoczną nazwę panelu i skrót sprzedawcy, ukrywanie skrótu koszyka poza klientem. Ustawienia bezpieczeństwa zwinięte w details, produkty przed dodatkowymi panelami. Nie przekształcono istniejących kont dostawców/adminów ani nie usunięto ich danych/API. Zgłoszenie koszyka wymaga sprawdzenia na dwóch odrębnych kontach; lokalne testy czyszczenia widoków przechodzą.
+
+Walidacja tej poprawki: 28 testów prywatności, logowania i wyszukiwania przechodzi; dodano rzeczywisty test Chromium klient -> wylogowanie -> sprzedawca na telefonie i desktopie oraz dostosowano otwarcie zwiniętych ustawień w teście weryfikacji e-maila. Testy przeglądarkowe zebrane lokalnie, wykonanie czeka na CI.

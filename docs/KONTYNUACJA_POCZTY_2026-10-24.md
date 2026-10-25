@@ -1,6 +1,6 @@
 # Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/retained-ses-key-check-20261025. Repo Orgian1/WiejskaPaka.
+Aktualna gałąź: preview/ses-feedback-database-20261025. Repo Orgian1/WiejskaPaka.
 Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
 niezacommitowane zmiany przy odzyskiwaniu workspace.
 
@@ -103,3 +103,21 @@ Najnowszy pakiet — zachowane klucze i Windows:
 - Dalej: CI (w tym Windows), operacyjny loader DB/procesu, HTTPS/proxy, prawdziwe
   piny/polityka SNS/subskrypcja, monitoring i retencja. VPS bez zmian.
 Szczegóły: KONTROLA_ZACHOWANYCH_KLUCZY_SES_2026-10-25.md.
+
+
+Najnowszy etap — baza odbiornika:
+- ses_feedback_database: chroniony plik JSON, tylko loopback i jawne nazwy testowe;
+  ładowanie bez połączenia. Każdy Target sprawdza tę samą sesję READ ONLY: bazę,
+  flagi roli, tabele, uprawnienia i ustawienia, ze stałymi timeoutami/search_path.
+- check_ses_feedback_database domyślnie DISABLED; --connect to tylko jawna sonda,
+  bez uruchomienia HTTP, migracji/zapisu, AWS, SMTP lub modyfikowania VPS.
+- 177/177 lokalnie, 9 izolowanych modułów, zero fail/skip. W tym 38 przypadków
+  adaptera; sondy unit są fake, rzeczywisty nowy test PostgreSQL czeka na CI.
+- Native moduł ma 70 zebranych testów; nowy przypadek używa prawdziwego Target
+  w samodzielnym HTTP i sprawdza zapis po ACK na osobnym połączeniu.
+- Poprzednik 40176160058 PG16/17, Chromium, szybki Windows i HTTP diagnostics
+  SUCCESS; pełny Windows jeszcze w toku podczas kontroli.
+- Dalej: nowe CI, wspólna konfiguracja procesu pin+keys+Target i kontrola
+  zachowanych rekordów, launcher, HTTPS/proxy, prawdziwe piny/polityka SNS,
+  procedura subskrypcji/monitoringu i retencji. Serwer niezmieniony.
+Szczegóły: BAZA_ODBIORNIKA_SES_2026-10-25.md.

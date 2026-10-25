@@ -95,6 +95,7 @@ function showPointEditor(){
   const point=pointEditorItems.find(p=>String(p.id)===el('point-edit-select').value);
   el('point-edit-form').hidden=!point;
   if(!point)return;
+  if(typeof editPickupCalendar==='function')editPickupCalendar(point);
   for(const [field,key] of [['name','name'],['city','city'],['street','street'],['hours','opening_hours']])el('point-edit-'+field).value=point[key];
   el('point-edit-lat').value=coordinateText(point.latitude_e6);el('point-edit-lon').value=coordinateText(point.longitude_e6);
   el('point-edit-active').checked=Boolean(point.active);el('point-edit-clear-coordinates').checked=false;
@@ -123,7 +124,7 @@ async function savePointEditor(){
   if(!point)throw Error('Wybierz swój punkt odbioru.');
   const epoch=sessionEpoch,serial=pointEditorSerial;
   const body={name:el('point-edit-name').value,city:el('point-edit-city').value,street:el('point-edit-street').value,
-    opening_hours:el('point-edit-hours').value,active:el('point-edit-active').checked};
+    opening_hours:el('point-edit-hours').value,active:el('point-edit-active').checked,...(typeof pickupDatesPayload==='function'?pickupDatesPayload(true):{})};
   if(el('point-edit-clear-coordinates').checked)body.clear_coordinates=true;
   else{
     const lat=el('point-edit-lat').value.trim(),lon=el('point-edit-lon').value.trim();

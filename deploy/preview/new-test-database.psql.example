@@ -81,6 +81,8 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- SHA256 cf5445e3ab5ee0b2c90d334aa35634db141cca159c7ea6ee56358253add9fbab
 \ir ../../database/optional_ses_feedback.sql
 \ir ../../database/optional_ses_feedback_review.sql
+-- SHA256 237922440e7ac3d4ed270c59a74010c3f3e0665cf6879a3b3453dcd6e964692c
+\ir ../../database/optional_pickup_dates.sql
 GRANT CONNECT ON DATABASE wp_test_preview TO wp_preview_app;
 GRANT USAGE ON SCHEMA public TO wp_preview_app;
 GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO wp_preview_app;

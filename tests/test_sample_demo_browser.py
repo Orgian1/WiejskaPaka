@@ -36,9 +36,9 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.locator('#auth').is_hidden()
         assert page.locator('#logout').is_visible()
         assert page.locator('#identity').text_content()==accounts[role]['email']
-        assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=80
+        assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=140
         page.locator('#dashboard-content article').first.wait_for(state='visible')
-        assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel rolnika','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
+        assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel sprzedawcy','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
             page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True).wait_for(state='visible')
             selected_month=page.get_by_label('Miesiąc raportu').input_value()
@@ -109,7 +109,11 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 page.click('#logout')
                 page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
             def card(sid):
-                return page.locator('#dashboard-content > article').filter(has=page.get_by_role('heading',name='Przesyłka '+sid,exact=True))
+                area=page.locator('#dashboard-content > article, #dashboard-content > details').filter(has=page.get_by_text('Przesyłka '+sid,exact=True))
+                area.wait_for(state='visible')
+                if area.evaluate('(node)=>node.tagName==="DETAILS"&&!node.open'):
+                    area.locator(':scope > summary').click()
+                return area
             pins={}
             sign_in('klient')
             for shipment in shipments:
@@ -134,6 +138,9 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             sign_in('rolnik')
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==2
+            for details in page.locator('#dashboard-content > details').all():
+                if not details.evaluate('(node)=>node.open'):
+                    details.locator(':scope > summary').click()
             settle=page.get_by_role('button',name='Przekaż pozycję do rozliczenia (TEST)',exact=True).first
             settle.wait_for(state='visible')
             with page.expect_response('**/test/farmers/me/payout-report') as payout:

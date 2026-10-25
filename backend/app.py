@@ -29,7 +29,7 @@ assert_safe_environment()
 DB_PATH = os.environ.get('WIEJSKAPAKA_DB', str(Path(__file__).with_name('wiejskapaka.sqlite3')))
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
-from backend import product_unit_storage
+from backend import product_unit_storage, pickup_dates
 from backend import address_delivery
 from backend.address_delivery import DeliveryPreferenceIn
 
@@ -1443,7 +1443,26 @@ class FarmerProfileIn(BaseModel):
     city: CleanText = Field(min_length=2, max_length=120)
     description: CleanText = Field(default='', max_length=1500)
 
+if pickup_dates.enabled() and not DATABASE_URL:
+    with db() as con:
+        con.executescript(pickup_dates.SCHEMA_SQLITE)
+
+@app.get('/pickup-point-dates/config')
+def pickup_dates_config():
+    return {'enabled': pickup_dates.enabled(), 'max_dates': 90, 'max_days_ahead': 365}
+
 class PickupPointIn(BaseModel):
+    attendance_dates: list[str] | None = Field(default=None, max_length=90)
+
+    @field_validator('attendance_dates')
+    @classmethod
+    def valid_attendance_dates(cls, value):
+        if value is None:
+            return None
+        if not pickup_dates.enabled():
+            raise ValueError('Kalendarz punktu nie jest jeszcze włączony')
+        return pickup_dates.validate(value)
+
     name: CleanText = Field(min_length=2, max_length=120)
     city: CleanText = Field(min_length=2, max_length=120)
     street: CleanText = Field(min_length=3, max_length=180)
@@ -1498,6 +1517,8 @@ def create_pickup_point(payload:PickupPointIn,user=Depends(current_user), author
         if payload.latitude_e6 is not None:
             from backend.local_marketplace import save_coordinates
             save_coordinates(con,cur.lastrowid,payload.latitude_e6,payload.longitude_e6)
+        if payload.attendance_dates is not None:
+            pickup_dates.replace(con,cur.lastrowid,payload.attendance_dates)
         return {'id':cur.lastrowid}
 
 
@@ -1514,13 +1535,16 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
         metadata_changed = any(point[k]!=getattr(payload,k) for k in ('name','city','street','opening_hours'))
         coords_changed = (payload.clear_coordinates and coords is not None) or (payload.latitude_e6 is not None and
             (coords is None or coords['latitude_e6']!=payload.latitude_e6 or coords['longitude_e6']!=payload.longitude_e6))
-        if metadata_changed or coords_changed:
+        dates_changed = payload.attendance_dates is not None and payload.attendance_dates != pickup_dates.read(con,point_id)
+        if metadata_changed or coords_changed or dates_changed:
             open_order = con.execute("""SELECT 1 FROM order_locations l JOIN orders o ON o.id=l.order_id
                 WHERE l.pickup_point_id=? AND o.status IN ('oczekuje_na_platnosc_testowa','gotowe_do_odbioru_testowo') LIMIT 1""", (point_id,)).fetchone()
             if open_order:
                 raise HTTPException(409,'Punkt ma niezakończone zamówienia. Możesz wyłączyć nowe zakupy, ale nie zmieniać miejsca ani godzin odbioru.')
         con.execute('UPDATE pickup_points SET name=?,city=?,street=?,opening_hours=?,active=? WHERE id=? AND farmer_id=?',
             (payload.name,payload.city,payload.street,payload.opening_hours,int(payload.active),point_id,user['id']))
+        if payload.attendance_dates is not None:
+            pickup_dates.replace(con,point_id,payload.attendance_dates)
         if payload.clear_coordinates:
             con.execute('DELETE FROM pickup_point_coordinates WHERE point_id=?',(point_id,))
         elif payload.latitude_e6 is not None:
@@ -1533,12 +1557,12 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
 def my_pickup_points(user=Depends(current_user)):
     require(user, 'rolnik')
     with db() as con:
-        return [dict(r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        return [pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
 
 @app.get('/farmers/{farmer_id}/pickup-points')
 def list_pickup_points(farmer_id:int):
     with db() as con:
-        return [dict(r) for r in con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,))]
+        return [pickup_dates.enrich(con,r) for r in con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,))]
 
 @app.get('/orders/{order_id}/location')
 def order_location(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):

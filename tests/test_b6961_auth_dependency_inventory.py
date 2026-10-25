@@ -36,3 +36,10 @@ def test_email_verification_public_exception_is_exact_and_other_routes_authentic
           and row['path']!='/auth/email-verification/options']
     assert len(rows)==3
     assert all('current_user' in row['dependencies'] for row in rows)
+
+
+def test_pickup_calendar_config_exception_is_exact():
+    from scripts.audit_route_auth_dependencies import is_public
+    assert is_public('GET', '/pickup-point-dates/config')
+    assert not is_public('POST', '/pickup-point-dates/config')
+    assert not is_public('GET', '/pickup-point-dates/private')

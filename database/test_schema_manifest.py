@@ -34,6 +34,7 @@ UPGRADES = (
     'optional_mail_suppression.sql',
     'optional_ses_feedback.sql',
     'optional_ses_feedback_review.sql',
+    'optional_pickup_dates.sql',
 )
 
 

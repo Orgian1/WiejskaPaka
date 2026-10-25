@@ -124,6 +124,9 @@ def test_customer_to_seller_switch_clears_cart_and_compacts_login(sample_browser
                     assert page.locator('#cart-section').is_hidden()
                     assert page.locator('#cart-items').inner_text()==''
                     assert page.locator('#farmer').is_visible()
+                    assert page.locator('#products-section').is_hidden()
+                    assert page.locator('#nearby-section').is_hidden()
+                    assert page.locator('#orders-section').bounding_box()['y']<page.locator('#farmer').bounding_box()['y']
                     assert page.locator('#new-product').is_visible()
                     assert page.locator('#seller-nav-link').is_visible()
                     assert page.locator('#account-panel-name').inner_text()=='Panel sprzedawcy'

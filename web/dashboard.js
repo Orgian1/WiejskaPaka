@@ -22,6 +22,7 @@ function sellerPayoutSummaryLines(report){
     'To wyłącznie symulacja. Nie wykonano przelewu ani nie uruchomiono automatycznych wypłat.'
   ];
 }
+function sellerOrderCard(title,lines){const card=node('details','','card');card.append(node('summary',title));for(const line of lines)card.append(node('p',line));return card;}
 function dashboardButton(label, action) {
   const b=node('button',label);b.type='button';b.onclick=()=>act(action);return b;
 }
@@ -205,7 +206,7 @@ async function loadDashboard() {
       'Planując godziny odbioru, uwzględnij czas przejazdów pomiędzy punktami oraz czas przygotowania i wydawania towaru.'
     ]));
     for(const shipment of (shipmentData.shipments||[])){
-      const c=dashboardCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`,`Status: ${shipment.status||'sprawdź zamówienia'}`]);
+      const c=sellerOrderCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`,`Status: ${shipment.status||'sprawdź zamówienia'}`]);
       if(shipment.fulfillment==='dostawa'){
         const courier=node('input');courier.type='number';courier.min='1';courier.placeholder='ID dostawcy';courier.setAttribute('aria-label','Identyfikator dostawcy przesyłki');
         c.append(courier,dashboardButton('Przypisz dostawcę całej przesyłce (test)',async()=>{
@@ -246,7 +247,7 @@ async function loadDashboard() {
       inventory.append(dashboardCard(product.name,[`Dostępne: ${availability}`,`Cena: ${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)}`,`Dostawa: ${money(product.delivery_grosze)}`]));
     }
     box.append(inventory);
-    for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
+    for(const o of orders){const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
       if(o.fulfillment==='dostawa' && o.status==='oczekuje_na_platnosc_testowa'){const dispatch=node('button','Oznacz jako wysłane (test)');dispatch.type='button';dispatch.onclick=()=>act(async()=>{if(dispatch.disabled)return;dispatch.disabled=true;try{await api(`/orders/${o.id}/dispatch-test`,'POST');if(!active())return;msg('Status zaktualizowany');await loadDashboard()}finally{dispatch.disabled=false}});c.append(dispatch)}

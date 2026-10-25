@@ -178,5 +178,10 @@
     "file": "optional_ses_feedback_review.sql",
     "sha256": "93a9134436e78547e4dfcb8230feea85e80010ed82d626bcc02ab4b25689cf1a",
     "bytes": 451
+  },
+  {
+    "file": "optional_pickup_dates.sql",
+    "sha256": "237922440e7ac3d4ed270c59a74010c3f3e0665cf6879a3b3453dcd6e964692c",
+    "bytes": 410
   }
 ]

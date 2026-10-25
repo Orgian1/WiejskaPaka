@@ -97,7 +97,7 @@ def pg_email_verification_api():
     yield from _postgres_api(email_verification=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False):
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -148,6 +148,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 from backend.checkout_vault import create_ring
                 keyfile=Path(folder)/'api.checkout-key';create_ring(keyfile)
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
+                if pickup_calendar:
+                    env['WP_ENABLE_PICKUP_DATES'] = '1'
                 if units:
                     env['WP_ENABLE_PRODUCT_UNITS'] = '1'
                 if sellers:
@@ -1625,3 +1627,25 @@ def test_native_combined_feedback_preflight_protected_snapshots(pg_email_verific
     wrong=service.prepare(env,now=NOW)
     with pytest.raises(ValueError,match='^SES_FEEDBACK_SERVICE_REJECTED$'):
         wrong.build_app(clock=lambda:NOW)
+
+
+@pytest.fixture(scope='module')
+def pg_pickup_calendar_api():
+    yield from _postgres_api(pickup_calendar=True)
+
+
+def test_native_pickup_attendance_dates(pg_pickup_calendar_api):
+    from backend.pickup_dates import today
+    from datetime import timedelta
+    client, parameters = pg_pickup_calendar_api
+    seller, _ = register(client, 'rolnik')
+    other, _ = register(client, 'rolnik')
+    dates = [(today()+timedelta(days=3)).isoformat(), (today()+timedelta(days=4)).isoformat()]
+    body = {'name':'Punkt kalendarzowy','city':'Legnica','street':'Polna 12','opening_hours':'10:00–12:00','attendance_dates':dates}
+    response = client.post('/pickup-points',headers=seller,json=body)
+    assert response.status_code==201,response.text
+    point = response.json()['id']
+    assert client.get('/farmers/me/pickup-points',headers=seller).json()[0]['attendance_dates']==dates
+    assert client.put(f'/pickup-points/{point}',headers=other,json={**body,'active':True}).status_code==404
+    assert client.put(f'/pickup-points/{point}',headers=seller,json={**body,'active':True,'attendance_dates':dates[:1]}).status_code==200
+    assert client.get('/farmers/me/pickup-points',headers=seller).json()[0]['attendance_dates']==dates[:1]

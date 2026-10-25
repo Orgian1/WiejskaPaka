@@ -86,12 +86,19 @@ def verify(raw,pin,*,now):
     certificates supplied by the untrusted message are never imported/fetched.
     """
     try:
+        obj=_verify_envelope(raw,pin,now=now,kind='Notification')
+        return Notification(obj['MessageId'].lower(),pin.topic_arn,obj['Message'])
+    except Exception:raise ValueError('SNS_NOTIFICATION_REJECTED') from None
+
+
+def _verify_envelope(raw,pin,*,now,kind):
+    try:
         if not isinstance(pin,Pin) or type(now) is not int or now<0:raise ValueError('Invalid context')
         current=datetime.fromtimestamp(now,timezone.utc)
         obj=json_object(raw)
         required=('Type','MessageId','TopicArn','Message','Timestamp','SignatureVersion','Signature','SigningCertURL')
         if any(not isinstance(obj.get(k),str) for k in required):raise ValueError('Required strings')
-        if (obj['Type']!='Notification' or obj['SignatureVersion']!='2' or
+        if (obj['Type']!=kind or obj['SignatureVersion']!='2' or
                 obj['TopicArn']!=pin.topic_arn or obj['SigningCertURL']!=pin.certificate_url or
                 not UUID.fullmatch(obj['MessageId']) or len(obj['Signature'])>1024 or
                 ('Subject' in obj and (not isinstance(obj['Subject'],str) or len(obj['Subject'])>1024))):
@@ -104,8 +111,13 @@ def verify(raw,pin,*,now):
                 cert.not_valid_before_utc<=current<=cert.not_valid_after_utc):
             raise ValueError('Expired pin')
         fields=['Message','MessageId']+(['Subject'] if 'Subject' in obj else [])+['Timestamp','TopicArn','Type']
+        if kind=='SubscriptionConfirmation':
+            if (not isinstance(obj.get('Token'),str) or not 1<=len(obj['Token'])<=8192 or
+                    not isinstance(obj.get('SubscribeURL'),str) or len(obj['SubscribeURL'])>16384 or
+                    'Subject' in obj):raise ValueError('Invalid confirmation')
+            fields=['Message','MessageId','SubscribeURL','Timestamp','Token','TopicArn','Type']
         canonical=''.join(k+'\n'+obj[k]+'\n' for k in fields).encode('utf-8')
         signature=base64.b64decode(obj['Signature'],validate=True)
         cert.public_key().verify(signature,canonical,padding.PKCS1v15(),hashes.SHA256())
-        return Notification(obj['MessageId'].lower(),pin.topic_arn,obj['Message'])
+        return obj
     except Exception:raise ValueError('SNS_NOTIFICATION_REJECTED') from None

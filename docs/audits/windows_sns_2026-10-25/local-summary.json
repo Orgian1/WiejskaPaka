@@ -1,0 +1,84 @@
+{
+  "application_sha256": "8e9ca0340668098c1b477dfbeb2e87e6ae6bb9f80a051279c7b53f089f24e28e",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 101,
+    "passed": 101,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 5,
+  "planned": 5,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_b1141_per_file_runner.py",
+      "sha256": "8c1813e004e7a9d630d87a2fb3fdafea913388b069f67d978963024f9b0f00e1",
+      "returncode": 0,
+      "seconds": 0.7,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "a9c256f6bc22772701b8590be1540dbcd7bf966898b69d8ca0e970c806a619e5",
+      "returncode": 0,
+      "seconds": 2.91,
+      "test_counts": {
+        "total": 42,
+        "passed": 42,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_sns_pinned_notification.py",
+      "sha256": "b76a7d232b22719463c51ee5856c851093cd9dfe92bf04eb6663ddefaab8567b",
+      "returncode": 0,
+      "seconds": 0.47,
+      "test_counts": {
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_ses_feedback.py",
+      "sha256": "4270b03fea8f31ec4b37280ddd386c2bd528b712fbb1d9505567f8dcc5c588fa",
+      "returncode": 0,
+      "seconds": 0.46,
+      "test_counts": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_ses_feedback_config.py",
+      "sha256": "fb228ae7ff9a894150f1b72f473a965287b41f30ba5eaba0929faefebf766984",
+      "returncode": 0,
+      "seconds": 0.49,
+      "test_counts": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    }
+  ]
+}

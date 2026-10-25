@@ -53,6 +53,19 @@ def _decision(message,*,source_arn,account):
     return 'APPLIED',recipient,reason
 
 
+def validate_source(topic_arn,source_arn):
+    topic=TOPIC.fullmatch(topic_arn)
+    if not topic:raise ValueError('Invalid source topic')
+    expected='arn:aws:ses:'+topic[1]+':'+topic[2]+':identity/'
+    if (not isinstance(source_arn,str) or not source_arn.startswith(expected) or
+            not source_arn[len(expected):] or len(source_arn)>512):
+        raise ValueError('Invalid source config')
+    identity=source_arn[len(expected):]
+    if '@' in identity:address(identity)
+    elif not hostname(identity):raise ValueError('Invalid source identity')
+    return topic[2]
+
+
 def apply(con,raw,pin,*,source_arn,now):
     """Caller commits/rolls back event deduplication and suppression together.
 
@@ -61,15 +74,9 @@ def apply(con,raw,pin,*,source_arn,now):
     """
     _require_transaction(con)
     try:
-        topic=TOPIC.fullmatch(pin.topic_arn)
-        expected='arn:aws:ses:'+topic[1]+':'+topic[2]+':identity/'
-        if (not isinstance(source_arn,str) or not source_arn.startswith(expected) or
-                not source_arn[len(expected):] or len(source_arn)>512):raise ValueError('Invalid source config')
-        identity=source_arn[len(expected):]
-        if '@' in identity:address(identity)
-        elif not hostname(identity):raise ValueError('Invalid source identity')
+        account=validate_source(pin.topic_arn,source_arn)
         notification=verify(raw,pin,now=now)
-        result,recipient,reason=_decision(notification.message,source_arn=source_arn,account=topic[2])
+        result,recipient,reason=_decision(notification.message,source_arn=source_arn,account=account)
         event_key=hashlib.sha256((notification.topic_arn+'\n'+notification.message_id).encode()).hexdigest()
         payload_hash=hashlib.sha256(notification.message.encode()).hexdigest()
     except Exception:raise ValueError('SES_FEEDBACK_REJECTED') from None

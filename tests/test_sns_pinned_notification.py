@@ -67,7 +67,8 @@ def test_freshness_future_and_expired_certificate_rejected(signer,offset):
     with pytest.raises(ValueError,match='NOTIFICATION_REJECTED'):verify(json.dumps(envelope(key)),pin,now=NOW+offset)
 
 
-@pytest.mark.parametrize('raw',['[]','{"Type":"one","Type":"two"}','{"value":NaN}','x'*131073])
+@pytest.mark.parametrize('raw',['[]','{"Type":"one","Type":"two"}','{"value":NaN}','x'*131073],
+                         ids=['array','duplicate-member','non-json-constant','oversize'])
 def test_bounded_unambiguous_json_required(signer,raw):
     with pytest.raises(ValueError,match='NOTIFICATION_REJECTED'):verify(raw,signer[1],now=NOW)
 

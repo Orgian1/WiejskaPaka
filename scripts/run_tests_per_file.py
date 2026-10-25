@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -45,6 +46,20 @@ def testcase_counts(path):
     skipped = sum(case.find('skipped') is not None for case in cases)
     return {'total': len(cases), 'passed': len(cases) - failed - skipped,
             'failed': failed, 'skipped': skipped}
+
+
+def failure_locations(path, root):
+    """Preserve allowlisted source locations before deleting private JUnit XML."""
+    if not Path(path).is_file():return []
+    known={p.name for p in (Path(root)/'tests').glob('test_*.py')}
+    found=set()
+    for case in ET.parse(path).getroot().iter('testcase'):
+        for tag in ('failure','error'):
+            node=case.find(tag)
+            if node is None or not isinstance(node.text,str):continue
+            for name,line in re.findall(r'(?:^|[/\\ ])(test_[A-Za-z0-9_]+\.py):(\d{1,7}):',node.text,re.MULTILINE):
+                if name in known and int(line)>0:found.add((name,int(line)))
+    return [{'file':name,'line':line} for name,line in sorted(found)[:30]]
 
 
 def run(root, *, selected=None, timeout=90, report=None, resume=False, refresh_stale=False):
@@ -104,6 +119,7 @@ def run(root, *, selected=None, timeout=90, report=None, resume=False, refresh_s
                 entry = {'file': resolved.name, 'sha256': hashlib.sha256(resolved.read_bytes()).hexdigest(), 'returncode': proc.returncode,
                          'seconds': round(time.monotonic() - started, 2),
                          'test_counts': testcase_counts(junit),
+                         'failure_locations': failure_locations(junit,root),
                          'output_tail': (proc.stdout + proc.stderr)[-3000:]}
             except subprocess.TimeoutExpired as exc:
                 entry = {'file': resolved.name, 'sha256': hashlib.sha256(resolved.read_bytes()).hexdigest(), 'returncode': None, 'timeout': True,

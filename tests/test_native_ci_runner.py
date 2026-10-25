@@ -268,3 +268,25 @@ def test_full_timeout_keeps_only_safe_partial_progress(tmp_path,monkeypatch,vali
     assert ('progress' in task)==valid_progress
     if valid_progress:assert task['progress']=={'executed':1,'planned':2}
     assert SENSITIVE not in path.read_text()
+
+
+def test_windows_preserves_sanitized_junit_locations_without_output_tail(tmp_path,monkeypatch):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+            return subprocess.CompletedProcess(command,0,'','')
+        data={'complete':True,'success':False,'sources_unchanged':True,'executed':1,'planned':1,
+              'test_counts':{'total':1,'passed':0,'failed':1,'skipped':0},
+              'results':[{'file':'test_sns_pinned_notification.py','returncode':1,
+                          'test_counts':{'total':1,'passed':0,'failed':1,'skipped':0},
+                          'output_tail':SENSITIVE,'failure_locations':[
+                              {'file':'test_sns_pinned_notification.py','line':42},
+                              {'file':'private-path.py','line':99},
+                              {'file':'test_sns_pinned_notification.py','line':True}]}]}
+        Path(command[-1]).write_text(json.dumps(data))
+        return subprocess.CompletedProcess(command,1,'','')
+    path=tmp_path/'result.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    assert result['tasks'][-1]['failure_locations']==[{'file':'test_sns_pinned_notification.py','line':42}]
+    assert SENSITIVE not in path.read_text() and 'private-path' not in path.read_text()

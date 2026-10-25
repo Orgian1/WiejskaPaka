@@ -23,6 +23,7 @@ class Prepared:
     retention_seconds:int=604800
     body_timeout:int=5
     max_inflight:int=8
+    confirm_subscriptions:bool=False
 
     def check(self,*,now=None):
         con=None
@@ -55,9 +56,11 @@ class Prepared:
         try:
             self.check(now=int(clock()))
             from backend.ses_feedback_http import create_app
+            from backend.sns_subscription_confirmation import confirm
             return create_app(self.config,self.cipher,self.target,clock=clock,
                 max_records=self.max_records,retention_seconds=self.retention_seconds,
-                body_timeout=self.body_timeout,max_inflight=self.max_inflight)
+                body_timeout=self.body_timeout,max_inflight=self.max_inflight,
+                confirmation=confirm if self.confirm_subscriptions else None)
         except Exception:raise ValueError('SES_FEEDBACK_SERVICE_REJECTED') from None
 
 
@@ -77,6 +80,7 @@ def prepare(environ=None,*,now=None):
                 ('WP_ENABLE_SES_FEEDBACK_CONFIG','WP_ENABLE_SES_REVIEW_KEYS','WP_ENABLE_SES_FEEDBACK_DATABASE'))):
             raise ValueError('Explicit protected test configuration required')
         policy=dict(
+            confirm_subscriptions=env.get('WP_ENABLE_SES_SUBSCRIPTION_CONFIRMATION')=='1',
             max_records=_number(env,'WP_SES_REVIEW_MAX_RECORDS',1000,1,10000),
             retention_seconds=_number(env,'WP_SES_REVIEW_RETENTION_SECONDS',604800,3600,2592000),
             body_timeout=_number(env,'WP_SES_FEEDBACK_BODY_TIMEOUT',5,1,30),

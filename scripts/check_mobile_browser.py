@@ -19,7 +19,7 @@ from scripts.run_phone_demo import demo_environment
 ROOT = Path(__file__).resolve().parents[1]
 VIEWPORTS = ((320, 700), (360, 740), (390, 844), (768, 1024), (1280, 800))
 EXPECTED_NAVIGATION = ('#auth', '#nearby-section', '#products-section',
-                       '#cart-section', '#orders-section', '#dashboard')
+                       '#cart-section', '#farmer', '#orders-section', '#dashboard')
 
 
 def horizontal_overflow_script():

@@ -70,7 +70,7 @@ def run():
                     assert page.locator('#farmer-details').is_visible() == (role=='rolnik'), (role,width)
                     assert page.locator('#orders-section').is_visible() == (role!='dostawca'), (role,width)
                     assert page.locator('#dashboard-title').inner_text() == {
-                        'klient':'Panel klienta','rolnik':'Panel rolnika',
+                        'klient':'Panel klienta','rolnik':'Panel sprzedawcy',
                         'dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
                     assert not page.evaluate('document.documentElement.scrollWidth > innerWidth + 1'), (role,width)
                     assert not errors, (role,width,errors)

@@ -53,7 +53,7 @@ def check_offline(screenshot_dir=None):
                 assert page.locator('#auth').is_visible()
                 for selector in ('#farmer', '#farmer-details', '#orders-section', '#dashboard', '#notifications-section'):
                     assert page.locator(selector).is_hidden(), f'Widoczny prywatny panel {selector}'
-                expected_navigation = ('#auth', '#nearby-section', '#products-section', '#cart-section', '#orders-section', '#dashboard')
+                expected_navigation = ('#auth', '#nearby-section', '#products-section', '#cart-section', '#farmer', '#orders-section', '#dashboard')
                 assert page.locator('nav.quick-nav a').count() == len(expected_navigation)
                 assert page.locator('nav.quick-nav a').evaluate_all('(links) => links.map(link => link.getAttribute("href"))') == list(expected_navigation)
                 for link in page.locator('nav.quick-nav a').all():

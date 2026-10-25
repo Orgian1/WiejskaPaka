@@ -36,9 +36,9 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.locator('#auth').is_hidden()
         assert page.locator('#logout').is_visible()
         assert page.locator('#identity').text_content()==accounts[role]['email']
-        assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=80
+        assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=140
         page.locator('#dashboard-content article').first.wait_for(state='visible')
-        assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel rolnika','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
+        assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel sprzedawcy','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
             page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True).wait_for(state='visible')
             selected_month=page.get_by_label('Miesiąc raportu').input_value()

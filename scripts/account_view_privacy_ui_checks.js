@@ -3,6 +3,7 @@ function main(name){
  class Element{
   constructor(){this.children=[];this.value='';this.text='';this.hidden=false;this.checked=false;this.resets=0}
   append(...nodes){this.children.push(...nodes)}
+  querySelector(){return this.heading||(this.heading=new Element())}
   querySelectorAll(){return this.children.flatMap(n=>[n,...n.querySelectorAll('*')])}
   replaceChildren(){this.children=[];this.text=''}
   set textContent(value){this.text=String(value);this.children=[]}
@@ -40,6 +41,8 @@ function main(name){
  assert.equal(el('auth').hidden,Boolean(user));
  assert.equal(el('cart-section').hidden,user?.role!=='klient');
  assert.equal(el('farmer').hidden,user?.role!=='rolnik');
+ assert.equal(el('products-section').hidden,user?.role==='rolnik');
+ assert.equal(el('nearby-section').hidden,user?.role==='rolnik');
  assert.equal(el('seller-nav-link').hidden,user?.role!=='rolnik');
  assert.equal(el('cart-nav-link').hidden,user?.role!=='klient');
  assert.equal(el('account-security').open,false);

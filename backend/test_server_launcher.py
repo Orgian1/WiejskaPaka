@@ -4,6 +4,7 @@ import os
 from backend.test_server_preflight import check_test_server
 
 OPTIONAL_PREVIEW_TABLES = {
+    'WP_ENABLE_PICKUP_DATES': ('pickup_point_dates',),
     'WP_ENABLE_PRODUCT_UNITS': ('product_sale_units', 'order_sale_units'),
     'WP_ENABLE_ADDRESS_DELIVERY': ('seller_delivery_windows', 'address_delivery_requests'),
     'WP_ENABLE_USER_PHOTOS': ('user_photos',),

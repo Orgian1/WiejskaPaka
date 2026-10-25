@@ -16,6 +16,40 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 router = APIRouter()
 
 
+def local_router(connect):
+    """Search public pickup locations without an external geocoding provider."""
+    local = APIRouter()
+
+    @local.post('/address-search/pickup-locations')
+    def pickup_locations(query: AddressQuery):
+        # Postal codes are not stored on pickup points; never silently ignore one.
+        if query.postal_code:
+            return JSONResponse({'items': [], 'local': True}, headers={'Cache-Control': 'no-store'})
+
+        def pattern(value):
+            return value.casefold().replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_') + '%'
+
+        def folded(column):
+            for upper, lower in zip('ĄĆĘŁŃÓŚŹŻ', 'ąćęłńóśźż'):
+                column = f"replace({column},'{upper}','{lower}')"
+            return f'lower({column})'
+
+        with connect() as con:
+            rows = con.execute(f'''SELECT p.id,p.name,p.city,p.street,c.latitude_e6,c.longitude_e6
+                FROM pickup_points p JOIN pickup_point_coordinates c ON c.point_id=p.id
+                WHERE p.active=1 AND {folded('p.city')} LIKE ? ESCAPE '\\'
+                AND {folded('p.street')} LIKE ? ESCAPE '\\'
+                ORDER BY p.city,p.street,p.id LIMIT 5''',
+                (pattern(query.city), pattern(query.street))).fetchall()
+        items = [{'label': f"{row['city']}, {row['street']} — {row['name']}",
+                  'latitude_e6': row['latitude_e6'], 'longitude_e6': row['longitude_e6'],
+                  'notice': 'Odległość będzie liczona od wybranego punktu odbioru, nie od Twojego domu.'}
+                 for row in rows]
+        return JSONResponse({'items': items, 'local': True}, headers={'Cache-Control': 'no-store'})
+
+    return local
+
+
 class AddressQuery(BaseModel):
     model_config = ConfigDict(extra='forbid')
     city: str = Field(min_length=2, max_length=120)

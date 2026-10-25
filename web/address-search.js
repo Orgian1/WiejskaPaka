@@ -1,5 +1,5 @@
 // Addresses stay in this form; no browser storage, URL parameters or autocomplete.
-let addressSerial=0,addressController=null,addressEnabled=false;
+let addressSerial=0,addressController=null,addressEnabled=false,addressLocal=true;
 function clearAddressSelection(){
   addressSerial++;addressController?.abort();addressController=null;
   el('address-results').replaceChildren();el('address-status').textContent='';
@@ -14,11 +14,11 @@ async function findAddress(){
   const controller=new AbortController();addressController=controller;
   el('address-find').disabled=true;el('address-status').textContent='Szukam adresu…';
   try{
-    const response=await fetch('/address-search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store',signal:controller.signal});
+    const response=await fetch(addressLocal?'/address-search/pickup-locations':'/address-search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store',signal:controller.signal});
     const data=await response.json();
     if(serial!==addressSerial||epoch!==sessionEpoch)return;
     if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'Wyszukiwanie adresów jest niedostępne.');
-    el('address-status').textContent=data.items.length?'Wybierz właściwe miejsce. Punkt może być orientacyjny.':'Nie znaleziono adresu. Uzupełnij ulicę lub kod pocztowy.';
+    el('address-status').textContent=data.items.length?'Wybierz właściwe miejsce. Punkt może być orientacyjny.':addressLocal?'Brak zapisanych punktów z lokalizacją w tej miejscowości. Spróbuj innej miejscowości lub użyj swojej lokalizacji.':'Nie znaleziono adresu. Uzupełnij ulicę lub kod pocztowy.';
     for(const place of data.items){
       const button=node('button',place.label);button.type='button';
       button.onclick=()=>{
@@ -37,11 +37,17 @@ async function findAddress(){
 }
 async function loadAddressSearch(){
   if(!el('address-fields'))return;
+  addressEnabled=true;el('address-fields').hidden=false;el('nearby-manual-coordinates').hidden=true;
+  el('nearby-lat').required=false;el('nearby-lon').required=false;
+  el('address-find').disabled=true;
   try{
     const response=await fetch('/address-search/config',{cache:'no-store'});
-    if(!response.ok||!(await response.json()).enabled)return;
-    addressEnabled=true;el('address-fields').hidden=false;el('nearby-manual-coordinates').hidden=true;
-    el('nearby-lat').required=false;el('nearby-lon').required=false;
+    addressLocal=!response.ok||!(await response.json()).enabled;
+  }catch{addressLocal=true;}
+    el('address-postcode-field').hidden=addressLocal;
+    el('address-provider-note').textContent=addressLocal?'Wpisz miejscowość i wybierz zapisany punkt odbioru jako początek wyszukiwania. Możesz też użyć swojej lokalizacji.':'Adres zostanie przekazany usłudze mapowej po kliknięciu przycisku. Bez ulicy możesz wskazać miejscowość.';
+    el('address-attribution').hidden=addressLocal;
+    el('address-find').disabled=false;
     for(const id of ['address-city','address-street','address-postcode'])el(id).addEventListener('input',clearAddressSelection);
     el('address-find').onclick=()=>act(findAddress);
     el('nearby-clear').addEventListener('click',clearAddressSelection);
@@ -55,6 +61,5 @@ async function loadAddressSearch(){
         event.preventDefault();event.stopImmediatePropagation();el('address-status').textContent='Wyszukaj adres i wybierz miejsce lub użyj lokalizacji urządzenia.';
       }
     },true);
-  }catch{/* Keep the existing location flow when configuration is unavailable. */}
 }
 loadAddressSearch();

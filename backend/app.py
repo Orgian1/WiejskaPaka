@@ -172,6 +172,9 @@ def db():
     finally:
         con.close()
 
+from backend.address_search import local_router
+app.include_router(local_router(db))
+
 def init_db():
     if DATABASE_URL:
         init_postgres(DATABASE_URL)

@@ -1482,3 +1482,36 @@ def test_native_feedback_private_configuration_snapshot(pg_email_verification_ap
         with transaction(con):assert config.apply(con,signed(signer,event()),loaded,now=NOW)=='DUPLICATE'
         assert blocks.blocked(con,'buyer@example.invalid')
     finally:con.connection.close()
+
+
+def test_native_review_archive_capacity_and_atomic_ciphertext(pg_email_verification_api):
+    from backend import ses_feedback_archive as archive,ses_feedback_config
+    from backend.reset_mail_queue import transaction
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed,SOURCE
+    signer=make_signer()
+    config=ses_feedback_config.FeedbackConfig(signer[1].topic_arn,SOURCE,(signer[1],))
+    cipher=archive.ArchiveCipher({'review':b'r'*32},'review')
+    _,parameters=pg_email_verification_api
+    raws=[signed(signer,event(bounce_type='Undetermined'),
+                 MessageId=str(i)+'2345678-1234-1234-1234-123456789abc') for i in (1,2)]
+    def receive(raw):
+        con=queued_worker_connection(parameters)
+        try:
+            with transaction(con):
+                try:return archive.receive(con,raw,config,cipher,now=NOW,max_records=1)
+                except ValueError as exc:
+                    assert str(exc)=='SES_REVIEW_RECEIVE_REJECTED'
+                    return 'REJECTED'
+        finally:con.connection.close()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(receive,raws))==['REJECTED','REVIEW']
+    con=queued_worker_connection(parameters)
+    try:
+        assert con.execute('SELECT count(*) AS n FROM ses_feedback_events').fetchone()['n']==1
+        row=con.execute('SELECT * FROM ses_feedback_review').fetchone()
+        assert cipher.open(row).decode() in raws
+        assert b'buyer@example.invalid' not in bytes(row['payload'])
+        con.connection.rollback()
+        with transaction(con):assert archive.purge_expired(con,now=NOW+604800)==1
+    finally:con.connection.close()

@@ -1,6 +1,6 @@
 # Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/ses-feedback-http-keys-20261025. Repo Orgian1/WiejskaPaka.
+Aktualna gałąź: preview/retained-ses-key-check-20261025. Repo Orgian1/WiejskaPaka.
 Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
 niezacommitowane zmiany przy odzyskiwaniu workspace.
 
@@ -85,3 +85,21 @@ Najnowszy pakiet — odbiornik HTTP i klucze archiwum:
   DB/procesu i kontrola historycznych kluczy, HTTPS/proxy, realne piny/polityka SNS,
   monitorowanie i retencja. Brak konfiguracji AWS/aktywacji/wdrożenia na VPS.
 Szczegóły: ODBIORNIK_SNS_I_KLUCZE_ARCHIWUM_2026-10-25.md.
+
+
+Najnowszy pakiet — zachowane klucze i Windows:
+- Workspace odtworzony przez GitHub, tree 7f3a7ba dokładnie równy PR #37.
+- CI poprzednika 40174219320: PG16/17, Chromium i szybki Windows SUCCESS;
+  pełny Windows 4456 passed/1 failed/215 skipped, moduł ses_feedback_http.
+  Skrócono ids dużego payloadu HTTP; maksymalna nazwa testu 106 znaków.
+  Dla dużych parametrów zawsze stosować jawne krótkie ids.
+- Nowa prywatna funkcja ses_review_key_check.check_retained sprawdza rzeczywiste
+  odszyfrowanie zapisanych niewygasłych rekordów z proponowanym zestawem kluczy;
+  READ ONLY, bez rotacji, plików/sieci/writes, limit metadanych i jeden payload naraz.
+- Lokalnie 139/139, 8 izolowanych modułów, bez błędów/pominięć. Nowy native
+  PostgreSQL READ ONLY test zebrany; wykonanie czeka na nowe CI.
+- Kontrola nie obejmuje kopii, brakujących historycznych rekordów i przyszłych
+  zapisów; nie usuwać dawnych kluczy ani nie uruchamiać usługi na jej podstawie.
+- Dalej: CI (w tym Windows), operacyjny loader DB/procesu, HTTPS/proxy, prawdziwe
+  piny/polityka SNS/subskrypcja, monitoring i retencja. VPS bez zmian.
+Szczegóły: KONTROLA_ZACHOWANYCH_KLUCZY_SES_2026-10-25.md.

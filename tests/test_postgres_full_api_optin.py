@@ -1536,3 +1536,27 @@ def test_native_standalone_feedback_http_commits_before_ack(pg_email_verificatio
         finally:con.connection.close()
         assert client.post('/sns/feedback',content=raw).status_code==204
         assert client.post('/sns/feedback',content=raw.replace('Undetermined','Permanent')).status_code==503
+
+
+def test_native_read_only_retained_key_material_check(pg_email_verification_api):
+    from backend import ses_review_key_check as check,ses_feedback_archive as archive,ses_feedback_config
+    from backend.reset_mail_queue import transaction
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed,SOURCE
+    signer=make_signer();_,parameters=pg_email_verification_api
+    config=ses_feedback_config.FeedbackConfig(signer[1].topic_arn,SOURCE,(signer[1],))
+    old=archive.ArchiveCipher({'old':b'o'*32},'old')
+    proposed=archive.ArchiveCipher({'old':b'o'*32,'new':b'n'*32},'new')
+    wrong=archive.ArchiveCipher({'old':b'w'*32},'old')
+    con=queued_worker_connection(parameters)
+    try:
+        with transaction(con):
+            archive.receive(con,signed(signer,event(bounce_type='Undetermined')),config,old,now=NOW)
+        with transaction(con):
+            con.execute('SET TRANSACTION READ ONLY')
+            assert check.check_retained(con,proposed,now=NOW)=={'status':'RETAINED_KEYS_VALID','checked':1}
+        with transaction(con):
+            con.execute('SET TRANSACTION READ ONLY')
+            with pytest.raises(ValueError,match='^SES_RETAINED_KEYS_REJECTED$'):
+                check.check_retained(con,wrong,now=NOW)
+    finally:con.connection.close()

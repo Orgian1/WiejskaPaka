@@ -105,7 +105,7 @@ def test_failed_commit_cannot_ack_and_rolls_back(setup,signer):
 @pytest.mark.parametrize('body,headers,status',[
     (b'',{},400),(b'x'*131073,{},413),(b'x',{'content-length':'131073'},413),
     (b'x',{'content-length':'private'},400),(b'x',{'content-encoding':'gzip'},415),
-])
+],ids=['empty','oversize-body','oversize-header','invalid-length','compressed'])
 def test_stream_and_header_bounds_before_db(setup,body,headers,status):
     def forbidden():pytest.fail('Rejected bodies must not access DB')
     _,trusted,cipher=setup

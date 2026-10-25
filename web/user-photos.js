@@ -13,7 +13,7 @@ async function newProductPhotoPayload(){
 }
 function photoImage(kind,id,digest=''){
   const image=node('img');image.alt=kind==='product'?'Zdjęcie produktu':kind==='farm'?'Zdjęcie gospodarstwa':'Zdjęcie profilowe';
-  image.loading='lazy';image.className='user-photo';image.src=`/user-photos/${kind}/${id}${digest?'?v='+digest:''}`;
+  image.loading='lazy';image.width=240;image.height=240;image.className='user-photo';image.src=`/user-photos/${kind}/${id}${digest?'?v='+digest:''}`;
   image.onerror=()=>image.remove();return image;
 }
 function resetUserPhotoViews(){photoViewSerial++;const host=el('user-photo-editors');if(host)host.replaceChildren();if(el('user-photo-panel'))el('user-photo-panel').hidden=true;if(el('product-photo-file'))el('product-photo-file').value='';}

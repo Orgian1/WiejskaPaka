@@ -55,7 +55,9 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
             inventory=page.get_by_role('region',name='Stan produktów gospodarstwa')
             item=inventory.locator('article').filter(has=page.get_by_role('heading',name='Marchew ze zdjęciem',exact=True))
             item.get_by_text('Dostępne w magazynie: 12 szt.',exact=True).wait_for(state='visible')
+            item.scroll_into_view_if_needed()
             item.locator('img').wait_for(state='visible')
+            page.wait_for_function('(id)=>{const image=document.querySelector(`[src="/user-photos/product/${id}"]`);return image&&image.complete&&image.naturalWidth>0}',arg=created.value.json()['id'])
             assert len(client.get(f"/user-photos/product/{created.value.json()['id']}").content)<=500_000
             assert page.locator('#product-photo-file').input_value()==''
             page.click('#logout');page.locator('#user-photo-panel').wait_for(state='hidden')

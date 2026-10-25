@@ -1591,3 +1591,37 @@ def test_native_protected_feedback_target_and_http_commit(pg_email_verification_
     con=target()
     try:assert con.execute('SELECT count(*) AS n FROM ses_feedback_events').fetchone()['n']==1
     finally:con.connection.close()
+
+
+def test_native_combined_feedback_preflight_protected_snapshots(pg_email_verification_api,tmp_path):
+    import base64,json
+    from fastapi.testclient import TestClient
+    from backend import ses_feedback_service as service
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed
+    from tests.test_ses_feedback_config import document
+    _,parameters=pg_email_verification_api;signer=make_signer()
+    pins=tmp_path/'pins.json';keys=tmp_path/'archive.json';db=tmp_path/'database.json'
+    pins.write_text(json.dumps(document(signer[1])))
+    key_doc={'format':1,'purpose':'ses-feedback-review-v1','active':'archive',
+             'keys':{'archive':base64.b64encode(b'a'*32).decode()}}
+    keys.write_text(json.dumps(key_doc))
+    db.write_text(json.dumps({'format':1,'purpose':'ses-feedback-database-v1','connection':{
+        'host':parameters['host'],'port':int(parameters.get('port',5432)),
+        'database':parameters['dbname'],'user':parameters['user'],
+        'password':parameters['password'],'sslmode':'disable'}}))
+    for path in (pins,keys,db):path.chmod(0o600)
+    env={'WP_ENV':'test','WP_ENABLE_SES_FEEDBACK_SERVICE':'1',
+         'WP_ENABLE_SES_FEEDBACK_CONFIG':'1','WP_SES_FEEDBACK_CONFIG_FILE':str(pins),
+         'WP_ENABLE_SES_REVIEW_KEYS':'1','WP_SES_REVIEW_KEYS_FILE':str(keys),
+         'WP_ENABLE_SES_FEEDBACK_DATABASE':'1','WP_SES_FEEDBACK_DATABASE_FILE':str(db)}
+    prepared=service.prepare(env,now=NOW)
+    assert prepared.check(now=NOW)=={'status':'CONFIGURATION_VALID','retained_records':0}
+    with TestClient(prepared.build_app(clock=lambda:NOW)) as client:
+        assert client.post('/sns/feedback',content=signed(signer,event(bounce_type='Undetermined'))).status_code==204
+    assert prepared.check(now=NOW)['retained_records']==1
+    key_doc['keys']['archive']=base64.b64encode(b'w'*32).decode()
+    keys.write_text(json.dumps(key_doc))
+    wrong=service.prepare(env,now=NOW)
+    with pytest.raises(ValueError,match='^SES_FEEDBACK_SERVICE_REJECTED$'):
+        wrong.build_app(clock=lambda:NOW)

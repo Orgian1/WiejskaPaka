@@ -37,3 +37,18 @@ def test_runner_rejects_outside_files(tmp_path):
         pass
     else:
         raise AssertionError('Unsafe path accepted')
+
+
+def test_failure_location_survives_long_private_diagnostics(tmp_path):
+    import xml.etree.ElementTree as ET
+    from run_tests_per_file import failure_locations
+    tests=tmp_path/'tests';tests.mkdir()
+    (tests/'test_probe.py').write_text('')
+    suite=ET.Element('testsuite')
+    case=ET.SubElement(suite,'testcase',name='private-name[private-address]')
+    node=ET.SubElement(case,'failure')
+    node.text='C:\\private\\test_probe.py:42: private-token\n'+('private-address '*1000)+'\ntest_unknown.py:99: ignored'
+    path=tmp_path/'private.xml';ET.ElementTree(suite).write(path)
+    result=failure_locations(path,tmp_path)
+    assert result==[{'file':'test_probe.py','line':42}]
+    assert 'private' not in json.dumps(result)

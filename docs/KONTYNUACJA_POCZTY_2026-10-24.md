@@ -38,3 +38,19 @@ Nie mamy tutaj rzeczywistych danych SMTP. Nie modyfikować VPS bez aktualnego
 zakresu wdrożenia. Szczegóły: PODPISY_SNS_I_ZDARZENIA_SES_2026-10-25.md.
 
 Szczegóły ostatniego pakietu: KONFIGURACJA_ZAUFANIA_SNS_2026-10-25.md.
+
+
+Aktualizacja diagnostyki Windows 2026-10-25:
+- CI 40167641983: PostgreSQL 16/17, Chromium i windows_recovery SUCCESS;
+  pełny Windows: 4392 passed, 1 failed, 205 skipped. Jedyny moduł błędu:
+  test_sns_pinned_notification.py; dawne trzy błędy audytów już nie występują.
+- Parametr z testowym body >128 KiB miał równie duży automatyczny identyfikator
+  pytest. Dodano krótkie jawne ids bez zmiany wejścia ani asercji. Osobny krok
+  tego modułu na rzeczywistym Windows w run 40169086766 zakończył się SUCCESS.
+  Wskazuje to na problem identyfikatora przypadku, a nie odrzucenia podpisu;
+  pełna regresja po poprawce nadal wymaga potwierdzenia.
+- Runner zachowuje tylko znane nazwy plików i numery linii z pełnego JUnit
+  przed usunięciem pliku, aby długi output_tail nie usuwał lokalizacji błędu.
+  Raport publikowany nadal nie zawiera treści asercji, parametrów ani ścieżek.
+- Lokalnie 101/101, 5 izolowanych modułów, bez błędów/pominięć.
+  Dowody: docs/audits/windows_sns_2026-10-25/. Wysyłka i VPS bez zmian.

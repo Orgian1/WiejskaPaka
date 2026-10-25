@@ -152,6 +152,12 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     locations = {(location['file'], location['line'])
                         for entry in entries if entry.get('returncode') != 0
                         for location in failure_locations_from_text(entry.get('output_tail'), root)}
+                    for entry in entries:
+                        if entry.get('returncode') == 0:continue
+                        for location in entry.get('failure_locations',[]):
+                            if (isinstance(location,dict) and location.get('file') in known and
+                                    type(location.get('line')) is int and 0<location['line']<10000000):
+                                locations.add((location['file'],location['line']))
                     task['failure_locations'] = [{'file': name, 'line': line}
                         for name, line in sorted(locations)[:30]]
                     task['test_counts'] = checked_counts(data['test_counts'])

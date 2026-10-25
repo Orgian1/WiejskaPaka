@@ -1,6 +1,6 @@
 # Punkt wznowienia — stan 2026-10-25
 
-Aktualna gałąź: preview/encrypted-ses-review-20261025. Repo Orgian1/WiejskaPaka.
+Aktualna gałąź: preview/ses-feedback-http-keys-20261025. Repo Orgian1/WiejskaPaka.
 Zmiany są stosem draft PR, bez scalania i bez modyfikowania VPS. Zachowywać lokalne
 niezacommitowane zmiany przy odzyskiwaniu workspace.
 
@@ -68,3 +68,20 @@ Najnowszy etap: szyfrowane REVIEW — 2026-10-25
 - Dalej: potwierdzić nowe CI, loader kluczy archiwum, listener z limitem body
   i ACK po commit, obsługa starych/niezatwierdzonych zgłoszeń i monitorowanie.
 Szczegóły: ARCHIWUM_ZGLOSZEN_SES_2026-10-25.md. VPS pozostaje bez zmian.
+
+
+Najnowszy pakiet — odbiornik HTTP i klucze archiwum:
+- Chroniony loader niezależnych kluczy z purpose, opt-in tylko do odczytu;
+  check_ses_review_keys nie łączy się z DB/siecią i niczego nie aktywuje.
+- Osobna fabryka ses_feedback_http.create_app, nie podłączona do backend.app:
+  POST /sns/feedback; body<=128KiB, timeout odczytu, limit współbieżności;
+  prawdziwy commit przed 204, wszystkie błędy przetwarzania bez ACK sukcesu.
+- Lokalnie 138/138, 9 izolowanych modułów, bez błędów/pominięć. Raport:
+  docs/audits/feedback_http_keys_2026-10-25/local-summary.json.
+- Nowy native test HTTP/commit po PostgreSQL czeka na faktyczne wykonanie w CI.
+- CI poprzednika (40173177311) PostgreSQL 16/17, Chromium, szybki Windows SUCCESS;
+  pełny Windows podczas sprawdzania nadal IN_PROGRESS.
+- Dalej: sprawdzić nowe CI i pełny Windows poprzednika, operacyjny loader połączeń
+  DB/procesu i kontrola historycznych kluczy, HTTPS/proxy, realne piny/polityka SNS,
+  monitorowanie i retencja. Brak konfiguracji AWS/aktywacji/wdrożenia na VPS.
+Szczegóły: ODBIORNIK_SNS_I_KLUCZE_ARCHIWUM_2026-10-25.md.

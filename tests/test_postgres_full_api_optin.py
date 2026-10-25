@@ -1515,3 +1515,24 @@ def test_native_review_archive_capacity_and_atomic_ciphertext(pg_email_verificat
         con.connection.rollback()
         with transaction(con):assert archive.purge_expired(con,now=NOW+604800)==1
     finally:con.connection.close()
+
+
+def test_native_standalone_feedback_http_commits_before_ack(pg_email_verification_api):
+    from fastapi.testclient import TestClient
+    from backend import ses_feedback_http as http,ses_feedback_archive as archive,ses_feedback_config
+    from tests.test_sns_pinned_notification import make_signer,NOW
+    from tests.test_ses_feedback import event,signed,SOURCE
+    signer=make_signer();_,parameters=pg_email_verification_api
+    config=ses_feedback_config.FeedbackConfig(signer[1].topic_arn,SOURCE,(signer[1],))
+    cipher=archive.ArchiveCipher({'archive':b'a'*32},'archive')
+    app=http.create_app(config,cipher,lambda:queued_worker_connection(parameters),clock=lambda:NOW)
+    raw=signed(signer,event(bounce_type='Undetermined'))
+    with TestClient(app) as client:
+        assert client.post('/sns/feedback',content=raw).status_code==204
+        con=queued_worker_connection(parameters)
+        try:
+            row=con.execute('SELECT * FROM ses_feedback_review').fetchone()
+            assert cipher.open(row).decode()==raw
+        finally:con.connection.close()
+        assert client.post('/sns/feedback',content=raw).status_code==204
+        assert client.post('/sns/feedback',content=raw.replace('Undetermined','Permanent')).status_code==503

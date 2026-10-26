@@ -104,6 +104,8 @@ def snapshot(con,user_id):
 
 def move(con,user,payload,kind,*,now):
     account=_account(con,user['id'])
+    from backend.wallet_integrity import account_valid
+    if not account_valid(con,user['id']):return 409,{'detail':'Portfel wymaga sprawdzenia. Operacja nie została wykonana.'}
     if kind=='withdrawal':
         if _locked(account,now):return 429,{'detail':'Wypłaty są zablokowane na 15 minut po błędnych próbach PIN-u.'}
         if not account['pin_hash']:return 409,{'detail':'Najpierw ustaw PIN portfela.'}

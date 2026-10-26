@@ -122,3 +122,16 @@ def test_disabled_wallet_and_production_optin_are_rejected(tmp_path):
     with server(tmp_path/'off.sqlite3') as client:
         buyer=account(client)
         assert client.get('/wallet',headers=buyer).status_code==404
+
+
+def test_corrupted_wallet_cannot_credit_or_reserve_more_funds(enabled):
+    with server(enabled) as client:
+        buyer=account(client);assert deposit(client,buyer).status_code==201
+        assert set_pin(client,buyer).status_code==200
+        with closing(sqlite3.connect(enabled)) as con:
+            con.execute('UPDATE wallet_preview_accounts SET available_grosze=available_grosze+1');con.commit()
+        assert deposit(client,buyer).status_code==409
+        assert withdraw(client,buyer).status_code==409
+        with closing(sqlite3.connect(enabled)) as con:
+            assert con.execute('SELECT available_grosze,reserved_grosze FROM wallet_preview_accounts').fetchone()==(10001,0)
+            assert con.execute('SELECT count(*) FROM wallet_preview_entries').fetchone()[0]==1

@@ -1723,3 +1723,19 @@ def test_native_wallet_parallel_debits_do_not_overspend(pg_wallet_api):
     with ThreadPoolExecutor(max_workers=2) as pool:assert sorted(pool.map(spend,range(2)))==[201,409]
     state=client.get('/wallet',headers=buyer).json()
     assert (state['available_grosze'],state['reserved_grosze'])==(3000,7000)
+
+
+def test_native_wallet_readonly_integrity_and_corruption_block(pg_wallet_api):
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    buyer,_=register(client,'klient')
+    assert client.post('/wallet/topups',headers=buyer,json={'amount_grosze':12000,'request_key':uuid4().hex}).status_code==201
+    con=queued_worker_connection(parameters)
+    try:
+        report=inspect_wallets(con)
+        assert report['success'] and report['wallets_checked']==1 and report['entries_checked']==1
+        con.execute('UPDATE wallet_preview_accounts SET available_grosze=available_grosze+1')
+        con.connection.commit()
+        assert not inspect_wallets(con)['success']
+    finally:con.connection.close()
+    assert client.post('/wallet/topups',headers=buyer,json={'amount_grosze':100,'request_key':uuid4().hex}).status_code==409

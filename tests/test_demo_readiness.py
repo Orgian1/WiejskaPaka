@@ -20,7 +20,9 @@ class Client:
     def get(self, path):
         if path == '/':
             return Response(text=('lang="pl" name="viewport" ŚRODOWISKO TESTOWE '
-                                  'id="auth" id="products" id="orders-section" id="dashboard"'))
+                                  'id="auth" id="products" id="orders-section" id="dashboard" '
+                                  'id="header-login-link" id="header-register-link" '
+                                  'id="header-panel-link"'))
         if path == '/assets/' + str(self.missing):
             return Response(status_code=404)
         return Response(text='ok')
@@ -44,3 +46,15 @@ def test_readiness_runs_isolated_subprocess_without_neon():
     assert 'DATABASE_URL' not in kwargs['env']
     assert kwargs['env']['WIEJSKAPAKA_DB'].endswith('ui_check.sqlite3')
     assert kwargs['cwd'] == Path(__file__).resolve().parents[1]
+
+
+def test_readiness_rejects_missing_header_account_actions():
+    class MissingHeader(Client):
+        def get(self, path):
+            response = super().get(path)
+            if path == '/':
+                response.text = response.text.replace('id="header-register-link"', '')
+            return response
+
+    with pytest.raises(AssertionError, match='header-register-link'):
+        check_ui(MissingHeader())

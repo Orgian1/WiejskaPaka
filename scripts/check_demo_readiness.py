@@ -22,7 +22,8 @@ def check_ui(client):
     html = page.text
     for marker in ('name="viewport"', 'lang="pl"', 'ŚRODOWISKO TESTOWE',
                    'id="auth"', 'id="products"', 'id="orders-section"',
-                   'id="dashboard"'):
+                   'id="dashboard"', 'id="header-login-link"',
+                   'id="header-register-link"', 'id="header-panel-link"'):
         if marker not in html:
             raise AssertionError(f'Brak elementu interfejsu: {marker}')
     for asset in ASSETS:

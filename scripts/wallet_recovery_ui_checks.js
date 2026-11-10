@@ -25,6 +25,11 @@ async function main(){
  }else if(which==='other_active'){
   storage.set(key,JSON.stringify(original));run("walletBusy=true;walletActiveIntent={owner:1,kind:'withdraw',request_key:'different-request-01'}");
   await run("recoverWalletIntent(1,'topup',()=>true,{disabled:false})");assert.equal(calls.length,0);assert.equal(run('walletBusy'),true);
+ }else if(which==='stale_card'){
+  storage.set(key,JSON.stringify({...original,request_key:'newer-intent-00002'}));
+  run("walletBusy=true;walletActiveIntent={owner:1,kind:'topup',request_key:'newer-intent-00002'}");
+  await run("recoverWalletIntent(1,'topup',()=>true,{disabled:false},'original-intent-001')");
+  assert.equal(calls.length,0);assert.equal(run('walletBusy'),true);assert.ok(storage.has(key));
  }else if(which==='matching_active'){
   storage.set(key,JSON.stringify(original));run("walletBusy=true;walletActiveIntent={owner:1,kind:'topup',request_key:'original-intent-001'}");
   await run("recoverWalletIntent(1,'topup',()=>true,{disabled:false})");assert.equal(calls.length,1);assert.equal(storage.has(key),false);assert.equal(run('walletBusy'),false);assert.equal(run('walletVersion'),1);

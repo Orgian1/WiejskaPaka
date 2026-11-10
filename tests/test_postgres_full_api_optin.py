@@ -144,7 +144,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 migration.execute(sql.SQL('GRANT USAGE ON SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO {}').format(sql.Identifier(role)))
-                migration.execute(sql.SQL('REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions FROM {}').format(sql.Identifier(role)))
+                migration.execute(sql.SQL('REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions,wallet_preview_operation_fences FROM {}').format(sql.Identifier(role)))
 
             with socket.socket() as sock:
                 sock.bind(('127.0.0.1', 0))
@@ -1855,3 +1855,51 @@ def test_native_wallet_legacy_terms_backfill_and_readonly_audit(pg_wallet_api):
     pg_wallet_api.restart()
     state=client.get('/wallet',headers=owner).json()
     assert state['entries'][0]['withdrawal_preview']=={'gross_grosze':4001,'fee_basis_points':500,'fee_grosze':200,'net_grosze':3801}
+
+
+@pytest.mark.parametrize('kind',['topup','withdrawal'])
+@pytest.mark.parametrize('scenario',['released','committed','race'])
+def test_native_wallet_intent_recovery_and_late_writes(pg_wallet_api,kind,scenario):
+    import psycopg
+    from tests.test_wallet_preview_http import account,deposit,set_pin,withdraw
+    from tests.test_wallet_intent_recovery import recover
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner=account(client,'rolnik');deposit(client,owner);set_pin(client,owner);key=uuid4().hex
+    def write():return deposit(client,owner,amount=100,key=key) if kind=='topup' else withdraw(client,owner,amount=100,key=key)
+    if scenario=='released':
+        result=recover(client,owner,key,kind);assert result.json()['outcome']=='released'
+        assert write().status_code==409
+    elif scenario=='committed':
+        assert write().status_code==201
+        result=recover(client,owner,key,kind);assert result.json()['outcome']=='committed'
+    else:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            original=pool.submit(write);recovery=pool.submit(recover,client,owner,key,kind)
+            a,result=original.result(),recovery.result()
+        assert (a.status_code,result.json()['outcome']) in ((201,'committed'),(409,'released'))
+    pg_wallet_api.restart()
+    assert recover(client,owner,key,kind).json()==result.json()
+    assert write().status_code==(409 if result.json()['outcome']=='released' else 200)
+    con=queued_worker_connection(parameters)
+    try:
+        assert inspect_wallets(con)['success']
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):con.execute('DELETE FROM wallet_preview_operation_fences')
+        con.connection.rollback()
+    finally:con.connection.close()
+
+
+def test_native_wallet_recovery_is_scoped_per_account(pg_wallet_api):
+    from tests.test_wallet_preview_http import account,deposit
+    from tests.test_wallet_intent_recovery import recover
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner=account(client);other=account(client);key=uuid4().hex
+    assert deposit(client,owner,key=key).status_code==201
+    assert recover(client,other,key).json()['outcome']=='released'
+    assert recover(client,owner,key).json()['outcome']=='committed'
+    assert deposit(client,owner,key=key).status_code==200
+    assert deposit(client,other,key=key).status_code==409
+    con=queued_worker_connection(parameters)
+    try:assert inspect_wallets(con)['success']
+    finally:con.connection.close()

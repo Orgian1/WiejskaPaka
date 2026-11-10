@@ -19,7 +19,7 @@ SELECT a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
  coalesce(sum(e.reserved_delta),0) AS expected_reserved,
  l.available_after AS latest_available,l.reserved_after AS latest_reserved,
  coalesce(h.invalid_snapshots,0) AS invalid_snapshots,
- coalesce(q.invalid_terms,0) AS invalid_terms
+ coalesce(q.invalid_terms,0) AS invalid_terms,coalesce(q.fenced_entries,0) AS fenced_entries
  FROM wallet_preview_accounts a
  LEFT JOIN history e ON e.user_id=a.user_id
  LEFT JOIN history l ON l.user_id=a.user_id AND l.revision=a.revision
@@ -38,18 +38,22 @@ SELECT a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
        OR t.fee_grosze<>(t.gross_grosze*t.fee_basis_points+5000)/10000
        OR t.net_grosze+t.fee_grosze<>t.gross_grosze
        OR (r.id IS NOT NULL AND (r.user_id<>e.user_id OR (r.state='cancelled_test' AND r.actor_id<>e.user_id)))) THEN 1
-     WHEN e.kind='topup' AND t.withdrawal_id IS NOT NULL THEN 1 ELSE 0 END) AS invalid_terms
+     WHEN e.kind='topup' AND t.withdrawal_id IS NOT NULL THEN 1 ELSE 0 END) AS invalid_terms,
+     count(f.request_key) AS fenced_entries
    FROM wallet_preview_entries e LEFT JOIN wallet_preview_terms t ON t.withdrawal_id=e.id
-   LEFT JOIN wallet_preview_resolutions r ON r.withdrawal_id=e.id GROUP BY e.user_id
+   LEFT JOIN wallet_preview_resolutions r ON r.withdrawal_id=e.id
+   LEFT JOIN wallet_preview_operation_fences f ON f.user_id=e.user_id AND f.request_key=e.request_key GROUP BY e.user_id
  ) q ON q.user_id=a.user_id
 '''
 GROUP=''' GROUP BY a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
- l.available_after,l.reserved_after,h.invalid_snapshots,q.invalid_terms ORDER BY a.user_id'''
+ l.available_after,l.reserved_after,h.invalid_snapshots,q.invalid_terms,q.fenced_entries ORDER BY a.user_id'''
 
 
 
 def problems(row):
     issues=[]
+    if row['fenced_entries']:
+        issues.append('OPERATION_FENCE_MISMATCH')
     if row['invalid_snapshots']:
         issues.append('JOURNAL_HISTORY_MISMATCH')
     if row['invalid_terms']:

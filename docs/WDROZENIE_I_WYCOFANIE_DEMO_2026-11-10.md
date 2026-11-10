@@ -49,7 +49,7 @@ właściwego mechanizmu backupu operatora i przećwiczyć odtworzenie przed zmia
 
 ## 3. Nowe wydanie obok starego
 
-Pobrać sprawdzony pełny SHA z gałęzi `preview/location-favorites-delivery-20261110`
+Pobrać sprawdzony pełny SHA z gałęzi `preview/pickup-promo-december-20261110`
 do nowego katalogu wydania. Sprawdzić SHA i brak lokalnych zmian.
 Nie wykonywać pull ani checkout w katalogu z niezabezpieczonymi zmianami.
 Utworzyć oddzielny venv i zainstalować requirements-lock.txt. Zachować stare
@@ -68,6 +68,11 @@ Po odbiorze #56 manifest zawiera 41 plików: nowa migracja
 Nie zmieniono sum wcześniejszych 40 plików. Dla aktywnych dostaw preflight wymaga
 nowej tabeli `delivery_time_proposals`. Automatyczny odbiór włączyć jawnie przez
 `WP_ENABLE_AUTOMATIC_PICKUP=1`; sam nowy kod na trwałej bazie nie włącza tej flagi.
+Pakiet #57 dodaje 42. migrację `optional_pickup_promotion.sql`. Włączenie
+`WP_ENABLE_PICKUP_PROMOTION=1` wymaga tabeli `pickup_promotion_grants`.
+Uprawnienia promocji nie są operacjami portfela; wygaśnięcie nie pobiera środków.
+Przy rollbacku zachować tabelę i dane kampanii. Szczegóły:
+`PROMOCJA_TRZY_PUNKTY_2026-11-10.md`.
 Nie zakładać, że wcześniejsze opcjonalne tabele są już zainstalowane na VPS.
 Dla aktywnych flag porównać manifest,
 schemat i uprawnienia z bieżącą bazą. Migracje wcześniejszego łańcucha najpierw

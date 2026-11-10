@@ -39,6 +39,7 @@ UPGRADES = (
     'optional_wallet_withdrawals.sql',
     'optional_wallet_operation_fences.sql',
     'optional_delivery_proposals.sql',
+    'optional_pickup_promotion.sql',
 )
 
 

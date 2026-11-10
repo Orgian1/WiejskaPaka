@@ -19,10 +19,14 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def server(database, *, reset_outbox=None, queued_keys=None, verification_keys=None, order_mail=False):
+def server(database, *, reset_outbox=None, queued_keys=None, verification_keys=None, order_mail=False,
+           require_verified_checkout=False):
     env=demo_environment(os.environ,database);env['WP_ENABLE_TEST_PAYMENTS']='1'
     if verification_keys is not None:
         env.update(WP_ENABLE_EMAIL_VERIFICATION='1',WP_ENABLE_MAIL_QUEUE='1',WP_MAIL_QUEUE_KEYS_FILE=str(verification_keys))
+    if require_verified_checkout:
+        assert verification_keys is not None, 'Verified checkout requires explicit test verification keys'
+        env['WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT']='1'
     if order_mail:env['WP_ENABLE_ORDER_MAIL_QUEUE']='1'
     if queued_keys is not None:
         env.update(WP_ENV='test', WP_ENABLE_QUEUED_PASSWORD_RESET='1',

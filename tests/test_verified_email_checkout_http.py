@@ -15,10 +15,9 @@ def snapshot(database,pid):
 
 
 @pytest.mark.parametrize('cart',[False,True])
-def test_unverified_account_blocked_then_confirmed_account_can_buy(enabled,monkeypatch,cart):
+def test_unverified_account_blocked_then_confirmed_account_can_buy(enabled,cart):
     database,keys,key_path=enabled
-    monkeypatch.setenv('WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT','1')
-    with server(database,verification_keys=key_path,order_mail=True) as client:
+    with server(database,verification_keys=key_path,order_mail=True,require_verified_checkout=True) as client:
         buyer,pid=setup(client,False,database,keys)
         if cart:assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
         before=snapshot(database,pid)
@@ -42,10 +41,9 @@ def test_unverified_account_blocked_then_confirmed_account_can_buy(enabled,monke
 
 
 @pytest.mark.parametrize('cart',[False,True])
-def test_proof_for_another_email_cannot_authorize_checkout(enabled,monkeypatch,cart):
+def test_proof_for_another_email_cannot_authorize_checkout(enabled,cart):
     database,keys,key_path=enabled
-    monkeypatch.setenv('WP_REQUIRE_VERIFIED_EMAIL_FOR_CHECKOUT','1')
-    with server(database,verification_keys=key_path,order_mail=True) as client:
+    with server(database,verification_keys=key_path,order_mail=True,require_verified_checkout=True) as client:
         buyer,pid=setup(client,True,database,keys)
         if cart:assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
         with closing(sqlite3.connect(database)) as con:

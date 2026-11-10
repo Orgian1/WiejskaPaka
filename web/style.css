@@ -46,3 +46,11 @@ main>*{order:3}#account-section{order:0}#products-section{order:1;grid-column:1/
 #orders-section.seller-current-orders{order:1;grid-column:1/-1}#orders-section summary{cursor:pointer;min-height:44px;padding:10px;font-weight:600}.pickup-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;max-width:440px}.pickup-calendar-grid button{padding:6px;margin:0;min-width:0}.pickup-calendar-grid button[aria-pressed=true]{background:#174327;outline:3px solid #b58700;outline-offset:-3px}.pickup-calendar-grid span{text-align:center}.calendar-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;max-width:440px}
 
 .wallet-balances{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px}#wallet-section>h3{margin-top:24px}#wallet-section{order:8}dialog[id^="wallet-dialog-"]{width:min(440px,calc(100% - 24px));max-height:90vh;overflow:auto;border:1px solid #dce2d7;border-radius:18px;padding:24px}dialog[id^="wallet-dialog-"]::backdrop{background:#10251baa}dialog[id^="wallet-dialog-"] input{width:100%;min-width:0}dialog[id^="wallet-dialog-"] [role=alert]{color:#a02c2c}
+
+/* Widoczne akcje logowania i rejestracji w prawym górnym rogu. */
+header{position:relative;padding-right:250px;padding-left:250px}
+.header-auth-actions{position:absolute;right:16px;top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.header-auth-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #d4e8d6;border-radius:8px;background:#fff;color:#164a2a;font-weight:650;text-decoration:none}
+.header-auth-actions a:focus-visible{outline:3px solid #ffde99;outline-offset:3px}
+@media(max-width:850px){header{padding:16px}.header-auth-actions{position:static;margin-top:12px;justify-content:center}}
+@media(max-width:420px){.header-auth-actions a{flex:1 1 130px}}

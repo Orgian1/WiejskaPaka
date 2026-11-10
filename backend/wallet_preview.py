@@ -12,6 +12,7 @@ from argon2 import PasswordHasher
 from fastapi import Depends,Header,HTTPException
 from pydantic import BaseModel,Field
 from backend.order_mail_outbox import _postgres
+from backend.invoicing import calculate_commission_grosze
 
 MAX_AMOUNT=100_000_000
 MAX_BALANCE=1_000_000_000
@@ -93,13 +94,32 @@ def _failed(con,user_id,account,now):
 def _locked(account,now):return account['locked_until']>now
 
 
+def withdrawal_terms(amount_grosze,role):
+    """Fixed private-preview quote; reserve gross, fee is included, never added."""
+    if role not in ('klient','rolnik'):
+        raise ValueError('Unsupported wallet role')
+    if type(amount_grosze) is not int or not 1<=amount_grosze<=MAX_AMOUNT:
+        raise ValueError('Invalid withdrawal amount')
+    rate=500 if role=='rolnik' else 0
+    fee=calculate_commission_grosze(amount_grosze,rate)
+    return {'gross_grosze':amount_grosze,'fee_grosze':fee,
+            'net_grosze':amount_grosze-fee,'fee_basis_points':rate}
+
+
 def snapshot(con,user_id):
     row=con.execute('SELECT available_grosze,reserved_grosze,pin_hash FROM wallet_preview_accounts WHERE user_id=?',(user_id,)).fetchone()
     entries=con.execute('SELECT id,kind,state,amount_grosze,available_after,reserved_after,created_at '
                         'FROM wallet_preview_entries WHERE user_id=? ORDER BY revision DESC LIMIT 50',(user_id,)).fetchall()
-    return {'available_grosze':row['available_grosze'] if row else 0,
+    role=con.execute('SELECT role FROM users WHERE id=?',(user_id,)).fetchone()['role']
+    history=[]
+    for entry in entries:
+        item=dict(entry)
+        if item['kind']=='withdrawal':item['withdrawal_preview']=withdrawal_terms(item['amount_grosze'],role)
+        history.append(item)
+    return {'withdrawal_fee_basis_points':500 if role=='rolnik' else 0,
+            'available_grosze':row['available_grosze'] if row else 0,
             'reserved_grosze':row['reserved_grosze'] if row else 0,
-            'pin_configured':bool(row and row['pin_hash']), 'entries':[dict(x) for x in entries]}
+            'pin_configured':bool(row and row['pin_hash']), 'entries':history}
 
 
 def move(con,user,payload,kind,*,now):
@@ -118,7 +138,7 @@ def move(con,user,payload,kind,*,now):
                          (user['id'],payload.request_key)).fetchone()
     if previous:
         if previous['payload_hash']!=fingerprint:return 409,{'detail':'Identyfikator operacji został już użyty z inną kwotą lub rodzajem operacji.'}
-        return 200,{'id':previous['id'],'state':previous['state']}
+        return 200,{'id':previous['id'],'state':previous['state'],**({'withdrawal_preview':withdrawal_terms(payload.amount_grosze,user['role'])} if kind=='withdrawal' else {})}
     available=account['available_grosze'];reserved=account['reserved_grosze']
     if kind=='topup':
         if available+reserved+payload.amount_grosze>MAX_BALANCE:return 409,{'detail':'Przekroczono limit salda portfela.'}
@@ -130,7 +150,7 @@ def move(con,user,payload,kind,*,now):
     con.execute('UPDATE wallet_preview_accounts SET available_grosze=?,reserved_grosze=?,revision=revision+1 WHERE user_id=?',(available,reserved,user['id']))
     con.execute('INSERT INTO wallet_preview_entries VALUES(?,?,?,?,?,?,?,?,?,?,?)',
         (operation_id,user['id'],account['revision']+1,payload.request_key,fingerprint,kind,state,payload.amount_grosze,available,reserved,now))
-    return 201,{'id':operation_id,'state':state}
+    return 201,{'id':operation_id,'state':state,**({'withdrawal_preview':withdrawal_terms(payload.amount_grosze,user['role'])} if kind=='withdrawal' else {})}
 
 
 def install(app,db,write_db,current_user,env,database_url):

@@ -38,6 +38,8 @@ def test_empty_and_multiple_same_second_entries_reconcile(ledger):
     'UPDATE wallet_preview_entries SET amount_grosze=amount_grosze+1 WHERE revision=1',
     'UPDATE wallet_preview_entries SET available_after=available_after+1 WHERE revision=2',
     'DELETE FROM wallet_preview_entries WHERE revision=1',
+    'UPDATE wallet_preview_entries SET available_after=available_after+1 WHERE revision=1',
+    'UPDATE wallet_preview_entries SET reserved_after=1 WHERE revision=1',
 ])
 def test_corruption_is_detected_and_further_credit_is_blocked(ledger,damage):
     deposit(ledger,5000,'credit-one-00001');deposit(ledger,1000,'credit-two-00002')
@@ -67,3 +69,18 @@ def test_cli_default_never_opens_database_and_errors_are_redacted():
     result=check({'WP_TEST_DATABASE_URL':'private-password'},enabled=True)
     assert result=={'status':'WALLET_CHECK_REJECTED','success':False}
     assert 'private-password' not in json.dumps(result)
+
+
+@pytest.mark.parametrize('amount,fee',[(1,0),(9,0),(10,1),(11,1),(29,1),(30,2),(4001,200),(100000000,5000000)])
+def test_withdrawal_quote_uses_integer_half_up_rounding(amount,fee):
+    from backend.wallet_preview import withdrawal_terms
+    seller=withdrawal_terms(amount,'rolnik')
+    buyer=withdrawal_terms(amount,'klient')
+    assert seller['fee_grosze']==fee and seller['net_grosze']+fee==amount
+    assert buyer['fee_grosze']==0 and buyer['net_grosze']==amount
+
+
+@pytest.mark.parametrize('amount',[True,0,-1,1.5,'100',100000001])
+def test_withdrawal_quote_rejects_non_integer_or_unbounded_amounts(amount):
+    from backend.wallet_preview import withdrawal_terms
+    with pytest.raises(ValueError):withdrawal_terms(amount,'rolnik')

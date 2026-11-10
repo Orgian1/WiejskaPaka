@@ -5,13 +5,14 @@ from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server
 
 
+@pytest.mark.parametrize('role',['klient','rolnik'])
 @pytest.mark.parametrize('width',[320,1280])
-def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkeypatch,width):
+def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkeypatch,width,role):
     monkeypatch.setenv('WP_ENABLE_WALLET_PREVIEW','1')
     password='SyntheticWalletBrowser2026!'
     with server(tmp_path/'wallet-browser.sqlite3') as client:
         email=uuid4().hex+'@example.invalid'
-        assert client.post('/auth/register',json={'email':email,'password':password,'role':'klient'}).status_code==201
+        assert client.post('/auth/register',json={'email':email,'password':password,'role':role}).status_code==201
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
@@ -37,6 +38,7 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
             panel.get_by_role('button',name='Wypłać środki',exact=True).click()
             dialog=page.locator('#wallet-dialog-withdraw')
             dialog.get_by_label('Kwota (zł)').fill('40')
+            dialog.get_by_text('Po potrąceniu: '+('38,00 zł' if role=='rolnik' else '40,00 zł'),exact=False).wait_for(state='visible')
             dialog.get_by_label('PIN portfela',exact=True).fill('000000')
             with page.expect_response('**/wallet/withdrawals') as response:
                 dialog.get_by_role('button',name='Potwierdź wypłatę',exact=True).click()

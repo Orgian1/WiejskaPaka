@@ -31,6 +31,22 @@ def demo_environment(source, database):
     return env
 
 
+FULL_DEMO_FLAGS = ('WP_ENABLE_PRODUCT_UNITS', 'WP_ENABLE_USER_PHOTOS',
+                   'WP_ENABLE_SELLER_SEARCH', 'WP_ENABLE_ADDRESS_DELIVERY',
+                   'WP_ENABLE_PICKUP_DATES', 'WP_ENABLE_WALLET_PREVIEW')
+DEMO_RUNTIME_KEYS = ('PATH','HOME','SYSTEMROOT','WINDIR','SYSTEMDRIVE','COMSPEC',
+                     'PATHEXT','USERPROFILE','LOCALAPPDATA','APPDATA','PROGRAMDATA',
+                     'TEMP','TMP','TMPDIR','LANG','LC_ALL','PYTHONUTF8','PYTHONIOENCODING')
+
+
+def full_demo_environment(source,database):
+    """Explicit local profile, with no inherited service/payment/mail settings."""
+    env=demo_environment({key:source[key] for key in DEMO_RUNTIME_KEYS if key in source},database)
+    env.update({flag:'1' for flag in FULL_DEMO_FLAGS})
+    env['WP_ENABLE_TEST_PAYMENTS']='1'
+    return env
+
+
 @contextmanager
 def private_credentials_file(path, credentials):
     """Exclusive POSIX file; remove only the same file created by this process."""
@@ -59,9 +75,12 @@ def private_credentials_file(path, credentials):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Lokalny podgląd WiejskaPaka (bez prawdziwych płatności)')
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--full-demo', action='store_true', help='Jednorazowe demo z portfelem, jednostkami, zdjęciami, wyszukiwaniem i terminami dostaw')
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
     parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
     args = parser.parse_args(argv)
+    if args.full_demo:args.sample_data=True
+    environment=full_demo_environment if args.full_demo else demo_environment
     if args.credentials_file and not args.sample_data:
         parser.error('--credentials-file wymaga --sample-data')
     if not 1024 <= args.port <= 65535:
@@ -74,8 +93,8 @@ def main(argv=None):
             sample = Path(directory) / 'sample'
             try:
                 setup = subprocess.run([sys.executable, '-m', 'scripts.prepare_sample_demo',
-                    '--directory', str(sample)], cwd=root,
-                    env=demo_environment(os.environ, sample/'demo.sqlite3'),
+                    *(['--full-demo'] if args.full_demo else []), '--directory', str(sample)], cwd=root,
+                    env=environment(os.environ, sample/'demo.sqlite3'),
                     capture_output=True, text=True, encoding='utf-8', timeout=120)
             except (OSError, subprocess.TimeoutExpired):
                 print('Przygotowanie demo przerwane lub niedostępne.', file=sys.stderr)
@@ -97,7 +116,7 @@ def main(argv=None):
             except (ValueError, KeyError, TypeError):
                 print('Nieprawidłowy wynik przygotowania demo.', file=sys.stderr)
                 return 1
-        env = demo_environment(os.environ, database)
+        env = environment(os.environ, database)
         if args.sample_data:
             env['WP_ENABLE_TEST_PAYMENTS'] = '1'
         env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'

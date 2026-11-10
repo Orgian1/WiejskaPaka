@@ -1,8 +1,12 @@
-# WiejskaPaka — wersja testowa B/10921–B/11280
+# WiejskaPaka — wersja demonstracyjna bez PayU
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
-Aktualny punkt wejścia przed zakupem serwera:
+Aktualna instrukcja demo: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
+Raport pakietu: `docs/RAPORT_DEMO_BEZ_PAYU_2026-11-10.md`.
+Wdrożenie z kopią i rollbackiem: `docs/WDROZENIE_I_WYCOFANIE_DEMO_2026-11-10.md`.
+
+Wcześniejsze punkty kontrolne:
 `docs/RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md` — wykonywanie kolejki PostgreSQL i jawne ładowanie kluczy;
 `docs/RAPORT_KOLEJKI_POCZTY_2026-10-19.md` — odłączona kolejka resetu SQLite i granice integracji;
 `docs/RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md` — reset na testowym PostgreSQL i osobny adapter SMTP;
@@ -66,6 +70,17 @@ Podgląd tworzy jednorazową bazę SQLite i usuwa ją po zamknięciu. Nie używa
 prawdziwych danych osobowych. Numery telefonów nie są zbierane w formularzach.
 W Windows zamiast `.venv/bin/python` użyj `.venv\Scripts\python.exe`.
 Wznowienie po wyłączeniu komputera: `docs/WZNOWIENIE_PO_WYLACZENIU_WINDOWS.md`.
+
+## Pełne lokalne demo bez PayU
+
+```bash
+python scripts/run_phone_demo.py --full-demo
+```
+
+Profil tworzy nową jednorazową SQLite, cztery losowe konta i przesyłki.
+Włącza portfel, jednostki, zdjęcia, publiczny login sprzedawcy, kalendarz
+punktu i terminy dostaw na adres. Nie dziedziczy konfiguracji płatności,
+baz ani poczty z otoczenia. Szczegóły i granice: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
 
 ## Demo z przykładowymi danymi
 

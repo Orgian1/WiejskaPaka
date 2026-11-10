@@ -14,10 +14,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.run_phone_demo import demo_environment
+from scripts.run_phone_demo import demo_environment, full_demo_environment
 
 
-def prepare(directory):
+def prepare(directory, *, full_demo=False):
     if 'backend.app' in sys.modules:
         raise ValueError('Wymagany nowy proces')
     directory = Path(directory).absolute()
@@ -26,13 +26,16 @@ def prepare(directory):
     previous_mask = os.umask(0o077)
     try:
         database = directory/'demo.sqlite3'
-        env = demo_environment(os.environ, database)
+        env = (full_demo_environment if full_demo else demo_environment)(os.environ, database)
         env['WP_ENABLE_TEST_PAYMENTS'] = '1'
         os.environ.clear()
         os.environ.update(env)
         from fastapi.testclient import TestClient
         from backend.app import app, db, ph
         from backend.seller_compliance import RULES_VERSION
+        from datetime import datetime, timedelta
+        from zoneinfo import ZoneInfo
+        day=(datetime.now(ZoneInfo('Europe/Warsaw'))+timedelta(days=7)).date()
         from backend.payment_integrity import audit_payment_integrity
         credentials, headers, users = {}, {}, {}
         with TestClient(app) as client:
@@ -64,8 +67,14 @@ def prepare(directory):
                     body={'rules_version': RULES_VERSION, 'accepted': True})
             point = request('POST', '/pickup-points', 201, actor='rolnik', body={
                 'name': 'Punkt demonstracyjny', 'city': 'Legnica', 'street': 'Testowa 1',
-                'opening_hours': 'Pon–Pt 9:00–17:00',
+                'opening_hours': '7–10 i 16–20',
+                **({'attendance_dates':[day.isoformat()]} if full_demo else {}),
                 'latitude_e6': 51_210_000, 'longitude_e6': 16_160_000})['id']
+            if full_demo:
+                request('PUT','/sellers/me/login',actor='rolnik',body={'login':'gospodarstwo_demo'})
+                window=request('POST','/address-delivery/windows',actor='rolnik',body={
+                    'city':'Legnica','postal_code':'59-220','weekday':day.weekday(),
+                    'from_time':'10:00','to_time':'18:00'})['id']
             products = []
             for name, price in (('Marchew demonstracyjna', 349), ('Ziemniaki demonstracyjne', 299)):
                 products.append(request('POST', '/products', 201, actor='rolnik', body={
@@ -78,8 +87,14 @@ def prepare(directory):
                     body['pickup_point_id'] = point
                 else:
                     body.update(delivery_city='Legnica', delivery_street='Adres testowy 99', delivery_postal_code='59-220')
+                if full_demo and fulfillment=='dostawa':
+                    body['address_delivery']={'window_id':window,'delivery_date':day.isoformat(),
+                        'available_from':'12:00','available_to':'17:00','phone':'+48500100200'}
                 receipt = request('POST', '/cart/checkout-test', 201, actor='klient', body=body,
                     extra={'Idempotency-Key': secrets.token_hex(20)})
+                if full_demo and fulfillment=='dostawa':
+                    request('POST',f'/address-delivery/requests/{receipt["orders"][0]["id"]}/decision',
+                        actor='rolnik',body={'decision':'accepted','revision':0})
                 for order in receipt['orders']:
                     request('POST', f'/test/payments/{order["id"]}/events', actor='klient',
                         body={'event_id': secrets.token_hex(20), 'event_type': 'payment_success_test'})
@@ -110,10 +125,11 @@ def prepare(directory):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--full-demo',action='store_true')
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        result = prepare(args.directory)
+        result = prepare(args.directory,full_demo=args.full_demo)
     except Exception:
         print('Nie udało się przygotować jednorazowego demo. Wymagany nowy katalog i nowy proces.', file=sys.stderr)
         return 1

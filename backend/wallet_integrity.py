@@ -7,17 +7,31 @@ BASE='''SELECT a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
  count(e.id) AS entry_count,min(e.revision) AS first_revision,max(e.revision) AS last_revision,
  coalesce(sum(CASE WHEN e.kind='topup' THEN e.amount_grosze ELSE 0 END),0) AS credits,
  coalesce(sum(CASE WHEN e.kind='withdrawal' THEN e.amount_grosze ELSE 0 END),0) AS withdrawals,
- l.available_after AS latest_available,l.reserved_after AS latest_reserved
+ l.available_after AS latest_available,l.reserved_after AS latest_reserved,
+ coalesce(h.invalid_snapshots,0) AS invalid_snapshots
  FROM wallet_preview_accounts a
  LEFT JOIN wallet_preview_entries e ON e.user_id=a.user_id
  LEFT JOIN wallet_preview_entries l ON l.user_id=a.user_id AND l.revision=a.revision
+ LEFT JOIN (
+   SELECT user_id,sum(CASE WHEN available_after<>expected_available OR reserved_after<>expected_reserved THEN 1 ELSE 0 END) AS invalid_snapshots
+   FROM (
+     SELECT user_id,available_after,reserved_after,
+       sum(CASE WHEN kind='topup' THEN amount_grosze ELSE -amount_grosze END)
+         OVER (PARTITION BY user_id ORDER BY revision ROWS UNBOUNDED PRECEDING) AS expected_available,
+       sum(CASE WHEN kind='withdrawal' THEN amount_grosze ELSE 0 END)
+         OVER (PARTITION BY user_id ORDER BY revision ROWS UNBOUNDED PRECEDING) AS expected_reserved
+     FROM wallet_preview_entries
+   ) history GROUP BY user_id
+ ) h ON h.user_id=a.user_id
 '''
 GROUP=''' GROUP BY a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
- l.available_after,l.reserved_after ORDER BY a.user_id'''
+ l.available_after,l.reserved_after,h.invalid_snapshots ORDER BY a.user_id'''
 
 
 def problems(row):
     issues=[]
+    if row['invalid_snapshots']:
+        issues.append('JOURNAL_HISTORY_MISMATCH')
     if row['available_grosze']!=row['credits']-row['withdrawals']:
         issues.append('AVAILABLE_MISMATCH')
     if row['reserved_grosze']!=row['withdrawals']:

@@ -162,6 +162,21 @@ def _terminal(con, row, state, result):
         lease_until=NULL,started_at=NULL WHERE id=?''',(state,result,row['id']))
 
 
+def quarantine_restored(con):
+    """Explicit offline restore step; never submit historical reset messages.
+
+    Stop API and dispatchers before restoring, then call inside transaction().
+    Quarantine both queued and leased rows, including started leases whose
+    previous external outcome cannot be reconstructed from a database backup.
+    Terminal history is preserved. This does not revoke restored reset tokens
+    or sessions and is not a complete account-recovery restore procedure.
+    """
+    _require(con)
+    return con.execute("""UPDATE reset_mail_queue SET state='uncertain',
+        result='RESTORE_QUARANTINE',payload=NULL,owner=NULL,lease_until=NULL,
+        started_at=NULL WHERE state IN ('queued','leased')""").rowcount
+
+
 def recover(con, *, now):
     """Recover only unstarted leases. A started orphan can have reached SMTP."""
     _require(con);now=_time(now)

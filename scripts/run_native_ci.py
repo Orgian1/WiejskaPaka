@@ -147,7 +147,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     task['test_counts'] = counts(xml)
                     task['failure_locations'] = failure_locations(xml, root)
                     c = task['test_counts']
-                    minimum = 40 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
+                    minimum = 41 if gate == 'postgres' else 80 if gate in ('windows', 'windows-recovery') else 36
                     task['success'] = process.returncode == 0 and c['total'] >= minimum and c['failed'] == 0 and c['skipped'] == 0
                 else:
                     task['success'] = process.returncode == 0

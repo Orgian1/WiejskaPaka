@@ -1,0 +1,71 @@
+{
+  "run_id": 42871199783,
+  "url": "https://github.com/Orgian1/WiejskaPaka/actions/runs/42871199783",
+  "code_commit": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 130022680133,
+      "name": "chromium",
+      "conclusion": "success"
+    },
+    {
+      "id": 130022680587,
+      "name": "postgres (16)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130022680666,
+      "name": "windows_recovery",
+      "conclusion": "success"
+    },
+    {
+      "id": 130022682425,
+      "name": "postgres (17)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130024423782,
+      "name": "windows",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 13792970466,
+      "name": "windows-summary",
+      "digest": "sha256:e62a9f42eb79263a034a0eeca9cb60e753b4971f1d4f291a523963607fc0a2a7",
+      "head_sha": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+      "size_in_bytes": 668
+    },
+    {
+      "id": 13790760439,
+      "name": "chromium-summary",
+      "digest": "sha256:d78284b42c3fdb3473602633ec9a14ba21a0a3bb4a210c0f76ccde0a8532eda7",
+      "head_sha": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+      "size_in_bytes": 633
+    },
+    {
+      "id": 13788878465,
+      "name": "windows-recovery-summary",
+      "digest": "sha256:2ca930edfe6ef3b56084a1c46f1ff34d798ec7b4f697ef4b9f4af68361dd7ecf",
+      "head_sha": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+      "size_in_bytes": 622
+    },
+    {
+      "id": 13788783790,
+      "name": "postgres-16-summary",
+      "digest": "sha256:8c5f6aba9b7ed5d3ce1b38699cd709209c56af47facaf370a33c2bc69631683c",
+      "head_sha": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+      "size_in_bytes": 601
+    },
+    {
+      "id": 13788399255,
+      "name": "postgres-17-summary",
+      "digest": "sha256:3fe951298714583a4df8fb854096bfed2b30730fb6ca2ecabe4f811ba8d03f64",
+      "head_sha": "56f06549d8d9e67f4fc8e18df453ad358343e709",
+      "size_in_bytes": 601
+    }
+  ]
+}

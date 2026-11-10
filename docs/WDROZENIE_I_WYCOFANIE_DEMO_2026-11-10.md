@@ -49,7 +49,7 @@ właściwego mechanizmu backupu operatora i przećwiczyć odtworzenie przed zmia
 
 ## 3. Nowe wydanie obok starego
 
-Pobrać sprawdzony pełny SHA z gałęzi `preview/demo-environment-isolation-20261110`
+Pobrać sprawdzony pełny SHA z gałęzi `preview/location-favorites-delivery-20261110`
 do nowego katalogu wydania. Sprawdzić SHA i brak lokalnych zmian.
 Nie wykonywać pull ani checkout w katalogu z niezabezpieczonymi zmianami.
 Utworzyć oddzielny venv i zainstalować requirements-lock.txt. Zachować stare
@@ -63,6 +63,11 @@ Pakiety portfela po #51 dodają opcjonalne migracje opisane w
 `WYPLATY_DEMO_ETAP2_2026-11-10.md` oraz `ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`,
 w tym `optional_wallet_operation_fences.sql`. Stosować pełną kolejność manifestu
 na odtworzonej kopii; sprawdzić niezmienne warunki wypłat, decyzje i blokady kluczy.
+Po odbiorze #56 manifest zawiera 41 plików: nowa migracja
+`optional_delivery_proposals.sql` wymaga wcześniejszej `optional_address_delivery.sql`.
+Nie zmieniono sum wcześniejszych 40 plików. Dla aktywnych dostaw preflight wymaga
+nowej tabeli `delivery_time_proposals`. Automatyczny odbiór włączyć jawnie przez
+`WP_ENABLE_AUTOMATIC_PICKUP=1`; sam nowy kod na trwałej bazie nie włącza tej flagi.
 Nie zakładać, że wcześniejsze opcjonalne tabele są już zainstalowane na VPS.
 Dla aktywnych flag porównać manifest,
 schemat i uprawnienia z bieżącą bazą. Migracje wcześniejszego łańcucha najpierw
@@ -100,6 +105,11 @@ Jeśli wraca kod bez obsługi blokad kluczy operacji albo niezmiennych warunków
 wypłat, wyłączyć portfel i jego zapisy przed uruchomieniem starego wydania.
 Zachować tabele blokad, warunków i decyzji; ich usunięcie mogłoby dopuścić
 ponowne księgowanie starego żądania. Szczegóły zgodności są w obu raportach portfela.
+
+Przed powrotem do kodu bez propozycji terminów wstrzymać nowe zamówienia
+i uzgodnić albo zamknąć oczekujące propozycje. Zachować nową tabelę i historię;
+stary kod nie pokazuje tego etapu klientowi. Nie wyłączać automatycznego odbioru
+bez sprawdzenia aktywnych zamówień i zgodności poprzedniego procesu.
 
 Rollback bez zmiany schematu: zatrzymać nowe wydanie, przywrócić poprzedni wskaźnik kodu,
 venv, konfigurację usługi i flagi, uruchomić poprzednią usługę, sprawdzić health.

@@ -49,7 +49,7 @@ właściwego mechanizmu backupu operatora i przećwiczyć odtworzenie przed zmia
 
 ## 3. Nowe wydanie obok starego
 
-Pobrać sprawdzony pełny SHA z gałęzi `preview/wallet-intent-recovery-20261110`
+Pobrać sprawdzony pełny SHA z gałęzi `preview/demo-environment-isolation-20261110`
 do nowego katalogu wydania. Sprawdzić SHA i brak lokalnych zmian.
 Nie wykonywać pull ani checkout w katalogu z niezabezpieczonymi zmianami.
 Utworzyć oddzielny venv i zainstalować requirements-lock.txt. Zachować stare

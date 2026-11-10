@@ -96,3 +96,11 @@ Obie historie są rodzicami scalenia; nie przepisywano żadnej wcześniejszej ga
 Próbna integracja z main: `28c88591d63e849d511ea0bacda90b3d4bec9015`,
 drzewo identyczne z `5dedc0e`. Main nadal wskazuje `9b96de3`.
 Wyniki połączonego kodu: `INTEGRACJA_CZAT_WORK_2026-11-10.md`.
+
+## Aktualizacja etapu 4 — izolacja demo
+
+PR #54: `preview/demo-environment-isolation-20261110`, baza #53 (`3e5d026`).
+Kod `064ab85` ogranicza dziedziczenie środowiska podstawowego demo i izoluje
+samodzielną ścieżkę zakupową. Wcześniejsze funkcje i zmiany czatu są zachowane.
+Próbna integracja z main: `f2d27a89626f341d32e366a50b30c36ecbf65cc2`,
+drzewo identyczne z kodem #54. Wyniki: `IZOLACJA_DEMO_2026-11-10.md`.

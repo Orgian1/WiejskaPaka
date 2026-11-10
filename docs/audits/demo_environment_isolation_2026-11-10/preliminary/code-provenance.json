@@ -1,0 +1,40 @@
+{
+  "code_commit": "5a12b650566e30494b6f747ddfa0eff6a26cefef",
+  "tree": "4b302034f06d51d398cad1a1c241cec13ecf400a",
+  "evidence": {
+    "runtime_sha256": "6ac819298e73cfc2c61dcb3a7f4a38f6f6d14b0626a2bf48cc8fb8c44f70dc65",
+    "tests_sha256": "180f4a82f0005c64e663d5c1cf061f444ee1339329ede25f8fda02e60658a1db",
+    "test_sources_sha256": "8e2feac3746f5de4e3141a3cea25dcd3a2c1fe072e4265fde7cf750d1faed8fd",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+  },
+  "targeted_local": {
+    "passed": 59,
+    "failed": 0,
+    "skipped": 0,
+    "total": 59
+  },
+  "before_fix": {
+    "failed": 2,
+    "passed": 3,
+    "description": "Inherited service credentials retained; standalone journey rejected production environment"
+  },
+  "modules": [
+    "tests.test_browser_backend_bridge",
+    "tests.test_crash_checkout_http",
+    "tests.test_demo_journey_script",
+    "tests.test_demo_readiness",
+    "tests.test_full_local_demo",
+    "tests.test_header_auth_actions",
+    "tests.test_http_checkout_e2e_b5941",
+    "tests.test_http_multi_seller_b6061",
+    "tests.test_local_marketplace_http",
+    "tests.test_mobile_browser_runner",
+    "tests.test_phone_demo_launcher",
+    "tests.test_purchase_record_http_restart",
+    "tests.test_purchase_records_http",
+    "tests.test_queued_reset_http",
+    "tests.test_sample_demo",
+    "tests.test_sample_demo_launcher"
+  ]
+}

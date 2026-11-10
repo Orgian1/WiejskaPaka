@@ -135,3 +135,25 @@ def test_corrupted_wallet_cannot_credit_or_reserve_more_funds(enabled):
         with closing(sqlite3.connect(enabled)) as con:
             assert con.execute('SELECT available_grosze,reserved_grosze FROM wallet_preview_accounts').fetchone()==(10001,0)
             assert con.execute('SELECT count(*) FROM wallet_preview_entries').fetchone()[0]==1
+
+
+@pytest.mark.parametrize('role,fee', [('klient',0),('rolnik',200)])
+def test_withdrawal_fee_included_in_reservation_survives_retry_and_restart(enabled,role,fee):
+    with server(enabled) as client:
+        owner=account(client,role);set_pin(client,owner);deposit(client,owner)
+        key=uuid4().hex
+        expected={'gross_grosze':4001,'fee_grosze':fee,'net_grosze':4001-fee,
+                  'fee_basis_points':500 if role=='rolnik' else 0}
+        first=withdraw(client,owner,amount=4001,key=key)
+        assert first.status_code==201 and first.json()['withdrawal_preview']==expected
+        retry=withdraw(client,owner,amount=4001,key=key)
+        assert retry.status_code==200 and retry.json()==first.json()
+        # Client cannot override server-side policy or amount after submitting.
+        bad={'amount_grosze':4001,'pin':'123456','request_key':uuid4().hex,'fee_grosze':0}
+        assert client.post('/wallet/withdrawals',headers=owner,json=bad).status_code==422
+    with server(enabled) as client:
+        state=client.get('/wallet',headers=owner).json()
+        assert state['withdrawal_fee_basis_points']==expected['fee_basis_points']
+        assert state['entries'][0]['withdrawal_preview']==expected
+        assert (state['available_grosze'],state['reserved_grosze'])==(5999,4001)
+        assert len(state['entries'])==2

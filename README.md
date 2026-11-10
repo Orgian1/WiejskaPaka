@@ -67,6 +67,17 @@ prawdziwych danych osobowych. Numery telefonów nie są zbierane w formularzach.
 W Windows zamiast `.venv/bin/python` użyj `.venv\Scripts\python.exe`.
 Wznowienie po wyłączeniu komputera: `docs/WZNOWIENIE_PO_WYLACZENIU_WINDOWS.md`.
 
+## Pełne lokalne demo bez PayU
+
+```bash
+python scripts/run_phone_demo.py --full-demo
+```
+
+Profil tworzy nową jednorazową SQLite, cztery losowe konta i przesyłki.
+Włącza portfel, jednostki, zdjęcia, publiczny login sprzedawcy, kalendarz
+punktu i terminy dostaw na adres. Nie dziedziczy konfiguracji płatności,
+baz ani poczty z otoczenia. Szczegóły i granice: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
+
 ## Demo z przykładowymi danymi
 
 ```bash

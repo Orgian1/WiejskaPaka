@@ -1739,3 +1739,40 @@ def test_native_wallet_readonly_integrity_and_corruption_block(pg_wallet_api):
         assert not inspect_wallets(con)['success']
     finally:con.connection.close()
     assert client.post('/wallet/topups',headers=buyer,json={'amount_grosze':100,'request_key':uuid4().hex}).status_code==409
+
+
+@pytest.mark.parametrize('role,fee',[('klient',0),('rolnik',200)])
+def test_native_wallet_withdrawal_commission_and_replay(pg_wallet_api,role,fee):
+    client,_=pg_wallet_api
+    password='SyntheticFeePassword2026!'
+    owner,_=register(client,role,password=password)
+    assert client.post('/wallet/topups',headers=owner,json={'amount_grosze':10000,'request_key':uuid4().hex}).status_code==201
+    assert client.put('/wallet/pin',headers=owner,json={'password':password,'pin':'123456'}).status_code==200
+    payload={'amount_grosze':4001,'request_key':uuid4().hex,'pin':'123456'}
+    first=client.post('/wallet/withdrawals',headers=owner,json=payload)
+    assert first.status_code==201
+    assert first.json()['withdrawal_preview']['fee_grosze']==fee
+    assert first.json()['withdrawal_preview']['net_grosze']==4001-fee
+    retry=client.post('/wallet/withdrawals',headers=owner,json=payload)
+    assert retry.status_code==200 and retry.json()==first.json()
+    pg_wallet_api.restart()
+    state=client.get('/wallet',headers=owner).json()
+    assert (state['available_grosze'],state['reserved_grosze'])==(5999,4001)
+    assert state['entries'][0]['withdrawal_preview']==first.json()['withdrawal_preview']
+
+
+def test_native_wallet_corrupted_historical_snapshot_blocks_writes(pg_wallet_api):
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner,_=register(client,'klient')
+    for amount in (100,200):
+        assert client.post('/wallet/topups',headers=owner,json={'amount_grosze':amount,'request_key':uuid4().hex}).status_code==201
+    uid=client.get('/auth/me',headers=owner).json()['id']
+    con=queued_worker_connection(parameters)
+    try:
+        con.execute('UPDATE wallet_preview_entries SET available_after=available_after+1 WHERE user_id=? AND revision=1',(uid,))
+        con.connection.commit()
+        result=inspect_wallets(con)
+        assert not result['success'] and 'JOURNAL_HISTORY_MISMATCH' in result['issue_codes']
+    finally:con.connection.close()
+    assert client.post('/wallet/topups',headers=owner,json={'amount_grosze':100,'request_key':uuid4().hex}).status_code==409

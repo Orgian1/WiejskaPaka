@@ -49,7 +49,7 @@ właściwego mechanizmu backupu operatora i przećwiczyć odtworzenie przed zmia
 
 ## 3. Nowe wydanie obok starego
 
-Pobrać zatwierdzony pełny SHA z gałęzi `preview/demo-completion-20261110`
+Pobrać sprawdzony pełny SHA z gałęzi `preview/wallet-intent-recovery-20261110`
 do nowego katalogu wydania. Sprawdzić SHA i brak lokalnych zmian.
 Nie wykonywać pull ani checkout w katalogu z niezabezpieczonymi zmianami.
 Utworzyć oddzielny venv i zainstalować requirements-lock.txt. Zachować stare
@@ -59,8 +59,12 @@ wydanie, jego venv i konfigurację do rollbacku. Kontrola migracji:
 python -m database.verify_test_migrations
 ```
 
-Nowy pakiet nie dodaje migracji. Nie zakładać jednak, że wcześniejsze opcjonalne
-tabele są już zainstalowane na VPS. Dla aktywnych flag porównać manifest,
+Pakiety portfela po #51 dodają opcjonalne migracje opisane w
+`WYPLATY_DEMO_ETAP2_2026-11-10.md` oraz `ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`,
+w tym `optional_wallet_operation_fences.sql`. Stosować pełną kolejność manifestu
+na odtworzonej kopii; sprawdzić niezmienne warunki wypłat, decyzje i blokady kluczy.
+Nie zakładać, że wcześniejsze opcjonalne tabele są już zainstalowane na VPS.
+Dla aktywnych flag porównać manifest,
 schemat i uprawnienia z bieżącą bazą. Migracje wcześniejszego łańcucha najpierw
 uruchomić na odtworzonej kopii. Nie nadawać aplikacji uprawnień administratora.
 
@@ -92,7 +96,12 @@ nie podmieniać katalogu w ciemno. Zachować poprzedni plik usługi i venv.
 Po przełączeniu sprawdzić systemctl is-active, health i powyższy scenariusz.
 Błędy schematu, 500, niespójność portfela lub ujawnienie danych oznaczają rollback.
 
-Rollback bez migracji: zatrzymać nowe wydanie, przywrócić poprzedni wskaźnik kodu,
+Jeśli wraca kod bez obsługi blokad kluczy operacji albo niezmiennych warunków
+wypłat, wyłączyć portfel i jego zapisy przed uruchomieniem starego wydania.
+Zachować tabele blokad, warunków i decyzji; ich usunięcie mogłoby dopuścić
+ponowne księgowanie starego żądania. Szczegóły zgodności są w obu raportach portfela.
+
+Rollback bez zmiany schematu: zatrzymać nowe wydanie, przywrócić poprzedni wskaźnik kodu,
 venv, konfigurację usługi i flagi, uruchomić poprzednią usługę, sprawdzić health.
 Nie odtwarzać bazy automatycznie: utraciłoby to nowe operacje. Najpierw zachować
 kopię stanu po awarii. Gdy baza była zmieniana, ocenić zgodność wsteczną i użyć

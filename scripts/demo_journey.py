@@ -8,11 +8,13 @@ from pathlib import Path
 def main():
     # Konfigurację ustawiamy przed importem aplikacji.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    for key in ('DATABASE_URL', 'WP_TEST_DATABASE_URL', 'WP_TEST_POSTGRES_DSN',
-                'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB'):
-        os.environ.pop(key, None)
+    from scripts.run_phone_demo import demo_environment, DEMO_RUNTIME_KEYS
     with tempfile.TemporaryDirectory(prefix='wiejskapaka_demo_') as folder:
-        os.environ['WIEJSKAPAKA_DB'] = str(Path(folder) / 'demo.sqlite3')
+        # This fixed minimal journey must not inherit optional checkout rules.
+        env = demo_environment({key: os.environ[key] for key in DEMO_RUNTIME_KEYS
+                                if key in os.environ}, Path(folder) / 'demo.sqlite3')
+        os.environ.clear()
+        os.environ.update(env)
         from fastapi.testclient import TestClient
         from backend.app import app
         client = TestClient(app)

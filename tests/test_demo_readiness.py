@@ -58,3 +58,13 @@ def test_readiness_rejects_missing_header_account_actions():
 
     with pytest.raises(AssertionError, match='header-register-link'):
         check_ui(MissingHeader())
+
+
+def test_readiness_journey_ignores_inherited_optional_services():
+    import os
+    source = {**os.environ, 'WP_ENV': 'production',
+              'WP_ENABLE_ORDER_MAIL_QUEUE': '1',
+              'WP_MAIL_QUEUE_KEYS_FILE': '/unavailable/key',
+              'WP_ENABLE_ORDER_SMTP': '1', 'WP_ENABLE_PICKUP_DATES': '1',
+              'WP_ENABLE_ADDRESS_DELIVERY': '1'}
+    assert run_checks(source) == 0

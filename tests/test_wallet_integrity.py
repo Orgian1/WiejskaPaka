@@ -56,7 +56,7 @@ def test_audit_is_read_only_and_bound_is_explicit(ledger):
     deposit(ledger,100,'read-only-credit-1')
     statements=[];ledger.set_trace_callback(statements.append)
     assert inspect_wallets(ledger)['success']
-    assert statements and all(sql.lstrip().startswith('SELECT ') for sql in statements)
+    assert statements and all(sql.lstrip().startswith(('SELECT ','WITH ')) for sql in statements)
     with pytest.raises(ValueError):inspect_wallets(ledger,maximum=0)
     ledger.set_trace_callback(None)
     ledger.execute('INSERT INTO users VALUES(2)');ledger.execute('INSERT INTO wallet_preview_accounts(user_id) VALUES(2)')

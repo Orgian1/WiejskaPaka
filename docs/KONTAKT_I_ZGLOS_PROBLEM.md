@@ -1,7 +1,7 @@
 # Kontakt i zgłoszenie problemu
 
 Na dole strony znajdują się dwa linki: „Kontakt” i „Zgłoś problem”.
-Oba wskazują publiczny formularz `#contact-section`, dostępny bez logowania.
+Oba wskazują nagłówek publicznego formularza `#contact-heading`, dostępnego bez logowania.
 Link ustawia rodzaj wiadomości, zachowuje wpisaną treść i przenosi fokus
 na nagłówek formularza. Można również samodzielnie zmienić rodzaj wiadomości.
 

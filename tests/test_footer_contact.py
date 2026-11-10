@@ -23,7 +23,7 @@ def test_footer_links_share_public_form_with_disabled_delivery():
     html = (ROOT/'web/index.html').read_text()
     parsed.feed(html)
     for link in ('footer-contact-link', 'footer-report-link'):
-        assert parsed.ids[link][1]['href'] == '#contact-section'
+        assert parsed.ids[link][1]['href'] == '#contact-heading'
     assert 'hidden' not in parsed.ids['contact-section'][1]
     assert parsed.ids['contact-form'][1]['method'] == 'post'
     assert 'disabled' in parsed.ids['contact-submit'][1]

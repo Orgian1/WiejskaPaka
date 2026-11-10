@@ -58,3 +58,6 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .header-auth-actions a:focus-visible{outline:3px solid #ffde99;outline-offset:3px}
 @media(max-width:850px){header{padding:16px}.header-auth-actions{position:static;margin-top:12px;justify-content:center}}
 @media(max-width:420px){.header-auth-actions a{flex:1 1 130px}}
+
+.favorite-button{background:#fff;color:#225d39;border:1px solid #789b80}.favorite-button[aria-pressed=true]{color:#a72649;border-color:#a72649}.favorite-button:hover{background:#eef5ed}
+#favorites-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}

@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
+from pydantic import StrictInt, BaseModel, Field, StringConstraints, field_validator, model_validator
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
 
@@ -31,6 +31,8 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
 from backend import product_unit_storage, pickup_dates
 from backend import address_delivery
+from backend import delivery_proposals
+address_delivery.SCHEMA_SQLITE += delivery_proposals.SCHEMA_SQLITE
 from backend.address_delivery import DeliveryPreferenceIn
 
 
@@ -55,6 +57,7 @@ async def application_lifespan(application):
         if address_delivery.enabled():
             con.execute('SELECT id FROM seller_delivery_windows LIMIT 0')
             con.execute('SELECT order_id FROM address_delivery_requests LIMIT 0')
+            con.execute('SELECT order_id FROM delivery_time_proposals LIMIT 0')
         elif address_delivery.has_table(con, bool(DATABASE_URL)):
             if con.execute("SELECT r.order_id FROM address_delivery_requests r JOIN orders o ON o.id=r.order_id WHERE o.status NOT IN ('odebrane','anulowane_testowo','nieudana_dostawa_testowo') LIMIT 1").fetchone():
                 raise RuntimeError('Nie można wyłączyć akceptacji przy aktywnych dostawach na adres')
@@ -285,7 +288,7 @@ class OrderIn(BaseModel):
     address_delivery: DeliveryPreferenceIn | None = None
 class ConfirmIn(BaseModel):
     pin: str = Field(pattern=r'^\d{6}$')
-    checked_goods: bool = Field(strict=True)
+    checked_goods: bool = Field(default=True, strict=True)
 
 def token_hash(token):
     return hashlib.sha256(token.encode()).hexdigest()
@@ -493,6 +496,21 @@ def product_units_configuration():
 def products():
     with db() as con:
         return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 ORDER BY id DESC')]
+
+
+class FavoriteProductsIn(BaseModel):
+    ids: list[StrictInt] = Field(max_length=200)
+
+@app.post('/catalog/favorites')
+def favorite_products(payload: FavoriteProductsIn):
+    ids = list(dict.fromkeys(payload.ids))
+    if any(isinstance(n, bool) or n <= 0 or n > 9_000_000_000_000_000_000 for n in ids):
+        raise HTTPException(422, 'Nieprawidłowa lista ulubionych')
+    if not ids:
+        return {'items': []}
+    with db() as con:
+        rows = con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 AND id IN (' + ','.join('?' for _ in ids) + ')', ids).fetchall()
+        return {'items': [product_unit_storage.enrich_product(con, row) for row in rows]}
 
 @app.get('/catalog/search')
 def catalog_search(q: str = '', min_price_grosze: int | None = None,
@@ -1275,6 +1293,8 @@ def mark_ready_test(order_id:int,user=Depends(current_user), authorization: str 
         o=con.execute('SELECT farmer_id,status,fulfillment FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not o or o['farmer_id']!=user['id']:
             raise HTTPException(404,'Brak zamówienia')
+        if os.environ.get('WP_ENABLE_AUTOMATIC_PICKUP')=='1' and o['status']=='gotowe_do_odbioru_testowo' and o['fulfillment']=='odbior':
+            return {'status':o['status'],'already_processed':True}
         if o['status']!='oczekuje_na_platnosc_testowa':
             raise HTTPException(409,'Niewłaściwy status')
         if o['fulfillment'] != 'odbior':
@@ -1654,6 +1674,9 @@ def record_order_event(con, order_id, actor_id, event_type, old_status, new_stat
     if not order:
         raise ValueError('Nie istnieje zamówienie')
     messages = {
+        'address_delivery_proposed': ('Nowa propozycja dostawy', 'Sprzedawca proponuje inny termin. Sprawdź datę i zakres godzin w zakładce dostaw. Rezerwacja nadal trwa tylko 30 minut.'),
+        'address_delivery_proposal_accepted': ('Propozycja przyjęta', 'Klient zaakceptował nową datę i zakres godzin dostawy.'),
+        'address_delivery_proposal_declined': ('Propozycja odrzucona', 'Klient nie przyjął nowego terminu. Uzgodnij kolejną propozycję przed upływem rezerwacji.'),
         'address_delivery_accepted': ('Dostawa zaakceptowana', 'Sprzedawca zaakceptował termin dostawy na adres. Sprawdź termin rezerwacji przed płatnością.'),
         'address_delivery_declined': ('Dostawa odrzucona', 'Sprzedawca odrzucił dostawę na adres. Rezerwacja towaru została zwolniona.'),
         'order_created': ('Nowe zamówienie', 'Utworzono zamówienie testowe, bez pobrania płatności.'),
@@ -2546,7 +2569,9 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
         if address_delivery.enabled() and payload.event_type.startswith('payment_'):
             address_delivery.require_accepted(con, order_id, postgres=bool(DATABASE_URL))
         if payload.event_type.startswith('payment_') and order['status'] != 'oczekuje_na_platnosc_testowa':
-            raise HTTPException(409, 'Nie można rejestrować płatności dla zamkniętego zamówienia')
+            previous=con.execute('SELECT event_type FROM payment_simulation_events WHERE event_id=?',(event_key,)).fetchone()
+            if previous is None or previous['event_type']!=payload.event_type:
+                raise HTTPException(409, 'Nie można rejestrować płatności dla zamkniętego zamówienia')
         if payload.event_type.startswith('payment_') and payment_deadline_passed(con, order_id, now=datetime.now(timezone.utc)):
             existing = get_payment(con, order_id)
             # A retry of an already committed event never creates a new payment.
@@ -2578,6 +2603,11 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
             validate_order_refund(con, payment, order)
             updated = persist_event(con, payment, event_key, payload.event_type,
                                     datetime.now(timezone.utc).isoformat())
+            if (os.environ.get('WP_ENABLE_AUTOMATIC_PICKUP')=='1' and payload.event_type=='payment_success_test'
+                    and order['fulfillment']=='odbior' and order['status']=='oczekuje_na_platnosc_testowa'):
+                require_transition('odbior',order['status'],'gotowe_do_odbioru_testowo')
+                con.execute('UPDATE orders SET status=? WHERE id=?',('gotowe_do_odbioru_testowo',order_id))
+                record_order_event(con,order_id,user['id'],'pickup_ready',order['status'],'gotowe_do_odbioru_testowo')
             if payload.event_type == 'delivery_failed_by_courier_test' and order['status'] == 'w_drodze_testowo':
                 # Revoke courier access to the address in the same transaction as the refund.
                 require_transition(order['fulfillment'], order['status'], 'nieudana_dostawa_testowo')
@@ -3296,3 +3326,5 @@ if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
 # Isolated persistent wallet preview: never a real payment authorization path.
 from backend.wallet_preview import install as install_wallet_preview
 install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)
+
+delivery_proposals.register(app, order_write_db, current_user, record_order_event, postgres=bool(DATABASE_URL))

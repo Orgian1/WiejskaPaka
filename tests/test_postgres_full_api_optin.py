@@ -242,6 +242,36 @@ def product(client, farmer, stock=10):
     return response.json()['id']
 
 
+@pytest.mark.parametrize('kind',['direct','shipment'])
+def test_native_delivery_counterproposal_requires_buyer_and_survives_restart(pg_address_delivery_api,kind):
+    client,_=pg_address_delivery_api
+    farmer,_=register(client,'rolnik');buyer,_=register(client,'klient');other,_=register(client,'klient')
+    from datetime import datetime,timedelta
+    from zoneinfo import ZoneInfo
+    day=datetime.now(ZoneInfo('Europe/Warsaw')).date()+timedelta(days=7)
+    window=client.post('/address-delivery/windows',headers=farmer,json={'city':'Legnica','postal_code':'59-220','weekday':day.weekday(),'from_time':'10:00','to_time':'16:00'}).json()['id']
+    ids=[product(client,farmer,stock=5) for _ in range(2 if kind=='shipment' else 1)]
+    body={**delivery(ids[0]),'address_delivery':{'window_id':window,'delivery_date':str(day),'available_from':'12:00','available_to':'18:00','phone':'+48500100200'}}
+    if kind=='shipment':
+        for pid in ids:assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
+        body.pop('product_id');body.pop('quantity')
+    result=client.post('/cart/checkout-test' if kind=='shipment' else '/orders',headers=buyer,json=body)
+    assert result.status_code==201,result.text
+    oid=result.json()['orders'][0]['id'] if kind=='shipment' else result.json()['id']
+    url=f'/address-delivery/requests/{oid}'
+    p={'revision':0,'delivery_date':str(day+timedelta(days=1)),'from_time':'11:00','to_time':'13:00'}
+    assert client.post(url+'/proposals',headers=farmer,json=p).status_code==200
+    pg_address_delivery_api.restart()
+    response={'revision':1,'decision':'accepted'}
+    assert client.post(url+'/proposal-decision',headers=other,json=response).status_code==404
+    assert client.post(url+'/decision',headers=farmer,json=response).status_code==409
+    assert client.post(url+'/proposal-decision',headers=buyer,json=response).status_code==200
+    assert client.post(url+'/proposal-decision',headers=buyer,json=response).json()['already_processed']
+    rows=client.get('/address-delivery/requests/mine',headers=buyer).json()['items']
+    chosen=[r for r in rows if r['order_id'] in ([o['id'] for o in result.json()['orders']] if kind=='shipment' else [oid])]
+    assert len(chosen)==len(ids) and all(r['state']=='accepted' and r['agreed_from']==660 and r['agreed_to']==780 for r in chosen)
+
+
 def delivery(pid):
     return {'product_id': pid, 'quantity': 1, 'fulfillment': 'dostawa',
             'delivery_city': 'Legnica', 'delivery_street': 'Testowa 1', 'delivery_postal_code': '59-220'}

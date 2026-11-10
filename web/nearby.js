@@ -34,6 +34,7 @@ async function searchNearby(offset=0){
   if(el('nearby-min-price').value.trim())payload.min_price_grosze=parseGrosze(el('nearby-min-price').value);
   if(el('nearby-max-price').value.trim())payload.max_price_grosze=parseGrosze(el('nearby-max-price').value);
   if(payload.min_price_grosze!==undefined&&payload.max_price_grosze!==undefined&&payload.min_price_grosze>payload.max_price_grosze)throw Error('Cena od nie może być wyższa niż cena do.');
+  if(typeof rememberNearbyLocation==='function')rememberNearbyLocation(payload);
   invalidateNearby();const serial=nearbySerial,epoch=sessionEpoch;
   const controller=new AbortController();nearbyController=controller;
   el('nearby-submit').disabled=true;el('nearby-next').disabled=true;el('nearby-status').textContent='Szukam aktywnych punktów…';
@@ -64,6 +65,7 @@ async function searchNearby(offset=0){
         }));
         card.append(qty,add,node('p','Punkt i dostępność są ponownie sprawdzane przy zamówieniu. W koszyku wybierz wskazany punkt odbioru.'));
       }else card.append(node('p','Zaloguj się jako klient, aby dodać produkt do koszyka.'));
+      if(typeof favoriteControl==='function')card.append(favoriteControl(product));
       el('nearby-results').append(card);
     }
     el('nearby-next').hidden=!data.has_more||offset+payload.limit>10000;
@@ -74,21 +76,38 @@ async function searchNearby(offset=0){
     if(serial===nearbySerial&&epoch===sessionEpoch){nearbyController=null;el('nearby-submit').disabled=false;el('nearby-next').disabled=false;}
   }
 }
+function requestDeviceLocation(success, failure, current=()=>true){
+  if(globalThis.isSecureContext===false){failure('Lokalizacja wymaga HTTPS lub adresu localhost. Otwórz bezpieczną wersję strony albo wpisz miejscowość.');return;}
+  if(!globalThis.navigator?.geolocation){failure('Lokalizacja urządzenia jest niedostępna. Wpisz miejscowość lub adres.');return;}
+  let retried=false;
+  const failed=error=>{
+    if(!current())return;
+    if(error.code!==1&&!retried){retried=true;request(true);return;}
+    failure(error.code===1?'Nie udzielono zgody na lokalizację. Kliknij ustawienia witryny obok adresu i zezwól na lokalizację. Możesz też wpisać miejscowość.':
+      error.code===3?'Upłynął czas pobierania lokalizacji. Sprawdź lokalizację w ustawieniach Windows i spróbuj ponownie lub wpisz miejscowość.':
+      'Urządzenie nie ustaliło lokalizacji. Włącz usługi lokalizacji w Windows i dostęp dla przeglądarki albo wpisz miejscowość.');
+  };
+  const request=accurate=>{try{navigator.geolocation.getCurrentPosition(position=>{
+    if(!current())return;
+    const lat=position?.coords?.latitude,lon=position?.coords?.longitude;
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){failure('Urządzenie zwróciło nieprawidłową lokalizację. Wpisz miejscowość.');return;}
+    success(position);
+  },failed,{enableHighAccuracy:accurate,timeout:accurate?15000:10000,maximumAge:60000});}
+  catch{failure('Przeglądarka zablokowała lokalizację. Sprawdź uprawnienia witryny lub wpisz miejscowość.');}};
+  request(false);
+}
 function locateNearby(){
   invalidateNearby();const serial=nearbySerial,epoch=sessionEpoch;
-  if(!globalThis.navigator?.geolocation){el('nearby-status').textContent='Lokalizacja urządzenia jest niedostępna. Wpisz miejscowość i wybierz miejsce.';return;}
   el('nearby-geolocate').disabled=true;el('nearby-status').textContent='Oczekuję na zgodę przeglądarki na bieżącą lokalizację…';
-  navigator.geolocation.getCurrentPosition(position=>{
+  requestDeviceLocation(position=>{
     if(serial!==nearbySerial||epoch!==sessionEpoch)return;
     el('nearby-geolocate').disabled=false;
-    const lat=Math.round(position.coords.latitude*1000000),lon=Math.round(position.coords.longitude*1000000);
-    if(!Number.isSafeInteger(lat)||!Number.isSafeInteger(lon)||Math.abs(lat)>90000000||Math.abs(lon)>180000000){el('nearby-status').textContent='Nieprawidłowa lokalizacja urządzenia. Wpisz miejscowość i wybierz miejsce.';return;}
-    el('nearby-lat').value=coordinateText(lat);el('nearby-lon').value=coordinateText(lon);act(()=>searchNearby());
-  },error=>{
+    el('nearby-lat').value=coordinateText(Math.round(position.coords.latitude*1000000));
+    el('nearby-lon').value=coordinateText(Math.round(position.coords.longitude*1000000));act(()=>searchNearby());
+  },message=>{
     if(serial!==nearbySerial||epoch!==sessionEpoch)return;
-    el('nearby-geolocate').disabled=false;
-    el('nearby-status').textContent=error.code===1?'Nie udzielono zgody na lokalizację. Możesz wpisać miejscowość i wybrać miejsce.':'Nie udało się ustalić lokalizacji. Wpisz miejscowość i wybierz miejsce.';
-  },{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
+    el('nearby-geolocate').disabled=false;el('nearby-status').textContent=message;
+  },()=>serial===nearbySerial&&epoch===sessionEpoch);
 }
 
 function showPointEditor(){
@@ -115,7 +134,7 @@ async function loadPointEditor(){
 }
 function refreshNearbyRole(){
   if(!el('point-location-panel'))return;
-  pointEditorSerial++;pointEditorItems=[];el('point-edit-form').reset();el('point-edit-form').hidden=true;
+  pointEditorSerial++;pointEditorItems=[];if(el('point-location-results'))el('point-location-results').replaceChildren();el('point-edit-form').reset();el('point-edit-form').hidden=true;
   el('point-edit-select').replaceChildren();el('point-edit-status').textContent='';el('point-location-panel').hidden=role!=='rolnik';
 }
 async function savePointEditor(){
@@ -141,7 +160,7 @@ async function savePointEditor(){
 if(el('nearby-form')){
   el('nearby-form').onsubmit=event=>{event.preventDefault();act(()=>searchNearby());};
   el('nearby-form').oninput=invalidateNearby;el('nearby-form').onchange=invalidateNearby;
-  el('nearby-clear').onclick=resetNearbySearch;el('nearby-geolocate').onclick=locateNearby;
+  el('nearby-clear').onclick=()=>{if(typeof forgetNearbyLocation==='function')forgetNearbyLocation();resetNearbySearch();};el('nearby-geolocate').onclick=locateNearby;
   el('nearby-next').onclick=()=>{if(nearbyPage)act(()=>searchNearby(nearbyPage.offset+nearbyPage.limit));};
   el('point-edit-select').onchange=()=>{pointEditorSerial++;el('point-edit-status').textContent='';showPointEditor();};
   el('point-edit-clear-coordinates').onchange=()=>{const clear=el('point-edit-clear-coordinates').checked;el('point-edit-lat').disabled=clear;el('point-edit-lon').disabled=clear;};

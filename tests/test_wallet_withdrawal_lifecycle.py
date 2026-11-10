@@ -178,3 +178,20 @@ def test_audit_works_with_database_enforced_read_only_mode(wallet_db):
         con.row_factory=sqlite3.Row
         con.execute('PRAGMA query_only=ON')
         assert inspect_wallets(con)['success']
+
+
+def test_cross_journal_duplicate_revision_is_detected_even_with_balanced_totals(wallet_db):
+    with server(wallet_db) as client:
+        owner,oid=setup(client);assert cancel(client,owner,oid).status_code==201
+        assert deposit(client,owner,amount=100).status_code==201
+        assert withdraw(client,owner,amount=100).status_code==201
+    with sqlite3.connect(wallet_db) as con:
+        # Preserve aggregate balances, count, first/last revision and coherent
+        # per-event sums while making revision 3 duplicated and 4 missing.
+        con.execute('UPDATE wallet_preview_entries SET revision=3,available_after=6099,reserved_after=4001 WHERE revision=4')
+    with closing(sqlite3.connect(wallet_db)) as con:
+        con.row_factory=sqlite3.Row
+        report=inspect_wallets(con)
+        assert not report['success'] and 'REVISION_MISMATCH' in report['issue_codes']
+    with server(wallet_db) as client:
+        assert deposit(client,owner,amount=1).status_code==409

@@ -14,7 +14,7 @@ BASE='''WITH history AS (
  FROM wallet_preview_resolutions r JOIN wallet_preview_terms t ON t.withdrawal_id=r.withdrawal_id
 )
 SELECT a.user_id,a.available_grosze,a.reserved_grosze,a.revision,
- count(e.id) AS entry_count,min(e.revision) AS first_revision,max(e.revision) AS last_revision,
+ count(e.id) AS entry_count,count(DISTINCT e.revision) AS distinct_revisions,min(e.revision) AS first_revision,max(e.revision) AS last_revision,
  coalesce(sum(e.available_delta),0) AS expected_available,
  coalesce(sum(e.reserved_delta),0) AS expected_reserved,
  l.available_after AS latest_available,l.reserved_after AS latest_reserved,
@@ -59,7 +59,7 @@ def problems(row):
     if row['reserved_grosze']!=row['expected_reserved']:
         issues.append('RESERVED_MISMATCH')
     count=row['entry_count']
-    if (row['revision']!=count or (count and (row['first_revision']!=1 or row['last_revision']!=count))):
+    if (row['revision']!=count or row['distinct_revisions']!=count or (count and (row['first_revision']!=1 or row['last_revision']!=count))):
         issues.append('REVISION_MISMATCH')
     if count and (row['latest_available']!=row['available_grosze'] or row['latest_reserved']!=row['reserved_grosze']):
         issues.append('JOURNAL_TAIL_MISMATCH')

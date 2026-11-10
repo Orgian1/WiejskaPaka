@@ -1,0 +1,64 @@
+{
+  "run_id": 42878625562,
+  "code_commit": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 130048567888,
+      "name": "chromium",
+      "conclusion": "success"
+    },
+    {
+      "id": 130048567996,
+      "name": "windows_recovery",
+      "conclusion": "success"
+    },
+    {
+      "id": 130048568110,
+      "name": "postgres (16)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130048568159,
+      "name": "postgres (17)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130050601493,
+      "name": "windows",
+      "conclusion": "failure"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 13795411260,
+      "name": "windows-summary",
+      "digest": "sha256:e0fbfcbb2230919fe6e0b485b3a10d74e81f1d17596413f7b59c5b297cdbb25e",
+      "head_sha": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04"
+    },
+    {
+      "id": 13793775594,
+      "name": "postgres-16-summary",
+      "digest": "sha256:0bffefe3379baaea2245708d58d8ddf3ab2c0b991f7fe1e216a413aa00e1f366",
+      "head_sha": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04"
+    },
+    {
+      "id": 13793715718,
+      "name": "chromium-summary",
+      "digest": "sha256:9608fba5d7ba124bc91c29fadba49d6074a2701512732ba92d31925972156b58",
+      "head_sha": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04"
+    },
+    {
+      "id": 13792768670,
+      "name": "postgres-17-summary",
+      "digest": "sha256:869d25aef1f5f490353defc70390f75cb8604b209eafeb3bd9cfe4a68605a762",
+      "head_sha": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04"
+    },
+    {
+      "id": 13792333295,
+      "name": "windows-recovery-summary",
+      "digest": "sha256:2322b94976c6284f6808105e58b622e3ba8c9c3fd8b2abe2492d0a4cdb7d42c4",
+      "head_sha": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04"
+    }
+  ]
+}

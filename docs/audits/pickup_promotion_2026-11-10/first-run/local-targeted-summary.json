@@ -1,0 +1,39 @@
+{
+  "code_commit": "2b6d9b09ae0a3b5e3ee3fed2134862b1a9dc7c04",
+  "runs": [
+    {
+      "source": "promo-targeted2.xml",
+      "total": 37,
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "modules": [
+        "tests.test_b11305_migration_manifest",
+        "tests.test_b6961_auth_dependency_inventory",
+        "tests.test_b7321_anonymous_route_http",
+        "tests.test_full_local_demo",
+        "tests.test_pickup_promotion",
+        "tests.test_sample_demo",
+        "tests.test_web_dashboard_safety",
+        "tests.test_web_farmer_actions_doubleclick"
+      ]
+    },
+    {
+      "source": "promo-targeted3.xml",
+      "total": 76,
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "modules": [
+        "tests.test_b11307_schema_lock",
+        "tests.test_demo_readiness",
+        "tests.test_market_preferences_ui",
+        "tests.test_market_review",
+        "tests.test_phone_demo_launcher",
+        "tests.test_pickup_promotion_ui",
+        "tests.test_sample_demo_launcher",
+        "tests.test_transaction_session_boundaries"
+      ]
+    }
+  ]
+}

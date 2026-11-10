@@ -1,0 +1,65 @@
+{
+  "run_id": 42883413588,
+  "url": "https://github.com/Orgian1/WiejskaPaka/actions/runs/42883413588",
+  "code_commit": "7e76265ba3f54a7d6c4983ffde998826be292f33",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 130065364595,
+      "name": "windows_recovery",
+      "conclusion": "success"
+    },
+    {
+      "id": 130065364816,
+      "name": "postgres (17)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130065364996,
+      "name": "postgres (16)",
+      "conclusion": "success"
+    },
+    {
+      "id": 130065365338,
+      "name": "chromium",
+      "conclusion": "success"
+    },
+    {
+      "id": 130066756153,
+      "name": "windows",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 13797301896,
+      "name": "windows-summary",
+      "digest": "sha256:adbacdb798bb44d6bbb1077811f99732466208686bafe087af443d150d8baa27",
+      "head_sha": "7e76265ba3f54a7d6c4983ffde998826be292f33"
+    },
+    {
+      "id": 13795690684,
+      "name": "windows-recovery-summary",
+      "digest": "sha256:90da6976e84f49edad77a8defb249b3b522361260e3ec6a83e69fa2df3a95da4",
+      "head_sha": "7e76265ba3f54a7d6c4983ffde998826be292f33"
+    },
+    {
+      "id": 13795591395,
+      "name": "chromium-summary",
+      "digest": "sha256:cb07fb703db954ef8273d54a0cf5c9b44466e1ceb0defe8a123c87e5a8c249da",
+      "head_sha": "7e76265ba3f54a7d6c4983ffde998826be292f33"
+    },
+    {
+      "id": 13794624119,
+      "name": "postgres-17-summary",
+      "digest": "sha256:ab645b4ef27803fc402699552fce823b86a8c4fc1f219b9bb5f5cf1ba2211bf4",
+      "head_sha": "7e76265ba3f54a7d6c4983ffde998826be292f33"
+    },
+    {
+      "id": 13794188717,
+      "name": "postgres-16-summary",
+      "digest": "sha256:05db46eb79075a47c26390fe8660021d1e3c62e8d2c108d0ac93c03a96bad6d3",
+      "head_sha": "7e76265ba3f54a7d6c4983ffde998826be292f33"
+    }
+  ]
+}

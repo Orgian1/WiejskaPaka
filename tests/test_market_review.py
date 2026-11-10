@@ -27,12 +27,14 @@ def test_pickup_auto_ready_after_payment_and_pin_without_checkbox(actors, monkey
 def test_favorite_catalog_only_returns_available_public_products(actors):
     client,users=actors
     pid=new_product(client,users[0][0])
-    assert client.post('/catalog/favorites',json={'ids':[pid,pid,999999999]}).json()['items'][0]['id']==pid
-    assert len(client.post('/catalog/favorites',json={'ids':[pid,pid]}).json()['items'])==1
+    assert client.post('/catalog/favorites',json={'ids':[pid]}).status_code==401
+    headers=users[2][0]
+    assert client.post('/catalog/favorites',headers=headers,json={'ids':[pid,pid,999999999]}).json()['items'][0]['id']==pid
+    assert len(client.post('/catalog/favorites',headers=headers,json={'ids':[pid,pid]}).json()['items'])==1
     for invalid in ([True],[1.5],['1'],[-1],list(range(1,202))):
-        assert client.post('/catalog/favorites',json={'ids':invalid}).status_code==422
+        assert client.post('/catalog/favorites',headers=headers,json={'ids':invalid}).status_code==422
     with module.db() as con:con.execute('UPDATE products SET stock=0 WHERE id=?',(pid,))
-    assert client.post('/catalog/favorites',json={'ids':[pid]}).json()['items']==[]
+    assert client.post('/catalog/favorites',headers=headers,json={'ids':[pid]}).json()['items']==[]
 
 
 def proposal_body(revision=0):

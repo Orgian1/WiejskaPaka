@@ -1,4 +1,4 @@
-// No customer location in URLs, browser storage, analytics or console logs.
+// Location is never sent in URLs or logs. Explicit account preferences are device-local.
 let nearbySerial=0,nearbyController=null,nearbyPage=null;
 let pointEditorSerial=0,pointEditorItems=[];
 

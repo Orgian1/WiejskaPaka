@@ -164,19 +164,22 @@ def run():
                 assert client.get('/products').json()[0]['stock'] == stock_after_cancel
                 print('B/43 insufficient stock rejected without mutation OK')
 
-                # B/44: farmer marks pickup ready and checks wrong PIN, then correct PIN.
+                # B/44: payment makes pickup ready without seller approval; PIN stays mandatory.
+                pickup_for_payment=next(o for o in client.get('/orders/me',headers=client_headers).json() if o['fulfillment']=='odbior')
+                os.environ['WP_ENABLE_TEST_PAYMENTS']='1'
+                os.environ['WP_ENABLE_AUTOMATIC_PICKUP']='1'
+                paid_pickup=client.post(f"/test/payments/{pickup_for_payment['id']}/events",headers=client_headers,
+                    json={'event_id':'automatic-pickup-b44','event_type':'payment_success_test'})
+                assert paid_pickup.status_code==200,paid_pickup.text
                 logout()
                 login('rolnik')
                 pickup_order = next(o for o in client.get('/orders/me', headers={
                     'Authorization': 'Bearer ' + page.evaluate('token')
                 }).json() if o['fulfillment'] == 'odbior')
-                page.wait_for_function('document.querySelector("#orders").textContent.includes("oczekuje_na_platnosc_testowa")')
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
-                pickup_card.get_by_role('button', name='Gotowe do odbioru (test)').click()
                 page.wait_for_function('document.querySelector("#orders").textContent.includes("gotowe_do_odbioru_testowo")')
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
                 pickup_card.get_by_role('textbox', name='Sześciocyfrowy PIN odbioru').fill('999999' if pickup_pin != '999999' else '888888')
-                pickup_card.get_by_role('checkbox').check()
                 pickup_card.get_by_role('button', name='Potwierdź odbiór').click()
                 page.wait_for_function('document.querySelector("#notice").textContent.includes("pozostało prób: 4")')
                 print('B/44 incorrect PIN rejected and attempt counted OK')
@@ -184,7 +187,6 @@ def run():
                 # B/45: correct PIN confirms exactly once; reuse must fail.
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
                 pickup_card.get_by_role('textbox', name='Sześciocyfrowy PIN odbioru').fill(pickup_pin, timeout=5000)
-                pickup_card.get_by_role('checkbox').check()
                 pickup_card.get_by_role('button', name='Potwierdź odbiór').click()
                 page.wait_for_function('document.querySelector("#orders").textContent.includes("odebrane")', timeout=10000)
                 farmer_headers = {'Authorization': 'Bearer ' + page.evaluate('token')}

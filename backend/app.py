@@ -502,7 +502,7 @@ class FavoriteProductsIn(BaseModel):
     ids: list[StrictInt] = Field(max_length=200)
 
 @app.post('/catalog/favorites')
-def favorite_products(payload: FavoriteProductsIn):
+def favorite_products(payload: FavoriteProductsIn, user=Depends(current_user)):
     ids = list(dict.fromkeys(payload.ids))
     if any(isinstance(n, bool) or n <= 0 or n > 9_000_000_000_000_000_000 for n in ids):
         raise HTTPException(422, 'Nieprawidłowa lista ulubionych')

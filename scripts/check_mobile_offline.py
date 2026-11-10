@@ -59,7 +59,7 @@ def check_offline(screenshot_dir=None):
                 for link in page.locator('nav.quick-nav a').all():
                     target = link.get_attribute('href')
                     assert target.startswith('#') and page.locator(target).count() == 1
-                page.locator('nav.quick-nav a').nth(2).click()
+                page.locator('#products-nav-link').click()
                 assert page.evaluate('location.hash') == '#products-section'
                 page.locator('#email').focus()
                 assert page.evaluate('document.activeElement.id') == 'email'

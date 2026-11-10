@@ -73,9 +73,7 @@ async function loadFavorites() {
   if (!owner || !ids.length) { el('favorites-status').textContent = owner ? 'Nie masz jeszcze ulubionych. Kliknij serduszko pod ofertą.' : 'Zaloguj się, aby zapisywać ulubione produkty.'; return; }
   el('favorites-status').textContent = 'Pobieranie ulubionych…';
   try {
-    const response = await fetch('/catalog/favorites', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids}), cache:'no-store'});
-    if (!response.ok) throw Error('Nie można pobrać ulubionych');
-    const data = await response.json(); if (!current()) return;
+    const data = await api('/catalog/favorites','POST',{ids}); if (!current()) return;
     if (!Array.isArray(data.items) || data.items.length > ids.length) throw Error('Nieprawidłowe ulubione');
     for (const id of ids) {
       const product = data.items.find(p => p.id === id);

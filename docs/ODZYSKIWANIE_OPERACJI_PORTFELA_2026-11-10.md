@@ -67,4 +67,37 @@ stary kod nie respektuje nowych blokad. Zachować dane i pełny dziennik.
 3. Odświeżenie/restart i spóźniona odpowiedź nie mogą podwoić doładowania,
    rezerwacji ani skasować nowego zapisu operacji. Sprawdź telefon i komputer.
 
-Wyniki końcowe będą zapisane po zakończeniu testów tego pakietu.
+**Wszystkie 5/5 bramek CI zakończone sukcesem.**
+
+Kod: `058f8b4d2ed2d99f805bf38649c42269fdeb06da`, PR #53.
+CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/42773045567.
+
+| Zestaw | Wynik |
+| --- | --- |
+| Celowane testy odzyskiwania i pamięci karty | 21 PASS, 0 FAIL, 0 SKIP |
+| PostgreSQL 16 | 97 PASS, 0 FAIL, 0 SKIP |
+| PostgreSQL 17 | 97 PASS, 0 FAIL, 0 SKIP |
+| Szybki Windows | 91 PASS, 0 FAIL, 0 SKIP |
+| Chromium | 76 PASS, 0 FAIL, 0 SKIP + HTTP na 5 rozmiarach |
+| Pełny Windows | 4639 PASS, 0 FAIL, 275 SKIP; 4914 przypadków, brak timeoutów i niekompletnych modułów |
+| Lokalny Linux | 4753 PASS, 61 błędów startu Chromium, 100 SKIP; 4914 przypadków w 387 modułach |
+
+Wszystkie lokalne błędy dotyczą systemowej blokady socketu Chromium, a nie
+rozstrzygniętych asercji aplikacji. Lokalnego przebiegu nie oznaczono jako
+sukcesu. Te scenariusze wykonano w CI bez błędów. Pominięte lokalnie scenariusze
+natywnego PostgreSQL wykonano oddzielnie na wersjach 16 i 17. Zestawy częściowo
+się pokrywają; nie sumować ich jako liczby różnych testów.
+
+Testy przeglądarkowe obejmują spóźnione pierwsze żądanie, utratę odpowiedzi
+po zapisie, spóźnioną odpowiedź sukcesu po rozpoczęciu nowej operacji oraz
+błędny PIN i zmianę kwoty, na 320 i 1280 px. Pierwszy przebieg wykazał dwa błędy
+samego predykatu oczekiwania w teście: CSP blokowała ewaluację tekstowego
+wyrażenia. Diagnostyka potwierdziła zapis doładowania i widoczny błąd sieci
+w formularzu. Predykat zastąpiono funkcją, bez osłabienia CSP aplikacji.
+Końcowa bramka Chromium wykonała wszystkie przypadki pomyślnie.
+
+Raporty i odciski źródeł: `audits/wallet_recovery_2026-11-10/`.
+Końcowy zapis raportów zmienia tylko dokumenty i JSON. Drzewo przetestowanego
+kodu jest też zachowane na gałęzi `integration/demo-main-20261110`, commit
+`718ad0b9f0fc897aff7f296202442cb4e7b1ce3e`. Main i gałęzie wcześniejszych PR-ów
+nie były zapisywane w tym pakiecie. Późniejsze zmiany zwykłego czatu są integrowane osobno. VPS nie był modyfikowany.

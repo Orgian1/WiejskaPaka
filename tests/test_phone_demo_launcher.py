@@ -29,6 +29,21 @@ def test_demo_launcher_binds_only_to_loopback():
     assert 'DATABASE_URL' not in runner.call_args.kwargs['env']
 
 
+def test_basic_demo_keeps_local_features_without_inheriting_services(tmp_path):
+    source = {'PATH': '/usr/bin', 'WP_ENABLE_PRODUCT_UNITS': '1',
+              'WP_ENABLE_ORDER_SMTP': '1', 'WP_ENABLE_SMTP': '1',
+              'WP_ENABLE_VERIFICATION_SMTP': '1', 'WP_SMTP_PASSWORD': 'private',
+              'AWS_SECRET_ACCESS_KEY': 'private', 'PAYU_CLIENT_SECRET': 'private',
+              'WP_CHECKOUT_KEY_FILE': '/private/key', 'PYTHONPATH': '/untrusted',
+              'WP_ENABLE_FUTURE_NETWORK_SERVICE': '1'}
+    original = dict(source)
+    env = demo_environment(source, tmp_path/'local.sqlite3')
+    assert env['PATH'] == source['PATH']
+    assert env['WP_ENABLE_PRODUCT_UNITS'] == '1'
+    assert set(env).intersection(source) == {'PATH', 'WP_ENABLE_PRODUCT_UNITS'}
+    assert source == original
+
+
 def test_demo_serves_web_ui_and_assets():
     from fastapi.testclient import TestClient
     from backend.app import app

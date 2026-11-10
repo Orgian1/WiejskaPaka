@@ -13,6 +13,35 @@ from tests.test_purchase_record_http_restart import server
 ROOT=Path(__file__).resolve().parents[1]
 
 
+@pytest.mark.parametrize('width', [320, 1280])
+def test_public_footer_shared_contact_form(full_demo_server, delivery_browser, width):
+    url, _ = full_demo_server
+    page = delivery_browser.new_page(viewport={'width': width, 'height': 844})
+    writes = []
+    page.on('request', lambda request: writes.append(request.url) if request.method == 'POST' else None)
+    try:
+        page.goto(url)
+        page.locator('#footer-contact-link').click()
+        assert page.locator('#contact-topic').input_value() == 'contact'
+        page.locator('#contact-email').fill('guest@example.invalid')
+        page.locator('#contact-subject').fill('Pytanie o działanie strony')
+        page.locator('#contact-message').fill('Treść wiadomości próbnej')
+        page.locator('#footer-report-link').click()
+        assert page.locator('#contact-topic').input_value() == 'problem'
+        assert page.locator('#contact-message').input_value() == 'Treść wiadomości próbnej'
+        assert page.locator('#contact-heading').evaluate('(node) => node === document.activeElement')
+        assert page.locator('#contact-submit').is_disabled()
+        page.locator('#contact-form').evaluate('(form) => form.requestSubmit()')
+        assert 'nie została wysłana' in page.locator('#contact-status').inner_text()
+        assert not writes
+        assert '?' not in page.url
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        page.locator('#contact-form button[type=reset]').click()
+        assert page.locator('#contact-message').input_value() == ''
+    finally:
+        page.close()
+
+
 @pytest.fixture(scope='module')
 def full_demo_server(tmp_path_factory):
     directory=tmp_path_factory.mktemp('full_demo_browser')/'sample'

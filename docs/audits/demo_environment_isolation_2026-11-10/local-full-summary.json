@@ -1,0 +1,647 @@
+{
+  "application_sha256": "5b5246089542d3e501f0401ef7632285fbdef015db5c73d0047c5c1e86860758",
+  "complete": true,
+  "success": false,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 4917,
+    "passed": 4756,
+    "failed": 61,
+    "skipped": 100
+  },
+  "executed": 387,
+  "planned": 387,
+  "code_commit": "064ab859412015f0f6d58fc2fb059d75ec8d47ed",
+  "failed_modules": [
+    {
+      "file": "test_address_delivery_browser.py",
+      "test_counts": {
+        "total": 4,
+        "passed": 0,
+        "failed": 4,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_admin_seller_review_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_admin_seller_review_browser.py",
+          "line": 22
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_catalog_page_browser.py",
+      "test_counts": {
+        "total": 8,
+        "passed": 0,
+        "failed": 8,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_sample_demo_browser.py",
+          "line": 17
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_email_verification_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_full_local_demo_browser.py",
+      "test_counts": {
+        "total": 8,
+        "passed": 0,
+        "failed": 8,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_mobile_offline.py",
+      "test_counts": {
+        "total": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_mobile_offline.py",
+          "line": 21
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_password_reset_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_password_reset_browser.py",
+          "line": 22
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_pickup_calendar_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_sample_demo_browser.py",
+      "test_counts": {
+        "total": 10,
+        "passed": 0,
+        "failed": 10,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_sample_demo_browser.py",
+          "line": 17
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_seller_compliance_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_seller_compliance_browser.py",
+          "line": 17
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_seller_directory_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_support_cases_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_sample_demo_browser.py",
+          "line": 17
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_user_photos_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_wallet_browser.py",
+      "test_counts": {
+        "total": 4,
+        "passed": 0,
+        "failed": 4,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_wallet_lifecycle_browser.py",
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    },
+    {
+      "file": "test_wallet_recovery_browser.py",
+      "test_counts": {
+        "total": 8,
+        "passed": 0,
+        "failed": 8,
+        "skipped": 0
+      },
+      "failure_locations": [
+        {
+          "file": "test_address_delivery_browser.py",
+          "line": 20
+        }
+      ],
+      "reason": "CHROMIUM_AF_UNIX_OPERATION_NOT_PERMITTED"
+    }
+  ],
+  "passed_modules": [
+    "test_account_security_api.py",
+    "test_account_security_http.py",
+    "test_account_security_ui.py",
+    "test_account_view_privacy_ui.py",
+    "test_accounting_write_auth_43_47.py",
+    "test_address_delivery_http.py",
+    "test_address_delivery_ui.py",
+    "test_address_search.py",
+    "test_address_search_ui.py",
+    "test_admin_finance_ui.py",
+    "test_admin_seller_review.py",
+    "test_admin_seller_review_ui.py",
+    "test_api.py",
+    "test_audit_mobile_markup.py",
+    "test_audyt_04_full_journey.py",
+    "test_auth_failures_offline.py",
+    "test_auth_password_ui.py",
+    "test_b10201_security_runner_checkpoint.py",
+    "test_b1021_reconciliation_invariants.py",
+    "test_b10561_session_revocation_http.py",
+    "test_b106_b110_regression_diagnostics.py",
+    "test_b1081_line_integrity.py",
+    "test_b10921_checkout_ui.py",
+    "test_b10921_financial_integrity.py",
+    "test_b10921_http_limits.py",
+    "test_b10921_inventory_expiry.py",
+    "test_b10921_login_lockout_http.py",
+    "test_b10921_paid_delivery_rule.py",
+    "test_b10921_regression_evidence.py",
+    "test_b10921_reporting_contracts.py",
+    "test_b10921_security_boundaries.py",
+    "test_b11281_checkout_multiline_races.py",
+    "test_b11284_postgres_retry_policy.py",
+    "test_b11285_transaction_runner.py",
+    "test_b11287_runner_edge_cases.py",
+    "test_b11288_transaction_failure_boundaries.py",
+    "test_b11294_database_probe.py",
+    "test_b11296_entrypoint_order.py",
+    "test_b11297_startup_tables.py",
+    "test_b11298_startup_atomicity.py",
+    "test_b11299_server_cleanup.py",
+    "test_b11300_dsn_query_overrides.py",
+    "test_b11301_dsn_allowlist.py",
+    "test_b11302_postgres_role_gate.py",
+    "test_b11305_migration_manifest.py",
+    "test_b11306_migration_cli.py",
+    "test_b11307_schema_lock.py",
+    "test_b11308_runbook.py",
+    "test_b11309_atomic_migration_gate.py",
+    "test_b11310_sequential_plan.py",
+    "test_b11313_readonly_schema.py",
+    "test_b11315_generator.py",
+    "test_b11316_plan_portability.py",
+    "test_b1141_per_file_runner.py",
+    "test_b1201_runner_report.py",
+    "test_b121_b130_runner_hardening.py",
+    "test_b1261_postgres_transaction_portability.py",
+    "test_b131_b160_report_integrity.py",
+    "test_b1321_payment_cancel_guard.py",
+    "test_b1381_paid_shipment_cancel.py",
+    "test_b1441_paid_cancel_panel.py",
+    "test_b1501_financial_history.py",
+    "test_b1561_financial_panel.py",
+    "test_b161_b200_manifest.py",
+    "test_b1621_multiseller_shipping_regression.py",
+    "test_b1681_checkout_idempotency.py",
+    "test_b1741_checkout_ui_contract.py",
+    "test_b1801_concurrent_stock.py",
+    "test_b1861_quote_ui_contract.py",
+    "test_b1921_per_seller_cart_limits.py",
+    "test_b1981_end_to_end_shipment.py",
+    "test_b201_payment_state_audit.py",
+    "test_b2101_extended_gate_manifest.py",
+    "test_b2161_full_regression_runner.py",
+    "test_b2221_regression_aggregation.py",
+    "test_b2281_stale_regression_protection.py",
+    "test_b2341_resume_regression.py",
+    "test_b2401_regression_per_file_isolation.py",
+    "test_b2461_chunk_resume.py",
+    "test_b261_b300_order_lifecycle.py",
+    "test_b301_order_integrity_extended.py",
+    "test_b3121_mobile_viewport_matrix.py",
+    "test_b3181_pending_checkout_cart_guard.py",
+    "test_b321_farmer_product_edit.py",
+    "test_b3241_checkout_session_races.py",
+    "test_b3301_refresh_checkout_guard.py",
+    "test_b3361_direct_order_checkout_guard.py",
+    "test_b341_product_details.py",
+    "test_b3481_direct_idempotency.py",
+    "test_b351_catalog_search.py",
+    "test_b3541_direct_reconciliation.py",
+    "test_b361_cart_quote.py",
+    "test_b371_saved_cart.py",
+    "test_b3721_regression_cache_integrity.py",
+    "test_b3781_chunk_resume_source_integrity.py",
+    "test_b3841_regression_progress.py",
+    "test_b401_checkout.py",
+    "test_b4021_resume_report_integrity.py",
+    "test_b461_checkout_postgres_locking.py",
+    "test_b481_multiseller_checkout.py",
+    "test_b501_shared_delivery.py",
+    "test_b521_shipping_policy.py",
+    "test_b561_shipment_links.py",
+    "test_b581_shipment_pin.py",
+    "test_b621_courier_shipments.py",
+    "test_b641_shipment_failure.py",
+    "test_b6601_endpoint_inventory.py",
+    "test_b681_shipment_details.py",
+    "test_b6961_auth_dependency_inventory.py",
+    "test_b721_shipment_cancel.py",
+    "test_b7321_anonymous_route_http.py",
+    "test_b741_admin_shipments.py",
+    "test_b7681_cross_account_http.py",
+    "test_b8041_http_privacy_audit.py",
+    "test_b8401_shipment_http_idor.py",
+    "test_b8761_http_response_headers.py",
+    "test_b901_reconciliation.py",
+    "test_b91_b95_http_boundaries.py",
+    "test_b961_admin_reconciliation_ui.py",
+    "test_bounded_reset_worker.py",
+    "test_bridge_b41_b45.py",
+    "test_bridge_delivery_scenarios.py",
+    "test_browser_backend_bridge.py",
+    "test_browser_navigation_contract_b25.py",
+    "test_browser_screenshot_option_b28.py",
+    "test_cancel_compare_and_set.py",
+    "test_capacity_report_cli.py",
+    "test_capacity_targets.py",
+    "test_catalog_page_ui.py",
+    "test_checkout_vault.py",
+    "test_checkout_vault_api.py",
+    "test_checkout_vault_http.py",
+    "test_combined_marketplace_http.py",
+    "test_concurrent_orders.py",
+    "test_crash_checkout_http.py",
+    "test_cross_account_isolation_b66_b70.py",
+    "test_delivery_access_stage08.py",
+    "test_delivery_privacy_stage09.py",
+    "test_demo_journey_script.py",
+    "test_demo_readiness.py",
+    "test_deployment_guard.py",
+    "test_email_ownership.py",
+    "test_email_verification_http.py",
+    "test_email_verification_mail.py",
+    "test_email_verification_queue.py",
+    "test_email_verification_worker.py",
+    "test_encrypted_sqlite_snapshot.py",
+    "test_extended_browser_mode_b115.py",
+    "test_final_audit.py",
+    "test_fractional_quote.py",
+    "test_fractional_quote_http.py",
+    "test_full_local_demo.py",
+    "test_header_auth_actions.py",
+    "test_http_checkout_e2e_b5941.py",
+    "test_http_multi_seller_b6061.py",
+    "test_http_privacy_policy.py",
+    "test_http_server_fixture.py",
+    "test_identity_cleanup_failure.py",
+    "test_integrity_verify02.py",
+    "test_invalid_auth_hashes.py",
+    "test_inventory_lifecycle_package.py",
+    "test_isolated_test_runner.py",
+    "test_local_address_search.py",
+    "test_local_marketplace.py",
+    "test_local_marketplace_http.py",
+    "test_local_marketplace_ui.py",
+    "test_logout_feedback_ui.py",
+    "test_mail_configuration_check.py",
+    "test_mail_queue_key_backup.py",
+    "test_mail_restore_quarantine.py",
+    "test_mail_send_budget.py",
+    "test_mail_suppression.py",
+    "test_migrate_all_tables.py",
+    "test_migration_destination13.py",
+    "test_migration_inventory07.py",
+    "test_migration_plan.py",
+    "test_migration_safety06.py",
+    "test_migration_snapshot.py",
+    "test_migration_snapshot12.py",
+    "test_migration_views14.py",
+    "test_mobile_browser_runner.py",
+    "test_mobile_form_accessibility.py",
+    "test_mobile_markup_regression_b9121.py",
+    "test_native_ci_runner.py",
+    "test_native_gate_schema_review.py",
+    "test_neon_api_stage12.py",
+    "test_neon_auth_policy_package23_27.py",
+    "test_neon_identity.py",
+    "test_neon_order_access.py",
+    "test_neon_permissions.py",
+    "test_neon_preflight_extra.py",
+    "test_neon_readiness.py",
+    "test_neon_rls_policy_plan.py",
+    "test_neon_rls_preflight.py",
+    "test_neon_security_audit_10.py",
+    "test_neon_session_bridge.py",
+    "test_neon_sql_inventory.py",
+    "test_neon_sql_inventory_stage17.py",
+    "test_neon_verified_reads_11.py",
+    "test_notification_policy.py",
+    "test_order_amount_limits.py",
+    "test_order_audit_cli_b251.py",
+    "test_order_integrity_b241.py",
+    "test_order_mail.py",
+    "test_order_mail_capture_http.py",
+    "test_order_mail_outbox.py",
+    "test_order_mail_worker.py",
+    "test_package1.py",
+    "test_package2.py",
+    "test_package3.py",
+    "test_package4.py",
+    "test_package5.py",
+    "test_package_48_52.py",
+    "test_package_81_90.py",
+    "test_package_b51_b55.py",
+    "test_parallel_access_b71_b75.py",
+    "test_password_reset.py",
+    "test_password_reset_http.py",
+    "test_password_reset_postgres_config.py",
+    "test_password_reset_ui.py",
+    "test_payment_concurrency_audit03.py",
+    "test_payment_history_guard.py",
+    "test_payment_integrity_b60.py",
+    "test_payment_integrity_history_audit.py",
+    "test_payment_invariants_audit02.py",
+    "test_payout_write_guards_38_42.py",
+    "test_pg_adapter.py",
+    "test_pg_adapter_edgecases.py",
+    "test_pg_audit_dict_rows.py",
+    "test_pg_explicit_returning_regression.py",
+    "test_pg_payout_ids.py",
+    "test_pg_sql_compat_53_65.py",
+    "test_phone_demo_launcher.py",
+    "test_pickup_calendar_ui.py",
+    "test_pickup_dates.py",
+    "test_pin_recovery_api.py",
+    "test_pin_recovery_http.py",
+    "test_pin_recovery_policy.py",
+    "test_pin_recovery_ui.py",
+    "test_plan_http_load.py",
+    "test_postgres_api_bundle.py",
+    "test_postgres_environment.py",
+    "test_postgres_full_api_optin.py",
+    "test_postgres_preflight08.py",
+    "test_postgres_preview_probe.py",
+    "test_postgres_readiness.py",
+    "test_postgres_schema_preflight.py",
+    "test_postgres_security_preflight_b61_b65.py",
+    "test_postgres_test_backup.py",
+    "test_postgres_transaction_integration_optional.py",
+    "test_postgres_verified_db_stage18.py",
+    "test_preview_credentials.py",
+    "test_private_cache_headers.py",
+    "test_product_unit_storage.py",
+    "test_product_units.py",
+    "test_product_units_http.py",
+    "test_product_units_ui.py",
+    "test_purchase_record_http_restart.py",
+    "test_purchase_records.py",
+    "test_purchase_records_http.py",
+    "test_purchase_records_ui.py",
+    "test_queued_reset_http.py",
+    "test_refund_order_context.py",
+    "test_refund_retry_integrity.py",
+    "test_regression_diagnostics_b116_b120.py",
+    "test_regression_runner_b101_b105.py",
+    "test_release_readiness.py",
+    "test_release_security_location_logout.py",
+    "test_reset_mail_keys.py",
+    "test_reset_mail_queue.py",
+    "test_reset_mail_retention.py",
+    "test_roles_offline.py",
+    "test_runner_entrypoint_isolation.py",
+    "test_same_package_ui.py",
+    "test_sample_demo.py",
+    "test_sample_demo_launcher.py",
+    "test_seller_compliance_ui.py",
+    "test_seller_directory.py",
+    "test_seller_directory_ui.py",
+    "test_seller_payout_ui.py",
+    "test_seller_profile_reminder.py",
+    "test_seller_settlement_ui.py",
+    "test_send_order_confirmation_batch.py",
+    "test_send_verification_batch.py",
+    "test_ses_feedback.py",
+    "test_ses_feedback_archive.py",
+    "test_ses_feedback_config.py",
+    "test_ses_feedback_database.py",
+    "test_ses_feedback_http.py",
+    "test_ses_feedback_launcher.py",
+    "test_ses_feedback_service.py",
+    "test_ses_review_key_check.py",
+    "test_ses_review_keys.py",
+    "test_session_expiry_b86_b90.py",
+    "test_session_guards_b81_b85.py",
+    "test_session_revoke_defense.py",
+    "test_session_security_api.py",
+    "test_session_security_http.py",
+    "test_session_security_ui.py",
+    "test_shared_mail_send_gate.py",
+    "test_shipment_groups.py",
+    "test_shipment_membership_guard.py",
+    "test_smtp_reset_transport.py",
+    "test_sns_pinned_notification.py",
+    "test_sns_subscription_confirmation.py",
+    "test_sqlite_recovery_rehearsal.py",
+    "test_sqlite_snapshot.py",
+    "test_stabilization_02.py",
+    "test_stabilization_03.py",
+    "test_stage10.py",
+    "test_stage11.py",
+    "test_stage12.py",
+    "test_stage13.py",
+    "test_stage14.py",
+    "test_stage15.py",
+    "test_stage16.py",
+    "test_stage17.py",
+    "test_stage18.py",
+    "test_stage19.py",
+    "test_stage2.py",
+    "test_stage20.py",
+    "test_stage21.py",
+    "test_stage22.py",
+    "test_stage23.py",
+    "test_stage24.py",
+    "test_stage25.py",
+    "test_stage26.py",
+    "test_stage27.py",
+    "test_stage28.py",
+    "test_stage29.py",
+    "test_stage3.py",
+    "test_stage30.py",
+    "test_stage31.py",
+    "test_stage33_37.py",
+    "test_stage4.py",
+    "test_stage5.py",
+    "test_stage6.py",
+    "test_stage8.py",
+    "test_stage9.py",
+    "test_support_cases_http.py",
+    "test_support_cases_ui.py",
+    "test_time_safety_package91_100.py",
+    "test_transaction_safety_b76_b80.py",
+    "test_transaction_session_boundaries.py",
+    "test_ui_asset_versions.py",
+    "test_ui_dom_contract.py",
+    "test_user_photos.py",
+    "test_verified_email_checkout_http.py",
+    "test_verified_writes_28_32.py",
+    "test_wallet_integrity.py",
+    "test_wallet_intent_recovery.py",
+    "test_wallet_preview_http.py",
+    "test_wallet_recovery_ui.py",
+    "test_wallet_withdrawal_lifecycle.py",
+    "test_web_catalog_orders_race.py",
+    "test_web_courier_confirmation.py",
+    "test_web_dashboard_async_roles.py",
+    "test_web_dashboard_refresh_race.py",
+    "test_web_dashboard_safety.py",
+    "test_web_farmer_actions_doubleclick.py",
+    "test_web_farmer_inventory_report.py",
+    "test_web_farmer_profile_session.py",
+    "test_web_finance_report_race.py",
+    "test_web_login_race.py",
+    "test_web_mobile_navigation.py",
+    "test_web_notice_timing.py",
+    "test_web_order_action_safety.py",
+    "test_web_order_form_safety.py",
+    "test_web_order_history_race.py",
+    "test_web_session_privacy.py",
+    "test_web_single_write_guard.py"
+  ]
+}

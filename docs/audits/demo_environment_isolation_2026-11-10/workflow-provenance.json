@@ -1,0 +1,78 @@
+{
+  "run_id": 42805536971,
+  "code_commit": "064ab859412015f0f6d58fc2fb059d75ec8d47ed",
+  "tree": "b08ebf44e85a9c2fb1c4593949a0a56dd0d4dad7",
+  "jobs": [
+    {
+      "id": 129793619626,
+      "name": "chromium",
+      "conclusion": "success"
+    },
+    {
+      "id": 129793619713,
+      "name": "postgres (16)",
+      "conclusion": "success"
+    },
+    {
+      "id": 129793620042,
+      "name": "postgres (17)",
+      "conclusion": "success"
+    },
+    {
+      "id": 129793620081,
+      "name": "windows_recovery",
+      "conclusion": "success"
+    },
+    {
+      "id": 129794612187,
+      "name": "windows",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 13762216424,
+      "name": "windows-summary",
+      "digest": "sha256:9a6b79817434d4f97ab58bc10c97ff93785a3896fbe574753d8ad5ec8021d8df",
+      "head_sha": "064ab859412015f0f6d58fc2fb059d75ec8d47ed"
+    },
+    {
+      "id": 13758805874,
+      "name": "chromium-summary",
+      "digest": "sha256:f5666a1558cfe90028733f4d461a5f4ca59a2d1d4b24b670af0f3f58dde4f92c",
+      "head_sha": "064ab859412015f0f6d58fc2fb059d75ec8d47ed"
+    },
+    {
+      "id": 13758596559,
+      "name": "windows-recovery-summary",
+      "digest": "sha256:7d73822efe57cc0c4ce6029bc60c3595b1919e175ce8c5fee103fb0966e6b489",
+      "head_sha": "064ab859412015f0f6d58fc2fb059d75ec8d47ed"
+    },
+    {
+      "id": 13758142668,
+      "name": "postgres-16-summary",
+      "digest": "sha256:f188e14b39bcf99c09ff7e710e397ca665af5df8b0f7d977c0ddad834629645c",
+      "head_sha": "064ab859412015f0f6d58fc2fb059d75ec8d47ed"
+    },
+    {
+      "id": 13757792845,
+      "name": "postgres-17-summary",
+      "digest": "sha256:69be3eb396bbbe4f00b828b72e70be85601343cdf9d8d511ef77c3d1984d54ea",
+      "head_sha": "064ab859412015f0f6d58fc2fb059d75ec8d47ed"
+    }
+  ],
+  "windows_additional_steps": [
+    {
+      "name": "Demo readiness and header regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9
+    },
+    {
+      "name": "Isolated offline demo purchase journey",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 10
+    }
+  ]
+}

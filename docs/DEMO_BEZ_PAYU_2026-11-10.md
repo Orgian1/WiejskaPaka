@@ -1,5 +1,7 @@
 # WiejskaPaka — lokalne demo bez PayU
 
+Stan bieżący i komplet wyników: `ODBIOR_KONCOWY_DEMO_2026-11-10.md`.
+
 ## Uruchomienie
 
 Z katalogu projektu, Python 3.12, Node (do testów JavaScript):
@@ -57,6 +59,10 @@ oddzielnie z syntetycznym transportem; ten profil nie uruchamia ich wysyłki.
    dostępne saldo 60 zł. Odśwież stronę i sprawdź historię. Nie ma przelewu.
 6. Administrator: przegląd profilu sprzedawcy, zgłoszenia, miesięczny raport
    finansowy i CSV. Dokładny scenariusz rozliczeń: `DEMO_Z_DANYMI.md`.
+   W zakładce wypłat zakończ testowy wniosek sprzedawcy: rezerwa znika,
+   dostępne saldo pozostaje 60 zł, a historia zachowuje 38 zł netto i 2 zł
+   prowizji. Osobny nowy wniosek anuluj jako właściciel: cała rezerwa wraca
+   do salda bez prowizji. Nie następuje przelew bankowy.
 7. Wyloguj każdą rolę, sprawdź usunięcie prywatnych danych z widoku. Powtórz
    na telefonicznym rozmiarze okna i po obróceniu; bez poziomego przewijania.
 
@@ -69,11 +75,17 @@ API nie pozwala klientowi przysłać własnej prowizji. Ponowienie tego samego
 wniosku nie powiela rezerwacji. Kontrola obejmuje również starsze zapisy
 salda w historii, a nie tylko sumę końcową.
 
-`withdrawal_preview` jest wyceną według stałej polityki tej wersji, obliczaną
-również dla wcześniej oczekujących wniosków na podstawie roli konta. Nie jest
-niezmiennym, zaksięgowanym potrąceniem. Nie zmieniono schematu ani starych kwot.
-Przed zmianą taryfy lub płatnościami rzeczywistymi trzeba zapisywać uzgodnione
-warunki operacji w niezmiennej księdze i rozliczać je zdarzeniami operatora.
+Wnioski mają niezmienny zapis warunków: rola, kwota brutto, stawka, prowizja
+i netto. Zmiana roli nie przelicza zapisanej prowizji. Starsze wnioski otrzymują
+warunki podczas migracji według dotychczasowej polityki. Anulowanie i zakończenie
+są osobnymi niezmiennymi zdarzeniami; tylko jeden stan końcowy może wygrać.
+To nadal symulacja, bez zaksięgowania potrącenia przez operatora.
+Opis migracji i obsługi: `WYPLATY_DEMO_ETAP2_2026-11-10.md`.
+
+Przy utracie odpowiedzi operacji użyj przycisku jej sprawdzenia. Serwer zwraca
+istniejący wynik albo trwale blokuje stary klucz przed spóźnionym księgowaniem.
+Dopiero potem podaj nową kwotę. Nie czyść samodzielnie pamięci karty, aby obchodzić
+to sprawdzenie. Szczegóły: `ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`.
 
 Portfel pozostaje osobnym podglądem: nie opłaca zakupów, nie otrzymuje przychodów
 z zamówień i nie księguje zwrotów zamówień. Te scenariusze działają w istniejącej

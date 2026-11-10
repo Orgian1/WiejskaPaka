@@ -5,12 +5,9 @@ APP = (ROOT / "web/app.js").read_text(encoding="utf-8")
 DASH = (ROOT / "web/dashboard.js").read_text(encoding="utf-8")
 
 
-def test_ready_action_prevents_double_submission_and_stale_refresh():
-    segment = APP.split("'Gotowe do odbioru (test)'", 1)[1].split("box.append(b)", 1)[0]
-    assert "if(b.disabled)return" in segment
-    assert "b.disabled=true" in segment
-    assert "finally{b.disabled=false}" in segment
-    assert "if(epoch!==sessionEpoch)return" in segment
+def test_pickup_does_not_require_a_manual_seller_ready_button():
+    assert "'Gotowe do odbioru (test)'" not in APP
+    assert "'Klient sprawdził towar'" not in APP
 
 
 def test_dispatch_action_prevents_double_submission():

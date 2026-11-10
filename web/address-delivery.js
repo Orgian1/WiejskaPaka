@@ -60,7 +60,7 @@ async function loadAddressDeliveryViews(before=null){
       for(const item of data.items.filter(x=>(x.shipment_id||String(x.order_id))===key)){
         card.append(node('p',`${item.product_name||'Produkt'} • ilość: ${item.quantity} • ${money(item.total_grosze)}`));
       }
-      if(actor==='rolnik'&&request.state==='pending'&&request.status==='oczekuje_na_platnosc_testowa'){
+      if(actor==='rolnik'&&request.state==='pending'&&request.status==='oczekuje_na_platnosc_testowa'&&request.proposal?.state!=='pending'){
         const buttons=[];
         for(const [decision,label] of [['accepted','Akceptuję dostawę'],['declined','Odrzucam dostawę']]){
           const button=node('button',label);button.type='button';buttons.push(button);
@@ -71,7 +71,7 @@ async function loadAddressDeliveryViews(before=null){
           });card.append(button);
         }
       }
-      host.append(card);
+      appendDeliveryNegotiation(card,request,actor,current);host.append(card);
     }
     if(!data.items.length)host.append(node('p','Brak zamówień z terminem dostawy na adres.'));
     el('delivery-view-status').textContent='';
@@ -86,6 +86,35 @@ async function loadAddressDeliveryViews(before=null){
   }catch(error){if(current())el('delivery-view-status').textContent='Nie udało się pobrać dostaw. Odśwież zakładkę.';}
 }
 function coordinateTime(value){return String(Math.trunc(value/60)).padStart(2,'0')+':'+String(value%60).padStart(2,'0')}
+function appendDeliveryNegotiation(card, request, actor, current){
+  if(request.state!=='pending'||request.status!=='oczekuje_na_platnosc_testowa')return;
+  const proposal=request.proposal;
+  if(proposal?.state==='pending'){
+    card.append(node('p',`Propozycja sprzedawcy: ${proposal.delivery_date}, ${coordinateTime(proposal.start_minute)}–${coordinateTime(proposal.end_minute)}. Oczekuje na decyzję klienta.`));
+    if(actor==='klient')for(const [decision,label] of [['accepted','Przyjmuję nowy termin'],['declined','Nie pasuje mi nowy termin']]){
+      const button=node('button',label);button.type='button';
+      button.onclick=()=>act(()=>singleWrite('proposal:'+request.order_id,button,async()=>{
+        if(!current())return;
+        await api(`/address-delivery/requests/${request.order_id}/proposal-decision`,'POST',{decision,revision:request.revision});
+        if(current()){await loadAddressDeliveryViews();await loadOrders();}
+      }));card.append(button);
+    }
+  }
+  if(actor!=='rolnik')return;
+  const area=node('details');area.append(node('summary','Zaproponuj inny termin dostawy'));
+  const form=node('form'),day=node('input'),from=node('input'),to=node('input');
+  day.type='date';day.required=true;day.value=request.delivery_date;
+  from.type='time';from.required=true;from.value=coordinateTime(request.agreed_from);
+  to.type='time';to.required=true;to.value=coordinateTime(request.agreed_to);
+  form.append(deliveryLabel('Proponowana data dostawy',day),deliveryLabel('Proponowana dostawa od godziny',from),deliveryLabel('Proponowana dostawa do godziny',to));
+  const send=node('button','Wyślij propozycję terminu');send.type='submit';
+  form.append(send,node('p','Klient musi zaakceptować nowy termin. Propozycja nie przedłuża 30-minutowej rezerwacji.'));
+  form.onsubmit=event=>{event.preventDefault();act(()=>singleWrite('propose:'+request.order_id,send,async()=>{
+    if(!current())return;
+    await api(`/address-delivery/requests/${request.order_id}/proposals`,'POST',{revision:request.revision,delivery_date:day.value,from_time:from.value,to_time:to.value});
+    if(current())await loadAddressDeliveryViews();
+  }));};area.append(form);card.append(area);
+}
 async function initializeAddressDelivery(){
   if(!el('address-delivery-panel'))return;
   try{const r=await fetch('/address-delivery/config',{cache:'no-store'});if(!r.ok||(await r.json()).enabled!==true)return;}catch{return;}

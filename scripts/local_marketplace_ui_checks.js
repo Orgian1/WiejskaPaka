@@ -29,6 +29,18 @@ function env(){
 async function main(name){
  const e=env(),{context:c,el,run}=e;
  switch(name){
+ case 'geolocation_retries_and_explains_windows_failure':{
+  el('nearby-geolocate').onclick();
+  e.geoCalls[0][1]({code:2});assert.equal(e.geoCalls.length,2);
+  assert.equal(e.geoCalls[1][2].enableHighAccuracy,true);
+  e.geoCalls[1][1]({code:2});assert.match(el('nearby-status').textContent,/Windows/);
+  assert.equal(el('nearby-geolocate').disabled,false);break;}
+ case 'geolocation_stale_error_never_retries_after_logout':{
+  el('nearby-geolocate').onclick();c.sessionEpoch++;
+  e.geoCalls[0][1]({code:2});assert.equal(e.geoCalls.length,1);break;}
+ case 'geolocation_insecure_context_explains_https':{
+  c.isSecureContext=false;el('nearby-geolocate').onclick();
+  assert.equal(e.geoCalls.length,0);assert.match(el('nearby-status').textContent,/HTTPS/);break;}
  case 'coordinate_precision':
   assert.equal(run("coordinateE6('-0,000001',90)"),-1);assert.equal(run("coordinateE6('+180.000000',180)"),180000000);
   assert.equal(run("coordinateE6('52,229676',90)"),52229676);assert.equal(run('coordinateText(-1)'),'-0,000001');

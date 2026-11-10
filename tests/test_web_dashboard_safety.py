@@ -20,5 +20,5 @@ def test_courier_confirm_only_while_dispatched():
 def test_farmer_pin_validation_before_request():
     source = (ROOT / 'web/app.js').read_text()
     assert "if(!/^\\d{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr')" in source
-    assert "if(!checked.checked)throw Error('Najpierw klient musi sprawdzić produkty')" in source
+    assert "if(!checked.checked)throw Error('Najpierw klient musi sprawdzić produkty')" not in source
     assert "b.disabled=true;let d;try{d=await api(`/orders/${o.id}/confirm`" in source

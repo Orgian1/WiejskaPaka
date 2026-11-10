@@ -76,4 +76,33 @@ sprawdzonej procedury, po zabezpieczeniu stanu po awarii.
 
 ## Weryfikacja
 
-Wyniki zostaną zapisane po zakończeniu testów dla tego pakietu.
+**Wszystkie 5/5 bramek CI zakończone sukcesem.**
+
+Kod: `36c85671fc27232cdb41abc2819194734e4bd96c`, PR #52.
+CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/42765174057.
+
+| Zestaw | Wynik |
+| --- | --- |
+| Celowane testy ostatniej rewizji | 37 PASS, 0 FAIL, 0 SKIP |
+| PostgreSQL 16 | 90 PASS, 0 FAIL, 0 SKIP |
+| PostgreSQL 17 | 90 PASS, 0 FAIL, 0 SKIP |
+| Szybki Windows | 80 PASS, 0 FAIL, 0 SKIP |
+| Chromium | 68 PASS, 0 FAIL, 0 SKIP + HTTP na pięciu rozmiarach |
+| Pełny Windows | 4617 PASS, 0 FAIL, 260 SKIP; 4877 przypadków, brak timeoutów i niekompletnych modułów |
+| Lokalny Linux | 4731 PASS, 53 błędy startu Chromium, 93 SKIP; 4877 przypadków, 384 moduły |
+
+Lokalny przebieg nie jest oznaczony jako sukces: wszystkie 53 błędy z 15 modułów
+wynikają z blokady systemowego socketu Chromium (`Operation not permitted`).
+Rzeczywiste testy przeglądarkowe wykonano w CI bez błędów. Pominięcia obejmują
+m.in. brak lokalnego PostgreSQL, sprawdzonego oddzielnie na wersjach 16 i 17.
+Nie sumować zestawów jako liczby różnych testów, ponieważ częściowo się pokrywają.
+
+Dodatkowa regresja wykrywa zduplikowane rewizje między starym dziennikiem
+operacji a nowym dziennikiem decyzji, także przy zgodnych kwotach i licznikach.
+Dotychczasowe testy rejestracji, logowania, zakupów, dostaw, PIN-ów, zwrotów,
+poczty, uprawnień i interfejsu uruchomiono w pełnej regresji.
+Raporty maszynowe: `audits/wallet_lifecycle_2026-11-10/`.
+Końcowy zapis raportów zmienia wyłącznie dokumenty i JSON, bez zmiany
+przetestowanego kodu. Gałąź `integration/demo-main-20261110` zawiera próbne
+połączenie z historią main (commit `09d6aef0374a4392e0a15e0c2acb5a01e465b2b6`),
+z identycznym drzewem kodu. Main i gałęzie wcześniejszych PR-ów nie zostały zmienione.

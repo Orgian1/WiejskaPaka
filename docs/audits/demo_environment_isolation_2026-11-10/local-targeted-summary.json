@@ -1,0 +1,45 @@
+{
+  "runs": [
+    {
+      "code_commit": "5a12b650566e30494b6f747ddfa0eff6a26cefef",
+      "passed": 59,
+      "failed": 0,
+      "skipped": 0,
+      "modules": [
+        "tests.test_browser_backend_bridge",
+        "tests.test_crash_checkout_http",
+        "tests.test_demo_journey_script",
+        "tests.test_demo_readiness",
+        "tests.test_full_local_demo",
+        "tests.test_header_auth_actions",
+        "tests.test_http_checkout_e2e_b5941",
+        "tests.test_http_multi_seller_b6061",
+        "tests.test_local_marketplace_http",
+        "tests.test_mobile_browser_runner",
+        "tests.test_phone_demo_launcher",
+        "tests.test_purchase_record_http_restart",
+        "tests.test_purchase_records_http",
+        "tests.test_queued_reset_http",
+        "tests.test_sample_demo",
+        "tests.test_sample_demo_launcher"
+      ]
+    },
+    {
+      "code_commit": "064ab859412015f0f6d58fc2fb059d75ec8d47ed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "modules": [
+        "tests.test_email_verification_http",
+        "tests.test_order_mail_capture_http",
+        "tests.test_purchase_record_http_restart",
+        "tests.test_verified_email_checkout_http"
+      ]
+    }
+  ],
+  "independent_readiness_command": {
+    "command": "python -m scripts.check_demo_readiness",
+    "exit_code": 0,
+    "code_commit": "5a12b650566e30494b6f747ddfa0eff6a26cefef"
+  }
+}

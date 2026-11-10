@@ -9,13 +9,20 @@ import pytest
 from scripts.run_phone_demo import main
 
 
-def test_sample_flag_prepares_new_database_and_cleans_it_after_server_exit(capsys):
+def test_sample_flag_prepares_new_database_and_cleans_it_after_server_exit(capsys, monkeypatch):
+    for key, value in {'WP_ENABLE_ORDER_SMTP': '1', 'WP_ENABLE_SMTP': '1',
+                       'WP_ENABLE_EMAIL_VERIFICATION': '1',
+                       'WP_MAIL_QUEUE_KEYS_FILE': '/unavailable/mail-key',
+                       'PAYU_CLIENT_SECRET': 'private-synthetic'}.items():
+        monkeypatch.setenv(key, value)
     seen=[]
     def server(command,**kwargs):
         env=kwargs['env'];database=Path(env['WIEJSKAPAKA_DB']);seen.append(database)
         assert database.is_file() and database.parent.name=='sample'
         assert env['WP_ENABLE_TEST_PAYMENTS']=='1'
         assert env['WP_ENABLE_TEST_PASSWORD_RESET']=='1'
+        assert 'WP_ENABLE_ORDER_SMTP' not in env
+        assert 'PAYU_CLIENT_SECRET' not in env
         assert command[command.index('--host')+1]=='127.0.0.1'
         with closing(sqlite3.connect(database)) as con:
             assert con.execute('SELECT COUNT(*) FROM users').fetchone()[0]==4

@@ -2,13 +2,17 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
+Stan końcowy demo, wyniki i kontrola właściciela:
+`docs/ODBIOR_KONCOWY_DEMO_2026-11-10.md`.
+
 Bieżąca odporność portfela: `docs/ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`.
 Połączenie zmian czatu i Work: `docs/INTEGRACJA_CZAT_WORK_2026-11-10.md`.
+Izolacja wszystkich trybów lokalnych: `docs/IZOLACJA_DEMO_2026-11-10.md`.
 
 Poprzedni pakiet portfela: `docs/WYPLATY_DEMO_ETAP2_2026-11-10.md`.
 
 Aktualna instrukcja demo: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
-Raport pakietu: `docs/RAPORT_DEMO_BEZ_PAYU_2026-11-10.md`.
+Raport pierwszego pakietu demo (#51): `docs/RAPORT_DEMO_BEZ_PAYU_2026-11-10.md`.
 Wdrożenie z kopią i rollbackiem: `docs/WDROZENIE_I_WYCOFANIE_DEMO_2026-11-10.md`.
 
 Wcześniejsze punkty kontrolne:
@@ -30,10 +34,11 @@ Wznowienie, połączenie prac z obu czatów i stan poprzedniego pakietu:
 `docs/RAPORT_WZNOWIENIA_2026-10-18.md`.
 
 Bieżący pakiet zarządzania sesjami opisuje `docs/ZARZADZANIE_SESJAMI.md`.
-Dowody aktualnego wydania: `docs/RAPORT_SESJE_2026-10-16.md` oraz
+Historyczne dowody pakietu sesji: `docs/RAPORT_SESJE_2026-10-16.md` oraz
 `audit_sessions_final_*.json`. Poprzednie pakiety bezpieczeństwa opisują
 `docs/ODZYSKIWANIE_PIN.md` i `docs/BEZPIECZENSTWO_KONTA.md`.
-Aktualne poprawki są rozwijane na gałęzi GitHub `wiejskapaka-import`.
+Aktualna gałąź demo: `preview/demo-environment-isolation-20261110` (PR #54).
+Historyczna gałąź importu: `wiejskapaka-import`.
 Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
 `docs/SYNCHRONIZACJA_GITHUB_2026-10-17.md`.
 Natywne bramy Windows/PostgreSQL/Chromium: `docs/NATYWNE_TESTY_CI.md`.
@@ -57,7 +62,8 @@ Starsze raporty i nazwy pakietów w archiwum są historią projektu, a nie dowod
 zaliczenia testów obecnego kodu. Numeracja B nie jest liczbą wykonanych testów.
 
 **To środowisko demonstracyjne. Nie jest gotowe do rzeczywistych płatności.**
-Nie podłączono Neon, domeny, hostingu ani produkcyjnego operatora płatności.
+W tej sesji nie wdrażano zmian na VPS ani nie podłączano rzeczywistych płatności.
+Aktualny stan hostingu i usług zewnętrznych wymaga odczytu na właściwym serwerze.
 Tryb produkcyjny blokuje `backend/deployment_guard.py`.
 
 ## Start lokalny

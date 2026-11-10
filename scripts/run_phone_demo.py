@@ -12,18 +12,10 @@ import subprocess
 import sys
 import tempfile
 
-SENSITIVE_DATABASE_KEYS = (
-    'WP_ENABLE_ORDER_MAIL_QUEUE', 'WP_ENABLE_EMAIL_VERIFICATION', 'WP_ENABLE_QUEUED_PASSWORD_RESET', 'WP_ENABLE_MAIL_QUEUE', 'WP_MAIL_QUEUE_KEYS_FILE',
-    'NEON_DATABASE_URL', 'WP_ENABLE_TEST_PAYMENTS', 'DATABASE_URL', 'WP_TEST_DATABASE_URL', 'WP_TEST_POSTGRES_DSN', 'WP_CHECKOUT_KEY_FILE',
-    'WP_ALLOW_REMOTE_DISPOSABLE_TEST_DB', 'WP_ENABLE_TEST_PASSWORD_RESET', 'WP_ENABLE_PG_TEST_PASSWORD_RESET', 'WP_TEST_RESET_OUTBOX',
-)
-
-
 def demo_environment(source, database):
-    """Nie przekazuj do serwera demonstracyjnego konfiguracji PostgreSQL."""
-    env = dict(source)
-    for key in SENSITIVE_DATABASE_KEYS:
-        env.pop(key, None)
+    """Keep runtime and local feature opt-ins; never inherit external services."""
+    env = {key: source[key] for key in (*DEMO_RUNTIME_KEYS, *FULL_DEMO_FLAGS)
+           if key in source}
     env['WIEJSKAPAKA_DB'] = str(database)
     # Demo nie może odziedziczyć przypadkowego trybu produkcyjnego.
     env['WIEJSKAPAKA_ENV'] = 'development'

@@ -188,5 +188,10 @@
     "file": "optional_wallet_preview.sql",
     "sha256": "5cc1d0a7976be5a9849a3844bc139861f2f61aea1f88ff6d1c70f38a26faa0d0",
     "bytes": 1355
+  },
+  {
+    "file": "optional_wallet_withdrawals.sql",
+    "sha256": "b929b07f2764408d4769a5ef2182f0bc135728454b1e720e0f8b46318949565a",
+    "bytes": 1996
   }
 ]

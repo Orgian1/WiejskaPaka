@@ -9,7 +9,7 @@ import os
 import secrets
 import time
 from argon2 import PasswordHasher
-from fastapi import Depends,Header,HTTPException
+from fastapi import Depends,Header,HTTPException,Query
 from pydantic import BaseModel,Field
 from backend.order_mail_outbox import _postgres
 from backend.invoicing import calculate_commission_grosze
@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS wallet_preview_entries (
  UNIQUE(user_id,request_key)
 );
 '''
+
+from backend import wallet_withdrawals
+SCHEMA_SQLITE+=wallet_withdrawals.SCHEMA_SQLITE
 
 
 class AmountIn(BaseModel):
@@ -107,19 +110,30 @@ def withdrawal_terms(amount_grosze,role):
 
 
 def snapshot(con,user_id):
-    row=con.execute('SELECT available_grosze,reserved_grosze,pin_hash FROM wallet_preview_accounts WHERE user_id=?',(user_id,)).fetchone()
-    entries=con.execute('SELECT id,kind,state,amount_grosze,available_after,reserved_after,created_at '
-                        'FROM wallet_preview_entries WHERE user_id=? ORDER BY revision DESC LIMIT 50',(user_id,)).fetchall()
-    role=con.execute('SELECT role FROM users WHERE id=?',(user_id,)).fetchone()['role']
+    # One statement keeps balances, frozen terms and terminal states coherent.
+    rows=con.execute('''SELECT u.role,a.available_grosze,a.reserved_grosze,a.pin_hash,
+        e.id,e.kind,e.state,e.amount_grosze,e.available_after,e.reserved_after,e.created_at,
+        t.withdrawal_id,t.gross_grosze,t.fee_basis_points,t.fee_grosze,t.net_grosze,
+        r.state AS resolved_state,r.created_at AS resolved_at
+        FROM users u LEFT JOIN wallet_preview_accounts a ON a.user_id=u.id
+        LEFT JOIN wallet_preview_entries e ON e.user_id=u.id
+        LEFT JOIN wallet_preview_terms t ON t.withdrawal_id=e.id
+        LEFT JOIN wallet_preview_resolutions r ON r.withdrawal_id=e.id
+        WHERE u.id=? ORDER BY e.revision DESC LIMIT 50''',(user_id,)).fetchall()
+    row=rows[0]
     history=[]
-    for entry in entries:
-        item=dict(entry)
-        if item['kind']=='withdrawal':item['withdrawal_preview']=withdrawal_terms(item['amount_grosze'],role)
+    for entry in rows:
+        if entry['id'] is None:continue
+        item={key:entry[key] for key in ('id','kind','state','amount_grosze','available_after','reserved_after','created_at')}
+        if item['kind']=='withdrawal':
+            if entry['withdrawal_id'] is None:raise HTTPException(409,'Portfel wymaga sprawdzenia.')
+            item['withdrawal_preview']={key:entry[key] for key in ('gross_grosze','fee_basis_points','fee_grosze','net_grosze')}
+            if entry['resolved_state']:item.update(state=entry['resolved_state'],resolved_at=entry['resolved_at'])
         history.append(item)
-    return {'withdrawal_fee_basis_points':500 if role=='rolnik' else 0,
-            'available_grosze':row['available_grosze'] if row else 0,
-            'reserved_grosze':row['reserved_grosze'] if row else 0,
-            'pin_configured':bool(row and row['pin_hash']), 'entries':history}
+    return {'withdrawal_fee_basis_points':500 if row['role']=='rolnik' else 0,
+            'available_grosze':row['available_grosze'] or 0,
+            'reserved_grosze':row['reserved_grosze'] or 0,
+            'pin_configured':bool(row['pin_hash']), 'entries':history}
 
 
 def move(con,user,payload,kind,*,now):
@@ -138,7 +152,8 @@ def move(con,user,payload,kind,*,now):
                          (user['id'],payload.request_key)).fetchone()
     if previous:
         if previous['payload_hash']!=fingerprint:return 409,{'detail':'Identyfikator operacji został już użyty z inną kwotą lub rodzajem operacji.'}
-        return 200,{'id':previous['id'],'state':previous['state'],**({'withdrawal_preview':withdrawal_terms(payload.amount_grosze,user['role'])} if kind=='withdrawal' else {})}
+        resolution=con.execute('SELECT state FROM wallet_preview_resolutions WHERE withdrawal_id=?',(previous['id'],)).fetchone()
+        return 200,{'id':previous['id'],'state':resolution['state'] if resolution else previous['state'],**({'withdrawal_preview':wallet_withdrawals.terms(con,previous['id'])} if kind=='withdrawal' else {})}
     available=account['available_grosze'];reserved=account['reserved_grosze']
     if kind=='topup':
         if available+reserved+payload.amount_grosze>MAX_BALANCE:return 409,{'detail':'Przekroczono limit salda portfela.'}
@@ -150,6 +165,7 @@ def move(con,user,payload,kind,*,now):
     con.execute('UPDATE wallet_preview_accounts SET available_grosze=?,reserved_grosze=?,revision=revision+1 WHERE user_id=?',(available,reserved,user['id']))
     con.execute('INSERT INTO wallet_preview_entries VALUES(?,?,?,?,?,?,?,?,?,?,?)',
         (operation_id,user['id'],account['revision']+1,payload.request_key,fingerprint,kind,state,payload.amount_grosze,available,reserved,now))
+    if kind=='withdrawal':wallet_withdrawals.freeze(con,operation_id,user['role'],withdrawal_terms(payload.amount_grosze,user['role']))
     return 201,{'id':operation_id,'state':state,**({'withdrawal_preview':withdrawal_terms(payload.amount_grosze,user['role'])} if kind=='withdrawal' else {})}
 
 
@@ -158,8 +174,10 @@ def install(app,db,write_db,current_user,env,database_url):
     active=enabled(env)
     if active:
         with db() as con:
-            if not database_url:con.executescript(SCHEMA_SQLITE)
-            for table in ('wallet_preview_accounts','wallet_preview_entries'):con.execute('SELECT * FROM '+table+' LIMIT 0')
+            if not database_url:
+                con.executescript(SCHEMA_SQLITE)
+                con.execute(wallet_withdrawals.BACKFILL)
+            for table in ('wallet_preview_accounts','wallet_preview_entries','wallet_preview_terms','wallet_preview_resolutions'):con.execute('SELECT * FROM '+table+' LIMIT 0')
     def allow(user):
         if not active:raise HTTPException(404,'Portfel jest niedostępny.')
         if user['role'] not in ('klient','rolnik'):raise HTTPException(403,'Brak dostępu do portfela.')
@@ -196,4 +214,23 @@ def install(app,db,write_db,current_user,env,database_url):
     def withdraw(payload:WithdrawalIn,user=Depends(current_user),authorization:str|None=Header(default=None)):
         allow(user)
         with write_db(user,authorization,('klient','rolnik')) as con:status,result=move(con,user,payload,'withdrawal',now=int(time.time()))
+        return reply(status,result)
+
+    @app.post('/wallet/withdrawals/{withdrawal_id}/cancel-test')
+    def cancel_withdrawal(withdrawal_id:str,user=Depends(current_user),authorization:str|None=Header(default=None)):
+        allow(user)
+        with write_db(user,authorization,('klient','rolnik')) as con:
+            status,result=wallet_withdrawals.resolve(con,user,withdrawal_id,'cancelled_test',now=int(time.time()))
+        return reply(status,result)
+    @app.get('/admin/wallet/withdrawals-test')
+    def pending_withdrawals(limit:int=Query(default=50,ge=1,le=100),offset:int=Query(default=0,ge=0,le=10000),user=Depends(current_user)):
+        if not active:raise HTTPException(404,'Portfel jest niedostępny.')
+        if user['role']!='admin':raise HTTPException(403,'Brak uprawnień.')
+        with db() as con:return wallet_withdrawals.pending(con,limit,offset)
+    @app.post('/admin/wallet/withdrawals/{withdrawal_id}/complete-test')
+    def complete_withdrawal(withdrawal_id:str,user=Depends(current_user),authorization:str|None=Header(default=None)):
+        if not active:raise HTTPException(404,'Portfel jest niedostępny.')
+        if user['role']!='admin':raise HTTPException(403,'Brak uprawnień.')
+        with write_db(user,authorization,('admin',)) as con:
+            status,result=wallet_withdrawals.resolve(con,user,withdrawal_id,'completed_test',now=int(time.time()))
         return reply(status,result)

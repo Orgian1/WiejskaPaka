@@ -76,3 +76,14 @@ jest zapisywany na gałęzi #51 jako zmiana samych dokumentów.
 | #51 | `preview/demo-completion-20261110` | `fix/header-auth-links-20261109` |
 
 Nie wykonano scalania ani zamykania wcześniejszych PR-ów. Dokument nie potwierdza stanu VPS.
+
+
+## Aktualizacja etapu 2 — portfel
+
+PR #52: `preview/wallet-withdrawal-lifecycle-20261110`, baza
+`preview/demo-completion-20261110`. Kod `36c8567` zawiera niezmienne warunki
+wniosków i decyzje końcowe; wymaga nowej opcjonalnej migracji.
+Próbna integracja z historią main ma teraz commit
+`09d6aef0374a4392e0a15e0c2acb5a01e465b2b6`, z identycznym drzewem kodu #52.
+Wcześniejszy zapis `3e92513` pozostaje jej przodkiem. Main i stare gałęzie PR-ów
+pozostają bez zmian. Wyniki i zasady rollbacku: `WYPLATY_DEMO_ETAP2_2026-11-10.md`.

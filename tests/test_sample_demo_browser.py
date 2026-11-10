@@ -130,7 +130,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 shipment=next(s for s in shipments if s['fulfillment']==fulfillment)
                 sid=shipment['id'];sign_in(role);area=card(sid)
                 area.locator('input[placeholder="PIN klienta"]').fill(pins[sid])
-                area.locator('input[type=checkbox]').check()
+                assert area.locator('input[type=checkbox]').count()==0
                 with page.expect_response(f'**/shipments/{sid}/confirm') as response:
                     area.get_by_role('button',name=label,exact=True).click()
                 assert response.value.status==200 and response.value.json()['confirmed']

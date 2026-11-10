@@ -18,4 +18,6 @@ def test_extended_bridge_checks_pin_security_and_roles():
     assert "login('rolnik')" in code
     assert 'pozostało prób: 4' in code
     assert 'reused.status_code == 409' in code
-    assert "get_by_role('checkbox').check()" in code
+    assert "get_by_role('checkbox').check()" not in code
+    assert "os.environ['WP_ENABLE_AUTOMATIC_PICKUP']='1'" in code
+    assert 'paid_pickup.status_code==200' in code

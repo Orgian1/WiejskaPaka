@@ -233,7 +233,9 @@ def register_routes(app, db, order_write_db, current_user, record_event, *, post
                 LEFT JOIN shipment_order_links lk ON lk.order_id=o.id
                 LEFT JOIN order_purchase_records pr ON pr.order_id=o.id WHERE o.''' + key + '=? AND '+group_expression+
                 '=? ORDER BY o.id DESC', (user['id'], group['delivery_group'])).fetchall())
-            return {'items': [dict(row) for row in rows],
+            from backend.delivery_proposals import latest
+            items=[{**dict(row),'proposal':latest(con,row['order_id'],row['revision'])} for row in rows]
+            return {'items': items,
                     'next_before': grouped[19]['last_order'] if len(grouped)>20 else None}
 
     @app.post('/address-delivery/requests/{order_id}/decision')
@@ -255,6 +257,9 @@ def register_routes(app, db, order_write_db, current_user, record_event, *, post
                 return {'state': payload.decision, 'already_processed': True}
             if any(p['state'] != 'pending' or p['revision'] != payload.revision for p in preferences):
                 raise HTTPException(409, 'Decyzja została już zmieniona; odśwież zakładkę')
+            from backend.delivery_proposals import latest
+            if any((latest(con,o['id'],p['revision']) or {}).get('state')=='pending' for o,p in zip(rows,preferences)):
+                raise HTTPException(409, 'Klient musi najpierw odpowiedzieć na propozycję terminu')
             from backend.inventory_reservations import payment_deadline_passed
             from backend.payment_store import get_payment
             stamp = datetime.now(timezone.utc)

@@ -1,0 +1,26 @@
+{
+  "code_commit": "3636e653635af39bd576c6dee72088a74d85dab1",
+  "tests": {
+    "total": 115,
+    "passed": 115,
+    "failed": 0,
+    "skipped": 0
+  },
+  "modules": [
+    "tests.test_address_delivery_http",
+    "tests.test_address_search_ui",
+    "tests.test_b11305_migration_manifest",
+    "tests.test_b6961_auth_dependency_inventory",
+    "tests.test_b7321_anonymous_route_http",
+    "tests.test_bridge_b41_b45",
+    "tests.test_browser_navigation_contract_b25",
+    "tests.test_full_local_demo",
+    "tests.test_local_marketplace_ui",
+    "tests.test_market_preferences_ui",
+    "tests.test_market_review",
+    "tests.test_transaction_session_boundaries",
+    "tests.test_web_courier_confirmation",
+    "tests.test_web_dashboard_safety",
+    "tests.test_web_farmer_actions_doubleclick"
+  ]
+}

@@ -25,7 +25,7 @@ async function findAddress(){
         if(serial!==addressSerial||epoch!==sessionEpoch)return;
         invalidateNearby();el('nearby-lat').value=coordinateText(place.latitude_e6);el('nearby-lon').value=coordinateText(place.longitude_e6);
         el('address-status').textContent='Wybrane miejsce: '+place.label+'. '+place.notice;
-        el('address-results').replaceChildren();
+        el('address-results').replaceChildren();act(()=>searchNearby());
       };
       el('address-results').append(button);
     }

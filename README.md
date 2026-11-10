@@ -9,6 +9,8 @@ Bieżąca odporność portfela: `docs/ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.
 Połączenie zmian czatu i Work: `docs/INTEGRACJA_CZAT_WORK_2026-11-10.md`.
 Izolacja wszystkich trybów lokalnych: `docs/IZOLACJA_DEMO_2026-11-10.md`.
 Formularz „Kontakt” i „Zgłoś problem” w stopce: `docs/KONTAKT_I_ZGLOS_PROBLEM.md`.
+Poprawki po ręcznym odbiorze — lokalizacja, ulubione i dostawy:
+`docs/ODBIOR_LOKALIZACJA_ULUBIONE_DOSTAWY_2026-11-10.md`.
 
 Poprzedni pakiet portfela: `docs/WYPLATY_DEMO_ETAP2_2026-11-10.md`.
 
@@ -38,7 +40,7 @@ Bieżący pakiet zarządzania sesjami opisuje `docs/ZARZADZANIE_SESJAMI.md`.
 Historyczne dowody pakietu sesji: `docs/RAPORT_SESJE_2026-10-16.md` oraz
 `audit_sessions_final_*.json`. Poprzednie pakiety bezpieczeństwa opisują
 `docs/ODZYSKIWANIE_PIN.md` i `docs/BEZPIECZENSTWO_KONTA.md`.
-Aktualna gałąź demo: `preview/footer-contact-form-20261110` (PR #55).
+Aktualna gałąź demo: `preview/location-favorites-delivery-20261110` (PR #56).
 Historyczna gałąź importu: `wiejskapaka-import`.
 Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:
 `docs/SYNCHRONIZACJA_GITHUB_2026-10-17.md`.

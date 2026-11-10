@@ -227,10 +227,9 @@ async function loadDashboard() {
         }));
       }else{
         const pin=node('input');pin.type='text';pin.inputMode='numeric';pin.maxLength=6;pin.autocomplete='off';pin.placeholder='PIN klienta';
-        const checked=node('input');checked.type='checkbox';const label=node('label','Klient sprawdził produkty');label.prepend(checked);
-        c.append(pin,label,dashboardButton('Potwierdź odbiór przesyłki',async()=>{
-          if(!/^\d{6}$/.test(pin.value)||!checked.checked)throw Error('Sprawdź PIN i potwierdzenie kontroli towaru');
-          try{const result=await api(`/shipments/${encodeURIComponent(shipment.id)}/confirm`,'POST',{pin:pin.value,checked_goods:true});
+        c.append(pin,dashboardButton('Potwierdź odbiór przesyłki',async()=>{
+          if(!/^\d{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr');
+          try{const result=await api(`/shipments/${encodeURIComponent(shipment.id)}/confirm`,'POST',{pin:pin.value});
             if(!active())return;if(result.confirmed){msg('Odebrano całą przesyłkę');await loadDashboard()}else msg(`Błędny PIN, pozostało prób: ${result.remaining_attempts}`);
           }finally{pin.value=''}
         }));
@@ -273,16 +272,14 @@ async function loadDashboard() {
       const c=dashboardCard(`Przesyłka ${shipment.shipment_id}`,[`Status: ${shipment.status}`,`Produkty: ${shipment.item_count}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Razem: ${money(shipment.total_grosze)}`]);
       if(shipment.status==='w_drodze_testowo'){
         const pin=node('input');pin.type='text';pin.inputMode='numeric';pin.autocomplete='off';pin.maxLength=6;pin.placeholder='PIN klienta';
-        const checked=node('input');checked.type='checkbox';const label=node('label','Klient sprawdził wszystkie produkty');label.prepend(checked);
         const confirmButton=dashboardButton('Potwierdź całą przesyłkę PIN-em',async()=>{
           if(confirmButton.disabled)return;
           if(!/^\d{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr');
-          if(!checked.checked)throw Error('Klient musi najpierw sprawdzić produkty');
-          confirmButton.disabled=true;try{const result=await api(`/shipments/${encodeURIComponent(shipment.shipment_id)}/confirm`,'POST',{pin:pin.value,checked_goods:true});
+          confirmButton.disabled=true;try{const result=await api(`/shipments/${encodeURIComponent(shipment.shipment_id)}/confirm`,'POST',{pin:pin.value});
             if(!active())return;if(result.confirmed){msg('Potwierdzono odbiór całej przesyłki');await loadDashboard()}
             else msg(`Błędny PIN; pozostało prób: ${result.remaining_attempts}`);
           }finally{pin.value='';confirmButton.disabled=false}
-        });c.append(pin,label,confirmButton);
+        });c.append(pin,confirmButton);
       }
       c.append(shipmentDetailsButton(shipment.shipment_id,c));
       box.append(c);

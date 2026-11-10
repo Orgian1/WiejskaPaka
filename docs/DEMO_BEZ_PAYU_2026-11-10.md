@@ -38,6 +38,10 @@ na adres i prywatny portfel. Fikcyjny sprzedawca ma login `gospodarstwo_demo`.
 Punkt ma datę obecności za siedem dni; dostawa ma zaakceptowane okno czasowe.
 Dwie przesyłki mają po dwa produkty, a dostawa kosztuje łącznie 5,01 zł.
 Profil nie dziedziczy konfiguracji baz, PayU, SMTP, kluczy ani workerów z otoczenia.
+Zwykły odbiór, po poprawnej rezerwacji towaru i udanej płatności testowej,
+automatycznie staje się gotowy do odbioru. W pełnym demo włączona jest flaga
+WP_ENABLE_AUTOMATIC_PICKUP=1. Nie trzeba ręcznego zatwierdzenia sprzedawcy
+ani zaznaczania checkboxa kontroli towaru; wydanie nadal wymaga jednorazowego PIN-u.
 Odzyskiwanie hasła używa jednorazowej lokalnej skrzynki, której ścieżkę pokazuje
 terminal. Potwierdzanie e-maila i wysyłka potwierdzeń zakupów są testowane
 oddzielnie z syntetycznym transportem; ten profil nie uruchamia ich wysyłki.
@@ -48,6 +52,8 @@ oddzielnie z syntetycznym transportem; ten profil nie uruchamia ich wysyłki.
 2. Klient: zaloguj się, przejrzyj dwie przesyłki, odzyskaj PIN przez hasło,
    sprawdź koszyk i zakup. Dla nowej dostawy wybierz termin i poczekaj na decyzję
    sprzedawcy przed płatnością testową. Jedna paczka ma jedną opłatę dostawy.
+   Sprzedawca może zamiast akceptacji zaproponować inną datę i zakres godzin;
+   klient przyjmuje lub odrzuca tę propozycję w zakładce dostaw.
 3. Sprzedawca: sprawdź produkty, jednostki, stan magazynu, zdjęcia, profil,
    login, daty w punkcie i okna dostaw. Zatwierdź nową dostawę w panelu.
 4. Odbiór: sprzedawca potwierdza przesyłkę odbiorową PIN-em klienta po sprawdzeniu
@@ -65,6 +71,13 @@ oddzielnie z syntetycznym transportem; ten profil nie uruchamia ich wysyłki.
    do salda bez prowizji. Nie następuje przelew bankowy.
 7. Wyloguj każdą rolę, sprawdź usunięcie prywatnych danych z widoku. Powtórz
    na telefonicznym rozmiarze okna i po obróceniu; bez poziomego przewijania.
+8. Klient: wybierz miejsce, wyszukaj produkty, dodaj ofertę serduszkiem i otwórz
+   „Ulubione”. Po ponownym zalogowaniu na tym samym urządzeniu „Blisko mnie”
+   użyje zapamiętanego miejsca. Sprawdź usuwanie ulubionego i czyszczenie lokalizacji.
+
+Lokalizacja i usługa mapowa mają granice opisane w
+`ODBIOR_LOKALIZACJA_ULUBIONE_DOSTAWY_2026-11-10.md`. Brak sygnału GPS lub zgody
+systemowej nie oznacza znalezienia położenia; aplikacja pokaże właściwy komunikat.
 
 ## Zasady portfela i granice demo
 

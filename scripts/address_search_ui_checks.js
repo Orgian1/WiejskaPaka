@@ -4,9 +4,9 @@ function element(){return {value:'',hidden:true,disabled:false,required:true,tex
   addEventListener(event,handler){this.listeners[event]=handler}}}
 const fields=new Map();
 const el=id=>{if(!fields.has(id))fields.set(id,element());return fields.get(id)};
-const requests=[];
+const requests=[];let nearbySearches=0;
 const context=vm.createContext({el,node:()=>element(),sessionEpoch:1,AbortController,
-  invalidateNearby(){},act:fn=>fn(),fetch:async(url,options)=>{
+  invalidateNearby(){},searchNearby(){nearbySearches++;},act:fn=>fn(),fetch:async(url,options)=>{
     if(url==='/address-search/config')return {ok:true,json:async()=>({enabled:true})};
     assert.equal(url,'/address-search');assert.equal(options.method,'POST');
     assert(!('Authorization' in options.headers));
@@ -29,7 +29,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   await current;assert.equal(el('address-results').children.length,1);
   assert.equal(el('nearby-lat').value,''); // Never auto-select the first result.
   el('address-results').children[0].onclick();
-  assert.equal(el('nearby-lat').value,'51,123456');
+  assert.equal(el('nearby-lat').value,'51,123456');assert.equal(nearbySearches,1);
   el('nearby-geolocate').listeners.click();
   assert.equal(el('nearby-lat').value,'');assert.equal(el('nearby-lon').value,'');
   assert(!el('address-status').textContent.includes('Wybrano'));

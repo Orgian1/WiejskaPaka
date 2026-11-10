@@ -9,6 +9,8 @@ ROOT=Path(__file__).resolve().parents[1]
     'input_invalidates_response','logout_clears_coordinates','reset_aborts_pending_response',
     'stale_cart_button_cannot_write','point_owner_switch_clears_old_result','point_edit_coordinates_atomic',
     'price_range_blocks_fetch','error_and_retry',
+    'geolocation_retries_and_explains_windows_failure','geolocation_stale_error_never_retries_after_logout',
+    'geolocation_insecure_context_explains_https',
 ])
 def test_real_nearby_javascript_behaviour(case):
     run=subprocess.run(['node','scripts/local_marketplace_ui_checks.js',case],cwd=ROOT,capture_output=True,text=True,timeout=15)
@@ -33,5 +35,5 @@ def test_scripts_load_after_document_in_dependency_order():
         def handle_starttag(self,tag,attrs):
             if tag=='script':self.scripts.append(dict(attrs))
     doc=Scripts();doc.feed((ROOT/'web/index.html').read_text())
-    assert [s['src'] for s in doc.scripts]==['/assets/app.js','/assets/dashboard.js','/assets/nearby.js','/assets/pickup-calendar.js','/assets/address-search.js','/assets/address-delivery.js','/assets/user-photos.js','/assets/seller-search.js','/assets/same-package.js','/assets/purchase-records.js','/assets/pin-recovery.js','/assets/account-security.js','/assets/session-security.js','/assets/password-reset.js','/assets/email-verification.js','/assets/seller-compliance.js','/assets/admin-seller-review.js','/assets/support-cases.js','/assets/wallet.js']
+    assert [s['src'] for s in doc.scripts]==['/assets/app.js','/assets/dashboard.js','/assets/nearby.js','/assets/pickup-calendar.js','/assets/address-search.js','/assets/address-delivery.js','/assets/user-photos.js','/assets/seller-search.js','/assets/same-package.js','/assets/purchase-records.js','/assets/pin-recovery.js','/assets/account-security.js','/assets/session-security.js','/assets/password-reset.js','/assets/email-verification.js','/assets/seller-compliance.js','/assets/admin-seller-review.js','/assets/support-cases.js','/assets/wallet.js','/assets/contact.js','/assets/market-preferences.js','/assets/point-location.js']
     assert all('defer' in s for s in doc.scripts)

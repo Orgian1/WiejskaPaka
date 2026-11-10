@@ -87,3 +87,12 @@ Próbna integracja z historią main ma teraz commit
 `09d6aef0374a4392e0a15e0c2acb5a01e465b2b6`, z identycznym drzewem kodu #52.
 Wcześniejszy zapis `3e92513` pozostaje jej przodkiem. Main i stare gałęzie PR-ów
 pozostają bez zmian. Wyniki i zasady rollbacku: `WYPLATY_DEMO_ETAP2_2026-11-10.md`.
+
+## Aktualizacja etapu 3 — połączenie czatu i Work
+
+PR #53 ma bazę #52. Commit `5dedc0e` zachowuje pełny kod Work oraz trzy
+nowe commity zwykłego czatu z gałęzi #50, zakończone `b9ca634`.
+Obie historie są rodzicami scalenia; nie przepisywano żadnej wcześniejszej gałęzi.
+Próbna integracja z main: `28c88591d63e849d511ea0bacda90b3d4bec9015`,
+drzewo identyczne z `5dedc0e`. Main nadal wskazuje `9b96de3`.
+Wyniki połączonego kodu: `INTEGRACJA_CZAT_WORK_2026-11-10.md`.

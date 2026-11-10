@@ -1,0 +1,18 @@
+{
+  "run_id": 42797838007,
+  "job_id": 129767449934,
+  "steps": [
+    {
+      "name": "Demo readiness and header regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9
+    },
+    {
+      "name": "Isolated offline demo purchase journey",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 10
+    }
+  ]
+}

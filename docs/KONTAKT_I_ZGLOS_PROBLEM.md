@@ -21,3 +21,20 @@ submit w `web/contact.js`; pola mają nazwy topic, email, subject i message.
 Należy włączyć przycisk dopiero wraz z działającym odbiorem i potwierdzeniem
 przyjęcia wiadomości. W tej zmianie nie uruchomiono SMTP ani PayU i nie
 modyfikowano VPS.
+
+## Sprawdzenie zmiany
+
+Kod: `e7b6ed6a860205eadcf4283388445fe84ad8f038`, PR #55.
+Lokalnie: 15 PASS, 0 FAIL, 0 SKIP — struktura stopki, zachowanie JS, nagłówek,
+gotowość demo i struktura mobilna. Testy Chromium na rzeczywistym serwerze
+potwierdziły oba linki, zachowanie treści, fokus, brak wysłania i czyszczenie
+formularza przy szerokości 320 i 1280 px. Pierwszy przebieg ujawnił utratę
+fokusu; oba linki kierują teraz na fokusowalny nagłówek, a test zachowano.
+
+CI: https://github.com/Orgian1/WiejskaPaka/actions/runs/42821692804.
+Zakończone bramki: Chromium 78 PASS oraz HTTP w pięciu rozmiarach,
+PostgreSQL 16 i 17 po 97 PASS, szybki Windows 91 PASS. Pełny Windows był
+jeszcze w toku podczas zapisywania tych dowodów; nie przypisujemy mu wyniku
+wcześniejszej wersji. Aktualny stan jest widoczny w powyższym przebiegu.
+Raporty z odciskami źródeł: `audits/footer_contact_2026-11-10/`.
+Końcowe uzupełnienie dokumentacji nie zmienia testowanego kodu.

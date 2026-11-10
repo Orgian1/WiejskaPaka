@@ -1,0 +1,65 @@
+{
+  "run_id": 42821692804,
+  "code_commit": "e7b6ed6a860205eadcf4283388445fe84ad8f038",
+  "scope": "Verification snapshot after four completed gates; full Windows still running",
+  "jobs": [
+    {
+      "id": 129848604054,
+      "name": "windows_recovery",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 129848604522,
+      "name": "chromium",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 129848604569,
+      "name": "postgres (16)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 129848604719,
+      "name": "postgres (17)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 129850348941,
+      "name": "windows",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 13767842508,
+      "name": "chromium-summary",
+      "digest": "sha256:8e8b61871c276c2adad0847f3d8b86f9081a6967dacc6a1b81995782849d52b0",
+      "head_sha": "e7b6ed6a860205eadcf4283388445fe84ad8f038"
+    },
+    {
+      "id": 13767737023,
+      "name": "postgres-17-summary",
+      "digest": "sha256:64d648f27c68a282a441270b0f2901679963499467898a90fdeb9e260029d3f1",
+      "head_sha": "e7b6ed6a860205eadcf4283388445fe84ad8f038"
+    },
+    {
+      "id": 13767712061,
+      "name": "windows-recovery-summary",
+      "digest": "sha256:b33acf428e8004fb989b5c20c990c848b4ed3e713338908abda0cc411af766b9",
+      "head_sha": "e7b6ed6a860205eadcf4283388445fe84ad8f038"
+    },
+    {
+      "id": 13767082954,
+      "name": "postgres-16-summary",
+      "digest": "sha256:c236041cab31d61d1edf1815527be8b9bb4de1bb89462b8e6a7c82cf9d29eaf9",
+      "head_sha": "e7b6ed6a860205eadcf4283388445fe84ad8f038"
+    }
+  ],
+  "integration_commit": "2e52d6c79f6016fc1e47ac21ec9f1acafcedffc0",
+  "integration_tree": "9151163a10149cfeb92df98469acc5c8931bf49d"
+}

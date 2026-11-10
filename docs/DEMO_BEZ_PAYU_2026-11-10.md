@@ -79,6 +79,14 @@ Lokalizacja i usługa mapowa mają granice opisane w
 `ODBIOR_LOKALIZACJA_ULUBIONE_DOSTAWY_2026-11-10.md`. Brak sygnału GPS lub zgody
 systemowej nie oznacza znalezienia położenia; aplikacja pokaże właściwy komunikat.
 
+## Promocja punktów odbioru
+
+Sprzedawca może wpisać kod WIEJSKAPAKA nad formularzem dodawania punktu.
+Do końca 31 grudnia 2026 r. promocja obejmuje trzy pierwsze aktywne punkty.
+Nie mnoży się przy ponownym wpisaniu; po wygaśnięciu nic nie jest pobierane.
+Demo nie ma płatnego cennika punktów. Szczegóły i zakres:
+`PROMOCJA_TRZY_PUNKTY_2026-11-10.md`.
+
 ## Zasady portfela i granice demo
 
 Kwota wpisana do wypłaty oznacza całą kwotę rezerwowaną z salda. Prowizja

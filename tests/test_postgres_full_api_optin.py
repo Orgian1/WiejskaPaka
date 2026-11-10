@@ -102,7 +102,7 @@ def pg_verified_checkout_api():
     yield from _postgres_api(email_verification=True,require_email=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False):
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False,pickup_promotion=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -163,6 +163,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 if photos:
                     env['WP_ENABLE_USER_PHOTOS'] = '1'
                 if wallet:env['WP_ENABLE_WALLET_PREVIEW']='1'
+                if pickup_promotion:env['WP_ENABLE_PICKUP_PROMOTION']='1'
                 if delivery_options:
                     env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
@@ -1936,3 +1937,42 @@ def test_native_wallet_recovery_is_scoped_per_account(pg_wallet_api):
     con=queued_worker_connection(parameters)
     try:assert inspect_wallets(con)['success']
     finally:con.connection.close()
+
+
+@pytest.fixture
+def pg_promotion_api():
+    yield from _postgres_api(pickup_promotion=True, wallet=True)
+
+
+def test_native_pickup_promo_is_idempotent_private_and_persistent_without_wallet_changes(pg_promotion_api):
+    from concurrent.futures import ThreadPoolExecutor
+    from backend.pickup_promotion import CODE, EXPIRES_AT
+    import time
+    client, _ = pg_promotion_api
+    farmer, _ = register(client, 'rolnik')
+    other, _ = register(client, 'rolnik')
+    buyer, _ = register(client, 'klient')
+    url = '/farmers/me/pickup-promotion'
+    before = client.get('/wallet', headers=farmer).json()
+    assert client.post(url, json={'code': CODE}).status_code == 401
+    assert client.post(url, headers=buyer, json={'code': CODE}).status_code == 403
+    ids = []
+    for _ in range(4):
+        response = client.post('/pickup-points', headers=farmer, json={
+            'name': 'Miejsce promocji', 'city': 'Legnica', 'street': 'Testowa 12', 'opening_hours': '7–10'})
+        assert response.status_code == 201
+        ids.append(response.json()['id'])
+    if time.time() >= EXPIRES_AT:
+        assert client.post(url, headers=farmer, json={'code': CODE}).status_code == 410
+        return
+    def redeem(_):
+        return client.post(url, headers=farmer, json={'code': CODE}).status_code
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        assert list(pool.map(redeem, range(6))) == [200]*6
+    data = client.get(url, headers=farmer).json()
+    assert data['active'] and data['covered_point_ids'] == ids[:3] and data['remaining'] == 0
+    assert not client.get(url, headers=other).json()['redeemed']
+    pg_promotion_api.restart()
+    assert client.get(url, headers=farmer).json() == data
+    assert client.get('/wallet', headers=farmer).json() == before
+    assert len(client.get('/farmers/me/pickup-points', headers=farmer).json()) == 4

@@ -203,5 +203,10 @@
     "file": "optional_delivery_proposals.sql",
     "sha256": "0a551bf1168b579b297c4a6595adc783842477cf3686bc0a1170ae1739d3b104",
     "bytes": 524
+  },
+  {
+    "file": "optional_pickup_promotion.sql",
+    "sha256": "a2ef6322aab32b2dfbbb0f804fb27361ebc534f981dd7cf89cc1edb7e5d93a69",
+    "bytes": 384
   }
 ]

@@ -31,7 +31,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
 from backend import product_unit_storage, pickup_dates
 from backend import address_delivery
-from backend import delivery_proposals
+from backend import delivery_proposals, pickup_promotion
 address_delivery.SCHEMA_SQLITE += delivery_proposals.SCHEMA_SQLITE
 from backend.address_delivery import DeliveryPreferenceIn
 
@@ -54,6 +54,8 @@ async def application_lifespan(application):
             seller_directory.refresh_index(con, postgres=bool(DATABASE_URL))
         if user_photos.enabled():
             con.execute('SELECT kind,subject_id,owner_id,data,digest,width,height FROM user_photos WHERE 1=0')
+        if pickup_promotion.enabled():
+            con.execute('SELECT farmer_id,campaign,redeemed_at,expires_at,point_limit FROM pickup_promotion_grants LIMIT 0')
         if address_delivery.enabled():
             con.execute('SELECT id FROM seller_delivery_windows LIMIT 0')
             con.execute('SELECT order_id FROM address_delivery_requests LIMIT 0')
@@ -3328,3 +3330,8 @@ from backend.wallet_preview import install as install_wallet_preview
 install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)
 
 delivery_proposals.register(app, order_write_db, current_user, record_order_event, postgres=bool(DATABASE_URL))
+
+if pickup_promotion.enabled() and not DATABASE_URL:
+    with db() as _promotion_con:
+        _promotion_con.executescript(pickup_promotion.SCHEMA_SQLITE)
+pickup_promotion.register(app, account_session_db, current_user)

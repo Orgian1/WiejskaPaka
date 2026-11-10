@@ -183,3 +183,49 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
         assert page.locator('#header-panel-link').is_hidden()
         assert not errors
     finally:page.close()
+
+
+@pytest.mark.parametrize('width', [320,1280])
+def test_seller_pickup_promo_redemption_and_reload(full_demo_server, delivery_browser, width):
+    from backend.pickup_promotion import EXPIRES_AT
+    import time
+    if time.time() >= EXPIRES_AT:
+        pytest.skip('Dated active campaign ended; exact expiry is covered by the API clock tests')
+    import httpx
+    from uuid import uuid4
+    url, _ = full_demo_server
+    credentials = {'email':uuid4().hex+'@example.invalid','password':'PromoBrowserTest2026!','role':'rolnik'}
+    with httpx.Client(base_url=url,trust_env=False) as client:
+        assert client.post('/auth/register',json=credentials).status_code == 201
+        headers={'Authorization':'Bearer '+client.post('/auth/login',json=credentials).json()['access_token']}
+        for i in range(4):
+            assert client.post('/pickup-points',headers=headers,json={
+                'name':'Promocyjny punkt '+str(i),'city':'Legnica','street':'Testowa 12','opening_hours':'7–10'}).status_code == 201
+    page=delivery_browser.new_page(viewport={'width':width,'height':844})
+    errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
+    def login():
+        page.fill('#email',credentials['email']);page.fill('#password',credentials['password'])
+        page.locator('#auth button[type=submit]').click()
+        page.locator('#pickup-promo-form').wait_for(state='visible')
+    try:
+        page.goto(url);login()
+        page.fill('#pickup-promo-code','BAD')
+        page.click('#pickup-promo-submit')
+        page.wait_for_function("() => document.querySelector('#pickup-promo-status').textContent.includes('Nieprawidłowy kod')")
+        page.fill('#pickup-promo-code','wiejska paka')
+        page.click('#pickup-promo-submit')
+        page.wait_for_function("() => document.querySelector('#pickup-promo-status').textContent.includes('3/3')")
+        assert page.locator('#pickup-promo-points li').count() == 3
+        assert page.locator('#pickup-promo-form').is_hidden()
+        page.reload()
+        page.fill('#email',credentials['email']);page.fill('#password',credentials['password'])
+        page.locator('#auth button[type=submit]').click()
+        page.wait_for_function("() => document.querySelector('#pickup-promo-status').textContent.includes('3/3')")
+        assert page.locator('#pickup-promo-points li').count() == 3
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        page.click('#logout')
+        assert page.locator('#pickup-promotion').is_hidden()
+        assert page.locator('#pickup-promo-status').inner_text() == ''
+        assert page.locator('#pickup-promo-points li').count() == 0
+        assert not errors
+    finally:page.close()

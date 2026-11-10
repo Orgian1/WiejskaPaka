@@ -47,14 +47,18 @@ CREATE TABLE IF NOT EXISTS wallet_preview_entries (
 );
 '''
 
-from backend import wallet_withdrawals
-SCHEMA_SQLITE+=wallet_withdrawals.SCHEMA_SQLITE
+from backend import wallet_withdrawals, wallet_intent_recovery
+SCHEMA_SQLITE+=wallet_withdrawals.SCHEMA_SQLITE+wallet_intent_recovery.SCHEMA_SQLITE
 
 
 class AmountIn(BaseModel):
     model_config={'extra':'forbid'}
     amount_grosze:int=Field(strict=True,ge=1,le=MAX_AMOUNT)
     request_key:str=Field(pattern=r'^[A-Za-z0-9_-]{12,100}$')
+
+
+class RecoveryIn(AmountIn):
+    kind:str=Field(pattern=r'^(topup|withdrawal)$')
 
 
 class WithdrawalIn(AmountIn):
@@ -140,6 +144,8 @@ def move(con,user,payload,kind,*,now):
     account=_account(con,user['id'])
     from backend.wallet_integrity import account_valid
     if not account_valid(con,user['id']):return 409,{'detail':'Portfel wymaga sprawdzenia. Operacja nie została wykonana.'}
+    if wallet_intent_recovery.fenced(con,user['id'],payload.request_key):
+        return 409,{'detail':'Poprzednie zgłoszenie zostało wycofane. Rozpocznij nową operację.'}
     if kind=='withdrawal':
         if _locked(account,now):return 429,{'detail':'Wypłaty są zablokowane na 15 minut po błędnych próbach PIN-u.'}
         if not account['pin_hash']:return 409,{'detail':'Najpierw ustaw PIN portfela.'}
@@ -177,7 +183,7 @@ def install(app,db,write_db,current_user,env,database_url):
             if not database_url:
                 con.executescript(SCHEMA_SQLITE)
                 con.execute(wallet_withdrawals.BACKFILL)
-            for table in ('wallet_preview_accounts','wallet_preview_entries','wallet_preview_terms','wallet_preview_resolutions'):con.execute('SELECT * FROM '+table+' LIMIT 0')
+            for table in ('wallet_preview_accounts','wallet_preview_entries','wallet_preview_terms','wallet_preview_resolutions','wallet_preview_operation_fences'):con.execute('SELECT * FROM '+table+' LIMIT 0')
     def allow(user):
         if not active:raise HTTPException(404,'Portfel jest niedostępny.')
         if user['role'] not in ('klient','rolnik'):raise HTTPException(403,'Brak dostępu do portfela.')
@@ -233,4 +239,11 @@ def install(app,db,write_db,current_user,env,database_url):
         if user['role']!='admin':raise HTTPException(403,'Brak uprawnień.')
         with write_db(user,authorization,('admin',)) as con:
             status,result=wallet_withdrawals.resolve(con,user,withdrawal_id,'completed_test',now=int(time.time()))
+        return reply(status,result)
+
+    @app.post('/wallet/operations/reconcile-test')
+    def reconcile_operation(payload:RecoveryIn,user=Depends(current_user),authorization:str|None=Header(default=None)):
+        allow(user)
+        with write_db(user,authorization,('klient','rolnik')) as con:
+            status,result=wallet_intent_recovery.reconcile(con,user,payload,now=int(time.time()))
         return reply(status,result)

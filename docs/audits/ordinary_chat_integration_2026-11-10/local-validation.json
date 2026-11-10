@@ -1,0 +1,26 @@
+{
+  "tested_tree": "6fe7c6c92785b709878f735fc449e0ebd15f14f0",
+  "runtime_unchanged_from": "058f8b4d2ed2d99f805bf38649c42269fdeb06da",
+  "targeted_modules": [
+    "test_demo_readiness.py",
+    "test_header_auth_actions.py"
+  ],
+  "targeted_counts": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "offline_demo_journey": {
+    "success": true,
+    "pickup": true,
+    "delivery": true,
+    "single_use_pin": true,
+    "address_privacy": true,
+    "integer_grosze": true
+  },
+  "merge_rehearsal": {
+    "parent": "718ad0b9f0fc897aff7f296202442cb4e7b1ce3e",
+    "success": true,
+    "tree": "6fe7c6c92785b709878f735fc449e0ebd15f14f0"
+  }
+}

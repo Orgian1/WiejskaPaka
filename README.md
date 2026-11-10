@@ -2,7 +2,10 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
-Bieżący pakiet portfela: `docs/WYPLATY_DEMO_ETAP2_2026-11-10.md`.
+Bieżąca odporność portfela: `docs/ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`.
+Połączenie zmian czatu i Work: `docs/INTEGRACJA_CZAT_WORK_2026-11-10.md`.
+
+Poprzedni pakiet portfela: `docs/WYPLATY_DEMO_ETAP2_2026-11-10.md`.
 
 Aktualna instrukcja demo: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
 Raport pakietu: `docs/RAPORT_DEMO_BEZ_PAYU_2026-11-10.md`.

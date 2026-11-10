@@ -85,6 +85,7 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 \ir ../../database/optional_pickup_dates.sql
 \ir ../../database/optional_wallet_preview.sql
 \ir ../../database/optional_wallet_withdrawals.sql
+\ir ../../database/optional_wallet_operation_fences.sql
 GRANT CONNECT ON DATABASE wp_test_preview TO wp_preview_app;
 GRANT USAGE ON SCHEMA public TO wp_preview_app;
 GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO wp_preview_app;
@@ -92,4 +93,4 @@ GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO wp_preview_app;
 -- No ALTER DEFAULT PRIVILEGES: future migrations need explicit review and grants.
 \echo New test schema prepared. Run the read-only preview preflight as the app user.
 
-REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions FROM wp_preview_app;
+REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions,wallet_preview_operation_fences FROM wp_preview_app;

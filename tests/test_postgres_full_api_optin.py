@@ -144,6 +144,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 migration.execute(sql.SQL('GRANT USAGE ON SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO {}').format(sql.Identifier(role)))
+                migration.execute(sql.SQL('REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions FROM {}').format(sql.Identifier(role)))
 
             with socket.socket() as sock:
                 sock.bind(('127.0.0.1', 0))
@@ -1776,3 +1777,81 @@ def test_native_wallet_corrupted_historical_snapshot_blocks_writes(pg_wallet_api
         assert not result['success'] and 'JOURNAL_HISTORY_MISMATCH' in result['issue_codes']
     finally:con.connection.close()
     assert client.post('/wallet/topups',headers=owner,json={'amount_grosze':100,'request_key':uuid4().hex}).status_code==409
+
+
+@pytest.mark.parametrize('role',['klient','rolnik'])
+@pytest.mark.parametrize('action',['cancel','complete'])
+def test_native_wallet_terminal_events_and_races(pg_wallet_api,role,action):
+    import psycopg
+    from tests.test_admin_seller_review import create_admin
+    from tests.test_wallet_withdrawal_lifecycle import setup,cancel,complete,queue
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner,oid=setup(client,role)
+    def promote(uid):
+        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+    operator,_=create_admin(client,promote)
+    assert queue(client,operator).json()['items'][0]['id']==oid
+    operation=(lambda:cancel(client,owner,oid)) if action=='cancel' else (lambda:complete(client,operator,oid))
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results=list(pool.map(lambda _:operation(),range(2)))
+    assert sorted(r.status_code for r in results)==[200,201]
+    assert all(r.json()['transfer_executed'] is False for r in results)
+    opposite=complete(client,operator,oid) if action=='cancel' else cancel(client,owner,oid)
+    assert opposite.status_code==409
+    pg_wallet_api.restart()
+    state=client.get('/wallet',headers=owner).json()
+    assert (state['available_grosze'],state['reserved_grosze'])==((10000,0) if action=='cancel' else (5999,0))
+    assert state['entries'][0]['withdrawal_preview']['fee_grosze']==(200 if role=='rolnik' else 0)
+    con=queued_worker_connection(parameters)
+    try:
+        assert inspect_wallets(con)['success']
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            con.execute('UPDATE wallet_preview_terms SET gross_grosze=gross_grosze')
+        con.connection.rollback()
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            con.execute('DELETE FROM wallet_preview_resolutions')
+        con.connection.rollback()
+    finally:con.connection.close()
+
+
+def test_native_wallet_cancel_complete_race_has_one_terminal_event(pg_wallet_api):
+    import psycopg
+    from tests.test_admin_seller_review import create_admin
+    from tests.test_wallet_withdrawal_lifecycle import setup,cancel,complete
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner,oid=setup(client)
+    def promote(uid):
+        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+    operator,_=create_admin(client,promote)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        codes=list(pool.map(lambda kind:cancel(client,owner,oid).status_code if kind=='cancel' else complete(client,operator,oid).status_code,['cancel','complete']))
+    assert sorted(codes)==[201,409]
+    con=queued_worker_connection(parameters)
+    try:
+        assert inspect_wallets(con)['success']
+        assert con.execute('SELECT count(*) AS n FROM wallet_preview_resolutions').fetchone()['n']==1
+    finally:con.connection.close()
+
+
+def test_native_wallet_legacy_terms_backfill_and_readonly_audit(pg_wallet_api):
+    from backend.wallet_withdrawals import BACKFILL
+    from backend.wallet_integrity import inspect_wallets
+    client,parameters=pg_wallet_api
+    owner,uid=register(client,'rolnik')
+    con=queued_worker_connection(parameters)
+    oid=uuid4().hex
+    try:
+        con.execute('INSERT INTO wallet_preview_accounts(user_id,available_grosze,reserved_grosze,revision) VALUES(?,?,?,?)',(uid,5999,4001,2))
+        for eid,revision,kind,state,amount,available,reserved in ((uuid4().hex,1,'topup','credited',10000,10000,0),(oid,2,'withdrawal','pending',4001,5999,4001)):
+            con.execute('INSERT INTO wallet_preview_entries VALUES(?,?,?,?,?,?,?,?,?,?,?)',(eid,uid,revision,uuid4().hex,'legacy-hash',kind,state,amount,available,reserved,1794000000))
+        con.execute(BACKFILL)
+        con.connection.commit()
+        con.execute('SET TRANSACTION READ ONLY')
+        assert inspect_wallets(con)['success']
+        con.connection.rollback()
+    finally:con.connection.close()
+    pg_wallet_api.restart()
+    state=client.get('/wallet',headers=owner).json()
+    assert state['entries'][0]['withdrawal_preview']=={'gross_grosze':4001,'fee_basis_points':500,'fee_grosze':200,'net_grosze':3801}

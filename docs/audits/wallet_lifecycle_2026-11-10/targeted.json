@@ -1,0 +1,18 @@
+{
+  "application_sha256": "5ed9af47e4c2950101ce186b08e2557bb910412694f7f6cb63de45efe223f0cf",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "test_counts": {
+    "total": 37,
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 2,
+  "planned": 2,
+  "modules": [
+    "test_wallet_withdrawal_lifecycle.py",
+    "test_wallet_integrity.py"
+  ]
+}

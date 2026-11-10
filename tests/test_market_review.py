@@ -42,6 +42,20 @@ def proposal_body(revision=0):
     return {'revision':revision,'delivery_date':str(day),'from_time':'11:00','to_time':'13:00'}
 
 
+def test_favorites_recheck_session_even_if_auth_dependency_has_old_user(actors):
+    client,users=actors
+    body={'email':uuid4().hex+'@example.invalid','password':'PrivateFavorite2026!','role':'klient'}
+    assert client.post('/auth/register',json=body).status_code==201
+    token=client.post('/auth/login',json=body).json()['access_token']
+    headers={'Authorization':'Bearer '+token}
+    user=client.get('/auth/me',headers=headers).json()
+    with module.db() as con:con.execute('DELETE FROM sessions WHERE user_id=?',(user['id'],))
+    module.app.dependency_overrides[module.current_user]=lambda:user
+    try:
+        assert client.post('/catalog/favorites',headers=headers,json={'ids':[1]}).status_code==401
+    finally:module.app.dependency_overrides.pop(module.current_user,None)
+
+
 @pytest.mark.parametrize('cart',[False,True])
 def test_only_customer_accepts_seller_counterproposal_for_entire_delivery(actors,cart):
     client,users,pid,body=setup(actors)

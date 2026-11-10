@@ -270,6 +270,9 @@ def test_native_delivery_counterproposal_requires_buyer_and_survives_restart(pg_
     rows=client.get('/address-delivery/requests/mine',headers=buyer).json()['items']
     chosen=[r for r in rows if r['order_id'] in ([o['id'] for o in result.json()['orders']] if kind=='shipment' else [oid])]
     assert len(chosen)==len(ids) and all(r['state']=='accepted' and r['agreed_from']==660 and r['agreed_to']==780 for r in chosen)
+    favorites=client.post('/catalog/favorites',headers=buyer,json={'ids':ids})
+    assert favorites.status_code==200 and {p['id'] for p in favorites.json()['items']}==set(ids)
+    assert client.post('/catalog/favorites',json={'ids':ids}).status_code==401
 
 
 def delivery(pid):

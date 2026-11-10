@@ -502,13 +502,13 @@ class FavoriteProductsIn(BaseModel):
     ids: list[StrictInt] = Field(max_length=200)
 
 @app.post('/catalog/favorites')
-def favorite_products(payload: FavoriteProductsIn, user=Depends(current_user)):
+def favorite_products(payload: FavoriteProductsIn, user=Depends(current_user), authorization: str | None = Header(default=None)):
     ids = list(dict.fromkeys(payload.ids))
     if any(isinstance(n, bool) or n <= 0 or n > 9_000_000_000_000_000_000 for n in ids):
         raise HTTPException(422, 'Nieprawidłowa lista ulubionych')
     if not ids:
         return {'items': []}
-    with db() as con:
+    with account_session_db(user, authorization) as con:
         rows = con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 AND id IN (' + ','.join('?' for _ in ids) + ')', ids).fetchall()
         return {'items': [product_unit_storage.enrich_product(con, row) for row in rows]}
 

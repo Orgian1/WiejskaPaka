@@ -1,0 +1,24 @@
+{
+  "application_sha256": "80aa6e3401a175ed7e2aa5f2b97bd65de8cb488f0f5952f2a32290c0824b8f77",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "test_counts": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 2,
+  "planned": 2,
+  "modules": [
+    {
+      "file": "test_wallet_recovery_ui.py",
+      "sha256": "4899ae4ab3f57919c7d43021b5581de1f78cfe4ace4982ddfafd0724e19ef753"
+    },
+    {
+      "file": "test_wallet_intent_recovery.py",
+      "sha256": "653253e22cbe4bb1be08bb74ba04873372be8f2321bb3e3759a4828d218114e2"
+    }
+  ]
+}

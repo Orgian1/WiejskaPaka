@@ -1,0 +1,51 @@
+{
+  "code_commit": "e2ffa5ce42b4142d0557d0c656981e7bc81cf1a6",
+  "run_id": 42771443708,
+  "cause": "CSP_BLOCKED_STRING_POLLING_IN_TEST",
+  "resolved_by": "058f8b4d2ed2d99f805bf38649c42269fdeb06da",
+  "report": {
+    "gate": "browser",
+    "complete": false,
+    "success": false,
+    "sources_unchanged": true,
+    "system": "Linux",
+    "evidence": {
+      "runtime_sha256": "f18c4a74556ab3ab6db7ed4e55af868546466ddb5be174a7107b1b574b7a5150",
+      "tests_sha256": "2f2f4565b5fdf2301eea1f0a083838c5e76f78b7215b5173df1fda0edada3d47",
+      "test_sources_sha256": "32a450c9125d8db84a975bcf0bb436a62ea9d524744ea188a3004b4717f45586",
+      "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+      "workflow_sha256": "1a3b1230b1db35d81663d52f186ef753c301fb6e65d150dea132ffde8bc0c6ad"
+    },
+    "tasks": [
+      {
+        "name": "photo_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "offline_browser",
+        "success": false,
+        "returncode": 1,
+        "test_counts": {
+          "total": 74,
+          "passed": 72,
+          "failed": 2,
+          "skipped": 0
+        },
+        "failure_locations": [
+          {
+            "file": "test_wallet_recovery_browser.py",
+            "line": 52
+          }
+        ]
+      }
+    ]
+  }
+}

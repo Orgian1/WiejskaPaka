@@ -1,0 +1,42 @@
+{
+  "complete": true,
+  "success": true,
+  "expected": 330,
+  "executed": 330,
+  "passed": 330,
+  "failed": 0,
+  "missing": [],
+  "failures": [],
+  "shards": [
+    {
+      "report": "wp-recovered-full-1-20261021.json",
+      "modules": 83
+    },
+    {
+      "report": "wp-recovered-full-2-20261021.json",
+      "modules": 83
+    },
+    {
+      "report": "wp-recovered-full-3-20261021.json",
+      "modules": 82
+    },
+    {
+      "report": "wp-recovered-full-4-20261021.json",
+      "modules": 82
+    }
+  ],
+  "commit": "dd26b62",
+  "application_sha256": "b0f1bf94b8d2b08b90af15defee24e89d413d490b5db719d176352c388ddc4c0",
+  "sources_unchanged": true,
+  "test_counts": {
+    "total": 4210,
+    "passed": 4142,
+    "failed": 0,
+    "skipped": 68
+  },
+  "python": "3.12.14",
+  "limitations": [
+    "Local isolated SQLite regression; no live PostgreSQL migration execution",
+    "No VPS deployment or real browser end-to-end verification"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "application_sha256": "7e52ab7d0ebe953f8765b58fbd91fd68dfce58637f41a823a8d62c8fbaf5992e",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 2,
+  "planned": 2,
+  "passed": 2,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_address_delivery_http.py",
+      "sha256": "85a01aaa591092da03b92f3842431812afa7374286ab72bcdf6a40e7c24764e7",
+      "returncode": 0,
+      "seconds": 2.74,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...........                                                              [100%]\n11 passed, 1 warning in 2.34s\n"
+    },
+    {
+      "file": "test_address_delivery_ui.py",
+      "sha256": "87f6f3a8faf0b9b203ccd1ac1de98ff57734d2812422140ccd534219334fba20",
+      "returncode": 0,
+      "seconds": 0.34,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 0.12s\n"
+    }
+  ]
+}

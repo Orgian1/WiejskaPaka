@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "kind": "manual_real_http_encrypted_restore_acceptance_not_pytest",
+  "source_commit": "aa0f7f6573ce3c418b5cf113975a7ecc1d846acd",
+  "evidence": {
+    "runtime_sha256": "25bab2dd7c3a9ce73b858cbcd7b76ef868256b26ceb1775b04c96e8aadcfa7b7",
+    "tests_sha256": "0403e4a9a480b533a113ac0e178cb600c681e629c99d4a37bea4635972bb104c",
+    "test_sources_sha256": "1df5583a84f40d2b56450e4d5defc16d72459d45a641fd17128f2b05d99c35b2",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "3d55c169ee219cdd59133a50d6502259507b9988d87c0ba458826a6ded1e9d30"
+  },
+  "orders_checked": 4,
+  "payments_checked": 4,
+  "case_revision_restored": 2,
+  "case_events_restored": 2,
+  "post_backup_event_excluded": true,
+  "old_session_rejected": true,
+  "farmer_access_preserved": true,
+  "courier_access_denied": true,
+  "integrity_ok": true,
+  "foreign_keys_ok": true,
+  "encrypted_backup": true
+}

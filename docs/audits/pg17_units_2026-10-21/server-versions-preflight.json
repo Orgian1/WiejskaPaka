@@ -1,0 +1,58 @@
+{
+  "application_sha256": "3533b78b12f595f6cfb41cb1f3f337e09935a053c4e39e5829e60ce19995d141",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 127,
+    "passed": 84,
+    "failed": 0,
+    "skipped": 43
+  },
+  "executed": 3,
+  "planned": 3,
+  "passed": 3,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_postgres_test_backup.py",
+      "sha256": "c52240d352efb5903710d928cab0f45df03111441e26b2787be627f6ae72389e",
+      "returncode": 0,
+      "seconds": 0.81,
+      "test_counts": {
+        "total": 46,
+        "passed": 46,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..............................................                           [100%]\n46 passed in 0.54s\n"
+    },
+    {
+      "file": "test_postgres_full_api_optin.py",
+      "sha256": "8c2fbf6617856e13bf64f9aa133c613454829bc518ccd30df98942a28ef1675d",
+      "returncode": 0,
+      "seconds": 0.44,
+      "test_counts": {
+        "total": 43,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 43
+      },
+      "output_tail": "sssssssssssssssssssssssssssssssssssssssssss                              [100%]\n43 skipped in 0.13s\n"
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "a5b4a563197a0a78ec7c206a7d9be1e90777469b1c3ad38169c440ca21e8e05c",
+      "returncode": 0,
+      "seconds": 2.59,
+      "test_counts": {
+        "total": 38,
+        "passed": 38,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......................................                                   [100%]\n38 passed in 2.35s\n"
+    }
+  ]
+}

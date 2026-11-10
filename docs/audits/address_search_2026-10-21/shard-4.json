@@ -1,0 +1,1098 @@
+{
+  "application_sha256": "b84276981d2ea65301bc17ecafeb637ba16bd7f42429199de8aeed523eed5bb1",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 495,
+    "passed": 488,
+    "failed": 0,
+    "skipped": 7
+  },
+  "executed": 83,
+  "planned": 83,
+  "passed": 83,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_account_view_privacy_ui.py",
+      "sha256": "a72c115953465f3225635f55ab06f968e82e06a1073eaa0d105ac45111cc6b30",
+      "returncode": 0,
+      "seconds": 4.24,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 2.43s\n"
+    },
+    {
+      "file": "test_admin_finance_ui.py",
+      "sha256": "ed809e0e7dc7a58ec43f264d42216981d9f11a62d906e4fc21b73fd36c8ff051",
+      "returncode": 0,
+      "seconds": 4.28,
+      "test_counts": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....................                                                     [100%]\n20 passed in 3.46s\n"
+    },
+    {
+      "file": "test_api.py",
+      "sha256": "781badfa595c5c7a2bd37f47bcf3ee6799a14ce289f53a3289a08e4dc6e53097",
+      "returncode": 0,
+      "seconds": 9.37,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed, 1 warning in 8.67s\n"
+    },
+    {
+      "file": "test_auth_password_ui.py",
+      "sha256": "d3ec42fef8ead659ead10ac9434a5503e2cc4ef960ce82e2f045382c2b58d6ca",
+      "returncode": 0,
+      "seconds": 0.84,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.47s\n"
+    },
+    {
+      "file": "test_b106_b110_regression_diagnostics.py",
+      "sha256": "daa1b5647c9b0b335ad0c8cd30c39f3a286d8b78cb8b96643c7f8c64b8c29ebf",
+      "returncode": 0,
+      "seconds": 1.73,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 1.39s\n"
+    },
+    {
+      "file": "test_b10921_http_limits.py",
+      "sha256": "b7025302f13393f283dd7a3aa3bb24188abde6b633e05ad7aae2c732e0de38f3",
+      "returncode": 0,
+      "seconds": 4.55,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..........                                                               [100%]\n10 passed, 1 warning in 1.14s\n"
+    },
+    {
+      "file": "test_b10921_regression_evidence.py",
+      "sha256": "fc93cb04471187602a660d0d0d82330a80e0422fa25e206a9c85a9b50325f926",
+      "returncode": 0,
+      "seconds": 0.62,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.12s\n"
+    },
+    {
+      "file": "test_b11284_postgres_retry_policy.py",
+      "sha256": "6ebf071c9a1565447ec17098f3be62b4d3f1f192740ef849c1948b0a1950861d",
+      "returncode": 0,
+      "seconds": 0.59,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..............                                                           [100%]\n14 passed in 0.15s\n"
+    },
+    {
+      "file": "test_b11294_database_probe.py",
+      "sha256": "1a2acafdc1dd4aea83329d2aae45f765c27b2a334684899783a16d8a8f5e76cc",
+      "returncode": 0,
+      "seconds": 0.79,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......                                                                   [100%]\n6 passed in 0.19s\n"
+    },
+    {
+      "file": "test_b11299_server_cleanup.py",
+      "sha256": "794c5302c05186311b1cc2825b524f0296da2d7440273234435dc4c8f2bc6bbc",
+      "returncode": 0,
+      "seconds": 0.66,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.14s\n"
+    },
+    {
+      "file": "test_b11305_migration_manifest.py",
+      "sha256": "bb94f7c23b3b3db44694bef5bffe499731f743cb52cbe044d9e2b31d9d636391",
+      "returncode": 0,
+      "seconds": 1.06,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 0.13s\n"
+    },
+    {
+      "file": "test_b11309_atomic_migration_gate.py",
+      "sha256": "85c4872e8e8720d3113d1e3fce9004c4d426b7981ff46ab07ced590d93ebfa67",
+      "returncode": 0,
+      "seconds": 1.85,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.41s\n"
+    },
+    {
+      "file": "test_b11316_plan_portability.py",
+      "sha256": "9187cbfbd39b2609dc10310593af583ace17e11f1e1cd2ac0dd0b7db57659625",
+      "returncode": 0,
+      "seconds": 0.54,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.12s\n"
+    },
+    {
+      "file": "test_b1261_postgres_transaction_portability.py",
+      "sha256": "35590e2f660febab208a743bf00c37f3c2ba94a84fc60b594a6c1b273c0132cc",
+      "returncode": 0,
+      "seconds": 0.6,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 0.15s\n"
+    },
+    {
+      "file": "test_b1441_paid_cancel_panel.py",
+      "sha256": "d93b40cac9f5bfd118be29adaaf077365687d7a7abea3808a231e99c7417199f",
+      "returncode": 0,
+      "seconds": 0.47,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 0.09s\n"
+    },
+    {
+      "file": "test_b1621_multiseller_shipping_regression.py",
+      "sha256": "80fae3a641b9a24e8bb399f46dc346e897fddbbaa97e25854ed7b577714043f1",
+      "returncode": 0,
+      "seconds": 2.04,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed, 1 warning in 1.52s\n"
+    },
+    {
+      "file": "test_b1861_quote_ui_contract.py",
+      "sha256": "1a773674e9bf9dd2285423e58535ec8aa682cd4a04dc89cd7389359bd9afac74",
+      "returncode": 0,
+      "seconds": 0.47,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.09s\n"
+    },
+    {
+      "file": "test_b2101_extended_gate_manifest.py",
+      "sha256": "621fff444038477c021854ce1c432b6ad81b98da17265c0f77c633cec1e24749",
+      "returncode": 0,
+      "seconds": 0.69,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.12s\n"
+    },
+    {
+      "file": "test_b2341_resume_regression.py",
+      "sha256": "ac6d17a32b3475b0d85881a35d8df5fbe91c77881a37637912bfc42f899616b1",
+      "returncode": 0,
+      "seconds": 0.77,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 0.20s\n"
+    },
+    {
+      "file": "test_b301_order_integrity_extended.py",
+      "sha256": "debd665c25a613f87a1fd616a320390f3dd21b2f221d07765aa567ae64498e4c",
+      "returncode": 0,
+      "seconds": 0.99,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 0.25s\n"
+    },
+    {
+      "file": "test_b3241_checkout_session_races.py",
+      "sha256": "cb18df78bf54fed5a0351332744b59bd74172105c4ff5c0c95571f91d5b517a6",
+      "returncode": 0,
+      "seconds": 0.99,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.17s\n"
+    },
+    {
+      "file": "test_b3481_direct_idempotency.py",
+      "sha256": "744d2aec57a6f5db3d84512a28c45616ce0ca8638b3d034c8acf61ff88b1c662",
+      "returncode": 0,
+      "seconds": 2.16,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed, 1 warning in 1.37s\n"
+    },
+    {
+      "file": "test_b371_saved_cart.py",
+      "sha256": "f6d84d35cdff40bc40ca1fbaf2389613e634825d2176f2768f7039b227cbe321",
+      "returncode": 0,
+      "seconds": 1.9,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 1.24s\n"
+    },
+    {
+      "file": "test_b401_checkout.py",
+      "sha256": "82d715b9f008de1b57cd62d32ad7ea0e8b30a00a117554853efcac55afe4e738",
+      "returncode": 0,
+      "seconds": 2.29,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed, 1 warning in 1.47s\n"
+    },
+    {
+      "file": "test_b501_shared_delivery.py",
+      "sha256": "3c9ad62e7987654f6291c1b7a60a21821f49bd4eb726e2cf476ae2aada974834",
+      "returncode": 0,
+      "seconds": 3.0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 2.42s\n"
+    },
+    {
+      "file": "test_b621_courier_shipments.py",
+      "sha256": "5db35f117f996448f057a7bd00efc005c38c2df153f159ec7235db77cdfc8f2d",
+      "returncode": 0,
+      "seconds": 3.39,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 2.77s\n"
+    },
+    {
+      "file": "test_b6961_auth_dependency_inventory.py",
+      "sha256": "d328202d14c2b596b3391f41704964aa2d0f6f91f18ec6c89d560d8b9926a847",
+      "returncode": 0,
+      "seconds": 1.86,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 1.29s\n"
+    },
+    {
+      "file": "test_b7681_cross_account_http.py",
+      "sha256": "355bdbd5fbec8bc14790344fc9927996207671c340311be666a52a2fb8c071a3",
+      "returncode": 0,
+      "seconds": 8.01,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 7.53s\n"
+    },
+    {
+      "file": "test_b901_reconciliation.py",
+      "sha256": "014eeb2e97da73fb7553a663da18700de1a4d5e65d7ea376028b9f4a1de9e0f1",
+      "returncode": 0,
+      "seconds": 1.86,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 1.32s\n"
+    },
+    {
+      "file": "test_bridge_b41_b45.py",
+      "sha256": "8fc9ce31eee5275238b97ea62ef7cd866149636be33ba749ad9637863352e085",
+      "returncode": 0,
+      "seconds": 1.18,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.69s\n"
+    },
+    {
+      "file": "test_browser_screenshot_option_b28.py",
+      "sha256": "1b3e774786bc92a8b6f688338b3a7ea121fab886fe49ad05b4fac574b8b2d423",
+      "returncode": 0,
+      "seconds": 3.5,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.38s\n"
+    },
+    {
+      "file": "test_catalog_page_browser.py",
+      "sha256": "b467fb0450fa4f6b6de18a1cf326f45eaaaa0063e2317d118e298f49a32b3de9",
+      "returncode": 0,
+      "seconds": 4.1,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      },
+      "output_tail": "ss                                                                       [100%]\n2 skipped in 1.57s\n"
+    },
+    {
+      "file": "test_checkout_vault_http.py",
+      "sha256": "8c23cb77b6e3b3e18216a8d4d3fe8282f66cb681673e7ab4267badcb8a36d426",
+      "returncode": 0,
+      "seconds": 55.9,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 54.96s\n"
+    },
+    {
+      "file": "test_delivery_access_stage08.py",
+      "sha256": "88178c2fc044edf2bcf874a521d12a8e2bc5a105990ac28cf4cfcc43b47a01b9",
+      "returncode": 0,
+      "seconds": 0.59,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.12s\n"
+    },
+    {
+      "file": "test_deployment_guard.py",
+      "sha256": "4639aff872cfd7cdd37212846ccdd156d68796fc6aa3843d42f712f01b10f839",
+      "returncode": 0,
+      "seconds": 0.47,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "........                                                                 [100%]\n8 passed in 0.10s\n"
+    },
+    {
+      "file": "test_http_checkout_e2e_b5941.py",
+      "sha256": "4ad8d1ad41e37b98d1c1cee18dbb3bcf1130b5329221002b9e252fae319b8144",
+      "returncode": 0,
+      "seconds": 17.76,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 17.37s\n"
+    },
+    {
+      "file": "test_identity_cleanup_failure.py",
+      "sha256": "496c4721688074ec111ae825578ca57db8f95b7ee6da70e54489facb48eb1233",
+      "returncode": 0,
+      "seconds": 1.21,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.31s\n"
+    },
+    {
+      "file": "test_isolated_test_runner.py",
+      "sha256": "95fb820216bd29b3974c3845eaad12bf52fe544f4ded730b17684cb1b950f36a",
+      "returncode": 0,
+      "seconds": 1.19,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.23s\n"
+    },
+    {
+      "file": "test_logout_feedback_ui.py",
+      "sha256": "5f9645a2bb64e20cb1c8dba92bebe628cd945ec736298b8ba89c1162c8338aac",
+      "returncode": 0,
+      "seconds": 2.01,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 1.42s\n"
+    },
+    {
+      "file": "test_migrate_all_tables.py",
+      "sha256": "db3d8b980571ea89b2f489069410d46ea042d2756c5793c57f65e40d5df770b9",
+      "returncode": 0,
+      "seconds": 1.25,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......                                                                   [100%]\n6 passed in 0.11s\n"
+    },
+    {
+      "file": "test_migration_safety06.py",
+      "sha256": "c4fe999931152535898b4023e9747ce8731d1a3153b7e490bc1b98205df969fa",
+      "returncode": 0,
+      "seconds": 1.38,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.37s\n"
+    },
+    {
+      "file": "test_mobile_browser_runner.py",
+      "sha256": "69f66bed3bebc3b127b5bc5e58b4ff8722acc5b09ebc1263dd44379e1be02a34",
+      "returncode": 0,
+      "seconds": 8.21,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 2.15s\n"
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "a5b4a563197a0a78ec7c206a7d9be1e90777469b1c3ad38169c440ca21e8e05c",
+      "returncode": 0,
+      "seconds": 4.87,
+      "test_counts": {
+        "total": 38,
+        "passed": 38,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......................................                                   [100%]\n38 passed in 4.38s\n"
+    },
+    {
+      "file": "test_neon_identity.py",
+      "sha256": "47fdb74f033349d0b56a18495a98de6530b90b48ba987c7a05e0bef35f5f3120",
+      "returncode": 0,
+      "seconds": 2.85,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                             [100%]\n5 passed, 7 subtests passed in 0.11s\n"
+    },
+    {
+      "file": "test_neon_readiness.py",
+      "sha256": "e7d444e152c7246ee211b6925570a97f980d7bb27496fa33f15e3ab31d2749ac",
+      "returncode": 0,
+      "seconds": 0.59,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.18s\n"
+    },
+    {
+      "file": "test_neon_session_bridge.py",
+      "sha256": "0b52b81423aa8e4248f061d727f2f0ad2c5e94f5917fad32f804c120913f3e00",
+      "returncode": 0,
+      "seconds": 1.1,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                            [100%]\n7 passed, 6 subtests passed in 0.19s\n"
+    },
+    {
+      "file": "test_notification_policy.py",
+      "sha256": "58243d4c5e5b5d03ad31701dfab9b9bd9c6523903e2285d8c46970dc03a96345",
+      "returncode": 0,
+      "seconds": 0.82,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                               [100%]\n7 passed, 35 subtests passed in 0.19s\n"
+    },
+    {
+      "file": "test_package1.py",
+      "sha256": "49ef81987fc31a84f6dde2776d3b38c98b9d26b4bf7765af8ab9f64689d98de8",
+      "returncode": 0,
+      "seconds": 0.42,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".........                                                                [100%]\n9 passed in 0.08s\n"
+    },
+    {
+      "file": "test_package5.py",
+      "sha256": "9c8f6d7e3a8e8aac7a0751505a836ebb5a17bb2c2d81289c29c7473ab2c1a83a",
+      "returncode": 0,
+      "seconds": 6.59,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed, 1 warning in 6.08s\n"
+    },
+    {
+      "file": "test_parallel_access_b71_b75.py",
+      "sha256": "f20218f10b0301b5f8a17c710e287c05b21788921bef4e5725856eedbfc9c9c3",
+      "returncode": 0,
+      "seconds": 15.75,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed, 1 warning in 14.71s\n"
+    },
+    {
+      "file": "test_password_reset_postgres_config.py",
+      "sha256": "b7cb22517bca6b1b00e2384a5f93317d7fedbb65d437a8e974fdd6bdcecac34f",
+      "returncode": 0,
+      "seconds": 0.71,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".............                                                            [100%]\n13 passed in 0.24s\n"
+    },
+    {
+      "file": "test_payment_integrity_b60.py",
+      "sha256": "7b6181fb3420f31adb68859e8567d99a5a3f6827cd78cd67b8c086d792acf47a",
+      "returncode": 0,
+      "seconds": 0.72,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 0.18s\n"
+    },
+    {
+      "file": "test_pg_adapter.py",
+      "sha256": "03443b3001ae8a442d49ae20932c1db198af0a5c26b654ff1bc55f7bd3b1e589",
+      "returncode": 0,
+      "seconds": 0.75,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.20s\n"
+    },
+    {
+      "file": "test_pg_payout_ids.py",
+      "sha256": "a8fdbca00ae8dfb3c4d571c98df388a4bad0479dd80245f69c1bf0a5fc7e0da3",
+      "returncode": 0,
+      "seconds": 0.78,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.26s\n"
+    },
+    {
+      "file": "test_pin_recovery_http.py",
+      "sha256": "ddb11e1b8d538e9b3d2ca31cac9611567ac2be48cba9fbc713e8d519fc357231",
+      "returncode": 0,
+      "seconds": 41.51,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 40.01s\n"
+    },
+    {
+      "file": "test_postgres_api_bundle.py",
+      "sha256": "7a095817d13e052fa8803923510926415d4e32397ebb5ede4ff1e5b247173a29",
+      "returncode": 0,
+      "seconds": 5.99,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......                                                                   [100%]\n6 passed in 5.40s\n"
+    },
+    {
+      "file": "test_postgres_preview_probe.py",
+      "sha256": "97910150d957e916e7faa87c93550734dac19fc3c7f1eb7c808671e332a4dd71",
+      "returncode": 0,
+      "seconds": 1.19,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..............                                                           [100%]\n14 passed in 0.35s\n"
+    },
+    {
+      "file": "test_postgres_test_backup.py",
+      "sha256": "688cbfe49b5860e4031aa6902b398b9673ffb732535da7a9cbc25c9c8a77ca4e",
+      "returncode": 0,
+      "seconds": 1.27,
+      "test_counts": {
+        "total": 27,
+        "passed": 27,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...........................                                              [100%]\n27 passed in 0.88s\n"
+    },
+    {
+      "file": "test_private_cache_headers.py",
+      "sha256": "05a84e3966e60137976f3a5854df0e7259da073cb8227482130c2abe9eb7568a",
+      "returncode": 0,
+      "seconds": 2.82,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed, 1 warning in 2.25s\n"
+    },
+    {
+      "file": "test_product_units_ui.py",
+      "sha256": "f08388fa09a74321255a49edc4feb8433a56bfddc1452bd121c6892c51ebbe1e",
+      "returncode": 0,
+      "seconds": 0.81,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 0.28s\n"
+    },
+    {
+      "file": "test_purchase_records_ui.py",
+      "sha256": "018eb609ad85c3f691f6f44cf0384d976bb4dd2be951b17bffaf59a8e3c44db8",
+      "returncode": 0,
+      "seconds": 7.73,
+      "test_counts": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".................                                                        [100%]\n17 passed in 7.28s\n"
+    },
+    {
+      "file": "test_regression_diagnostics_b116_b120.py",
+      "sha256": "ed951b975f34400fb63df20736bf4603593a1a829412b74e31c06e7f8b48d459",
+      "returncode": 0,
+      "seconds": 7.23,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed in 6.75s\n"
+    },
+    {
+      "file": "test_reset_mail_keys.py",
+      "sha256": "68958da695c5cc923d39ecc8d4c8219e449e6c561ca2ee738175e3607152bb71",
+      "returncode": 0,
+      "seconds": 1.11,
+      "test_counts": {
+        "total": 31,
+        "passed": 30,
+        "failed": 0,
+        "skipped": 1
+      },
+      "output_tail": "..............................s                                          [100%]\n30 passed, 1 skipped in 0.44s\n"
+    },
+    {
+      "file": "test_runner_entrypoint_isolation.py",
+      "sha256": "8dda55561c11d8e53128d64f4bdacfaa303327dbe771454562958a92b73af8d2",
+      "returncode": 0,
+      "seconds": 2.62,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".........                                                                [100%]\n9 passed in 2.13s\n"
+    },
+    {
+      "file": "test_seller_compliance_browser.py",
+      "sha256": "a8e34eb8f2a20566334f428d03447a63c627d20af8392c9edb1e701516ccbe29",
+      "returncode": 0,
+      "seconds": 0.84,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      },
+      "output_tail": "ss                                                                       [100%]\n2 skipped in 0.25s\n"
+    },
+    {
+      "file": "test_seller_settlement_ui.py",
+      "sha256": "d18bbca77f3394cff1515e2349f9fcd86100f59c7ad0ffcc8df30207669eb864",
+      "returncode": 0,
+      "seconds": 1.77,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 1.28s\n"
+    },
+    {
+      "file": "test_session_security_api.py",
+      "sha256": "ee10211d9501479d5279adb1784e4c3d5473c0a4c769d0a142211e02b3ea6c66",
+      "returncode": 0,
+      "seconds": 10.56,
+      "test_counts": {
+        "total": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".................................                                        [100%]\n33 passed, 1 warning in 9.99s\n"
+    },
+    {
+      "file": "test_shipment_membership_guard.py",
+      "sha256": "8d0a75b84403bd1311bee01daf1c48117efff8a58d8a1a0224ebabf5ab87f242",
+      "returncode": 0,
+      "seconds": 9.49,
+      "test_counts": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..................                                                       [100%]\n18 passed, 1 warning in 9.03s\n"
+    },
+    {
+      "file": "test_stabilization_02.py",
+      "sha256": "e3e05cd8684157ccaeadde0ff995ef93cd8f523212ad4e7c9a8cba08f060f481",
+      "returncode": 0,
+      "seconds": 30.44,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......                                                                   [100%]\n6 passed, 1 warning in 28.64s\n"
+    },
+    {
+      "file": "test_stage12.py",
+      "sha256": "12bba0eeec8c387049e21d2dcdd9be08915f1175082bb58a24a73e19d12f59e9",
+      "returncode": 0,
+      "seconds": 5.88,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 3.60s\n"
+    },
+    {
+      "file": "test_stage16.py",
+      "sha256": "152500a5df3dc40f14c8ba33d5e1950e08dd37abba579df32ca2288738e04100",
+      "returncode": 0,
+      "seconds": 3.37,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed in 2.64s\n"
+    },
+    {
+      "file": "test_stage2.py",
+      "sha256": "ff13acc85236804c948e180d6b5f768dc746a43cde7a837ea2abd20c3c9ff5b8",
+      "returncode": 0,
+      "seconds": 4.34,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed, 1 warning in 3.18s\n"
+    },
+    {
+      "file": "test_stage23.py",
+      "sha256": "3352c71aaf56d0985eaaa16b5ce98b9165ef57da8dca38d52ef85956a5e252eb",
+      "returncode": 0,
+      "seconds": 0.59,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.12s\n"
+    },
+    {
+      "file": "test_stage27.py",
+      "sha256": "0673dccb52310f77ee823d054869f9c0ae7b76a56e22e00df028d2c4b534c359",
+      "returncode": 0,
+      "seconds": 0.68,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.18s\n"
+    },
+    {
+      "file": "test_stage30.py",
+      "sha256": "a0276f2d041f1db83a1f6c32a060593ae7b7436ae4a225ddbddfe580508aa664",
+      "returncode": 0,
+      "seconds": 0.62,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".......                                                                  [100%]\n7 passed in 0.10s\n"
+    },
+    {
+      "file": "test_stage5.py",
+      "sha256": "beca63856da69815f9e58c3a43a31c515bee994e461928a0b1a0b4c17d979abe",
+      "returncode": 0,
+      "seconds": 3.71,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 2.78s\n"
+    },
+    {
+      "file": "test_support_cases_browser.py",
+      "sha256": "db29b06ab1fec640e72c29582f60d4c79d51df93c997ae658f6b13fc34e3cbf8",
+      "returncode": 0,
+      "seconds": 0.6,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      },
+      "output_tail": "ss                                                                       [100%]\n2 skipped in 0.19s\n"
+    },
+    {
+      "file": "test_transaction_safety_b76_b80.py",
+      "sha256": "bfe05d4d7e61739b710836425a512017e752ee16c2e2537f14e1f4c71d721415",
+      "returncode": 0,
+      "seconds": 5.32,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed, 1 warning in 4.83s\n"
+    },
+    {
+      "file": "test_web_catalog_orders_race.py",
+      "sha256": "afa68e36905def46fc5a720522267fb316bd38cb474b53ad0042bc0da6500434",
+      "returncode": 0,
+      "seconds": 0.56,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.10s\n"
+    },
+    {
+      "file": "test_web_dashboard_safety.py",
+      "sha256": "d5fe5130d0ec46daa923f4da0b5a64f4c6938c50a1c14eae349f5538682f788f",
+      "returncode": 0,
+      "seconds": 0.45,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.09s\n"
+    },
+    {
+      "file": "test_web_finance_report_race.py",
+      "sha256": "0b67b755d900eddb5c8b67916bb7947bf73df14cf8836a36742adbd38e808395",
+      "returncode": 0,
+      "seconds": 0.49,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.09s\n"
+    },
+    {
+      "file": "test_web_order_action_safety.py",
+      "sha256": "c6e327aae6baa41ecd5921f8679e17f14af41d36d71132c7fa844a2888bb984d",
+      "returncode": 0,
+      "seconds": 0.45,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.10s\n"
+    },
+    {
+      "file": "test_web_single_write_guard.py",
+      "sha256": "7d2f9dbf631dd7e315217a3233942882321b1ddc73b5af53af3c6062f0eb843e",
+      "returncode": 0,
+      "seconds": 0.82,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..                                                                       [100%]\n2 passed in 0.19s\n"
+    }
+  ]
+}

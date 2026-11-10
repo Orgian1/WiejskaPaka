@@ -1,0 +1,71 @@
+{
+  "application_sha256": "b84276981d2ea65301bc17ecafeb637ba16bd7f42429199de8aeed523eed5bb1",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 112,
+    "passed": 69,
+    "failed": 0,
+    "skipped": 43
+  },
+  "executed": 4,
+  "planned": 4,
+  "passed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "a5b4a563197a0a78ec7c206a7d9be1e90777469b1c3ad38169c440ca21e8e05c",
+      "returncode": 0,
+      "seconds": 4.43,
+      "test_counts": {
+        "total": 38,
+        "passed": 38,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "......................................                                   [100%]\n38 passed in 4.01s\n"
+    },
+    {
+      "file": "test_postgres_full_api_optin.py",
+      "sha256": "8c2fbf6617856e13bf64f9aa133c613454829bc518ccd30df98942a28ef1675d",
+      "returncode": 0,
+      "seconds": 0.7,
+      "test_counts": {
+        "total": 43,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 43
+      },
+      "output_tail": "sssssssssssssssssssssssssssssssssssssssssss                              [100%]\n43 skipped in 0.36s\n"
+    },
+    {
+      "file": "test_postgres_test_backup.py",
+      "sha256": "688cbfe49b5860e4031aa6902b398b9673ffb732535da7a9cbc25c9c8a77ca4e",
+      "returncode": 0,
+      "seconds": 1.15,
+      "test_counts": {
+        "total": 27,
+        "passed": 27,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...........................                                              [100%]\n27 passed in 0.72s\n"
+    },
+    {
+      "file": "test_b11307_schema_lock.py",
+      "sha256": "4229a3a9bdf814b0e6a25ca278a146375d86e2ac9a80833338cc77314bd8943d",
+      "returncode": 0,
+      "seconds": 0.75,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.25s\n"
+    }
+  ]
+}

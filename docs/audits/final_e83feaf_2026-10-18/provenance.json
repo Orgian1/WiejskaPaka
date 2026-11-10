@@ -1,0 +1,51 @@
+{
+  "tested_commit": "e83feaf449f273a203bf82c0ab44b8f2ef90b0dc",
+  "run_id": 39138446651,
+  "run_url": "https://github.com/Orgian1/WiejskaPaka/actions/runs/39138446651",
+  "evidence": {
+    "runtime_sha256": "e75d0a46b95817474bdaa3e875c93885d0c5912f885b82e600c8ea721b58309e",
+    "tests_sha256": "9e9d3d0f976cc729d52946e478bd4a8ba77835d8f9bc39d0c93141a3188cad71",
+    "test_sources_sha256": "cdad02216283fd96a29d95d69bbd24ef2c8624587eeaca7a44d684b68e916b71",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "f2eadaf4dd935593a9e6865a9df152973d72812bdc0bfb7cacd50b9c649c1cba"
+  },
+  "verified_archives": [
+    {
+      "artifact_id": 12141145036,
+      "name": "postgres-summary",
+      "sha256": "af68da3230eb4d0205139dad4b52f41519e7b45dd76a07c24f564cbcf81b3e04"
+    },
+    {
+      "artifact_id": 12141105659,
+      "name": "windows-recovery-summary",
+      "sha256": "4f0cef4d38341aa2abf05c958012a3a2c6758f6f5e91272ea0d23bdf5dd23b64"
+    },
+    {
+      "artifact_id": 12140218325,
+      "name": "chromium-summary",
+      "sha256": "04e0830b6bcc0433798ac2ddc803e9d4835fc259282c01ab77ca0aa26fe9a3c4"
+    },
+    {
+      "artifact_id": 12141008946,
+      "name": "windows-summary",
+      "sha256": "f47e035e405589f8d86144c2531c9c27d7f13fa690af3a0953fc0b82108a6ff4"
+    }
+  ],
+  "linux_skipped_modules_covered_by_native_gates": true,
+  "linux_optional_postgres_modules": [
+    "test_postgres_environment.py",
+    "test_postgres_transaction_integration_optional.py",
+    "test_postgres_full_api_optin.py"
+  ],
+  "linux_optional_browser_modules": [
+    "test_preview_credentials.py",
+    "test_catalog_page_browser.py",
+    "test_support_cases_browser.py",
+    "test_sample_demo_browser.py",
+    "test_admin_seller_review_browser.py",
+    "test_seller_compliance_browser.py",
+    "test_mobile_offline.py",
+    "test_roles_offline.py",
+    "test_password_reset_browser.py"
+  ]
+}

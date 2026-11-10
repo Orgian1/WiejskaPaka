@@ -1,0 +1,18 @@
+{
+  "local_commit": "5d3652a",
+  "github_commit": "3f4fbd37f77267eefea8f3c88c1b284dc0e5b4b1",
+  "counts": {
+    "total": 4334,
+    "passed": 4253,
+    "failed": 0,
+    "skipped": 81
+  },
+  "modules": 339,
+  "sources_unchanged": true,
+  "fingerprints": [
+    "83877aa44810380e5d666196c006d7d820547dd54b5a7a9747a08ddb23d43e2e",
+    "83877aa44810380e5d666196c006d7d820547dd54b5a7a9747a08ddb23d43e2e",
+    "83877aa44810380e5d666196c006d7d820547dd54b5a7a9747a08ddb23d43e2e",
+    "83877aa44810380e5d666196c006d7d820547dd54b5a7a9747a08ddb23d43e2e"
+  ]
+}

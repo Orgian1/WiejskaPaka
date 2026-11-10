@@ -1,0 +1,18 @@
+{
+  "run_id": 40174219320,
+  "head_sha": "6839fba5cb9f78c037dec932e2be2e693f65867c",
+  "conclusion": "failure",
+  "successful_gates": [
+    "postgres (16)",
+    "postgres (17)",
+    "chromium",
+    "windows_recovery"
+  ],
+  "windows": {
+    "passed": 4456,
+    "failed": 1,
+    "skipped": 215,
+    "failed_module": "test_ses_feedback_http.py"
+  },
+  "interpretation": "oversize HTTP body case had an oversized automatic pytest identifier; shortened in current branch; actual Windows rerun required"
+}

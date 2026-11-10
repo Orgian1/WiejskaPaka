@@ -1,0 +1,23 @@
+{
+  "runner": "Direct invocation of existing dependency-free test functions",
+  "passed": 16,
+  "failed": 0,
+  "checks": [
+    "test_web_dashboard_safety.py::test_dashboard_async_reads_guard_session_epoch",
+    "test_web_dashboard_safety.py::test_courier_confirm_only_while_dispatched",
+    "test_web_dashboard_safety.py::test_farmer_pin_validation_before_request",
+    "test_web_dashboard_async_roles.py::test_farmer_report_checks_session_after_success_and_failure",
+    "test_web_dashboard_async_roles.py::test_farmer_mutations_ignore_old_session_responses",
+    "test_web_dashboard_async_roles.py::test_admin_report_cannot_render_after_logout_and_replaces_old_report",
+    "test_web_dashboard_async_roles.py::test_notification_mutation_cannot_reload_after_logout",
+    "test_web_dashboard_refresh_race.py::test_dashboard_refresh_has_request_generation_guard",
+    "test_web_dashboard_refresh_race.py::test_notifications_refresh_ignores_older_results",
+    "test_web_farmer_inventory_report.py::test_farmer_dashboard_displays_inventory_and_stock",
+    "test_web_farmer_inventory_report.py::test_admin_report_is_readable_and_replaces_previous_report",
+    "test_web_courier_confirmation.py::test_courier_pin_result_does_not_claim_success_on_wrong_pin",
+    "test_web_courier_confirmation.py::test_courier_confirm_prevents_duplicate_request_and_clears_pin",
+    "test_mobile_form_accessibility.py::test_delivery_fields_have_accessible_names_and_autocomplete",
+    "test_mobile_form_accessibility.py::test_pin_and_stock_inputs_have_mobile_hints",
+    "test_mobile_form_accessibility.py::test_mobile_cards_prevent_wide_buttons_and_have_readable_inputs"
+  ]
+}

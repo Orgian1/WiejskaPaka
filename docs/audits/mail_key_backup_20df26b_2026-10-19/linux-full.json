@@ -1,0 +1,3582 @@
+{
+  "tested_commit": "20df26b139fb402ce67912a38b2ef0be9c81944f",
+  "scope": "Full local Linux regression; four isolated shards",
+  "success": true,
+  "complete": true,
+  "sources_unchanged": true,
+  "application_sha256": "84be405d702c5b6674eb71a8d277586705e9b0b6b08f3b62c1403f4b2f55958c",
+  "executed": 324,
+  "planned": 324,
+  "test_counts": {
+    "total": 4109,
+    "passed": 4042,
+    "failed": 0,
+    "skipped": 67
+  },
+  "modules_evidence": [
+    {
+      "file": "test_account_security_api.py",
+      "sha256": "4e5e331390c191c24dc1d6bcfa3ac8c584558cb731a07998ed27e8e0472ce572",
+      "returncode": 0,
+      "test_counts": {
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_accounting_write_auth_43_47.py",
+      "sha256": "cb02d5508e87d70d7eee1678398f8940a5dfc34336b6add2206ad2d15ead1eaf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_admin_seller_review_ui.py",
+      "sha256": "11ea73335899dd401c1bdfea19cac155ec43e0e58a7b703a3b38ad9970b1b12b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_auth_failures_offline.py",
+      "sha256": "35b693251c5cafaa012fc9e32c0dfd113a15ce907a00403fd095b659440cb6ca",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10561_session_revocation_http.py",
+      "sha256": "bb83f45f06ff0f1c07fc5db76fbb037ad3eb9b3ba2628144c51fc53a67fc30e2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_financial_integrity.py",
+      "sha256": "d669b9dd356ab5edda06ecf5eeed82f0fc2b3fd0cc1ebb91f2f90e43960d77fc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_paid_delivery_rule.py",
+      "sha256": "b7724a38000ddf7c6c41a533fdfeccab13cde057f48a8c2d1a5caf308db22f2b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11281_checkout_multiline_races.py",
+      "sha256": "5bb89d27b4a61699029860b9a509872a231c129f56a45c1b2a700ba9081cae69",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11288_transaction_failure_boundaries.py",
+      "sha256": "86b1b1ed60e6c935cb2125536815ca8e4abdfd2fb850fb82031f5fc648835731",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11298_startup_atomicity.py",
+      "sha256": "0ddd67215813eb912f4b6a65fa70ebe7da62be8b05f00a690c562300e2954e7d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11302_postgres_role_gate.py",
+      "sha256": "e443313ddbb66a9bfc8984f1c2d5e96b21e2e07013d4d009f7c0ed0354983bbc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11308_runbook.py",
+      "sha256": "a2820d11e179a6b7fe0a78d05b441fc4682b909a51d082e331915da82db4f4be",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11315_generator.py",
+      "sha256": "8ed332afade0cf441e55a9299ae5704d17dd00e5194ecd4fb47d71dc09485b58",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b121_b130_runner_hardening.py",
+      "sha256": "a4e572836375e5f0af1fa61c0eeff3ca0c1b48823306bb0eb39bdf9d1e68e0b9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1381_paid_shipment_cancel.py",
+      "sha256": "df73743ebbefd09f9ffb615a38d5a1ef84c9711eab7444854122fc66afdc7841",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b161_b200_manifest.py",
+      "sha256": "ddeb2cbd1adf4d7dc5e20b9c0de8b73e4d3f8e10d4d94195999d6bade415cfe7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1801_concurrent_stock.py",
+      "sha256": "f17bd9ceb210091e6f02b7d333df6a5b3730e3bf67d2c4a219cf97efcd52622a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b201_payment_state_audit.py",
+      "sha256": "94926a6bda16bd7bfd3f5ed98a0b0bee0a2727cf44d960a2340110bb0227d389",
+      "returncode": 0,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2281_stale_regression_protection.py",
+      "sha256": "bf76c2f2dc73ad5de6f7fb10cb0b484c675628582530943dea201d3aab3d750d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b261_b300_order_lifecycle.py",
+      "sha256": "4dcb917e40ae22ad94fec64b41b68be577044c37df5fea534b5cd8aa7c5dbd27",
+      "returncode": 0,
+      "test_counts": {
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b321_farmer_product_edit.py",
+      "sha256": "8036f9fe54cab396007541ec157e1030dbeafc4b15f4c7bcf8dd577495e400d7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b341_product_details.py",
+      "sha256": "6f0b453fdf05cbc9ddde6c0ce40e2915995c46d8047173d36d9990f9873ffbc5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b361_cart_quote.py",
+      "sha256": "866fb2527c8f11cda6c75e40e3a4be05e93b7a5cf61f521dbbcd8aad698123d8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3841_regression_progress.py",
+      "sha256": "ef495a60baaf878b2d368a0d1ffa46cbbd7e49fe660006daef881eff9d70a3bd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b481_multiseller_checkout.py",
+      "sha256": "aa1258ff1ee1054644d89c8d492c80348da622baa8f4041f68a20c8b282029d7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b581_shipment_pin.py",
+      "sha256": "8f9347200f798167a211e4a756119ab5b93914dc660b2317d62ee76cbc8e77c1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b681_shipment_details.py",
+      "sha256": "d5f446e6ac2d2b1db8a262f9b064f96de66fc09a2497978192ffed5439ba6db6",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b741_admin_shipments.py",
+      "sha256": "288f6a8db8f2b86008593c36a52793debb25d87f4200ec77d959fbc708783868",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b8761_http_response_headers.py",
+      "sha256": "870dbd94f7a87b1d1e2895f5d784c7bb67f55d7987026113daa3f842fb22c660",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_bounded_reset_worker.py",
+      "sha256": "24a4c1e10e10266ebb649775117e0e2399cabba2a02cde78d8846b71d917f682",
+      "returncode": 0,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_browser_navigation_contract_b25.py",
+      "sha256": "1f00a9f9f8862f7c9106b78524bc44fe289d3d69575b710d1460226241470f59",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_capacity_targets.py",
+      "sha256": "7df57c4d9818d53a5073e7c67165809394f78dc40a07c4e1361f48eaea9ad608",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_checkout_vault_api.py",
+      "sha256": "c1f6c270322db86c73959fcbed9e6680e7bde7097e11176bdae5251c1407bde3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_cross_account_isolation_b66_b70.py",
+      "sha256": "32f25f51007668d4de05b011761c7852efc8cb88cd5a3e0c6930a917c2b4fac2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_demo_readiness.py",
+      "sha256": "3c16bb32b2db010e567911a20f39b9b14843c4e16bbca7b6464261fc7b7cb65f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_final_audit.py",
+      "sha256": "994f22a2a09f54c3c6562f7da117c9f044d45d1a99620961c5629f91fb8ca726",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1013,
+        "passed": 1013,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_http_server_fixture.py",
+      "sha256": "f38672df14aa52e82b74ecc3da6d73df370563033d4a65e372775d8e8ce29f57",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_inventory_lifecycle_package.py",
+      "sha256": "9fedddd434be2d90963aac85e4b29bb1a6493197c0bef8b74130fe60cf5f3641",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_local_marketplace_ui.py",
+      "sha256": "7b9395bb53fba3d48a840602308094d642ae3e3b46d58d256380a6aff30911c9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_destination13.py",
+      "sha256": "74ec8cf5e4926f242dac84ebc86c21e804c8bb7dc7dbb9b6880d14517d2b4a48",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_snapshot.py",
+      "sha256": "831f5d84be2ec1311afffe15a4171d3589b8803732da7ad97ce17db9cf798548",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mobile_form_accessibility.py",
+      "sha256": "5c958dd217c8f92de7ae4dc31c41c324b455329f2a65267b057396b7594dc64f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_native_gate_schema_review.py",
+      "sha256": "d5af10b01f82628ab1498c4aaafab371dd00f00bca7ff24ff9172c9843671a79",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_order_access.py",
+      "sha256": "dafe462835bba61458534fc3c967b1c4a2a13dfe0fc201365fb8dba1833cccca",
+      "returncode": 0,
+      "test_counts": {
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_rls_policy_plan.py",
+      "sha256": "e8878d4ae0b22dbe160961a5b18ccc0c03976bad240eb8db08cc913ed1a018b9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_sql_inventory.py",
+      "sha256": "86b23a5b28439bfbd9bde8222a1c1b05d6d4c773b890706b2d8ab0bf90a25fee",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_order_amount_limits.py",
+      "sha256": "490e9b819dd95b2f7c1b72a586f503a279c19a6dcdf6b3e94a9439c827c87253",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package2.py",
+      "sha256": "7f56873cae4cce220d6a7eff4087d953aa48579403d1b233f9416c64ce53a762",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package_48_52.py",
+      "sha256": "7c69c185981e5582603ac09b3bc27bc7ae062ed2a6e643b868de2f5ef5ccae2c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_password_reset.py",
+      "sha256": "2f9b35cd41e532c2d933a4153b0a60b3eb75d7e5ca01351956ecbf98c7b7a9c7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_password_reset_ui.py",
+      "sha256": "146d9367d764064a7bb3a02c4f6fd10f58bc55854473595e79bbed076e719e29",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_payment_integrity_history_audit.py",
+      "sha256": "1d84715eec8b0350ab1b335aec8c83b5e591f20a434ecfa3b02bec96c572a967",
+      "returncode": 0,
+      "test_counts": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_adapter_edgecases.py",
+      "sha256": "64f9a3a0fce51e1b641722881d87f328f4e5170188b59810c00e36c7c997926c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_sql_compat_53_65.py",
+      "sha256": "4a7f38a792a0ab52f175c71d2168637ab5bcdb184390c150115aea54f84b24ae",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pin_recovery_policy.py",
+      "sha256": "237face9dd9003107902b4c40a1cb0385ccdcbf08888c52ab6ad9a206b9056db",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_environment.py",
+      "sha256": "ae85487ef11699280140e8a763c1e7dd7d5ef8148a9691391fa2ea1ccd720802",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_postgres_readiness.py",
+      "sha256": "d91c20c30836c1c5f73219273cb8f639ec8ac274df6ae0fd2d3c3869825eba97",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_transaction_integration_optional.py",
+      "sha256": "b84b99f305f35756bcf1eda2cb87e2ee79c4137c353ce38af89f6dfd99c13f3a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_purchase_record_http_restart.py",
+      "sha256": "c1bf423b291f86bcfe3433c0d46378ff90c896eb8e27903060ea7a3309c73d81",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_queued_reset_http.py",
+      "sha256": "87a2f563889e98509cd24c7c7a2a0175ca5fa623d25135d308c32f31f79a1401",
+      "returncode": 0,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_regression_runner_b101_b105.py",
+      "sha256": "c7fbc09555f7e8957cbdc352367ebc19e2e3d08154a61da71b462ce5c0798ead",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_reset_mail_queue.py",
+      "sha256": "4f008cae82f4a0bbe3543129aa4aa54d543b0461f00074778ea6693d947687e1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 50,
+        "passed": 50,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_sample_demo.py",
+      "sha256": "52fd84e1391bedb8723634c1e9aa3d85a144074614210b3153f51dc538a7cded",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_seller_compliance_ui.py",
+      "sha256": "9971ea8df0fb7e428fe19525e8416e7c069f6a714cc36f5fcdcf59b34308ce5e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_expiry_b86_b90.py",
+      "sha256": "104742270caa36576aa77bd3e460eb8868f006775bc896fa3d0df5865e3e2735",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_security_http.py",
+      "sha256": "b0bfd6fc53eabca26b668575aa8e69da1ed2c25548d790abce7e57f40c7f9e41",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_smtp_reset_transport.py",
+      "sha256": "d3049821aae7099bd886e046a840d399847dc1d02bf8875618646fc97b662af0",
+      "returncode": 0,
+      "test_counts": {
+        "total": 30,
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stabilization_03.py",
+      "sha256": "f8826a7e27dd3b067b642e3d311b0205633eda7388b55189f3d3c500aa559b2d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage13.py",
+      "sha256": "d54e62fca7c528a20d4881292958967bee60aaa7a689570f851f2358c8b365c2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage17.py",
+      "sha256": "4df212f9dbbc0a2ee8696fbdc9204663fc719923c57f2e236d39bd2eeb4863bd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage20.py",
+      "sha256": "71a6d5af1744170bfdf9f009e2d740465eaa19daf7bdcfe9efc8eb76414720f8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage24.py",
+      "sha256": "11690c80485883669bd4ee7ca9afc4977cfe6af710837bd69744c57332259a6e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage28.py",
+      "sha256": "adbb342c3d0b7d9ad503bb5c0830b224d827339e1f9ad5aadd2d962fdac55dbf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage31.py",
+      "sha256": "01bcaa0f75e2e657ff687f0605b01bcdde91554fb3e5f52799085f2fb177b138",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage6.py",
+      "sha256": "ba01e674d99f22af68e831af06ec3b13476ab7d08031c86421ddb96888c20661",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_support_cases_http.py",
+      "sha256": "8c58d6d3def2135bffa4f013b8917d21f13a6e62746944a218a4e186422c3ed3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_transaction_session_boundaries.py",
+      "sha256": "bc47491625db7748dde85219d5acef4e618f477e03ec145e1fa2508b61ec8a52",
+      "returncode": 0,
+      "test_counts": {
+        "total": 48,
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_courier_confirmation.py",
+      "sha256": "d3998cae1b731a3d4ba01e79fc33c271e6f852a93531036f7b3a4a4333101629",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_farmer_actions_doubleclick.py",
+      "sha256": "180e6a76b9e78e6c5551b814a733d75aa7ac7b50acd238d3107fab4d8df9c630",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_login_race.py",
+      "sha256": "925649ac8c98e39a17b286481df5e12fdb0e4743589a7ac65dfdfda21e03e1ab",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_order_form_safety.py",
+      "sha256": "47240bbbf6d06c507f2ae2afd2257dba8dee24d21731b65147a2bc3097b02153",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_account_security_http.py",
+      "sha256": "3340f16b8991dea4f4207bd8f5dff4fcf4b42044ee0105478f928fa826e2a36f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_admin_finance_ui.py",
+      "sha256": "ed809e0e7dc7a58ec43f264d42216981d9f11a62d906e4fc21b73fd36c8ff051",
+      "returncode": 0,
+      "test_counts": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_api.py",
+      "sha256": "781badfa595c5c7a2bd37f47bcf3ee6799a14ce289f53a3289a08e4dc6e53097",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_auth_password_ui.py",
+      "sha256": "d3ec42fef8ead659ead10ac9434a5503e2cc4ef960ce82e2f045382c2b58d6ca",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b106_b110_regression_diagnostics.py",
+      "sha256": "daa1b5647c9b0b335ad0c8cd30c39f3a286d8b78cb8b96643c7f8c64b8c29ebf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_http_limits.py",
+      "sha256": "b7025302f13393f283dd7a3aa3bb24188abde6b633e05ad7aae2c732e0de38f3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_regression_evidence.py",
+      "sha256": "fc93cb04471187602a660d0d0d82330a80e0422fa25e206a9c85a9b50325f926",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11284_postgres_retry_policy.py",
+      "sha256": "6ebf071c9a1565447ec17098f3be62b4d3f1f192740ef849c1948b0a1950861d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11294_database_probe.py",
+      "sha256": "1a2acafdc1dd4aea83329d2aae45f765c27b2a334684899783a16d8a8f5e76cc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11299_server_cleanup.py",
+      "sha256": "794c5302c05186311b1cc2825b524f0296da2d7440273234435dc4c8f2bc6bbc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11305_migration_manifest.py",
+      "sha256": "bb94f7c23b3b3db44694bef5bffe499731f743cb52cbe044d9e2b31d9d636391",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11309_atomic_migration_gate.py",
+      "sha256": "85c4872e8e8720d3113d1e3fce9004c4d426b7981ff46ab07ced590d93ebfa67",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11316_plan_portability.py",
+      "sha256": "9187cbfbd39b2609dc10310593af583ace17e11f1e1cd2ac0dd0b7db57659625",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1261_postgres_transaction_portability.py",
+      "sha256": "35590e2f660febab208a743bf00c37f3c2ba94a84fc60b594a6c1b273c0132cc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1441_paid_cancel_panel.py",
+      "sha256": "d93b40cac9f5bfd118be29adaaf077365687d7a7abea3808a231e99c7417199f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1621_multiseller_shipping_regression.py",
+      "sha256": "80fae3a641b9a24e8bb399f46dc346e897fddbbaa97e25854ed7b577714043f1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1861_quote_ui_contract.py",
+      "sha256": "1a773674e9bf9dd2285423e58535ec8aa682cd4a04dc89cd7389359bd9afac74",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2101_extended_gate_manifest.py",
+      "sha256": "621fff444038477c021854ce1c432b6ad81b98da17265c0f77c633cec1e24749",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2341_resume_regression.py",
+      "sha256": "ac6d17a32b3475b0d85881a35d8df5fbe91c77881a37637912bfc42f899616b1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b301_order_integrity_extended.py",
+      "sha256": "debd665c25a613f87a1fd616a320390f3dd21b2f221d07765aa567ae64498e4c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3241_checkout_session_races.py",
+      "sha256": "cb18df78bf54fed5a0351332744b59bd74172105c4ff5c0c95571f91d5b517a6",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3481_direct_idempotency.py",
+      "sha256": "744d2aec57a6f5db3d84512a28c45616ce0ca8638b3d034c8acf61ff88b1c662",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b371_saved_cart.py",
+      "sha256": "f6d84d35cdff40bc40ca1fbaf2389613e634825d2176f2768f7039b227cbe321",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b401_checkout.py",
+      "sha256": "82d715b9f008de1b57cd62d32ad7ea0e8b30a00a117554853efcac55afe4e738",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b501_shared_delivery.py",
+      "sha256": "3c9ad62e7987654f6291c1b7a60a21821f49bd4eb726e2cf476ae2aada974834",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b621_courier_shipments.py",
+      "sha256": "5db35f117f996448f057a7bd00efc005c38c2df153f159ec7235db77cdfc8f2d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b6961_auth_dependency_inventory.py",
+      "sha256": "d328202d14c2b596b3391f41704964aa2d0f6f91f18ec6c89d560d8b9926a847",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b7681_cross_account_http.py",
+      "sha256": "355bdbd5fbec8bc14790344fc9927996207671c340311be666a52a2fb8c071a3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b901_reconciliation.py",
+      "sha256": "014eeb2e97da73fb7553a663da18700de1a4d5e65d7ea376028b9f4a1de9e0f1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_bridge_b41_b45.py",
+      "sha256": "8fc9ce31eee5275238b97ea62ef7cd866149636be33ba749ad9637863352e085",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_browser_screenshot_option_b28.py",
+      "sha256": "1b3e774786bc92a8b6f688338b3a7ea121fab886fe49ad05b4fac574b8b2d423",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_catalog_page_browser.py",
+      "sha256": "b467fb0450fa4f6b6de18a1cf326f45eaaaa0063e2317d118e298f49a32b3de9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_checkout_vault_http.py",
+      "sha256": "8c23cb77b6e3b3e18216a8d4d3fe8282f66cb681673e7ab4267badcb8a36d426",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_delivery_access_stage08.py",
+      "sha256": "88178c2fc044edf2bcf874a521d12a8e2bc5a105990ac28cf4cfcc43b47a01b9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_deployment_guard.py",
+      "sha256": "4639aff872cfd7cdd37212846ccdd156d68796fc6aa3843d42f712f01b10f839",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_http_checkout_e2e_b5941.py",
+      "sha256": "4ad8d1ad41e37b98d1c1cee18dbb3bcf1130b5329221002b9e252fae319b8144",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_identity_cleanup_failure.py",
+      "sha256": "496c4721688074ec111ae825578ca57db8f95b7ee6da70e54489facb48eb1233",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_isolated_test_runner.py",
+      "sha256": "95fb820216bd29b3974c3845eaad12bf52fe544f4ded730b17684cb1b950f36a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_logout_feedback_ui.py",
+      "sha256": "5f9645a2bb64e20cb1c8dba92bebe628cd945ec736298b8ba89c1162c8338aac",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_inventory07.py",
+      "sha256": "3c75435108cb34f4a2dede559a222b5ed30b5867dc5ca97162f8c31934a90c25",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_snapshot12.py",
+      "sha256": "04a78e52b90ff19cc87f684139983348eb4608f9bc56512cd2cd5d8543d3ebbc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mobile_markup_regression_b9121.py",
+      "sha256": "ff2d7f5be9be142b72003bc674f0a21eadbe9aff0f3c9249b1cc4f5fe90585cd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_api_stage12.py",
+      "sha256": "af56c4899e221c11111b22e436ab6eeaa88b61e5647ef84c4904511326994e8a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_permissions.py",
+      "sha256": "86a9462896d74b8550946db5955ba90cdf074b993b24acf0d07545c743bec45e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_rls_preflight.py",
+      "sha256": "c757070a8faa32041cb6d548f5af590bebe69c643ca2ac2e37c1a12b15093684",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_sql_inventory_stage17.py",
+      "sha256": "048867dffb3042b933073c124e89262e44ddeafc312d54de80034c569b9f319c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_order_audit_cli_b251.py",
+      "sha256": "164fbf97990cfd5d07e3e2d0be7a303d7140c0c16753cb0f867a9d30b44eed0e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package3.py",
+      "sha256": "c200f3d0dd680da14d5d6647fee9fffa46069c59789c071fc5dbd6f7d5b7353a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package_81_90.py",
+      "sha256": "193a7416337bf1d8afd551dc002b8699845a0501713a106bca212f66dee72360",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_password_reset_browser.py",
+      "sha256": "ce10ff7a085c8cb9eea956af69942cedb4557d9d1605f7d8e26a8f3af260bb38",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_payment_concurrency_audit03.py",
+      "sha256": "6d0e9f2856e098f8c4f26e54345e3c529525f03d023bb616bd8fb3d175b0c93d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_payment_invariants_audit02.py",
+      "sha256": "9c09e90459167777e548a2f1c33a76b350b0adffbbcc04eb10205f1ec2d01edf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1009,
+        "passed": 1009,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_audit_dict_rows.py",
+      "sha256": "10b15ba24f0f7723e255cbd16f7d084727260d96dbb023c3e1da1fff0032002b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_phone_demo_launcher.py",
+      "sha256": "81019323bf0aad9cc68d23e233719823ee183a344bde18a331183e31494d9cf9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pin_recovery_ui.py",
+      "sha256": "1c93caa271b30eb2232c1512094185a311c33efeafc7009909b983c012764c45",
+      "returncode": 0,
+      "test_counts": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_full_api_optin.py",
+      "sha256": "e038ca37b6bb93d165d3a38e521b8d732a472ddc874f6a7f6da6ba70e62bfe03",
+      "returncode": 0,
+      "test_counts": {
+        "total": 39,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 39
+      }
+    },
+    {
+      "file": "test_postgres_schema_preflight.py",
+      "sha256": "cd237fabddd3c15c4e096e36f1353063471a0b307a7d34225abab96ced2ec276",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_verified_db_stage18.py",
+      "sha256": "af8a1038f69722fb1d895d2b6d8c0984871a8d218ddbdfd3c9c59256ecf01957",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_purchase_records.py",
+      "sha256": "f3e4334463dd73b3b07efed165b3968acb7e2b608a601a5002cc1ba8e6250b25",
+      "returncode": 0,
+      "test_counts": {
+        "total": 36,
+        "passed": 36,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_refund_order_context.py",
+      "sha256": "074352ab3970b7442d33f8bdf58c76f2c9f186f5c45ddc18e65aaf36d5429c65",
+      "returncode": 0,
+      "test_counts": {
+        "total": 24,
+        "passed": 24,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_release_readiness.py",
+      "sha256": "b86a14babbaaf6d8a5115dcee658e209f7de951f1436a93da2c062e018690d0b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_reset_mail_retention.py",
+      "sha256": "d0fd8c3f4ca4fe54ada6b6724e583307df576b1438e21c25184d8beb1ce25415",
+      "returncode": 0,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_sample_demo_browser.py",
+      "sha256": "3ad02b053d637c126f5d170e05ee9a9d7d057e62228125fadf7fbbe0c988b497",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 10
+      }
+    },
+    {
+      "file": "test_seller_payout_ui.py",
+      "sha256": "445cf64119de022b3b6ce21a55b5e55089121c50b4bd8cba334c225989c1442c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_guards_b81_b85.py",
+      "sha256": "55602aa0fe5c0e92cab3590c566d966ad008f6479a67306c7762b8e9d877cfb4",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_security_ui.py",
+      "sha256": "2aafc3cee24218ab021f5856e2ab682436fccc05f7849bb5cacedd7fda7b7f68",
+      "returncode": 0,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_sqlite_recovery_rehearsal.py",
+      "sha256": "5bd8b5f801fbc5558b48b4b5ae401ccf55c337f9f2480fafbd2e9a9742127a53",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage10.py",
+      "sha256": "3b8e344d7adefceed0090b68e9db9e9c56147ef01bc9bdf72c7f16517af1e067",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage14.py",
+      "sha256": "416b10c89d9ab5eda9c37d3ef4b155267b254bc3d6fdb9401b4fe7e11ec6bee5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage18.py",
+      "sha256": "83d606bd091c6738c56575a01a7960dc3d0d820c359855bbdd8838a6e2e3e432",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage21.py",
+      "sha256": "7ff8b6eda10cfe58558e7aebf62be6b9e4a115c28dee07b8fdd095638eeaf7c9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage25.py",
+      "sha256": "0bc0dfaac963f4f627c7000c13e9e41289838430c73611b2551f170e4baaecd8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage29.py",
+      "sha256": "a06459fbd9b23bc8c22c13c00f47b166eafdcf399aab99bf6d43038e4bdb2cf0",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage33_37.py",
+      "sha256": "b58893b0f98113816ef29f8003b1c8755ba60891e4238e76c00f25f6bfad17b0",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage8.py",
+      "sha256": "371ef2690c83ff5e93527d3c7b5c7935e085994661a241adccd46586758de338",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_support_cases_ui.py",
+      "sha256": "747a80f7c2e1cb192d977bbb4fd2f2c63b65fa45fbc8a1b6739803e42b4b0a52",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_ui_dom_contract.py",
+      "sha256": "62de9662857d032d88227276f216ca90a2ce1097b979a2fdd651d31db21036ee",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_dashboard_async_roles.py",
+      "sha256": "c54d82616632cc5c29ce00831bc7abb68f083fb29e5e358afbf47f1320c03d33",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_farmer_inventory_report.py",
+      "sha256": "d249333ae66f81ed1f55bc3c0152dfc0d0ae09e827f3106e37955553e4742b40",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_mobile_navigation.py",
+      "sha256": "0b4b99465c5f391ee179602e5b799a0e511835687b3162165ce0dfe506e546bf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_order_history_race.py",
+      "sha256": "c3799c0c89fa1b72ff5c6b998b1c0cf7560fc8357c8dfe451b5031fc774f61c5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_account_security_ui.py",
+      "sha256": "077072a7d1459965a4b7f376e64a46b4db2de617004c57ec551981f74680afbd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_admin_seller_review.py",
+      "sha256": "efae701319cf31002cb7a4048a1e1bf696f2092178249931ee5be494b651db27",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_audit_mobile_markup.py",
+      "sha256": "ed1ad61497073ed917f9522fcc2b58a3c4753a5e7fc29393c5d518207068537c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10201_security_runner_checkpoint.py",
+      "sha256": "86f9e5c3003e6c1aa8b4b697cde47178996f8e5aac5fa6bb7e5c0f3a4e0e643f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1081_line_integrity.py",
+      "sha256": "050ac3586c3d188423f728f93884068a90897573adda26fecd646d49a52015a5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_inventory_expiry.py",
+      "sha256": "78b5e6da59539f87e5b473ba58e53a6d6a093bbb4581f49a576172e60e936c5f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 27,
+        "passed": 27,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_reporting_contracts.py",
+      "sha256": "850bdba692f2b80b82667fea1bdcfe43959f8bcad0283d67ae251565abe51bbf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11285_transaction_runner.py",
+      "sha256": "5e8a7684526d03665658a704cea1808adae0555a9352b45e33b46f62cd5c12f7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11296_entrypoint_order.py",
+      "sha256": "1422b2f3c07f361d1df94bef3337b939fda8b4d091e1876a51905f484247d601",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11300_dsn_query_overrides.py",
+      "sha256": "fbb1843cf2a39930b42495ad094f3c620fb3dcccc41095ff03ebe537f57a7c88",
+      "returncode": 0,
+      "test_counts": {
+        "total": 23,
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11306_migration_cli.py",
+      "sha256": "d1eb5fdbdb9c61d9ef8e1bd813521c3610f6dc04da364e7ba724b3ceb4b7b22a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11310_sequential_plan.py",
+      "sha256": "9892fe6afb3a562cc293c70e2310a30c13686279419753f400802055996cb4ff",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1141_per_file_runner.py",
+      "sha256": "018fbb3a4c7f250d365f0733e395914259593f520a47dbebc67b1f50fc439a96",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b131_b160_report_integrity.py",
+      "sha256": "a5297ead786af1f3d21b6a1a463f6ea2bd25c721c3f7a5fa2874438bf70287cf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 31,
+        "passed": 31,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1501_financial_history.py",
+      "sha256": "e628fa52d9fd6cb97972ec2ae29baa805d0b6ed4d7297dc95d3db7d70278a399",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1681_checkout_idempotency.py",
+      "sha256": "95881623736a0c7ff4f97d216806660384921cacfecdb6074fec14ada6ae6137",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1921_per_seller_cart_limits.py",
+      "sha256": "840de4bec6977b8a747cf7eaba93a8060d61557256ee3b3a7b8cd0468bf6e23d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2161_full_regression_runner.py",
+      "sha256": "6775b7c8ea20ff3cbb6664e681228780b90a14ffdbac5d44a3465ba83bc8ed61",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2401_regression_per_file_isolation.py",
+      "sha256": "8901025233004bf56793368e22ca9ce96293bf30996c384fa6d8d9449db0f034",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3121_mobile_viewport_matrix.py",
+      "sha256": "b4b18a97b14648cce884a2c54f74ccc4cdb043c5cdbede2e1a7ff15839c4879b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3301_refresh_checkout_guard.py",
+      "sha256": "bc530a97e5936992f4bd2324bd24ec0dfad609e38e78d8de8b44ba6bb916bade",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b351_catalog_search.py",
+      "sha256": "a4d7e44a37dedf611868a1e8d55f552a57948b336f05434cee24dbfa69270e77",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3721_regression_cache_integrity.py",
+      "sha256": "4056f8591d45fcdfc817c8975565b2cc2c18ff970932a51984af51666ba6bdfe",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b4021_resume_report_integrity.py",
+      "sha256": "daafff2821002f7eacdb47902ef3ac1fccede526b3dc3438da4011d89c07fbbe",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b521_shipping_policy.py",
+      "sha256": "e7af11fe41691e0a566530ae9c9981a2432c47f983c5df890f78a1f0f9214911",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b641_shipment_failure.py",
+      "sha256": "79d573b082e1afcfcbb3099f6e54dca35a70a70f2ded7931d75381e9308b0d8b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b721_shipment_cancel.py",
+      "sha256": "27f1419115f19069aa2e1447572678fc43af842a3970faf62d8396a672d59d10",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b8041_http_privacy_audit.py",
+      "sha256": "27387454d9ea7449818c641e33ddaf683185a80e9e02ba0a0d8743059217551d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b91_b95_http_boundaries.py",
+      "sha256": "6fd554101b76dc8b521fe5bf025cb6e1cfdf7e08e20ccc7e2fe45467d41fca0c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_bridge_delivery_scenarios.py",
+      "sha256": "a851d470a7d68203bf230c46bc2d49006071a0c9ed36e370567fdb10421cb588",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_cancel_compare_and_set.py",
+      "sha256": "48c30f4912f4370b1be0306c37a88f249a34c57d6f05452cd03c50f86b603741",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_catalog_page_ui.py",
+      "sha256": "3bef8ca6f30b23e1f554557e4259d5e2ee65213d2eba13d7ab4c52a3e3b60032",
+      "returncode": 0,
+      "test_counts": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_concurrent_orders.py",
+      "sha256": "c07c1e6bd025f45a8956f792334512f7c7ff438baa6cc000ad05f8bbda973611",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_delivery_privacy_stage09.py",
+      "sha256": "1a3499325d470f1d898077db15b211e64497311e885d70fdfe7f7a0dd0fa17f8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_encrypted_sqlite_snapshot.py",
+      "sha256": "20f597622cc924b2f0a034c420876875f32fa4cd739a0ba732264efc0f02ee56",
+      "returncode": 0,
+      "test_counts": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_http_multi_seller_b6061.py",
+      "sha256": "60c7d601358e35e125c379a3bf4db97f23a0208d44756532a3263da1691cf9a3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_integrity_verify02.py",
+      "sha256": "87e47b2cfd207444c599617e60bbf4c33e5f338969fc05073785557730e45c2d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_local_marketplace.py",
+      "sha256": "59d9fe1f55999c6481ab3abb5cf86e29c37124bf920667dad27e05465232e32d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 55,
+        "passed": 55,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mail_queue_key_backup.py",
+      "sha256": "5364eddde9a89e667b31f1769799542f88f0beeaadc1a2d5a1da5c77bfc0a53d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 22,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "file": "test_migration_plan.py",
+      "sha256": "3293fe924f960acd02c0ef97957e542a6809f122e53483587eb9ea95784fdec6",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_views14.py",
+      "sha256": "2820ba3f00c96d4e5af573a1f9c5eb58ff9d0c77761ed8063a154d2bda47e079",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mobile_offline.py",
+      "sha256": "f5c7ceb8e3a6e38d482f72059d453e058e3e9a80fcf404fad5414fbbda898313",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "file": "test_neon_auth_policy_package23_27.py",
+      "sha256": "baa44eae5aee28d45e7e4ba334b0c5d995dda42d97ada4650108791c2aaddf93",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_preflight_extra.py",
+      "sha256": "f9732736b421e701fa8a45dbd7891f273f775cf7dca6ba02b3c358ecca9e9f66",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_security_audit_10.py",
+      "sha256": "7bb89223d83ff71870f56c8a5b844e69148a6a23ce89f21cfe8b167d89470597",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_verified_reads_11.py",
+      "sha256": "a058ae6425e0ca9a94a5ffd959e407f229b8600d4706f0e5a1448a0b50a10f5a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_order_integrity_b241.py",
+      "sha256": "a6c4c1fd16e44b9cdc96d27aaf97effe77554874252938833a7918e1d827f601",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package4.py",
+      "sha256": "bdf83001b8b0eb67f1c1bbf41a723e8f33d14277418ebe1a3b259bc746c75f47",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package_b51_b55.py",
+      "sha256": "b69ab29a8a3685e77a0e6637033b56250ab16bf1b31ca1c59f5ccd8bd6e046c2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_password_reset_http.py",
+      "sha256": "4a5c1420de92e26efff5bf75b90a89b0b46e91277a6dfe0799e12ead2ac8e490",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_payment_history_guard.py",
+      "sha256": "b988698b243a31a3ec1561bb8cd038e9c044d306a3cd41b0094351878a89e380",
+      "returncode": 0,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_payout_write_guards_38_42.py",
+      "sha256": "22f0df49ac7e2eb400158d148bedbc40a2486a6dc3ac4420d0b73f1fb08b5b38",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_explicit_returning_regression.py",
+      "sha256": "57549e0999428a0d55addf9d25cf2c3e38503b4a32d6e75c1c62188caf9646e6",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pin_recovery_api.py",
+      "sha256": "76c4694cf957ec47de207fffeb2d98938a619ed80b8beb35b55e895c5f8c4240",
+      "returncode": 0,
+      "test_counts": {
+        "total": 48,
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_plan_http_load.py",
+      "sha256": "f7a38460dd33ae83a4d9729c56e87a5f67d8b5a92461474a905edb6dfb0c0789",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_preflight08.py",
+      "sha256": "5838742cd06b10628863693543d698caecbdeea301d6d90e5867be9a568e7fca",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_security_preflight_b61_b65.py",
+      "sha256": "0d5e32e64281d0e3b3740ec11c067c81f7801e22812c65530ffd0ca25ae601ed",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_preview_credentials.py",
+      "sha256": "99016c8e0abdcabe14a7ac7cb28c3115b560f24504e907cbdcb8ebfa3f228c18",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_purchase_records_http.py",
+      "sha256": "4ebf7e272a0c8af67d2e7c25295aefe85da6a895d47e02e647ed2c8599d50519",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_refund_retry_integrity.py",
+      "sha256": "e62a8a462094ae3701807814f48b6bc11dd954b5a31cf1838e17b7ad9ff4b1b5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_release_security_location_logout.py",
+      "sha256": "1f98753bdaf2c721a388c59e7a283d2b02fca7458013868feb90757544537e3c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_roles_offline.py",
+      "sha256": "7d87a67e3f1e5683d32527997c5480ad8574fb6a68338d7010ace3106d602ed4",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "file": "test_sample_demo_launcher.py",
+      "sha256": "66daa3252155b197427ea3b866c92ce4205064807a9814f95c9b03fd91d0b51f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_seller_profile_reminder.py",
+      "sha256": "6065b8eeccf66485b0bfbbe9622f200ba1500359e2088644b525271d6c73634c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_revoke_defense.py",
+      "sha256": "569b7aaab5cf9c60c7b9eec35e0a0c33de97da953031728525b0419cd3a9aad9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_shipment_groups.py",
+      "sha256": "e87f6a98e16aa2493738c297e7f1e4063d95d84afe33742aba845dff3e831b43",
+      "returncode": 0,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_sqlite_snapshot.py",
+      "sha256": "4542148be2fcfbaa5a5ced6d983b8dcb6150f47e7c08f5ed4a1d14f4efaba72c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage11.py",
+      "sha256": "f42d13720b15a8abb3f001f0e47eccf1a97ce4bc5995729ed31bb8df3a408458",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage15.py",
+      "sha256": "44061b50c8c9267c100f5d114088931db22568edc30d6f56d8af8efe17801a34",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage19.py",
+      "sha256": "bc85ee7dd4b0c5f9558cf01d1e06830c7bb351a9446faedb5171c466bbcb7fa5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage22.py",
+      "sha256": "9d01ad1e7aadd85b76a80f0131c67fce0fa07918a024a9fb9eead67348f19cf7",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage26.py",
+      "sha256": "d56694190fc1bc465d3cabdd55e21055638013ecbcb921e9ef9ee85be3199d09",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage3.py",
+      "sha256": "c95d8ef41c27ea39ccf35ae3df031d4d11020b102fa47b2f0e3199026943db81",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage4.py",
+      "sha256": "dff227af81efdc7fd10987998df1c7c8bc35cdaf0c4f8466587376bd9f665387",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage9.py",
+      "sha256": "68a5bc0fb466737d7fa3e31a243d35f37daf8d6e5edfb2d448f3167b0c81de52",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_time_safety_package91_100.py",
+      "sha256": "fdef3cfbc8f3bb1c1c388190f397a2cd95bf23031e6bc9bccfc67539454a5ef1",
+      "returncode": 0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_verified_writes_28_32.py",
+      "sha256": "985276ab70c17e86aca44d0b7081e31c1ec92e21c2387f606601f6dc5828eb70",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_dashboard_refresh_race.py",
+      "sha256": "b7ef5749bc7e41c6b7d0c528c4fde5e279bd3d2971048452d80ebb4e0cf4b7a3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_farmer_profile_session.py",
+      "sha256": "a780cb399aca2e90dc275cf67440292c29bd5eca7b8938cfea29ff399d1f1c4c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_notice_timing.py",
+      "sha256": "38ff6c935f0f7720306b9d13296db3a94264851e26ba354049862d41bb72d2b5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_session_privacy.py",
+      "sha256": "44d64e08fe73eca1cf048015c1b726ef1f8cc2a598694777a8bf389a4929bd88",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_account_view_privacy_ui.py",
+      "sha256": "a72c115953465f3225635f55ab06f968e82e06a1073eaa0d105ac45111cc6b30",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_admin_seller_review_browser.py",
+      "sha256": "a54f1d1908d5c00a8544c9ff28befc865abc239c3ae44f365cad031f3c3f9354",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_audyt_04_full_journey.py",
+      "sha256": "2188e93b5006cf14ee43933774720d0f19a6d399c27b3aa02483a51077af0c9d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1021_reconciliation_invariants.py",
+      "sha256": "cf46d707d8af768ace9c8f4c199b9b3e1143ba778217bb27fe0fd02cc1286658",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_checkout_ui.py",
+      "sha256": "39e3266fa3b56092db1aa5bc37a3175d33d415cb6f4bd735be70464cfea31fd0",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_login_lockout_http.py",
+      "sha256": "c5be6a4570ab2e4d5a5fbea795b268940f287e07bd13827eb1f5a4c7bce223a0",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b10921_security_boundaries.py",
+      "sha256": "f2f8304644a379bc17ec5e5987f754bb3707ef90914a617780940c2fed38dee5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 24,
+        "passed": 24,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11287_runner_edge_cases.py",
+      "sha256": "fd049099ace3b2ba40e6f6e6a97c5c9708616ef36b9ac034b7de10485249acdf",
+      "returncode": 0,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11297_startup_tables.py",
+      "sha256": "382dab036be25f53c8f453444390fd4561313ca03b9ac112ff32f89de850084f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11301_dsn_allowlist.py",
+      "sha256": "1914d167b44ceffab5cc53e4f9897ae2df07a8344497e2c5a2ae274cb0bd1c78",
+      "returncode": 0,
+      "test_counts": {
+        "total": 25,
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11307_schema_lock.py",
+      "sha256": "4229a3a9bdf814b0e6a25ca278a146375d86e2ac9a80833338cc77314bd8943d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b11313_readonly_schema.py",
+      "sha256": "145c77b3ad3a7e0b3db8b8385fd73d64e1a71ef88f79f2546fffcadb07f4dcdd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1201_runner_report.py",
+      "sha256": "32e7add158f3476542c5484360f904a4cb1914e27951ea18f14cd42b9e6b14ee",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1321_payment_cancel_guard.py",
+      "sha256": "e1e8105d7fbf645919be7291461d80637bf2922fbcbb5a6786e5f87905b961fe",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1561_financial_panel.py",
+      "sha256": "14d962acbf0dbdceea79435829f0a3852bf618a37886ed4a1f7333f578243776",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1741_checkout_ui_contract.py",
+      "sha256": "7428d3389eef1eea547417f68c925d76a4839d9a33f3616efe364142eeabce82",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b1981_end_to_end_shipment.py",
+      "sha256": "c25c018759836b3c39de06ff15dde3ce0e6c726c64c34450f140fd484618f27c",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2221_regression_aggregation.py",
+      "sha256": "93178125b3249cc50abb3f746b0bbcfae0d3105d9f2c80e9ba6605025e005b05",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b2461_chunk_resume.py",
+      "sha256": "caae204059ccc2ae392ebdf6f3685159488816afffe30643c5a8e258b3f9a06a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3181_pending_checkout_cart_guard.py",
+      "sha256": "b73da1a0980d4d494613c5795e75590ea770207030096ada6867e9ba034000dc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3361_direct_order_checkout_guard.py",
+      "sha256": "570083aa5ba4ab7edf6fa8861753724c1088ec4ea060f5e3773c4b06f9b1a614",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3541_direct_reconciliation.py",
+      "sha256": "84f8a4252c81ef40d39a6e414cd38ef38bf760ae56c93ad97245ba60c6dc9946",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b3781_chunk_resume_source_integrity.py",
+      "sha256": "41f1c6a929fdf357559ccdd4866db4892f91b09d1585e1040831a6289aee42ed",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b461_checkout_postgres_locking.py",
+      "sha256": "fc66139cbd72329a209642765fa1da0a002af82f892e6188bacacb28a0fe051b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b561_shipment_links.py",
+      "sha256": "cfc0dbd45a75a03f99cbb0533d45df0e8f9e96a09a7b891ee6c3ae36606cc3dc",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b6601_endpoint_inventory.py",
+      "sha256": "51521f88c4bb5ca5f7258abcbfc81da549a04f85ba3cd0de80e095f6f9bab107",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b7321_anonymous_route_http.py",
+      "sha256": "2f778988d8cff3f69fd6d58955b69d271f747f7c1f3d9e2998667124271c9327",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b8401_shipment_http_idor.py",
+      "sha256": "b11ca055894be2057540db47143109fc1939383aa07ef6109e50a2843ddfee5d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_b961_admin_reconciliation_ui.py",
+      "sha256": "9852b7bb19ccb01830f575c8cfc848ab1b7d7e6c5e9dbe8da67a932d48ee5f93",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_browser_backend_bridge.py",
+      "sha256": "49300d715e27b4582b3fd81b4d7c60565c25c7a41b6d03fad44951275515abeb",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_capacity_report_cli.py",
+      "sha256": "019332bde8c5e3c46ec5853790426965cdc4db334f1e6755bbcd3691de281d8a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_checkout_vault.py",
+      "sha256": "8837b393fb27ad4adb3b6b2e39a8fe99ea59f45ede0177f6ebf40a0993b693e5",
+      "returncode": 0,
+      "test_counts": {
+        "total": 28,
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_crash_checkout_http.py",
+      "sha256": "e9d4f20b64b534c7f4d2060ff02c6f08a44a96b7d0ce82f0f201a6b91d61b1fd",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_demo_journey_script.py",
+      "sha256": "92fd209ecd2ae5aac48fdbf23400c0cd79e3782a87c99a45893074f33be634d9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_extended_browser_mode_b115.py",
+      "sha256": "e3263d33d8e153c19d5dfa917c8ed6322e16669a2cb5937c27bcf7f5345af6c2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_http_privacy_policy.py",
+      "sha256": "73c6c8de4a0ca5bf0fa813045ef372107c36115708584f2d697b43548edc3242",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_invalid_auth_hashes.py",
+      "sha256": "a219e2822fa13da06edfb7c69a5c7038e0b0c3721599e50a1d6a73d41acdfd9a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_local_marketplace_http.py",
+      "sha256": "60f8a41c15155d20e64935168d8ac36c913651b00d6aa5f945cf33805017e871",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migrate_all_tables.py",
+      "sha256": "db3d8b980571ea89b2f489069410d46ea042d2756c5793c57f65e40d5df770b9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_migration_safety06.py",
+      "sha256": "c4fe999931152535898b4023e9747ce8731d1a3153b7e490bc1b98205df969fa",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_mobile_browser_runner.py",
+      "sha256": "69f66bed3bebc3b127b5bc5e58b4ff8722acc5b09ebc1263dd44379e1be02a34",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "c4d8894fb42ed3822aa9744f9a9e4736460ace68fb0c00d025ddf5838ad54c3b",
+      "returncode": 0,
+      "test_counts": {
+        "total": 32,
+        "passed": 32,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_identity.py",
+      "sha256": "47fdb74f033349d0b56a18495a98de6530b90b48ba987c7a05e0bef35f5f3120",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_readiness.py",
+      "sha256": "e7d444e152c7246ee211b6925570a97f980d7bb27496fa33f15e3ab31d2749ac",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_neon_session_bridge.py",
+      "sha256": "0b52b81423aa8e4248f061d727f2f0ad2c5e94f5917fad32f804c120913f3e00",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_notification_policy.py",
+      "sha256": "58243d4c5e5b5d03ad31701dfab9b9bd9c6523903e2285d8c46970dc03a96345",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package1.py",
+      "sha256": "49ef81987fc31a84f6dde2776d3b38c98b9d26b4bf7765af8ab9f64689d98de8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_package5.py",
+      "sha256": "9c8f6d7e3a8e8aac7a0751505a836ebb5a17bb2c2d81289c29c7473ab2c1a83a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_parallel_access_b71_b75.py",
+      "sha256": "f20218f10b0301b5f8a17c710e287c05b21788921bef4e5725856eedbfc9c9c3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_password_reset_postgres_config.py",
+      "sha256": "b7cb22517bca6b1b00e2384a5f93317d7fedbb65d437a8e974fdd6bdcecac34f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_payment_integrity_b60.py",
+      "sha256": "7b6181fb3420f31adb68859e8567d99a5a3f6827cd78cd67b8c086d792acf47a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_adapter.py",
+      "sha256": "03443b3001ae8a442d49ae20932c1db198af0a5c26b654ff1bc55f7bd3b1e589",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pg_payout_ids.py",
+      "sha256": "a8fdbca00ae8dfb3c4d571c98df388a4bad0479dd80245f69c1bf0a5fc7e0da3",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_pin_recovery_http.py",
+      "sha256": "ddb11e1b8d538e9b3d2ca31cac9611567ac2be48cba9fbc713e8d519fc357231",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_api_bundle.py",
+      "sha256": "7a095817d13e052fa8803923510926415d4e32397ebb5ede4ff1e5b247173a29",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_preview_probe.py",
+      "sha256": "97910150d957e916e7faa87c93550734dac19fc3c7f1eb7c808671e332a4dd71",
+      "returncode": 0,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_postgres_test_backup.py",
+      "sha256": "688cbfe49b5860e4031aa6902b398b9673ffb732535da7a9cbc25c9c8a77ca4e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 27,
+        "passed": 27,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_private_cache_headers.py",
+      "sha256": "05a84e3966e60137976f3a5854df0e7259da073cb8227482130c2abe9eb7568a",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_purchase_records_ui.py",
+      "sha256": "018eb609ad85c3f691f6f44cf0384d976bb4dd2be951b17bffaf59a8e3c44db8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_regression_diagnostics_b116_b120.py",
+      "sha256": "ed951b975f34400fb63df20736bf4603593a1a829412b74e31c06e7f8b48d459",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_reset_mail_keys.py",
+      "sha256": "68958da695c5cc923d39ecc8d4c8219e449e6c561ca2ee738175e3607152bb71",
+      "returncode": 0,
+      "test_counts": {
+        "total": 31,
+        "passed": 30,
+        "failed": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "file": "test_runner_entrypoint_isolation.py",
+      "sha256": "8dda55561c11d8e53128d64f4bdacfaa303327dbe771454562958a92b73af8d2",
+      "returncode": 0,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_seller_compliance_browser.py",
+      "sha256": "a8e34eb8f2a20566334f428d03447a63c627d20af8392c9edb1e701516ccbe29",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_seller_settlement_ui.py",
+      "sha256": "d18bbca77f3394cff1515e2349f9fcd86100f59c7ad0ffcc8df30207669eb864",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_session_security_api.py",
+      "sha256": "ee10211d9501479d5279adb1784e4c3d5473c0a4c769d0a142211e02b3ea6c66",
+      "returncode": 0,
+      "test_counts": {
+        "total": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_shipment_membership_guard.py",
+      "sha256": "8d0a75b84403bd1311bee01daf1c48117efff8a58d8a1a0224ebabf5ab87f242",
+      "returncode": 0,
+      "test_counts": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stabilization_02.py",
+      "sha256": "e3e05cd8684157ccaeadde0ff995ef93cd8f523212ad4e7c9a8cba08f060f481",
+      "returncode": 0,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage12.py",
+      "sha256": "12bba0eeec8c387049e21d2dcdd9be08915f1175082bb58a24a73e19d12f59e9",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage16.py",
+      "sha256": "152500a5df3dc40f14c8ba33d5e1950e08dd37abba579df32ca2288738e04100",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage2.py",
+      "sha256": "ff13acc85236804c948e180d6b5f768dc746a43cde7a837ea2abd20c3c9ff5b8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage23.py",
+      "sha256": "3352c71aaf56d0985eaaa16b5ce98b9165ef57da8dca38d52ef85956a5e252eb",
+      "returncode": 0,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage27.py",
+      "sha256": "0673dccb52310f77ee823d054869f9c0ae7b76a56e22e00df028d2c4b534c359",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage30.py",
+      "sha256": "a0276f2d041f1db83a1f6c32a060593ae7b7436ae4a225ddbddfe580508aa664",
+      "returncode": 0,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_stage5.py",
+      "sha256": "beca63856da69815f9e58c3a43a31c515bee994e461928a0b1a0b4c17d979abe",
+      "returncode": 0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_support_cases_browser.py",
+      "sha256": "db29b06ab1fec640e72c29582f60d4c79d51df93c997ae658f6b13fc34e3cbf8",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 2
+      }
+    },
+    {
+      "file": "test_transaction_safety_b76_b80.py",
+      "sha256": "bfe05d4d7e61739b710836425a512017e752ee16c2e2537f14e1f4c71d721415",
+      "returncode": 0,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_catalog_orders_race.py",
+      "sha256": "afa68e36905def46fc5a720522267fb316bd38cb474b53ad0042bc0da6500434",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_dashboard_safety.py",
+      "sha256": "d5fe5130d0ec46daa923f4da0b5a64f4c6938c50a1c14eae349f5538682f788f",
+      "returncode": 0,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_finance_report_race.py",
+      "sha256": "0b67b755d900eddb5c8b67916bb7947bf73df14cf8836a36742adbd38e808395",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_order_action_safety.py",
+      "sha256": "c6e327aae6baa41ecd5921f8679e17f14af41d36d71132c7fa844a2888bb984d",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "test_web_single_write_guard.py",
+      "sha256": "7d2f9dbf631dd7e315217a3233942882321b1ddc73b5af53af3c6062f0eb843e",
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  ]
+}

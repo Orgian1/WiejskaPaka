@@ -1,0 +1,31 @@
+{
+  "run_id": 40176933757,
+  "head_sha": "7e213d9344765c5ea6d8414b8d7f755cf83ef993",
+  "jobs": [
+    {
+      "name": "postgres (17)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "chromium",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "postgres (16)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "windows_recovery",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "windows",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ]
+}

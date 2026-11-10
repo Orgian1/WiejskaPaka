@@ -1,0 +1,59 @@
+........................................................................ [ 52%]
+F.................................................................       [100%]
+=================================== FAILURES ===================================
+___________ test_failed_database_probe_does_not_export_database_url ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc07cc0d480>
+
+    def test_failed_database_probe_does_not_export_database_url(monkeypatch):
+        for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST'):
+            monkeypatch.delenv(key, raising=False)
+        for key,value in env().items(): monkeypatch.setenv(key,value)
+        def fail(*args,**kwargs):
+            assert 'DATABASE_URL' not in os.environ
+            raise RuntimeError('schema incomplete')
+        with patch.object(launcher, 'verify_test_database_connection', side_effect=fail):
+            with pytest.raises(RuntimeError,match='schema incomplete'):
+>               launcher.main()
+
+../wp_b11298/tests/test_b11298_startup_atomicity.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main():
+        settings = prepare_test_server()
+        # The API reads DATABASE_URL at import time; use the validated test DSN.
+        test_dsn = os.environ['WP_TEST_DATABASE_URL']
+        try:
+            verify_test_database_connection(test_dsn, settings['database_name'], require_schema=True)
+        except Exception:
+            # Drivers may include credentials, hosts and DSNs in their error text.
+            # Keep the private test launcher fail-closed without exposing them.
+>           raise RuntimeError('Test PostgreSQL preflight failed; inspect database configuration securely') from None
+E           RuntimeError: Test PostgreSQL preflight failed; inspect database configuration securely
+
+backend/test_server_launcher.py:32: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc07cc0d480>
+
+    def test_failed_database_probe_does_not_export_database_url(monkeypatch):
+        for key in ('DATABASE_URL','WP_TEST_DATABASE_URL','WP_ENV','WP_BIND_HOST'):
+            monkeypatch.delenv(key, raising=False)
+        for key,value in env().items(): monkeypatch.setenv(key,value)
+        def fail(*args,**kwargs):
+            assert 'DATABASE_URL' not in os.environ
+            raise RuntimeError('schema incomplete')
+        with patch.object(launcher, 'verify_test_database_connection', side_effect=fail):
+>           with pytest.raises(RuntimeError,match='schema incomplete'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'schema incomplete'
+E             Actual message: 'Test PostgreSQL preflight failed; inspect database configuration securely'
+
+../wp_b11298/tests/test_b11298_startup_atomicity.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_b11298_startup_atomicity.py::test_failed_database_probe_does_not_export_database_url - AssertionError: Regex pattern did not match.
+  Expected regex: 'schema incomplete'
+  Actual message: 'Test PostgreSQL preflight failed; inspect database configuration securely'
+1 failed, 137 passed in 2.18s

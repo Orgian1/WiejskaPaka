@@ -1,0 +1,27 @@
+{
+  "gate": "windows",
+  "complete": true,
+  "success": false,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "b6c7a22e375d8bf79b86e930362682863e5d91f9083e93343de813dcdf646703",
+    "tests_sha256": "cd80a25dca32091e2b2fadf55767b9c0f96acb147aee583217161a4c6b14e4c6",
+    "test_sources_sha256": "cad04748a358908233fbe8f5b09e663c69625086617c3a257aaffdd8bfc7a4be",
+    "dependencies_sha256": "f7022625641feafbd1ec67d953fc74e11d373307d584eead2cb23cbd4068bd62",
+    "workflow_sha256": "2bca985608643a19f0f68865cfc5a1f79858a1687c4510944d158a4445a4561a"
+  },
+  "tasks": [
+    {
+      "name": "isolated_regression",
+      "success": false,
+      "returncode": 1,
+      "test_counts": {
+        "total": 3658,
+        "passed": 3631,
+        "failed": 3,
+        "skipped": 24
+      }
+    }
+  ]
+}

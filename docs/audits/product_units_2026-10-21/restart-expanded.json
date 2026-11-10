@@ -1,0 +1,32 @@
+{
+  "application_sha256": "b0f1bf94b8d2b08b90af15defee24e89d413d490b5db719d176352c388ddc4c0",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 1,
+  "planned": 1,
+  "passed": 1,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_product_units_http.py",
+      "sha256": "6b80fd5f10fafc6e6b6d69be2841bcd9780acf4ad2462f8cea64d9af14a49372",
+      "returncode": 0,
+      "seconds": 12.03,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...................                                                      [100%]\n19 passed, 1 warning in 11.62s\n"
+    }
+  ]
+}

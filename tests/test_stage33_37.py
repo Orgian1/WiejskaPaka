@@ -1,0 +1,44 @@
+"""Regression checks: PostgreSQL write routes must use transaction-bound actor verification."""
+import inspect
+from backend import app
+
+
+def test_product_create_requires_verified_write():
+    source = inspect.getsource(app.create_product)
+    assert 'save_product(payload, user, authorization)' in source
+    photo_source = inspect.getsource(app.create_product_with_photo)
+    assert 'save_product(payload, user, authorization, photo)' in photo_source
+    guard = inspect.getsource(app.save_product)
+    assert "order_write_db(user, authorization, ('rolnik',))" in guard
+    assert "require(user,'rolnik')" in guard
+    assert "user['id']" in guard
+    assert guard.index('with order_write_db(') < guard.index('INSERT INTO products')
+    assert guard.index('with order_write_db(') < guard.index('INSERT INTO user_photos')
+
+
+def test_logout_requires_verified_write():
+    source = inspect.getsource(app.logout)
+    assert 'account_session_db(user,authorization)' in source
+    guard=inspect.getsource(app.account_session_db)
+    assert 'order_write_db(user,authorization,roles)' in guard
+    transaction=inspect.getsource(app.order_write_db).split('    else:', 1)[1]
+    assert transaction.index('BEGIN IMMEDIATE')<transaction.index('authorize_transaction(')<transaction.index('yield con')
+    assert guard.index('pg_advisory_xact_lock')<guard.index('authorize_transaction(')
+    assert 'token_hash(authorization[7:])' in source
+
+
+def test_farmer_acknowledgement_requires_verified_write():
+    source = inspect.getsource(app.acknowledge_compliance)
+    assert "order_write_db(user, authorization, ('rolnik',))" in source
+
+
+def test_admin_review_requires_verified_write():
+    source = inspect.getsource(app.review_farmer_compliance)
+    assert "order_write_db(user, authorization, ('admin',))" in source
+
+
+def test_verified_write_rechecks_role_and_identity():
+    from backend import verified_writes
+    source = inspect.getsource(verified_writes.verified_order_write)
+    assert "actor_id != expected_user['id']" in source
+    assert "role != expected_user['role']" in source

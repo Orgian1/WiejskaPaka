@@ -1,0 +1,84 @@
+{
+  "application_sha256": "08e6dfecbdcf5f27225fab5663575762a0ebfc3ddd17d14dd7f45e72d524bbd2",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 5,
+  "planned": 5,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_fractional_quote.py",
+      "sha256": "330c49f90acdb6a31e025372cf895228f056fd95c9709066ce0c623526098be5",
+      "returncode": 0,
+      "seconds": 0.99,
+      "test_counts": {
+        "total": 26,
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "..........................                                               [100%]\n26 passed in 0.14s\n"
+    },
+    {
+      "file": "test_fractional_quote_http.py",
+      "sha256": "2c7294ebd77cd14e073fa8632eae6958f1a9be987a74d9718f75209cdaf81c22",
+      "returncode": 0,
+      "seconds": 6.6,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".....                                                                    [100%]\n5 passed, 1 warning in 5.84s\n"
+    },
+    {
+      "file": "test_b361_cart_quote.py",
+      "sha256": "866fb2527c8f11cda6c75e40e3a4be05e93b7a5cf61f521dbbcd8aad698123d8",
+      "returncode": 0,
+      "seconds": 1.53,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": ".                                                                        [100%]\n1 passed, 1 warning in 0.92s\n"
+    },
+    {
+      "file": "test_b6961_auth_dependency_inventory.py",
+      "sha256": "d328202d14c2b596b3391f41704964aa2d0f6f91f18ec6c89d560d8b9926a847",
+      "returncode": 0,
+      "seconds": 1.32,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "....                                                                     [100%]\n4 passed in 0.74s\n"
+    },
+    {
+      "file": "test_b7321_anonymous_route_http.py",
+      "sha256": "2f778988d8cff3f69fd6d58955b69d271f747f7c1f3d9e2998667124271c9327",
+      "returncode": 0,
+      "seconds": 1.56,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "output_tail": "...                                                                      [100%]\n3 passed in 0.90s\n"
+    }
+  ]
+}

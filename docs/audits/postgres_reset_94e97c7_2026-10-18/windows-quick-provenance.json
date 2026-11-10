@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:a0e08c9c9dffcf08f726a297f955c16c39377fca6286220eac79545964850392",
+  "id": 12148838587,
+  "name": "windows-recovery-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-reset-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "94e97c7763aa1aa0e4b343f1bd397fa8471b4183",
+    "id": 39161681182,
+    "repository_id": 1421291982
+  }
+}

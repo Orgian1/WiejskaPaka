@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:23c908c372d52da681d2e90beb9f1d8f862335be81135fc6d0da8e24012cb3c5",
+  "id": 12171002280,
+  "name": "windows-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-mail-queue-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "1ed505faafaf1833f7b60c4d6a5a03361a0eebbf",
+    "id": 39216513926,
+    "repository_id": 1421291982
+  }
+}

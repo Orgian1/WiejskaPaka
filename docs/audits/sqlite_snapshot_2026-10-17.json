@@ -1,0 +1,21 @@
+{
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "application_sha256": "9c778f7e983db020bfd0f8313d42fe324e6d97a176bfd3a466e1f98ea85a2864",
+  "executed": 286,
+  "planned": 286,
+  "test_counts": {
+    "total": 3629,
+    "passed": 3612,
+    "failed": 0,
+    "skipped": 17
+  },
+  "scope": "Linux; six isolated module shards; no new native Windows/PostgreSQL/Chromium run",
+  "recovery_tests": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0
+  }
+}

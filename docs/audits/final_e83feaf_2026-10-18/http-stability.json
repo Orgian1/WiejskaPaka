@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "started_utc": "2026-10-18T15:11:04.403691+00:00",
+  "scope": "real loopback HTTP, temporary SQLite, simulated money only",
+  "duration_requested_seconds": 60,
+  "seed": 10921,
+  "rounds": 461,
+  "http_requests": 4285,
+  "invariant_checks": 10665,
+  "scenarios": {
+    "concurrent_idempotency_and_cancellation": 93,
+    "competing_buyers_last_unit": 92,
+    "shipment_fee_and_concurrent_pin_refund": 92,
+    "pickup_pin_payment_and_payout": 92,
+    "session_revocation_roles_and_strict_money": 92
+  },
+  "pin_recovery_requests": 93,
+  "pin_recoveries": 5,
+  "pin_recovery_limited": 88,
+  "password_change_races": 4,
+  "session_revocation_races": 4,
+  "application_sha256": "5d1ca33e7d0cf4021e6d6a54d05c7802adbb712aaefe00722a1f27a565d23ec9",
+  "elapsed_seconds": 60.25,
+  "finished_utc": "2026-10-18T15:12:04.646448+00:00"
+}

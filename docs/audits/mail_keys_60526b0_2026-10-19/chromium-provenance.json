@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:e5dc868514908fb06be5150b42a9700062ae3d7b986c1c7c9c172adde7235e73",
+  "id": 12170215805,
+  "name": "chromium-summary",
+  "workflow_run": {
+    "head_branch": "preview/mail-key-loading-20261019",
+    "head_repository_id": 1421291982,
+    "head_sha": "60526b06681e3f54a58b1a2a5638adbf40d0127f",
+    "id": 39216884076,
+    "repository_id": 1421291982
+  }
+}

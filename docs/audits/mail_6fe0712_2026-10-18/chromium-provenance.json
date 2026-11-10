@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:497dbc76406e5e872a895bccb3fe19c373a198778ebf92ee26a17f09e90d10ac",
+  "id": 12149142255,
+  "name": "chromium-summary",
+  "workflow_run": {
+    "head_branch": "preview/smtp-preparation-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "6fe0712885a7bd2db5a43319dd205f0e2adadfd3",
+    "id": 39162288218,
+    "repository_id": 1421291982
+  }
+}

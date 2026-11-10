@@ -1,0 +1,5 @@
+# Keep source and migration checksums stable across Windows and Unix.
+* text=auto eol=lf
+*.png -text
+*.jpg -text
+*.zip -text

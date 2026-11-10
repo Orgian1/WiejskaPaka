@@ -1,0 +1,43 @@
+{
+  "gate": "windows",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "system": "Windows",
+  "evidence": {
+    "runtime_sha256": "0406e0d1b6f30b5125f49eb1cdea6a3807790620c3f7afcf691cf04d6189e93e",
+    "tests_sha256": "8288d7997295eb3d8b543a573ae7fabf4b12f2e1ac4181c197cb4c14b1863389",
+    "test_sources_sha256": "2b321e8357db5434a4c14c58000dd4893bc5f21a1237946ab5e682f453599e53",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "3379a246dec1fc1de7b072123939495996b8702f417f50f1aa08cbac65db4bed"
+  },
+  "tasks": [
+    {
+      "name": "windows_recovery",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 80,
+        "passed": 80,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "isolated_regression",
+      "success": true,
+      "returncode": 0,
+      "failed_modules": [],
+      "incomplete_modules": [],
+      "timed_out_modules": [],
+      "failure_locations": [],
+      "test_counts": {
+        "total": 4369,
+        "passed": 4196,
+        "failed": 0,
+        "skipped": 173
+      }
+    }
+  ]
+}

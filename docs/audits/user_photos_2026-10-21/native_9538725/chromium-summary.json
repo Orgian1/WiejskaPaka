@@ -1,0 +1,45 @@
+{
+  "gate": "browser",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "system": "Linux",
+  "evidence": {
+    "runtime_sha256": "d2537ddee7718ffc085242a92ba609c79fc23335e04bf7f1daf104f906088007",
+    "tests_sha256": "d94d9e8d02159525b90e14be32b1836d4fd9eee164e733269262213e1940a49e",
+    "test_sources_sha256": "b8a85a96e0c3bc02508bb1b0dfaabf7c1d7a4a08ff208d2437ece25ad7b15fef",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "1047a8fc44486032cab4fa8622c264ced27091e1579499bb5753da0255b7e9fa"
+  },
+  "tasks": [
+    {
+      "name": "photo_browser",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "offline_browser",
+      "success": true,
+      "returncode": 0,
+      "test_counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "name": "http_viewports",
+      "success": true,
+      "returncode": 0
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+"""CI control-plane tests use fake child processes, not native execution evidence."""
+import json
+from pathlib import Path
+import subprocess
+
+import pytest
+
+from scripts import run_native_ci as ci
+
+DSN = 'postgresql://ci:disposable@127.0.0.1:5432/wp_test_ci'
+SENSITIVE = 'never-publish-this-value'
+
+
+def junit(command, *, passed=44, skipped=0, failed=0):
+    path = Path(command[command.index('--junitxml')+1])
+    path.write_text('<testsuite>'+('<testcase/>'*passed)+
+                    ('<testcase><skipped/></testcase>'*skipped)+
+                    ('<testcase><failure>private</failure></testcase>'*failed)+'</testsuite>')
+
+
+def source():
+    return {'WP_TEST_POSTGRES_DSN': DSN, 'DATABASE_URL': SENSITIVE,
+            'WP_CHECKOUT_KEY_FILE': SENSITIVE, 'CUSTOM_SECRET': SENSITIVE,
+            'PGSERVICE': SENSITIVE, 'GITHUB_TOKEN': SENSITIVE, 'WP_ENV': 'production'}
+
+
+@pytest.mark.parametrize('dsn', [None, 'postgresql://a:b@example.invalid/wp_test_ci',
+    'postgresql://a:b@127.0.0.1/production',
+    'postgresql://a:b@127.0.0.1/wp_test_ci?host=example.invalid'])
+def test_postgres_requires_unambiguous_disposable_loopback_database(tmp_path, dsn):
+    def forbidden(*args, **kwargs):
+        pytest.fail('Unsafe database must not launch a process')
+    result = ci.run('postgres', tmp_path/'result.json', source={'WP_TEST_POSTGRES_DSN': dsn}, runner=forbidden)
+    assert not result['success'] and not result['complete'] and not result['tasks']
+
+
+def test_postgres_environment_and_report_do_not_forward_secrets(tmp_path):
+    def runner(command, **kwargs):
+        env = kwargs['env']
+        assert not {'DATABASE_URL', 'WP_CHECKOUT_KEY_FILE', 'CUSTOM_SECRET', 'PGSERVICE', 'GITHUB_TOKEN'} & env.keys()
+        assert env['WP_TEST_DATABASE_URL'] == env['WP_TEST_POSTGRES_DSN'] == DSN
+        assert env['WP_ENV'] == 'test'
+        junit(command)
+        return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
+    path = tmp_path/'result.json'
+    result = ci.run('postgres', path, source=source(), runner=runner)
+    assert result['success'] and result['tasks'][0]['test_counts']['passed'] == 44
+    assert SENSITIVE not in path.read_text() and DSN not in path.read_text()
+
+
+@pytest.mark.parametrize('variant', ['skip', 'failure', 'empty', 'too-few', 'missing', 'malformed', 'timeout', 'launch-error'])
+def test_native_gate_cannot_pass_incomplete_or_failed_results(tmp_path, variant):
+    def runner(command, **kwargs):
+        if variant == 'timeout':
+            raise subprocess.TimeoutExpired(command, 600, output=SENSITIVE, stderr=SENSITIVE)
+        if variant == 'launch-error':
+            raise OSError(SENSITIVE)
+        if variant == 'malformed':
+            Path(command[-1]).write_text(SENSITIVE)
+        elif variant != 'missing':
+            junit(command, passed=0 if variant=='empty' else 1 if variant=='too-few' else 15,
+                  skipped=int(variant=='skip'), failed=int(variant=='failure'))
+        return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
+    path = tmp_path/'result.json'
+    result = ci.run('postgres', path, source=source(), runner=runner)
+    assert not result['success']
+    assert SENSITIVE not in path.read_text()
+
+
+@pytest.mark.parametrize('gate',['windows','windows-recovery'])
+def test_windows_gate_does_not_claim_linux_is_windows(tmp_path, monkeypatch,gate):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Linux')
+    def forbidden(*args, **kwargs):
+        pytest.fail('Not a Windows runner')
+    result = ci.run(gate, tmp_path/'result.json', source={}, runner=forbidden)
+    assert not result['success'] and result['error'] == 'WINDOWS_REQUIRED'
+
+
+@pytest.mark.parametrize('variant', ['valid', 'incomplete', 'changed', 'bad-counts', 'missing-modules'])
+def test_windows_requires_a_complete_consistent_isolated_report(tmp_path, monkeypatch, variant):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    def runner(command, **kwargs):
+        if '--junitxml' in command:
+            junit(command, passed=80)
+            return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
+        data = {'complete': variant!='incomplete', 'success': True, 'sources_unchanged': variant!='changed',
+                'executed': 1, 'planned': 2 if variant=='missing-modules' else 1,
+                'test_counts': {'total': 28 if variant=='bad-counts' else 27, 'passed': 10,
+                                'failed': 0, 'skipped': 17, 'secret': SENSITIVE},
+                'output_tail': SENSITIVE}
+        Path(command[-1]).write_text(json.dumps(data))
+        return subprocess.CompletedProcess(command, 0, SENSITIVE, SENSITIVE)
+    path = tmp_path/'result.json'
+    result = ci.run('windows', path, source=source(), runner=runner)
+    assert result['success'] == (variant == 'valid')
+    assert SENSITIVE not in path.read_text()
+
+
+@pytest.mark.parametrize('http_code', [0, 1])
+def test_browser_requires_offline_and_real_http_tasks(tmp_path, http_code):
+    calls = []
+    def runner(command, **kwargs):
+        calls.append(command)
+        assert kwargs['env']['WIEJSKAPAKA_EXTENDED_BROWSER'] == '1'
+        if '--junitxml' in command:
+            junit(command, passed=36)
+            return subprocess.CompletedProcess(command, 0, '', '')
+        return subprocess.CompletedProcess(command, http_code, SENSITIVE, SENSITIVE)
+    result = ci.run('browser', tmp_path/'result.json', source=source(), runner=runner)
+    assert len(calls) == 3 and result['success'] == (http_code == 0)
+
+
+def test_browser_skip_prevents_http_and_green_gate(tmp_path):
+    calls = []
+    def runner(command, **kwargs):
+        calls.append(command)
+        junit(command, passed=6, skipped=1)
+        return subprocess.CompletedProcess(command, 0, '', '')
+    result = ci.run('browser', tmp_path/'result.json', source={}, runner=runner)
+    assert len(calls) == 1 and not result['success'] and not result['complete']
+
+
+def test_source_change_invalidates_native_evidence(tmp_path, monkeypatch):
+    values = iter([{'runtime_sha256': 'before'}, {'runtime_sha256': 'after'}])
+    monkeypatch.setattr(ci, 'evidence', lambda root: next(values))
+    def runner(command, **kwargs):
+        junit(command)
+        return subprocess.CompletedProcess(command, 0, '', '')
+    result = ci.run('postgres', tmp_path/'result.json', source=source(), runner=runner)
+    assert not result['success'] and not result['sources_unchanged']
+
+
+def test_failure_locations_exclude_logs_parameters_and_private_paths(tmp_path):
+    import xml.etree.ElementTree as ET
+    tests = tmp_path/'tests'
+    tests.mkdir()
+    (tests/'test_public_case.py').write_text('')
+    document = ET.Element('testsuite')
+    case = ET.SubElement(document,'testcase',name='test_case[private-token]',classname='private-email')
+    failure = ET.SubElement(case,'failure')
+    failure.text = ('/private/home/test_public_case.py:42: AssertionError private-secret\n'
+                    'tests/test_unknown_case.py:99: private-secret\n'
+                    'tests/test_public_case.py:42: private-secret')
+    path = tmp_path/'failure.xml'
+    ET.ElementTree(document).write(path)
+    result = ci.failure_locations(path,tmp_path)
+    assert result == [{'file':'test_public_case.py','line':42}]
+    assert 'private' not in json.dumps(result)
+
+
+def test_windows_recovery_failure_stops_before_full_regression(tmp_path, monkeypatch):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    calls = []
+    def runner(command, **kwargs):
+        calls.append(command)
+        assert '--junitxml' in command
+        junit(command, passed=79, failed=1)
+        return subprocess.CompletedProcess(command, 1, SENSITIVE, SENSITIVE)
+    path = tmp_path/'windows.json'
+    result = ci.run('windows', path, source={}, runner=runner)
+    assert len(calls) == 1 and not result['success'] and not result['complete']
+    assert result['tasks'][0]['name'] == 'windows_recovery'
+    assert SENSITIVE not in path.read_text()
+
+
+def test_full_windows_failure_reports_only_allowlisted_module_names(tmp_path, monkeypatch):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    known = 'test_sqlite_snapshot.py'
+    def runner(command, **kwargs):
+        if '--junitxml' in command:
+            junit(command, passed=80)
+            return subprocess.CompletedProcess(command, 0, '', '')
+        data = {'complete': True, 'success': False, 'sources_unchanged': True,
+            'executed': 1, 'planned': 1, 'test_counts': {'total':1,'passed':0,'failed':1,'skipped':0},
+            'results': [{'file':known,'returncode':1,'output_tail':
+                        f'C:\\private\\{known}:42: AssertionError {SENSITIVE}\n'
+                        f'tests/{known}:42: {SENSITIVE}\n'
+                        f'tests/test_unknown_private.py:7: {SENSITIVE}'},
+                        {'file':known,'returncode':0,'output_tail':f'tests/{known}:99: ignored'},
+                        {'file':SENSITIVE,'returncode':1,'output_tail':SENSITIVE}]}
+        Path(command[-1]).write_text(json.dumps(data))
+        return subprocess.CompletedProcess(command, 1, SENSITIVE, SENSITIVE)
+    path = tmp_path/'windows.json'
+    result = ci.run('windows',path,source={},runner=runner)
+    assert not result['success']
+    assert result['tasks'][-1]['failed_modules'] == [known]
+    assert result['tasks'][-1]['failure_locations'] == [{'file':known,'line':42}]
+    assert SENSITIVE not in path.read_text()
+    assert 'private' not in path.read_text() and 'ignored' not in path.read_text()
+
+
+@pytest.mark.parametrize('text', [None, {}, [], 42, 'test_sqlite_snapshot.py:0: invalid',
+    'test_sqlite_snapshot.py:'+'9'*5000+': invalid'])
+def test_failure_location_parser_ignores_invalid_or_unbounded_input(text):
+    assert ci.failure_locations_from_text(text, ci.ROOT) == []
+
+
+def test_standalone_windows_recovery_never_claims_full_regression(tmp_path,monkeypatch):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    calls=[]
+    def runner(command,**kwargs):
+        calls.append(command)
+        assert '--junitxml' in command and 'run_tests_per_file.py' not in ' '.join(command)
+        junit(command,passed=80)
+        return subprocess.CompletedProcess(command,0,SENSITIVE,SENSITIVE)
+    path=tmp_path/'quick.json'
+    result=ci.run('windows-recovery',path,source={},runner=runner)
+    assert result['success'] and len(calls)==1
+    assert [task['name'] for task in result['tasks']]==['windows_recovery']
+    assert SENSITIVE not in path.read_text()
+
+
+@pytest.mark.parametrize('counts',[None, [], 'private-invalid-counts', 0])
+def test_windows_missing_counts_preserve_sanitized_failure_and_write_report(tmp_path,monkeypatch,counts):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    known='test_sqlite_snapshot.py'
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+        else:
+            Path(command[-1]).write_text(json.dumps({
+                'complete':True,'success':False,'sources_unchanged':True,
+                'executed':1,'planned':1,'test_counts':counts,
+                'results':[{'file':known,'returncode':None,'timeout':True,'output_tail':SENSITIVE},
+                           {'file':SENSITIVE,'returncode':1},None,{'file':[SENSITIVE]}]}))
+        return subprocess.CompletedProcess(command,1 if '--junitxml' not in command else 0,SENSITIVE,SENSITIVE)
+    path=tmp_path/'windows.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    saved=json.loads(path.read_text())
+    assert saved==result and not result['success']
+    task=result['tasks'][-1]
+    assert task['error']=='INVALID_TEST_RESULT'
+    assert task['failed_modules']==task['incomplete_modules']==task['timed_out_modules']==[known]
+    assert 'test_counts' not in task
+    assert SENSITIVE not in path.read_text() and 'private-invalid-counts' not in path.read_text()
+
+
+def test_photo_timeout_records_only_known_test_name_without_output(tmp_path):
+    def runner(command, **kwargs):
+        assert 'test_user_photos_browser.py' in ' '.join(command)
+        assert kwargs['timeout'] == 180
+        raise subprocess.TimeoutExpired(command,180,output=(
+            b'tests/test_user_photos_browser.py::test_photo_upload_replace_error_delete_and_logout[private-phone] '+SENSITIVE.encode()))
+    path=tmp_path/'report.json'
+    result=ci.run('browser',path,source=source(),runner=runner)
+    assert not result['success']
+    assert result['tasks'][0]['last_test']=={'file':'test_user_photos_browser.py','function':'test_photo_upload_replace_error_delete_and_logout'}
+    assert SENSITIVE not in path.read_text() and 'private-phone' not in path.read_text()
+
+
+@pytest.mark.parametrize('valid_progress',[True,False])
+def test_full_timeout_keeps_only_safe_partial_progress(tmp_path,monkeypatch,valid_progress):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    known='test_sqlite_snapshot.py'
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+            return subprocess.CompletedProcess(command,0,'','')
+        Path(command[-1]).write_text(json.dumps({'executed':1 if valid_progress else SENSITIVE,
+            'planned':2,'results':[{'file':known,'returncode':1,'output_tail':SENSITIVE},
+                                  {'file':SENSITIVE,'returncode':1}]}))
+        raise subprocess.TimeoutExpired(command,kwargs['timeout'],output=SENSITIVE,stderr=SENSITIVE)
+    path=tmp_path/'timeout.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    task=result['tasks'][-1]
+    assert task['error']=='TIMEOUT' and not task['success'] and not result['success']
+    assert task['failed_modules']==[known]
+    assert ('progress' in task)==valid_progress
+    if valid_progress:assert task['progress']=={'executed':1,'planned':2}
+    assert SENSITIVE not in path.read_text()
+
+
+def test_windows_preserves_sanitized_junit_locations_without_output_tail(tmp_path,monkeypatch):
+    monkeypatch.setattr(ci.platform,'system',lambda:'Windows')
+    def runner(command,**kwargs):
+        if '--junitxml' in command:
+            junit(command,passed=80)
+            return subprocess.CompletedProcess(command,0,'','')
+        data={'complete':True,'success':False,'sources_unchanged':True,'executed':1,'planned':1,
+              'test_counts':{'total':1,'passed':0,'failed':1,'skipped':0},
+              'results':[{'file':'test_sns_pinned_notification.py','returncode':1,
+                          'test_counts':{'total':1,'passed':0,'failed':1,'skipped':0},
+                          'output_tail':SENSITIVE,'failure_locations':[
+                              {'file':'test_sns_pinned_notification.py','line':42},
+                              {'file':'private-path.py','line':99},
+                              {'file':'test_sns_pinned_notification.py','line':True}]}]}
+        Path(command[-1]).write_text(json.dumps(data))
+        return subprocess.CompletedProcess(command,1,'','')
+    path=tmp_path/'result.json'
+    result=ci.run('windows',path,source={},runner=runner)
+    assert result['tasks'][-1]['failure_locations']==[{'file':'test_sns_pinned_notification.py','line':42}]
+    assert SENSITIVE not in path.read_text() and 'private-path' not in path.read_text()

@@ -1,0 +1,12 @@
+{
+  "digest": "sha256:352f3a62edd703c35343c3e989ff8686d6d955dc5b1b009e5c36bc0b9950f71c",
+  "id": 12148564905,
+  "name": "postgres-summary",
+  "workflow_run": {
+    "head_branch": "preview/postgres-reset-20261018",
+    "head_repository_id": 1421291982,
+    "head_sha": "94e97c7763aa1aa0e4b343f1bd397fa8471b4183",
+    "id": 39161681182,
+    "repository_id": 1421291982
+  }
+}

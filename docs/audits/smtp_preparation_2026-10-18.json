@@ -1,0 +1,15 @@
+{
+  "scope": "SMTP peer replaced in memory; no real email or provider handshake",
+  "sources": {
+    "backend/smtp_reset_transport.py": "96f4cb8dbcd7f08dd8e43eef9fc7852b70884c4490a35175a16244e62c19315c",
+    "tests/test_smtp_reset_transport.py": "d3049821aae7099bd886e046a840d399847dc1d02bf8875618646fc97b662af0"
+  },
+  "success": true,
+  "system": "Linux",
+  "test_counts": {
+    "failed": 0,
+    "passed": 30,
+    "skipped": 0,
+    "total": 30
+  }
+}

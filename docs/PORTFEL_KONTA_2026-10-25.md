@@ -1,5 +1,9 @@
 # Portfel konta — trwały podgląd przed integracją operatora
 
+Aktualizacja 10.11.2026: dodano wycenę wypłaty 5% dla sprzedawcy i 0% dla klienta
+oraz kontrolę wszystkich historycznych zapisów salda. Aktualne zasady i granice:
+`DEMO_BEZ_PAYU_2026-11-10.md`. Poniżej zachowano opis pierwotnego pakietu.
+
 Nowy moduł WP_ENABLE_WALLET_PREVIEW=1 zapisuje portfel zalogowanego klienta lub sprzedawcy w bazie. Domyślnie wyłączony; dozwolony wyłącznie WP_ENV=test/testing/development. Nie jest księgowością rzeczywistych środków i nie autoryzuje zapłaty za zamówienie ani przelewu do banku. Doładowanie w tym prywatnym trybie jest ręcznym zasymulowaniem uznania. Przed wdrożeniem publicznym zastąpić je potwierdzonym zdarzeniem operatora płatności; nie używać tej trasy jako prawdziwego doładowania.
 
 ## Widok

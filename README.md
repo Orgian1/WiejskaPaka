@@ -1,8 +1,12 @@
-# WiejskaPaka — wersja testowa B/10921–B/11280
+# WiejskaPaka — wersja demonstracyjna bez PayU
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
-Aktualny punkt wejścia przed zakupem serwera:
+Aktualna instrukcja demo: `docs/DEMO_BEZ_PAYU_2026-11-10.md`.
+Raport pakietu: `docs/RAPORT_DEMO_BEZ_PAYU_2026-11-10.md`.
+Wdrożenie z kopią i rollbackiem: `docs/WDROZENIE_I_WYCOFANIE_DEMO_2026-11-10.md`.
+
+Wcześniejsze punkty kontrolne:
 `docs/RAPORT_KOLEJKI_POSTGRESQL_I_KLUCZY_2026-10-19.md` — wykonywanie kolejki PostgreSQL i jawne ładowanie kluczy;
 `docs/RAPORT_KOLEJKI_POCZTY_2026-10-19.md` — odłączona kolejka resetu SQLite i granice integracji;
 `docs/RAPORT_POCZTY_PRZYGOTOWANIE_2026-10-18.md` — reset na testowym PostgreSQL i osobny adapter SMTP;

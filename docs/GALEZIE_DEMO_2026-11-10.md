@@ -17,6 +17,17 @@ Stan wejściowy: PR #50, commit ecd0c8d9163845ee86aaf4226d1be7c1deeeb533. Nowe p
 4. Osobno przygotować scalanie od najstarszego przodka do szczytu. Przed każdym scaleniem ponownie sprawdzić aktualne SHA i czystość gałęzi. Samo `mergeable=true` nie dowodzi poprawności funkcjonalnej.
 5. Ewentualne połączenie z main wykonać wyłącznie w osobnej gałęzi integracyjnej przez jawne połączenie rozłącznych historii; zachować README aplikacji i sprawdzić całe drzewo. Nie przepisywać main ani nie wykonywać reset --hard.
 
+## Zachowana próba integracji
+
+Gałąź `integration/demo-main-20261110` została zapisana na GitHubie jako
+commit `3e9251301a598016b9b226619f88d43c6d9ba76e`. Ma dwóch rodziców: początkowy
+main oraz przetestowany kod demo `90f9b5fbaacf792a995bf263e85f37b5dc09fbbe`.
+Jej drzewo `f3c1b38c98822f2c99882a5e7949aa3645e55956` jest identyczne z kodem #51.
+Nie przesuwa to main ani starych gałęzi. Ta gałąź nie uruchamia osobnego CI,
+ponieważ filtr workflow obejmuje preview/** i wskazaną gałąź fix; dowodem
+weryfikacji jest identyczne drzewo uruchomione w CI dla #51. Późniejszy raport
+jest zapisywany na gałęzi #51 jako zmiana samych dokumentów.
+
 ## Otwarte PR-y odczytane z GitHuba
 
 | PR | Gałąź zmian | Baza |
@@ -62,5 +73,6 @@ Stan wejściowy: PR #50, commit ecd0c8d9163845ee86aaf4226d1be7c1deeeb533. Nowe p
 | #48 | `preview/wallet-account-ledger-20261025` | `preview/wallet-interface-20261025` |
 | #49 | `preview/wallet-integrity-check-20261026` | `preview/wallet-account-ledger-20261025` |
 | #50 | `fix/header-auth-links-20261109` | `preview/wallet-integrity-check-20261026` |
+| #51 | `preview/demo-completion-20261110` | `fix/header-auth-links-20261109` |
 
 Nie wykonano scalania ani zamykania wcześniejszych PR-ów. Dokument nie potwierdza stanu VPS.

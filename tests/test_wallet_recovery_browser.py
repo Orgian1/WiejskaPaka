@@ -49,7 +49,8 @@ def test_recovery_of_delayed_or_lost_topup(delivery_browser,wallet_db,width,mode
             key=f'wp-wallet-intent-v1:{uid}:topup'
             if mode!='lost':wait_routes(page,held,1)
             else:
-                page.wait_for_function("document.querySelector('#wallet-dialog-topup [role=alert]').textContent.length>0")
+                # Function polling preserves the application CSP without unsafe-eval.
+                page.wait_for_function("() => document.querySelector('#wallet-dialog-topup [role=alert]').textContent.length>0")
                 assert client.get('/wallet',headers=owner).json()['available_grosze']==10000
             with page.expect_response('**/wallet/operations/reconcile-test') as response:
                 dialog.get_by_role('button',name='Sprawdź poprzednią operację',exact=True).click()

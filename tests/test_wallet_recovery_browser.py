@@ -49,7 +49,15 @@ def test_recovery_of_delayed_or_lost_topup(delivery_browser,wallet_db,width,mode
             key=f'wp-wallet-intent-v1:{uid}:topup'
             if mode!='lost':wait_routes(page,held,1)
             else:
-                page.wait_for_function("document.querySelector('#wallet-dialog-topup [role=alert]').textContent.length>0")
+                try:
+                    page.wait_for_function("document.querySelector('#wallet-dialog-topup [role=alert]').textContent.length>0")
+                except Exception:
+                    print('RECOVERY_DIAG', {'dialog_count':dialog.count(), 'dialog_visible':dialog.is_visible(),
+                        'error_length':page.evaluate("document.querySelector('#wallet-dialog-topup [role=alert]')?.textContent.length??-1"),
+                        'busy':page.evaluate('walletBusy'), 'recovering':page.evaluate('walletRecovering'),
+                        'saved':bool(page.evaluate('(key)=>sessionStorage.getItem(key)',key)),
+                        'balance':client.get('/wallet',headers=owner).json()['available_grosze']},flush=True)
+                    raise
                 assert client.get('/wallet',headers=owner).json()['available_grosze']==10000
             with page.expect_response('**/wallet/operations/reconcile-test') as response:
                 dialog.get_by_role('button',name='Sprawdź poprzednią operację',exact=True).click()

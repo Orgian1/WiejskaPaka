@@ -64,13 +64,18 @@ class AddressQuery(BaseModel):
         return value.strip()
 
 
-def provider_url():
-    if os.environ.get('WP_ENABLE_ADDRESS_SEARCH') != '1':
+def provider_url(settings=None):
+    settings = os.environ if settings is None else settings
+    if settings.get('WP_ENABLE_ADDRESS_SEARCH') != '1':
         return None
-    url = os.environ.get('WP_ADDRESS_SEARCH_URL', '').strip()
+    raw_url = settings.get('WP_ADDRESS_SEARCH_URL', '')
+    if any(ord(c) < 32 or ord(c) == 127 for c in raw_url):
+        raise ValueError('Nieprawidłowy adres usługi geokodowania')
+    url = raw_url.strip()
     parsed = urlsplit(url)
+    port = parsed.port  # Validate malformed/out-of-range ports before enabling search.
     host = (parsed.hostname or '').lower().rstrip('.')
-    if (parsed.scheme != 'https' or not host or parsed.username or parsed.password
+    if (parsed.scheme != 'https' or not host or parsed.username or parsed.password or port == 0
             or parsed.query or parsed.fragment
             or host == 'openstreetmap.org' or host.endswith('.openstreetmap.org')):
         raise ValueError('Skonfiguruj własną lub zakontraktowaną usługę geokodowania HTTPS')

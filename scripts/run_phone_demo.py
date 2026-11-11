@@ -69,6 +69,7 @@ def main(argv=None):
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--full-demo', action='store_true', help='Jednorazowe demo z portfelem, jednostkami, zdjęciami, wyszukiwaniem i terminami dostaw')
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
+    parser.add_argument('--address-search-url', help='Jawnie podłącz własną lub zakontraktowaną usługę Nominatim HTTPS; wyszukiwane adresy będą do niej wysyłane')
     parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
     args = parser.parse_args(argv)
     if args.full_demo:args.sample_data=True
@@ -78,6 +79,17 @@ def main(argv=None):
     if not 1024 <= args.port <= 65535:
         parser.error('Port musi być w zakresie 1024–65535')
     root = Path(__file__).resolve().parents[1]
+    address_url = None
+    if args.address_search_url is not None:
+        # Direct script execution puts scripts/, rather than the repository, on sys.path.
+        if str(root) not in sys.path:
+            sys.path.insert(0, str(root))
+        from backend.address_search import provider_url
+        try:
+            address_url = provider_url({'WP_ENABLE_ADDRESS_SEARCH': '1',
+                                        'WP_ADDRESS_SEARCH_URL': args.address_search_url})
+        except ValueError:
+            parser.error('Podaj poprawny adres HTTPS własnej lub zakontraktowanej usługi Nominatim, bez hasła, parametrów i fragmentu')
     with tempfile.TemporaryDirectory(prefix='wiejskapaka_phone_demo_') as directory:
         database = Path(directory) / 'demo.sqlite3'
         credentials = None
@@ -109,6 +121,10 @@ def main(argv=None):
                 print('Nieprawidłowy wynik przygotowania demo.', file=sys.stderr)
                 return 1
         env = environment(os.environ, database)
+        if address_url:
+            env['WP_ENABLE_ADDRESS_SEARCH'] = '1'
+            env['WP_ADDRESS_SEARCH_URL'] = address_url
+            print('Wyszukiwanie nowych adresów włączone: kliknięcie Szukaj przesyła adres do wskazanej usługi mapowej.', flush=True)
         if args.sample_data:
             env['WP_ENABLE_TEST_PAYMENTS'] = '1'
         env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'

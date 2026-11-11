@@ -27,6 +27,8 @@ def test_disabled_search_never_connects(monkeypatch):
     'https://geo.example/search?secret=hidden', 'https://geo.example/search#part',
     'https://nominatim.openstreetmap.org/search',
     'https://NOMINATIM.OPENSTREETMAP.ORG./search',
+    'https://geo.example:wrong/search', 'https://geo.example:65536/search',
+    'https://geo.example:0/search', 'https://geo.example/\nsearch',
 ])
 def test_invalid_or_public_provider_is_not_enabled(monkeypatch, url):
     monkeypatch.setenv('WP_ENABLE_ADDRESS_SEARCH', '1')

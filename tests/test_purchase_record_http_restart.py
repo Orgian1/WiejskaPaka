@@ -20,8 +20,10 @@ ROOT=Path(__file__).resolve().parents[1]
 
 @contextmanager
 def server(database, *, reset_outbox=None, queued_keys=None, verification_keys=None, order_mail=False,
-           require_verified_checkout=False):
+           require_verified_checkout=False, address_search_url=None):
     env=demo_environment(os.environ,database);env['WP_ENABLE_TEST_PAYMENTS']='1'
+    if address_search_url is not None:
+        env.update(WP_ENABLE_ADDRESS_SEARCH='1', WP_ADDRESS_SEARCH_URL=address_search_url)
     if verification_keys is not None:
         env.update(WP_ENABLE_EMAIL_VERIFICATION='1',WP_ENABLE_MAIL_QUEUE='1',WP_MAIL_QUEUE_KEYS_FILE=str(verification_keys))
     if require_verified_checkout:

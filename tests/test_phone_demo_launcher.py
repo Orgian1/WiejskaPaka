@@ -1,8 +1,44 @@
 """Testy izolacji podglądu UI i serwowania strony."""
 from pathlib import Path
+import os
 from unittest.mock import patch
+import pytest
 
 from scripts.run_phone_demo import demo_environment, main
+
+
+def test_geocoder_is_explicit_and_does_not_restore_other_services(monkeypatch):
+    monkeypatch.setenv('WP_ENABLE_ADDRESS_SEARCH', '1')
+    monkeypatch.setenv('WP_ADDRESS_SEARCH_URL', 'https://inherited.invalid/search')
+    monkeypatch.setenv('WP_ENABLE_ORDER_SMTP', '1')
+    monkeypatch.setenv('PAYU_CLIENT_SECRET', 'private')
+    with patch('scripts.run_phone_demo.subprocess.call', return_value=0) as runner:
+        assert main([]) == 0
+        assert 'WP_ADDRESS_SEARCH_URL' not in runner.call_args.kwargs['env']
+        assert main(['--address-search-url', 'https://chosen.invalid/search']) == 0
+        env = runner.call_args.kwargs['env']
+        assert env['WP_ADDRESS_SEARCH_URL'] == 'https://chosen.invalid/search'
+        assert env['WP_ENABLE_ADDRESS_SEARCH'] == '1'
+        assert 'WP_ENABLE_ORDER_SMTP' not in env
+        assert 'PAYU_CLIENT_SECRET' not in env
+        assert 'DATABASE_URL' not in env
+    assert os.environ['WP_ADDRESS_SEARCH_URL'] == 'https://inherited.invalid/search'
+
+
+@pytest.mark.parametrize('url', ['', 'http://geo.invalid/search',
+    'https://user:private@geo.invalid/search', 'https://geo.invalid/search?key=private',
+    'https://nominatim.openstreetmap.org/search', 'https://geo.invalid:bad/search',
+    'https://geo.invalid:70000/search', 'https://geo.invalid:0/search',
+    'https://geo.invalid/\nsearch'])
+def test_invalid_geocoder_stops_before_creating_demo(url, capsys):
+    with patch('scripts.run_phone_demo.subprocess.call') as runner, \
+            patch('scripts.run_phone_demo.subprocess.run') as setup:
+        with pytest.raises(SystemExit) as error:
+            main(['--full-demo', '--address-search-url', url])
+        assert error.value.code == 2
+        runner.assert_not_called()
+        setup.assert_not_called()
+    assert 'private' not in capsys.readouterr().err
 
 
 def test_demo_environment_drops_external_database_config():

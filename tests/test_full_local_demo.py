@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import pytest
 from scripts.run_phone_demo import full_demo_environment,FULL_DEMO_FLAGS,main
 from tests.test_purchase_record_http_restart import server
 from unittest.mock import patch
@@ -24,7 +25,8 @@ def test_full_demo_does_not_inherit_outgoing_services_or_secrets(tmp_path):
     assert 'private' not in json.dumps(env)
 
 
-def test_full_profile_launcher_seeds_all_roles_and_preserves_options(tmp_path,monkeypatch,capsys):
+@pytest.mark.parametrize('geocoder', [False, True])
+def test_full_profile_launcher_seeds_all_roles_and_preserves_options(tmp_path,monkeypatch,capsys,geocoder):
     monkeypatch.setenv('WP_ENABLE_ORDER_SMTP','1')
     seen=[]
     def launch(command,**kwargs):
@@ -32,7 +34,8 @@ def test_full_profile_launcher_seeds_all_roles_and_preserves_options(tmp_path,mo
         assert all(env[flag]=='1' for flag in FULL_DEMO_FLAGS)
         assert 'WP_ENABLE_ORDER_SMTP' not in env
         assert command[command.index('--host')+1]=='127.0.0.1'
-        with patch.dict(os.environ,env,clear=True),server(seen[-1]) as client:
+        with patch.dict(os.environ,env,clear=True),server(seen[-1], address_search_url=env.get('WP_ADDRESS_SEARCH_URL')) as client:
+            assert client.get('/address-search/config').json()['enabled'] is geocoder
             for endpoint in ('/sellers/config','/product-units','/pickup-point-dates/config','/address-delivery/config'):
                 r=client.get(endpoint)
                 assert r.status_code==200 and r.json()['enabled']
@@ -42,6 +45,6 @@ def test_full_profile_launcher_seeds_all_roles_and_preserves_options(tmp_path,mo
             assert client.get('/wallet').status_code==401
         return 0
     with patch('scripts.run_phone_demo.subprocess.call',side_effect=launch):
-        assert main(['--full-demo'])==0
+        assert main(['--full-demo'] + (['--address-search-url', 'https://geo.invalid/search'] if geocoder else []))==0
     assert seen and not seen[0].exists()
     assert 'private' not in capsys.readouterr().out

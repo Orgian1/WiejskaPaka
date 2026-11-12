@@ -33,6 +33,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert response.value.status==200
         assert not errors
         page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
+        assert page.locator('#favorites-nav-link').is_hidden()==(role not in ('klient','rolnik'))
         assert page.locator('#auth').is_hidden()
         assert page.locator('#logout').is_visible()
         assert page.locator('#identity').text_content()==accounts[role]['email']

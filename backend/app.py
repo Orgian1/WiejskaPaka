@@ -47,6 +47,9 @@ async def application_lifespan(application):
     import asyncio
     import logging
     with db() as con:
+        con.execute('SELECT code FROM pickup_promo_codes LIMIT 0')
+        con.execute('SELECT id FROM pickup_promo_grants LIMIT 0')
+        con.execute('SELECT point_id FROM pickup_promo_points LIMIT 0')
         con.execute('SELECT user_id,product_id FROM account_favorites LIMIT 0')
         con.execute('SELECT user_id,latitude_e6,longitude_e6 FROM account_saved_locations LIMIT 0')
         from backend import user_photos, seller_directory
@@ -119,7 +122,7 @@ SECURITY_RESPONSE_HEADERS = {
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'no-referrer',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=()',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
 }
 
 
@@ -1563,6 +1566,8 @@ def get_farmer_profile(user=Depends(current_user)):
 def create_pickup_point(payload:PickupPointIn,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
+        if DATABASE_URL:
+            con.execute('SELECT id FROM users WHERE id=? FOR UPDATE',(user['id'],)).fetchone()
         cur=con.execute('INSERT INTO pickup_points(farmer_id,name,city,street,opening_hours) VALUES(?,?,?,?,?)',
                         (user['id'],payload.name,payload.city,payload.street,payload.opening_hours))
         if payload.latitude_e6 is not None:
@@ -1570,7 +1575,9 @@ def create_pickup_point(payload:PickupPointIn,user=Depends(current_user), author
             save_coordinates(con,cur.lastrowid,payload.latitude_e6,payload.longitude_e6)
         if payload.attendance_dates is not None:
             pickup_dates.replace(con,cur.lastrowid,payload.attendance_dates)
-        return {'id':cur.lastrowid}
+        from backend.pickup_promotions import consume_for_point
+        promotion=consume_for_point(con,user['id'],cur.lastrowid,postgres=bool(DATABASE_URL))
+        return {'id':cur.lastrowid,'promotion':promotion}
 
 
 @app.put('/pickup-points/{point_id}')
@@ -1608,7 +1615,11 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
 def my_pickup_points(user=Depends(current_user)):
     require(user, 'rolnik')
     with db() as con:
-        return [pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        from backend.pickup_promotions import point_terms
+        points=[pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        for point in points:
+            point['promotion']=point_terms(con,point['id'])
+        return points
 
 @app.get('/farmers/{farmer_id}/pickup-points')
 def list_pickup_points(farmer_id:int):
@@ -3317,3 +3328,6 @@ install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_UR
 
 from backend.favorites import install as install_favorites
 install_favorites(app, db, order_write_db, current_user, DATABASE_URL)
+
+from backend.pickup_promotions import install as install_pickup_promotions
+install_pickup_promotions(app, db, order_write_db, current_user, DATABASE_URL)

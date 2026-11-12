@@ -1,0 +1,32 @@
+{
+  "packages": [
+    {
+      "package": "leaflet",
+      "version": "1.9.4",
+      "integrity": "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==",
+      "tarball": "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz"
+    },
+    {
+      "package": "world-atlas",
+      "version": "2.0.2",
+      "integrity": "sha512-IXfV0qwlKXpckz1FhwXVwKRjiIhOnWttOskm5CtxMsjgE/MXAYRHWJqgXOpM8IkcPBoXnyTU5lFHcYa5ChG0LQ==",
+      "tarball": "https://registry.npmjs.org/world-atlas/-/world-atlas-2.0.2.tgz"
+    },
+    {
+      "package": "topojson-client",
+      "version": "3.1.0",
+      "integrity": "sha512-605uxS6bcYxGXw9qi62XyrV6Q3xwbndjachmNxu8HWTtVPxZfEJN9fd/SZS1Q54Sn2y0TMyMxFj/cJINqGHrKw==",
+      "tarball": "https://registry.npmjs.org/topojson-client/-/topojson-client-3.1.0.tgz"
+    }
+  ],
+  "assets": {
+    "leaflet.js": "db49d009c841f5ca34a888c96511ae936fd9f5533e90d8b2c4d57596f4e5641a",
+    "leaflet.js.map": "600a10dc5cd110de0699510d322afcbe01c7ca90b4c5f48adc20314c70aac753",
+    "leaflet.css": "a7837102824184820dfa198d1ebcd109ff6d0ff9a2672a074b9a1b4d147d04c6",
+    "LEAFLET-LICENSE.txt": "53e8dc25862014e4324741ca18fbe3611e11d42ef69f59f86ea8c5389647d4cb",
+    "WORLD-ATLAS-LICENSE.txt": "8048290dfdb6e83fbed17e8985c8cfc4ce9da9b842642f3d3e497280790cfa31",
+    "map-countries.geojson": "0600454dcbdb1d02ccfa38343d0d270fa8e4a5a5c8567e2968b2e15b43d9bc77"
+  },
+  "map_source": "Natural Earth country outlines via world-atlas countries-110m.json, public domain geographic data",
+  "conversion": "topojson.feature(world, world.objects.countries), JSON.stringify + newline; topojson-client is a build-only tool, not a runtime dependency"
+}

@@ -1925,3 +1925,31 @@ def test_native_owner_favorites_location_and_pickup_summary(pg_api):
     assert client.get('/orders/me',headers=other).json()==[]
     assert client.delete(f'/favorites/{pid}',headers=buyer).status_code==200
     assert client.delete('/account/location',headers=buyer).status_code==200
+
+
+def test_native_pickup_promotion_limits_and_point_credits(pg_api):
+    from tests.test_admin_seller_review import create_admin
+    import psycopg
+    client,parameters=pg_api
+    def promote(uid):
+        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+    admin,_=create_admin(client,promote)
+    farmer,_=register(client,'rolnik');other,_=register(client,'rolnik')
+    code='PROMO-'+uuid4().hex.upper()
+    assert client.post('/admin/pickup-promotions',headers=farmer,json={'code':code,'expires_on':'2099-12-31','max_redemptions':1}).status_code==403
+    assert client.post('/admin/pickup-promotions',headers=admin,json={'code':code,'expires_on':'2099-12-31','max_redemptions':1}).status_code==201
+    def redeem(_):return client.post('/farmers/me/pickup-promotions/redeem',headers=farmer,json={'code':code}).status_code
+    with ThreadPoolExecutor(max_workers=5) as pool:results=list(pool.map(redeem,range(5)))
+    assert sorted(results)==[200,200,200,200,201]
+    assert client.post('/farmers/me/pickup-promotions/redeem',headers=other,json={'code':code}).status_code==409
+    def create_point(i):return client.post('/pickup-points',headers=farmer,json={'name':f'Punkt PG {i}','city':'Legnica','street':'Testowa 6','opening_hours':'9-16'})
+    with ThreadPoolExecutor(max_workers=6) as pool:points=list(pool.map(create_point,range(6)))
+    assert all(r.status_code==201 for r in points)
+    assert sum(r.json()['promotion'] is not None for r in points)==3
+    assert client.get('/farmers/me/pickup-promotions',headers=farmer).json()['available_points']==0
+    assert client.get('/farmers/me/pickup-promotions',headers=other).json()=={'items':[],'available_points':0}
+    with psycopg.connect(**parameters) as con:
+        assert con.execute('SELECT redemption_count FROM pickup_promo_codes WHERE code=%s',(code,)).fetchone()[0]==1
+        grant=con.execute('SELECT id,remaining FROM pickup_promo_grants WHERE code=%s',(code,)).fetchone()
+        assert grant[1]==0
+        assert con.execute('SELECT count(*) FROM pickup_promo_points WHERE grant_id=%s',(grant[0],)).fetchone()[0]==3

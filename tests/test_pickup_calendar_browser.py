@@ -17,6 +17,7 @@ def test_seller_calendar_and_orders_layout(delivery_browser,tmp_path,monkeypatch
             page.goto(str(client.base_url))
             page.fill('#email',body['email']);page.fill('#password',body['password']);page.locator('#auth button[type=submit]').click()
             page.locator('#farmer-details').wait_for(state='visible')
+            page.locator('#farmer-details > details > summary').click()
             assert page.locator('#products-section').is_hidden()
             assert page.locator('#nearby-section').is_hidden()
             assert page.locator('#cart-section').is_hidden()
@@ -31,6 +32,7 @@ def test_seller_calendar_and_orders_layout(delivery_browser,tmp_path,monkeypatch
             assert result.value.status==201
             assert result.value.request.post_data_json['attendance_dates']==[day]
             page.locator('#my-points').get_by_text(day,exact=False).wait_for()
+            page.locator('#point-location-panel > details > summary').click()
             page.locator(f'#point-edit-calendar button[aria-label="{day}"][aria-pressed="true"]').wait_for(state='visible')
             page.click('#logout')
             assert page.locator('#point-edit-calendar').inner_text()==''

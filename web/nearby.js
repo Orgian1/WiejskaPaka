@@ -105,6 +105,7 @@ function showPointEditor(){
   el('point-edit-lat').value=coordinateText(point.latitude_e6);el('point-edit-lon').value=coordinateText(point.longitude_e6);
   el('point-edit-active').checked=Boolean(point.active);el('point-edit-clear-coordinates').checked=false;
   el('point-edit-lat').disabled=false;el('point-edit-lon').disabled=false;
+  if(typeof resetPickupMap==='function')resetPickupMap('point-edit');
 }
 async function loadPointEditor(){
   if(!el('point-location-panel')||role!=='rolnik')return;

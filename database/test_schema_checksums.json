@@ -203,5 +203,10 @@
     "file": "optional_account_favorites.sql",
     "sha256": "6e6b64eff1d7cc9e22a6334ae7fc99edddb13ea5b841300f38fca649bf5f517b",
     "bytes": 510
+  },
+  {
+    "file": "optional_pickup_promotions.sql",
+    "sha256": "bb02e385f33d578bd172c6435d496cccf7d26180d0e563794008cdf994a0b4b3",
+    "bytes": 923
   }
 ]

@@ -9,6 +9,7 @@ CORE_TABLES = (
     'order_events', 'notifications',
     'inventory_reservations', 'order_purchase_records', 'pickup_point_coordinates',
     'account_favorites', 'account_saved_locations',
+    'pickup_promo_codes', 'pickup_promo_grants', 'pickup_promo_points',
 )
 
 

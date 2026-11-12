@@ -75,3 +75,7 @@ header{position:relative;padding-right:250px;padding-left:250px}
 [data-seller-panel]>summary{cursor:pointer;min-height:44px}[data-seller-panel]>summary h2{display:inline;font-size:1.25rem}[data-seller-panel]>summary:focus-visible{outline:3px solid #c98b00}
 
 .card .favorite-button{width:44px;margin:0}
+
+.pickup-map{height:320px;width:100%;max-width:100%;margin:12px 0;background:#c9e2ec}.pickup-map-widget{min-width:0;margin:14px 0}.pickup-map-widget .leaflet-control a{min-width:30px}.pickup-map-widget p{overflow-wrap:anywhere}
+
+#pickup-promotions-admin input[type=checkbox]{display:inline;width:auto;margin-right:8px}

@@ -3,3 +3,9 @@
 *.png -text
 *.jpg -text
 *.zip -text
+
+# Preserve vendored distribution bytes for MAP-ASSETS.json integrity checks.
+web/leaflet.js -text
+web/leaflet.js.map -text
+web/leaflet.css -text whitespace=cr-at-eol
+web/LEAFLET-LICENSE.txt -text whitespace=cr-at-eol

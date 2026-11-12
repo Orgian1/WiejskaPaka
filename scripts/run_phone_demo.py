@@ -39,6 +39,16 @@ def full_demo_environment(source,database):
     return env
 
 
+def enable_public_geocoder(env, source):
+    """Explicit Photon opt-in; keep unrelated inherited services and secrets out."""
+    env.update(WP_ENABLE_ADDRESS_SEARCH='1',WP_ADDRESS_SEARCH_PROVIDER='photon',
+               WP_ADDRESS_SEARCH_URL='https://photon.komoot.io/api/')
+    for key in ('HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','SSL_CERT_FILE','SSL_CERT_DIR'):
+        if key in source:
+            env[key]=source[key]
+    return env
+
+
 @contextmanager
 def private_credentials_file(path, credentials):
     """Exclusive POSIX file; remove only the same file created by this process."""
@@ -68,6 +78,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Lokalny podgląd WiejskaPaka (bez prawdziwych płatności)')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--full-demo', action='store_true', help='Jednorazowe demo z portfelem, jednostkami, zdjęciami, wyszukiwaniem i terminami dostaw')
+    parser.add_argument('--public-geocoder', choices=('photon',), help='Jawnie włącz publiczny geokoder Photon; wyszukiwanie tylko po kliknięciu')
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
     parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
     args = parser.parse_args(argv)
@@ -109,6 +120,8 @@ def main(argv=None):
                 print('Nieprawidłowy wynik przygotowania demo.', file=sys.stderr)
                 return 1
         env = environment(os.environ, database)
+        if args.public_geocoder:
+            enable_public_geocoder(env,os.environ)
         if args.sample_data:
             env['WP_ENABLE_TEST_PAYMENTS'] = '1'
         env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'

@@ -1,6 +1,6 @@
-"""Explicit address search against an operator-configured Nominatim service.
+"""Explicit address search with Nominatim or an opt-in Photon provider.
 
-No default public provider, persistence, redirects or account credentials.
+Disabled by default; no persistence, redirects or forwarded account credentials.
 The configured provider receives the address only after the user clicks search.
 """
 import json
@@ -64,10 +64,19 @@ class AddressQuery(BaseModel):
         return value.strip()
 
 
+def provider_kind():
+    kind=os.environ.get('WP_ADDRESS_SEARCH_PROVIDER','nominatim').strip().lower()
+    if kind not in ('nominatim','photon'):
+        raise ValueError('Nieobsługiwany geokoder')
+    return kind
+
+
 def provider_url():
     if os.environ.get('WP_ENABLE_ADDRESS_SEARCH') != '1':
         return None
-    url = os.environ.get('WP_ADDRESS_SEARCH_URL', '').strip()
+    kind=provider_kind()
+    default='https://photon.komoot.io/api/' if kind=='photon' else ''
+    url = os.environ.get('WP_ADDRESS_SEARCH_URL', default).strip()
     parsed = urlsplit(url)
     host = (parsed.hostname or '').lower().rstrip('.')
     if (parsed.scheme != 'https' or not host or parsed.username or parsed.password
@@ -141,7 +150,15 @@ async def search_address(query: AddressQuery):
         url = provider_url()
         if url is None:
             raise HTTPException(503, 'Wyszukiwanie adresów nie jest jeszcze skonfigurowane')
-        items = await lookup(query, url)
+        if provider_kind()=='photon':
+            from backend import photon_geocoder
+            if photon_geocoder.is_public(url):
+                retry_after=photon_geocoder.public_budget.reserve()
+                if retry_after:
+                    raise HTTPException(429,'Limit wyszukiwań usługi demo. Poczekaj lub wybierz mapę/GPS.',headers={'Retry-After':str(retry_after)})
+            items=await photon_geocoder.lookup(query,url)
+        else:
+            items = await lookup(query, url)
     except (ValueError, httpx.HTTPError, httpx.InvalidURL):
         # Never expose an upstream URL/query/address in error details.
         raise HTTPException(503, 'Wyszukiwanie adresów jest chwilowo niedostępne') from None

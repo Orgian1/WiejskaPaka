@@ -1,5 +1,8 @@
 # Ostatnie poprawki WiejskaPaka — 12.11.2026
 
+> Raport tej partii jest historyczny. Mapę i promocje zaimplementowano w dalszej
+> pracy; aktualny stan opisuje [RAPORT_MAPA_I_PROMOCJE_2026-11-12.md](RAPORT_MAPA_I_PROMOCJE_2026-11-12.md).
+
 Nie jest to pełny odbiór wszystkich wymagań. Pozostają wybór lokalizacji
 sprzedawcy na mapie oraz administracyjny kod promocyjny na trzy darmowe punkty.
 Nie publikowano środowiska, nie zmieniano main, VPS, produkcyjnych danych ani

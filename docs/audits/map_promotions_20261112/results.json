@@ -1,0 +1,482 @@
+{
+  "implementation_commit": "2eb542bee526266ae87aa21af28e147c05c79c69",
+  "vendor_integrity_commit": "94366772022163ffa42c00a61a3350b924f67b88",
+  "new_promotion_and_map_checks": {
+    "pass": 17,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "96737c2bcf6f57dfd302c9d080226dd74f774d5194282d75760cbc932ddf1707"
+  },
+  "existing_browser_and_contact_regression": {
+    "pass": 32,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "0addfb659bec555597da55aff77f73b8cf23d1f14502a054a088bb3793b98ab4"
+  },
+  "postgresql_17_11_native_http": {
+    "pass": 95,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "c101265d151df1a8c908c7b3c3337609e9c2501a9128fb4dc362c1a2a643bb14"
+  },
+  "schema_address_and_readiness": {
+    "pass": 45,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "2707a5019a0c921c2d06f50a9f8cb861c20b14671f21af69d6cca13e38917796"
+  },
+  "map_asset_integrity": {
+    "pass": 2,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "e31270d3e64f7d6119d3c374b1f4bd0e0994ad7810e66aea7bed84cf13e1b135"
+  },
+  "map_integrity_from_git_archive": {
+    "pass": 2,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "80fa97662ceefd23b35a7c3d0505c2f4fb2508c6d050b877fdc476dce58cbc9e"
+  },
+  "isolated_sqlite": {
+    "pass": 143,
+    "fail": 0,
+    "skip": 0,
+    "modules": [
+      {
+        "module": "test_api",
+        "exit_code": 0,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "868739fa98e763c60e97e48fc3ef56c2b7e4003ec9945a10f040e55dbf5109bb"
+      },
+      {
+        "module": "test_audyt_04_full_journey",
+        "exit_code": 0,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "540cf2cfadb346b9d2c4c63b5e6722792394e13010dc990ebcc27c4f883467cb"
+      },
+      {
+        "module": "test_address_delivery_http",
+        "exit_code": 0,
+        "pass": 11,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "0cfadf16c5a239da490a504a9236b7cfa68f1c8ef9916c3584909ce0c3d29393"
+      },
+      {
+        "module": "test_wallet_preview_http",
+        "exit_code": 0,
+        "pass": 9,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "5a4be3036dd6e087d5976d951ce1ce713fcc10813568008ed226d139d560e7f0"
+      },
+      {
+        "module": "test_wallet_intent_recovery",
+        "exit_code": 0,
+        "pass": 10,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "012569825783f2551695c791696b9b64abfe88f2b3584f703a186d965cc5a1e8"
+      },
+      {
+        "module": "test_full_local_demo",
+        "exit_code": 0,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "b2795e2e66715a85257aa07eea9d3fea69c50db7f8f874ceaa7e00bc0b218534"
+      },
+      {
+        "module": "test_product_units_http",
+        "exit_code": 0,
+        "pass": 19,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "3f80063ad7072808f461c77a18ca82d699b1fcc5fd82383f57d6de2bdc39ea01"
+      },
+      {
+        "module": "test_b11305_migration_manifest",
+        "exit_code": 0,
+        "pass": 6,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "0d3881e6446cd3b23ecba32b7d8a51c73fd5e14171805bd1bc16f083f02dd12e"
+      },
+      {
+        "module": "test_b11307_schema_lock",
+        "exit_code": 0,
+        "pass": 4,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "269e99392d1cff1f98c164817f8eb5f5d835dd7865518aa5247e11d96f651797"
+      },
+      {
+        "module": "test_header_auth_actions",
+        "exit_code": 0,
+        "pass": 4,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "b2f90867771459e499d2c15a8cce67364379856b72b2d4d679fa7b64679bb3b3"
+      },
+      {
+        "module": "test_demo_readiness",
+        "exit_code": 0,
+        "pass": 5,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "85fcc047d42adcfa598e6e2fb3c1ca209d4228af3f88579a49d1ff08f12f9d97"
+      },
+      {
+        "module": "test_b1321_payment_cancel_guard",
+        "exit_code": 0,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "b1b6562f0f703e256c01c99366f39e2b42c8b173c0e5911c3c319ec01c36739a"
+      },
+      {
+        "module": "test_b1381_paid_shipment_cancel",
+        "exit_code": 0,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "436a02df2250d8f150807b6bfeffe7e7b6a155ef36524372d650fecd10959d35"
+      },
+      {
+        "module": "test_payment_integrity_b60",
+        "exit_code": 0,
+        "pass": 5,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "d41c6fa4e1ce1b6b0c3358748a250b6d0df1ade61c21bb12633ffdad0c437064"
+      },
+      {
+        "module": "test_payment_integrity_history_audit",
+        "exit_code": 0,
+        "pass": 12,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "0549c8c9442f82a069d3f90ed53918d2592a9f6a2bd39d268c23407bfab808cb"
+      },
+      {
+        "module": "test_refund_order_context",
+        "exit_code": 0,
+        "pass": 24,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "7fda1846dbd577eff7ec4bf483df199bead0eff115f55b3eb13d0aced99a397f"
+      },
+      {
+        "module": "test_refund_retry_integrity",
+        "exit_code": 0,
+        "pass": 19,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "4f57dfb671a324a4ffe2afd2dca798367f0f5d013c4ba3e511adb87da0892169"
+      },
+      {
+        "module": "test_b1981_end_to_end_shipment",
+        "exit_code": 0,
+        "pass": 3,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "2d26586e8c72480769708d9b3674a65b5d7cd1a74003434c30e12f33290d3c21"
+      },
+      {
+        "module": "test_b721_shipment_cancel",
+        "exit_code": 0,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "f8d9b2320b78c5464397d043b6e7a7dff917ec359cddfa754558fb5e645f0b28"
+      },
+      {
+        "module": "test_cancel_compare_and_set",
+        "exit_code": 0,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "74826e8f6dce35fc89e2ce34ba6b83b00a072aa95731a5e9fc56af32b4d0ddaa"
+      },
+      {
+        "module": "test_b1441_paid_cancel_panel",
+        "exit_code": 0,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0,
+        "junit_sha256": "54b33a13d1199a490481cb9c048f8391d7ae9a74d490db9cc8b27e3a7bc3eef4"
+      }
+    ]
+  },
+  "migration_manifest": {
+    "ok": true,
+    "files": [
+      {
+        "file": "postgres_schema.sql",
+        "sha256": "c4e3deba7f535001212e83e83509331f972ff72721d74a69e995367b2756ea97",
+        "bytes": 3232
+      },
+      {
+        "file": "upgrade_09.sql",
+        "sha256": "a9f55237c3e25e031e5576190280022dac1497a55c77628c4ca17fa7f2fb6a66",
+        "bytes": 740
+      },
+      {
+        "file": "upgrade_10.sql",
+        "sha256": "8c976d5cf416a9683b37632c2f1a214b8406ca265ac462473e510dc9e67e24b9",
+        "bytes": 580
+      },
+      {
+        "file": "upgrade_11.sql",
+        "sha256": "e166d64f61a7f8e9ee45913f674e69e962042179db8d83d8b19b593fc5567d8f",
+        "bytes": 789
+      },
+      {
+        "file": "upgrade_12.sql",
+        "sha256": "22b585ea562c5b264486f9d9ccf45a7ed7d6fad6bebdd58a4922caebedc7f378",
+        "bytes": 1050
+      },
+      {
+        "file": "upgrade_13.sql",
+        "sha256": "2b15c6e900d5c2b811247a077bfe66f961322f908cf1ddf1b83f44798fe57288",
+        "bytes": 1246
+      },
+      {
+        "file": "upgrade_14.sql",
+        "sha256": "9c04cec01fd0e6fe5d72e61b92eb16bdcc8e4125ce73e28ae7b10488f38dd44f",
+        "bytes": 675
+      },
+      {
+        "file": "upgrade_16.sql",
+        "sha256": "e6a3a78c0a3e8a0f9d071e4723a2f17a37d271608e92f56077ba569d0bd99be1",
+        "bytes": 672
+      },
+      {
+        "file": "upgrade_17.sql",
+        "sha256": "62123d0543b8f52c98a9d96022fee7efe16b0b6690b8e981b37eb84674d6320e",
+        "bytes": 643
+      },
+      {
+        "file": "upgrade_21.sql",
+        "sha256": "d2de042c0bd480209bea42741b3c4a50e5cd72b04fc3589efec3cc643fa9c495",
+        "bytes": 1065
+      },
+      {
+        "file": "upgrade_23.sql",
+        "sha256": "a7bfc608f1ffe2f87c691661a27d6a024519d2a1fe165faba1a7a64f67568739",
+        "bytes": 707
+      },
+      {
+        "file": "upgrade_25.sql",
+        "sha256": "8a3ef439b298dc49f03850cdcb9a71630c3e69fb770dc7281d272e82bc95b0c5",
+        "bytes": 715
+      },
+      {
+        "file": "upgrade_26.sql",
+        "sha256": "9c7248fc5b780f9dabccb0ca86feb0b8c45227dda9f00a58c680d4ce51649c18",
+        "bytes": 302
+      },
+      {
+        "file": "upgrade_28.sql",
+        "sha256": "a4dee66860d28d9ad00173e3c10b786a477ed60813ef0dcb694be4b0c2e21299",
+        "bytes": 358
+      },
+      {
+        "file": "upgrade_pack3.sql",
+        "sha256": "b375b8793150bab3579270d25b25ee8a6b32aa8de8fd7a059df9d1f796523ec8",
+        "bytes": 704
+      },
+      {
+        "file": "upgrade_b371_saved_cart.sql",
+        "sha256": "dd6963b71d0ea7c506543264b0b229cb2ae8f99f07b302e263918f6e83ecc632",
+        "bytes": 361
+      },
+      {
+        "file": "upgrade_b561_shipments.sql",
+        "sha256": "1fe06f8d870a0a9005b34ef2e8e7f21a985273ca111b6647577325b3ec9108a0",
+        "bytes": 685
+      },
+      {
+        "file": "upgrade_b1681_checkout_idempotency.sql",
+        "sha256": "d46717ba882640d0b11c5ce3b8de07a4422a4fc1a6303ccb064beb0e0cfc5b6c",
+        "bytes": 440
+      },
+      {
+        "file": "upgrade_z_password_change.sql",
+        "sha256": "9df7ea5a14c592fc92be1a4624e3afe10d7852d4e12450883b2d8baec568b91e",
+        "bytes": 279
+      },
+      {
+        "file": "upgrade_z_checkout_pin_recovery.sql",
+        "sha256": "c92d37f4c19b998439d415898e867bd926d774659cb23bc833fabfdda5173d28",
+        "bytes": 1030
+      },
+      {
+        "file": "upgrade_b10921_inventory_reservations.sql",
+        "sha256": "9ec98cb94b142a7e0cc4785a45cdb85ea63e925dd6c00d6128ba85e8323ea04e",
+        "bytes": 460
+      },
+      {
+        "file": "upgrade_b10921_local_marketplace.sql",
+        "sha256": "80a0b179274ec0166dea9693609d92379f5facce7652b12d21e020138402105b",
+        "bytes": 1075
+      },
+      {
+        "file": "upgrade_b10921_purchase_records.sql",
+        "sha256": "56e0775b9f632f0c27591e9e84d826049467de8e767da97e1808cb8a5d193587",
+        "bytes": 2132
+      },
+      {
+        "file": "upgrade_z_password_reset_test.sql",
+        "sha256": "beebf858428c37acb53565898ad9774df1f03f101b16adb3d8cd586634aee405",
+        "bytes": 721
+      },
+      {
+        "file": "upgrade_z_support_cases_test.sql",
+        "sha256": "d7b3025f3df4440fb19975e88fd122a7b52eb3cd361a0e9b3993f6042e68ac45",
+        "bytes": 1671
+      },
+      {
+        "file": "upgrade_z_reset_mail_queue.sql",
+        "sha256": "8dbf4ca1353d3ee962179cb0cfbc16a6be57e2b2824550f04892f7db9404a305",
+        "bytes": 1166
+      },
+      {
+        "file": "optional_product_sale_units.sql",
+        "sha256": "95bda88d01a1a5f27d8ad5d738ffc9d3d22176e8052dc36a5fc87a0f76b26194",
+        "bytes": 1324
+      },
+      {
+        "file": "optional_address_delivery.sql",
+        "sha256": "8a0d13830341aae86175283533536dd5db9483b9b161c12124f9b7ca59c2dd39",
+        "bytes": 1384
+      },
+      {
+        "file": "optional_user_photos.sql",
+        "sha256": "d3e8f63f9d624caddf66a070fde5400689b48c47d986608483e57cbd091a0fdd",
+        "bytes": 566
+      },
+      {
+        "file": "optional_seller_directory.sql",
+        "sha256": "51acda156b660cffcfa2645782a22dcab0fc836b1d7d3a9c0a7c8ff9029ea84f",
+        "bytes": 282
+      },
+      {
+        "file": "optional_order_mail_outbox.sql",
+        "sha256": "aa61e581d4db5779b737e988346ec8701af4a1f91465cf33dcb8281af9274345",
+        "bytes": 642
+      },
+      {
+        "file": "optional_email_verification.sql",
+        "sha256": "e2544655da97b920308b28f3f418898497c237f8de9c34318bdb30f1271f00e0",
+        "bytes": 854
+      },
+      {
+        "file": "optional_mail_send_budget.sql",
+        "sha256": "7303810d13fd1509fd97370fc9a5ea2ddcef87ab2331aeea58cffa0883acd6c0",
+        "bytes": 589
+      },
+      {
+        "file": "optional_mail_suppression.sql",
+        "sha256": "ea990962ec7efecc7331bc02a4cc2f251d56a2bfc2293b27427a21425557f7fc",
+        "bytes": 268
+      },
+      {
+        "file": "optional_ses_feedback.sql",
+        "sha256": "cf5445e3ab5ee0b2c90d334aa35634db141cca159c7ea6ee56358253add9fbab",
+        "bytes": 289
+      },
+      {
+        "file": "optional_ses_feedback_review.sql",
+        "sha256": "93a9134436e78547e4dfcb8230feea85e80010ed82d626bcc02ab4b25689cf1a",
+        "bytes": 451
+      },
+      {
+        "file": "optional_pickup_dates.sql",
+        "sha256": "237922440e7ac3d4ed270c59a74010c3f3e0665cf6879a3b3453dcd6e964692c",
+        "bytes": 410
+      },
+      {
+        "file": "optional_wallet_preview.sql",
+        "sha256": "5cc1d0a7976be5a9849a3844bc139861f2f61aea1f88ff6d1c70f38a26faa0d0",
+        "bytes": 1355
+      },
+      {
+        "file": "optional_wallet_withdrawals.sql",
+        "sha256": "b929b07f2764408d4769a5ef2182f0bc135728454b1e720e0f8b46318949565a",
+        "bytes": 1996
+      },
+      {
+        "file": "optional_wallet_operation_fences.sql",
+        "sha256": "7c08a3982b60645e209e9e4e1006f981702a2a7afbc0402f6ff3e6c385b980ef",
+        "bytes": 425
+      },
+      {
+        "file": "optional_account_favorites.sql",
+        "sha256": "6e6b64eff1d7cc9e22a6334ae7fc99edddb13ea5b841300f38fca649bf5f517b",
+        "bytes": 510
+      },
+      {
+        "file": "optional_pickup_promotions.sql",
+        "sha256": "bb02e385f33d578bd172c6435d496cccf7d26180d0e563794008cdf994a0b4b3",
+        "bytes": 923
+      }
+    ],
+    "untracked_sql": [],
+    "missing_startup_tables": [],
+    "execution_performed": false,
+    "checksum_lock": {
+      "verified_files": 42,
+      "checksums_match": true,
+      "execution_performed": false
+    }
+  },
+  "external_services": {
+    "configured_geocoder": {
+      "status": "UNCONFIGURED",
+      "WP_ENABLE_ADDRESS_SEARCH": "absent",
+      "WP_ADDRESS_SEARCH_URL": "absent",
+      "contract_verified_with_simulated_provider": true,
+      "live_geocoding_verified": false
+    },
+    "osm_tiles": {
+      "status": "BLOCKED",
+      "request_error": 403,
+      "local_overview_works_without_tiles": true,
+      "browser_fallback_verified": true
+    }
+  },
+  "runtime_requirements": {
+    "node_or_npm_required_to_run_app": false,
+    "packages_and_integrity": "web/MAP-ASSETS.json"
+  },
+  "not_performed": [
+    "environment publication",
+    "remote branch push",
+    "VPS operations",
+    "real payments or email",
+    "Windows",
+    "PostgreSQL 16",
+    "full project test suite",
+    "physical phone"
+  ],
+  "notes": [
+    "Suites overlap; do not sum as unique cases.",
+    "Country outlines are an overview, not a street or property boundary map.",
+    "Existing grants retain their expiry when administrators change a code.",
+    "Non-promotional demo points remain free; no future charges are created."
+  ],
+  "full_demo_launcher_smoke": {
+    "health": 200,
+    "world_geometry": 200,
+    "create_code": 201,
+    "redeem": 201,
+    "point": 201,
+    "remaining": 2,
+    "private_credentials_removed_after_shutdown": true
+  }
+}

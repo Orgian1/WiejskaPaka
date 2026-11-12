@@ -23,19 +23,20 @@ def test_seller_consent_in_chromium(tmp_path,width):
                 page.fill('#email',email);page.fill('#password',password)
                 page.locator('#auth button[type=submit]').click()
                 page.locator('#seller-compliance').wait_for(state='visible')
+                page.locator('#seller-compliance > details > summary').click()
                 assert not errors
                 with page.expect_response('**/farmers/me/compliance') as refresh:
                     page.click('#seller-compliance-refresh')
                 assert refresh.value.status==200
                 assert refresh.value.json()['completed_transaction_count']==0
                 assert not errors
-                page.wait_for_function("document.getElementById('seller-compliance-status').textContent.includes('Zakończone transakcje: 0')")
+                page.wait_for_function("()=>(document.getElementById('seller-compliance-status').textContent.includes('Zakończone transakcje: 0'))")
                 assert page.locator('#seller-rules-submit').is_disabled()
                 page.check('#seller-rules-check')
                 with page.expect_response('**/farmers/me/compliance/acknowledge') as response:
                     page.click('#seller-rules-submit')
                 assert response.value.status==200
-                page.wait_for_function("document.getElementById('seller-compliance-status').textContent.includes('Zasady demo potwierdzone')")
+                page.wait_for_function("()=>(document.getElementById('seller-compliance-status').textContent.includes('Zasady demo potwierdzone'))")
                 assert page.locator('#seller-rules-submit').is_disabled()
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
                 page.click('#logout')

@@ -5,6 +5,7 @@ Nie jest to test serwera ani integracji API.
 """
 import argparse
 from pathlib import Path
+from scripts.check_mobile_browser import EXPECTED_NAVIGATION
 import re
 import shutil
 
@@ -53,13 +54,13 @@ def check_offline(screenshot_dir=None):
                 assert page.locator('#auth').is_visible()
                 for selector in ('#farmer', '#farmer-details', '#orders-section', '#dashboard', '#notifications-section'):
                     assert page.locator(selector).is_hidden(), f'Widoczny prywatny panel {selector}'
-                expected_navigation = ('#auth', '#nearby-section', '#products-section', '#cart-section', '#farmer', '#orders-section', '#dashboard')
+                expected_navigation = EXPECTED_NAVIGATION
                 assert page.locator('nav.quick-nav a').count() == len(expected_navigation)
                 assert page.locator('nav.quick-nav a').evaluate_all('(links) => links.map(link => link.getAttribute("href"))') == list(expected_navigation)
                 for link in page.locator('nav.quick-nav a').all():
                     target = link.get_attribute('href')
                     assert target.startswith('#') and page.locator(target).count() == 1
-                page.locator('nav.quick-nav a').nth(2).click()
+                page.locator('nav.quick-nav a[href="#products-section"]').click()
                 assert page.evaluate('location.hash') == '#products-section'
                 page.locator('#email').focus()
                 assert page.evaluate('document.activeElement.id') == 'email'

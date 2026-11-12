@@ -4,7 +4,7 @@ JS = (Path(__file__).resolve().parents[1] / "web" / "dashboard.js").read_text(en
 
 
 def test_farmer_dashboard_displays_inventory_and_stock():
-    assert "Moje produkty i stany magazynowe" in JS
+    assert "Uzupełnij towar — moje produkty i stany magazynowe" in JS
     assert "for(const product of products)" in JS
     assert "Number.isSafeInteger(stock)&&stock>=0" in JS
     assert "Dostępne w magazynie: ${availability}" in JS

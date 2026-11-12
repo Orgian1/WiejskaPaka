@@ -20,11 +20,13 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def logout():
-                page.click('#logout');page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
+                page.click('#logout');page.wait_for_function("()=>(document.getElementById('identity').textContent==='Nie zalogowano')")
                 assert page.locator('#support-section').is_hidden()
                 assert page.locator('#support-detail').text_content()==''
                 assert page.locator('#support-list').text_content()==''
             def open_case():
+                disclosure=page.locator('#support-section > details')
+                if disclosure.count() and not disclosure.evaluate('(e)=>e.open'):disclosure.locator('summary').click()
                 with page.expect_response('**/test/support/cases?*') as response:page.click('#support-refresh')
                 assert response.value.status==200
                 page.get_by_role('button',name='Otwórz zgłoszenie testowe',exact=True).first.click()
@@ -36,7 +38,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             with page.expect_response('**/test/support/cases') as response:
                 page.get_by_role('button',name='Wyślij zgłoszenie testowe',exact=True).click()
             assert response.value.status==201
-            page.get_by_text('Zgłoszenie testowe zapisane.',exact=False).wait_for(state='visible')
+            page.locator('#dashboard-content').get_by_text('Zgłoszenie testowe zapisane.',exact=False).wait_for(state='visible')
             open_case();assert text in page.locator('#support-detail').text_content()
             assert page.locator('#support-detail img').count()==0
             page.get_by_label('Odpowiedź testowa do zgłoszenia').fill('Prywatny szkic do wyczyszczenia')

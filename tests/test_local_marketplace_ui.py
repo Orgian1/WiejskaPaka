@@ -33,5 +33,12 @@ def test_scripts_load_after_document_in_dependency_order():
         def handle_starttag(self,tag,attrs):
             if tag=='script':self.scripts.append(dict(attrs))
     doc=Scripts();doc.feed((ROOT/'web/index.html').read_text())
-    assert [s['src'] for s in doc.scripts]==['/assets/app.js','/assets/dashboard.js','/assets/nearby.js','/assets/pickup-calendar.js','/assets/address-search.js','/assets/address-delivery.js','/assets/user-photos.js','/assets/seller-search.js','/assets/same-package.js','/assets/purchase-records.js','/assets/pin-recovery.js','/assets/account-security.js','/assets/session-security.js','/assets/password-reset.js','/assets/email-verification.js','/assets/seller-compliance.js','/assets/admin-seller-review.js','/assets/support-cases.js','/assets/wallet.js']
+    sources=[s['src'] for s in doc.scripts]
+    assert len(sources)==len(set(sources))
+    for src in sources:
+        assert src.startswith('/assets/') and (ROOT/'web'/src.removeprefix('/assets/')).is_file()
+    for required in ('leaflet','app','dashboard','nearby','pickup-calendar','address-search','address-delivery','user-photos','seller-search','same-package','purchase-records','pin-recovery','account-security','session-security','password-reset','email-verification','seller-compliance','admin-seller-review','support-cases','wallet','contact','favorites','seller-navigation','saved-location','seller-panels','pickup-map','pickup-promotions'):
+        assert '/assets/'+required+'.js' in sources
+    for dependency,consumer in [('leaflet','pickup-map'),('app','dashboard'),('app','nearby'),('nearby','address-search'),('nearby','pickup-map'),('seller-panels','pickup-map'),('app','favorites')]:
+        assert sources.index('/assets/'+dependency+'.js')<sources.index('/assets/'+consumer+'.js')
     assert all('defer' in s for s in doc.scripts)

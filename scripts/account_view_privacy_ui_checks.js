@@ -11,7 +11,7 @@ function main(name){
   reset(){this.resets++}
  }
  const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id)},requests=[];
- const c=vm.createContext({el,console,role:'klient',pendingCartCheckout:{private:'draft'},checkoutOwner:1,cartQuoteSerial:0,cartQuoteItems:[{private:'quote'}],productRequest:0,orderRequest:0,farmerRequest:0,cartRefreshSerial:0,
+ const c=vm.createContext({el,console,role:'klient',expandedCatalogProducts:new Set([99]),pendingCartCheckout:{private:'draft'},checkoutOwner:1,cartQuoteSerial:0,cartQuoteItems:[{private:'quote'}],productRequest:0,orderRequest:0,farmerRequest:0,cartRefreshSerial:0,
    act:fn=>requests.push(fn.name),loadCart:()=>{},loadProducts:()=>{},loadOrders:()=>{},hasUnresolvedCheckout:()=>false,
    loadFarmer:()=>{},loadDashboard:()=>{},resetPinRecoveryViews:()=>{},resetPasswordChangeView:()=>{},resetSessionSecurityView:()=>{},
    localStorage:{setItem(){throw Error('Forbidden storage')}},sessionStorage:{setItem(){throw Error('Forbidden storage')}}});
@@ -35,6 +35,7 @@ function main(name){
  for(const id of ['products','orders','my-points','dashboard-content','notifications-list','cart-items','cart-point','cart-farmer-select'])assert.equal(el(id).children.length,0,id);
  for(const id of ['cart-checkout','profile-form','point-form','new-product'])assert(el(id).resets>=1,id);
  assert.equal(el('cart-total').textContent,'');assert.equal(el('cart-address').hidden,true);assert.equal(el('cart-pickup').hidden,false);
+ assert.equal(c.expandedCatalogProducts.size,0);
  assert.equal(c.pendingCartCheckout,null);assert.equal(c.checkoutOwner,user?.id??null);
  assert.equal(c.cartQuoteItems.length,0);assert.equal(c.role,user?.role??null);
  if(user){assert.match(el('identity').textContent,/new@example.invalid/)}else assert.equal(el('identity').textContent,'Nie zalogowano');

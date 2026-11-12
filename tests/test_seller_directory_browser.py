@@ -28,6 +28,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=actor[0]['email'])
         try:
             page.goto(str(client.base_url));login(actors[0])
+            page.locator('#farmer-details > details > summary').click()
             page.locator('#seller-login-panel').wait_for(state='visible')
             page.fill('#farm-name','Żółta Łąka '+suffix);page.fill('#farm-city','Legnica')
             with page.expect_response('**/farmers/me/profile') as response:
@@ -42,7 +43,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert page.locator('#auth').is_hidden()
             assert page.locator('#logout').is_visible()
             assert client.put('/sellers/me/login',headers=actors[1][1],json={'login':handle.upper()}).status_code==409
-            page.click('#logout');page.wait_for_function("document.querySelector('#identity').textContent==='Nie zalogowano'")
+            page.click('#logout');page.wait_for_function("()=>(document.querySelector('#identity').textContent==='Nie zalogowano')")
             assert page.locator('#seller-public-login').input_value()==''
             login(actors[2]);assert page.locator('#seller-login-panel').is_hidden()
             page.select_option('#catalog-search-mode','seller')
@@ -64,6 +65,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert card.count()==1 and 'Pomidory sprzedawcy 1' not in page.locator('#products').inner_text()
             page.locator('#catalog-seller-filter').wait_for(state='visible')
             assert page.locator('#catalog-search-mode').input_value()=='product'
+            card.locator('summary > b').click()
             with page.expect_response('**/cart/items') as response:
                 card.get_by_role('button',name='Dodaj do koszyka',exact=True).click()
             assert response.value.status==200
@@ -71,14 +73,14 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert page.get_by_role('dialog').count()==0
             with page.expect_response(lambda r:'/catalog/search?' in r.url and 'farmer_id' not in parse_qs(urlsplit(r.url).query)) as response:page.click('#catalog-clear-seller')
             assert response.value.status==200
-            page.wait_for_function('document.querySelectorAll("#products > .card").length===2')
+            page.wait_for_function('()=>(document.querySelectorAll("#products > .card").length===2)')
             page.select_option('#catalog-search-mode','seller');page.fill('#catalog-query','ZOLTA LAKA '+suffix)
             with page.expect_response(lambda r:'/sellers/search?' in r.url and parse_qs(urlsplit(r.url).query).get('q')==['ZOLTA LAKA '+suffix]) as response:page.click('#catalog-search-submit')
             assert response.value.status==200
             page.locator('#seller-results').get_by_role('heading',name='@'+handle,exact=True).wait_for(state='visible')
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.set_viewport_size({'width':844,'height':390});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-            page.click('#logout');page.wait_for_function("document.querySelector('#identity').textContent==='Nie zalogowano'")
+            page.click('#logout');page.wait_for_function("()=>(document.querySelector('#identity').textContent==='Nie zalogowano')")
             assert page.locator('#seller-results').inner_text()==''
             assert page.locator('#seller-public-login').input_value()==''
             assert not errors

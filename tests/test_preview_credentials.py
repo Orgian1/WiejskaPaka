@@ -40,7 +40,7 @@ def test_cleanup_does_not_remove_replacement_file(tmp_path):
 
 
 def test_shared_parent_is_rejected(tmp_path):
-    parent = tmp_path/'shared';parent.mkdir(mode=0o755)
+    parent = tmp_path/'shared';parent.mkdir(mode=0o755);parent.chmod(0o755)
     with pytest.raises(ValueError):
         with private_credentials_file(parent/'accounts.json', {}):pytest.fail('must not enter')
     assert not (parent/'accounts.json').exists()

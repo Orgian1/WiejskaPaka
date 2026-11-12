@@ -18,7 +18,7 @@ def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         try:
             page.goto(str(client.base_url)+'/#verify-email='+secret)
-            page.wait_for_function('location.hash===""')
+            page.wait_for_function('()=>(location.hash==="")')
             page.fill('#email',body['email']);page.fill('#password',body['password'])
             page.locator('#auth button[type=submit]').click()
             page.locator('#account-security summary').click()
@@ -26,7 +26,7 @@ def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
             with page.expect_response(lambda r:'/auth/email-verification/confirm' in r.url) as result:
                 page.click('#email-verification-confirm')
             assert result.value.status==200
-            page.get_by_text('Adres e-mail potwierdzony.',exact=True).wait_for()
+            page.locator('#email-verification-status').get_by_text('Adres e-mail potwierdzony.',exact=True).wait_for()
             assert client.get('/auth/email-verification/status',headers=headers).json()=={'verified':True}
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert secret not in page.content()

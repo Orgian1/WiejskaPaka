@@ -14,6 +14,7 @@ def test_order_projection_contains_parcel_code_required_by_frontend(read):
     with sqlite3.connect(':memory:') as con:
         con.row_factory = sqlite3.Row
         con.execute('CREATE TABLE orders(id integer,pickup_code text,product_id integer,quantity integer,total_grosze integer,fulfillment text,status text,created_at text,buyer_id integer,farmer_id integer)')
+        con.executescript("CREATE TABLE products(id integer primary key,name text); CREATE TABLE pickup_points(id integer primary key,name text); CREATE TABLE order_locations(order_id integer,pickup_point_id integer); INSERT INTO products VALUES(2,'Warzywa'); INSERT INTO pickup_points VALUES(3,'Punkt A'); INSERT INTO order_locations VALUES(1,3);")
         from backend.inventory_reservations import SCHEMA_SQLITE as HOLD_SCHEMA
         con.executescript(HOLD_SCHEMA)
         con.execute("INSERT INTO orders VALUES(1,'WP-TEST',2,3,999,'odbior','odebrane','2026-10-15',42,42)")
@@ -25,6 +26,10 @@ def test_order_projection_contains_parcel_code_required_by_frontend(read):
                 return con.execute(sql.replace('%s', '?'), params)
 
         rows = read(BoundSQL(), 42)
+        if read is farmer_orders:
+            assert dict(rows[0])['product_name']=='Warzywa'
+            assert dict(rows[0])['pickup_point_name']=='Punkt A'
+            assert dict(rows[0])['quantity']==3
         assert dict(rows[0])['pickup_code'] == 'WP-TEST'
         assert dict(rows[0])['reservation_expires_at'] is None
         con.execute("INSERT INTO inventory_reservations(order_id,expires_at) VALUES(1,'2026-10-16T12:30:00+00:00')")

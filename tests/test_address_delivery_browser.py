@@ -33,6 +33,7 @@ def login(page, url, account):
     page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',
                            arg=account['email'])
     page.locator('#address-delivery-panel').wait_for(state='visible')
+    if account['role']=='rolnik':page.locator('#address-delivery-panel > details > summary').click()
 
 
 @pytest.mark.parametrize('width', [320, 1280])
@@ -74,12 +75,14 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
             assert seller.evaluate('document.documentElement.scrollWidth <= innerWidth')
             login(buyer, str(client.base_url), accounts[1])
             card = buyer.locator('#products > .card').filter(has_text='Pomidory przeglądarkowe')
+            card.locator('.favorite-button').wait_for(state='visible')
+            card.locator('summary > b').click()
             card.get_by_label('Sposób realizacji').select_option('dostawa')
             card.get_by_label('Miejscowość dostawy', exact=True).fill('Legnica')
             card.get_by_label('Ulica i numer dostawy', exact=True).fill('Testowa 1')
             card.get_by_label('Kod pocztowy dostawy', exact=True).fill('59-220')
             slot = card.get_by_label('Termin dostawy sprzedawcy', exact=True)
-            buyer.wait_for_function('document.querySelector("#products fieldset select").options.length === 2')
+            buyer.wait_for_function('()=>(document.querySelector("#products fieldset select").options.length === 2)')
             slot.select_option(index=1)
             card.get_by_label('Data dostawy', exact=True).fill(day.isoformat())
             card.get_by_label('Odbiorę w domu od godziny', exact=True).fill('12:00')
@@ -110,7 +113,7 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
                 page.click('#logout')
                 page.locator('#address-delivery-panel').wait_for(state='hidden')
                 assert page.locator('#delivery-requests').inner_text() == ''
-                page.wait_for_function("document.querySelectorAll('input[type=tel]').length === 0")
+                page.wait_for_function("()=>(document.querySelectorAll('input[type=tel]').length === 0)")
             assert not errors
         finally:
             seller.close()

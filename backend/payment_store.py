@@ -120,7 +120,7 @@ def validate_order_refund(con, payment, order):
         WHERE order_id=? AND new_status=? LIMIT 2''', (order['id'], order['status'])).fetchall()
     if (len(refunds) != 1 or refunds[0]['event_type'] != expected_type or len(closures) != 1
             or closures[0]['event_type'] != closure_type
-            or closures[0]['previous_status'] != previous_status
+            or (closures[0]['previous_status'] != previous_status and not (order['status']=='anulowane_testowo' and order['fulfillment']=='odbior' and closures[0]['previous_status']=='gotowe_do_odbioru_testowo'))
             or closures[0]['actor_id'] != actor_id):
         raise ValueError('Niespójny kontekst zwrotu')
 

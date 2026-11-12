@@ -24,6 +24,9 @@ def farmer_orders(connection, actor_id):
     actor_id = validate_actor_id(actor_id)
     return connection.execute(
         "SELECT id, pickup_code, product_id, quantity, total_grosze, fulfillment, status, created_at, "
+        "(SELECT name FROM products WHERE id=orders.product_id) AS product_name, "
+        "(SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id, "
+        "(SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name, "
         "(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at "
         "FROM orders WHERE farmer_id = %s ORDER BY id DESC", (actor_id,)
     ).fetchall()

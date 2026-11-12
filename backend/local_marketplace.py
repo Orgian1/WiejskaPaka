@@ -2,7 +2,8 @@
 
 Integer microdegrees at the API/storage boundary; unit-sphere vectors permit
 portable SQL distance ordering on SQLite and PostgreSQL without extensions.
-Customer coordinates are used only as query parameters and are never persisted.
+Discovery queries do not persist customer coordinates. An authenticated user may
+explicitly save a location through the separate private account API.
 """
 import math
 import unicodedata

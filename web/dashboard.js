@@ -185,7 +185,7 @@ async function loadDashboard() {
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if(role==='klient'&&typeof pinRecoveryControls==='function'&&!['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(o.status))c.append(pinRecoveryControls('order',o.id));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
-      if(o.status==='oczekuje_na_platnosc_testowa'){
+      if(o.status==='oczekuje_na_platnosc_testowa'||(o.fulfillment==='odbior'&&o.status==='gotowe_do_odbioru_testowo')){
         c.append(dashboardButton('Anuluj opłacone zamówienie i zwróć kwotę (TEST)',async()=>{
           if(!window.confirm('To wyłącznie symulacja. Anulować opłacone zamówienie i zarejestrować pełny zwrot testowy?'))return;
           const result=await api(`/orders/${o.id}/cancel-paid-test`,'POST');
@@ -200,6 +200,7 @@ async function loadDashboard() {
     const farmerOrderCards=new Map();
     const [products,orders,shipmentData]=await Promise.all([api('/products/mine'),api('/orders/me'),api('/shipments/farmer/mine')]);
     if(!active())return;
+    box.append(sellerPickupGroups(orders));
     box.append(dashboardCard('Gospodarstwo',[`Produkty: ${products.length}`,`Zamówienia: ${orders.length}`]));
     box.append(dashboardCard('Pamiętaj przed wyjazdem',[
       'Jeśli możesz, zabierz kilka dodatkowych sztuk, np. pomidorów, aby klient mógł wybrać inny egzemplarz.',
@@ -227,10 +228,10 @@ async function loadDashboard() {
         }));
       }else{
         const pin=node('input');pin.type='text';pin.inputMode='numeric';pin.maxLength=6;pin.autocomplete='off';pin.placeholder='PIN klienta';
-        const checked=node('input');checked.type='checkbox';const label=node('label','Klient sprawdził produkty');label.prepend(checked);
-        c.append(pin,label,dashboardButton('Potwierdź odbiór przesyłki',async()=>{
-          if(!/^\d{6}$/.test(pin.value)||!checked.checked)throw Error('Sprawdź PIN i potwierdzenie kontroli towaru');
-          try{const result=await api(`/shipments/${encodeURIComponent(shipment.id)}/confirm`,'POST',{pin:pin.value,checked_goods:true});
+        c.append(node('p','Klient sprawdza produkty i podaje jednorazowy PIN.'));
+        c.append(pin,dashboardButton('Potwierdź odbiór przesyłki',async()=>{
+          if(!/^\d{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr');
+          try{const result=await api(`/shipments/${encodeURIComponent(shipment.id)}/confirm`,'POST',{pin:pin.value});
             if(!active())return;if(result.confirmed){msg('Odebrano całą przesyłkę');await loadDashboard()}else msg(`Błędny PIN, pozostało prób: ${result.remaining_attempts}`);
           }finally{pin.value=''}
         }));
@@ -238,8 +239,8 @@ async function loadDashboard() {
       c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
       box.append(c);
     }
-    const inventory=node('section');inventory.setAttribute('aria-label','Stan produktów gospodarstwa');
-    inventory.append(node('h3','Moje produkty i stany magazynowe'));
+    const inventoryRegion=node('section');inventoryRegion.setAttribute('aria-label','Stan produktów gospodarstwa');const inventory=node('details');inventory.open=true;inventoryRegion.append(inventory);
+    inventory.append(node('summary','Uzupełnij towar — moje produkty i stany magazynowe'));
     if(!products.length)inventory.append(node('p','Nie dodano jeszcze produktów. Użyj formularza Dodaj produkt.'));
     for(const product of products){
       const stock=Number(product.stock);
@@ -248,7 +249,7 @@ async function loadDashboard() {
       if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)item.prepend(photoImage('product',product.id));
       inventory.append(item);
     }
-    box.append(inventory);
+    box.append(inventoryRegion);
     for(const o of orders){const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
@@ -273,16 +274,15 @@ async function loadDashboard() {
       const c=dashboardCard(`Przesyłka ${shipment.shipment_id}`,[`Status: ${shipment.status}`,`Produkty: ${shipment.item_count}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Razem: ${money(shipment.total_grosze)}`]);
       if(shipment.status==='w_drodze_testowo'){
         const pin=node('input');pin.type='text';pin.inputMode='numeric';pin.autocomplete='off';pin.maxLength=6;pin.placeholder='PIN klienta';
-        const checked=node('input');checked.type='checkbox';const label=node('label','Klient sprawdził wszystkie produkty');label.prepend(checked);
+        c.append(node('p','Klient sprawdza produkty i podaje jednorazowy PIN.'));
         const confirmButton=dashboardButton('Potwierdź całą przesyłkę PIN-em',async()=>{
           if(confirmButton.disabled)return;
           if(!/^\d{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr');
-          if(!checked.checked)throw Error('Klient musi najpierw sprawdzić produkty');
-          confirmButton.disabled=true;try{const result=await api(`/shipments/${encodeURIComponent(shipment.shipment_id)}/confirm`,'POST',{pin:pin.value,checked_goods:true});
+          confirmButton.disabled=true;try{const result=await api(`/shipments/${encodeURIComponent(shipment.shipment_id)}/confirm`,'POST',{pin:pin.value});
             if(!active())return;if(result.confirmed){msg('Potwierdzono odbiór całej przesyłki');await loadDashboard()}
             else msg(`Błędny PIN; pozostało prób: ${result.remaining_attempts}`);
           }finally{pin.value='';confirmButton.disabled=false}
-        });c.append(pin,label,confirmButton);
+        });c.append(pin,confirmButton);
       }
       c.append(shipmentDetailsButton(shipment.shipment_id,c));
       box.append(c);
@@ -432,3 +432,25 @@ async function loadNotifications(){if(!role)return;const requestId=++notificatio
 }
 el('dashboard-refresh').onclick=()=>act(loadDashboard);
 el('notifications-refresh').onclick=()=>act(loadNotifications);
+
+// Group only the server-authorized seller orders; never fetch buyer profiles.
+function sellerPickupGroups(orders){
+  const section=node('section');section.setAttribute('aria-label','Zamówienia według punktów odbioru');
+  section.append(node('h3','Zamówienia według punktów odbioru'));
+  const groups=new Map();
+  for(const order of orders){
+    if(order.fulfillment!=='odbior'||['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(order.status))continue;
+    const key=order.pickup_point_id;
+    if(!groups.has(key))groups.set(key,{name:order.pickup_point_name||'Punkt odbioru',orders:[]});
+    groups.get(key).orders.push(order);
+  }
+  for(const group of groups.values()){
+    const details=node('details','', 'card seller-pickup-group');
+    details.append(node('summary',`${group.name} — ${group.orders.length} zamówień`));
+    const list=node('ul');
+    for(const order of group.orders)list.append(node('li',`#${order.id} (${order.pickup_code}) — ${order.product_name||'Produkt #'+order.product_id} — ilość: ${order.quantity}`));
+    details.append(list);section.append(details);
+  }
+  if(!groups.size)section.append(node('p','Brak aktualnych zamówień do odbioru w punktach.'));
+  return section;
+}

@@ -63,6 +63,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
             page.locator('#admin-seller-results textarea').wait_for(state='visible')
             page.locator('#admin-seller-results textarea').fill('Robocza fikcyjna notatka')
         elif role=='rolnik':
+            page.locator('#seller-compliance > details > summary').click()
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==0
             page.get_by_role('heading',name='Rozliczenia testowe',exact=True).wait_for(state='visible')
@@ -76,7 +77,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         assert page.evaluate('localStorage.length')==0
         page.click('#logout')
-        page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
+        page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
         assert page.locator('#dashboard-content').text_content()==''
         assert page.locator('#admin-seller-results').text_content()==''
         assert page.locator('#admin-seller-review').is_hidden()
@@ -107,7 +108,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def sign_out():
                 page.click('#logout')
-                page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
+                page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
             def card(sid):
                 area=page.locator('#dashboard-content > article, #dashboard-content > details').filter(has=page.get_by_text('Przesyłka '+sid,exact=True))
                 area.wait_for(state='visible')
@@ -130,12 +131,13 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 shipment=next(s for s in shipments if s['fulfillment']==fulfillment)
                 sid=shipment['id'];sign_in(role);area=card(sid)
                 area.locator('input[placeholder="PIN klienta"]').fill(pins[sid])
-                area.locator('input[type=checkbox]').check()
+                assert area.locator('input[type=checkbox]').count()==0
                 with page.expect_response(f'**/shipments/{sid}/confirm') as response:
                     area.get_by_role('button',name=label,exact=True).click()
                 assert response.value.status==200 and response.value.json()['confirmed']
                 sign_out()
             sign_in('rolnik')
+            page.locator('#seller-compliance > details > summary').click()
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==2
             for details in page.locator('#dashboard-content > details').all():
@@ -150,7 +152,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             assert payout.value.json()['eligible_orders']==1
             assert payout.value.json()['eligible_grosze']>0
             assert not errors
-            page.wait_for_function("document.getElementById('dashboard-content').textContent.includes('pozycje zamówień: 1')",polling=100)
+            page.wait_for_function("() => (document.getElementById('dashboard-content').textContent.includes('pozycje zamówień: 1'))",polling=100)
             assert 'Do testowej wypłaty: 0,00 zł' not in page.locator('#dashboard-content').text_content()
             sign_out();sign_in('admin')
             finance_button=page.get_by_role('button',name='Pokaż raport finansowy (test)',exact=True)

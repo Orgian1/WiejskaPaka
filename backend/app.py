@@ -47,6 +47,8 @@ async def application_lifespan(application):
     import asyncio
     import logging
     with db() as con:
+        con.execute('SELECT user_id,product_id FROM account_favorites LIMIT 0')
+        con.execute('SELECT user_id,latitude_e6,longitude_e6 FROM account_saved_locations LIMIT 0')
         from backend import user_photos, seller_directory
         if seller_directory.enabled():
             seller_directory.refresh_index(con, postgres=bool(DATABASE_URL))
@@ -285,7 +287,7 @@ class OrderIn(BaseModel):
     address_delivery: DeliveryPreferenceIn | None = None
 class ConfirmIn(BaseModel):
     pin: str = Field(pattern=r'^\d{6}$')
-    checked_goods: bool = Field(strict=True)
+    checked_goods: bool = Field(default=True, strict=True)  # Legacy clients may still send this field.
 
 def token_hash(token):
     return hashlib.sha256(token.encode()).hexdigest()
@@ -1165,7 +1167,12 @@ def my_orders(user=Depends(current_user), authorization: str | None = Header(def
         if user['role']=='klient':
             rows=con.execute('SELECT id,pickup_code,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
         elif user['role']=='rolnik':
-            rows=con.execute('SELECT id,pickup_code,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE farmer_id=? ORDER BY id DESC',(user['id'],))
+            rows=con.execute('''SELECT id,pickup_code,product_id,quantity,total_grosze,fulfillment,status,created_at,
+                (SELECT name FROM products WHERE id=orders.product_id) AS product_name,
+                (SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id,
+                (SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name,
+                (SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at
+                FROM orders WHERE farmer_id=? ORDER BY id DESC''',(user['id'],))
         else:
             raise HTTPException(403,'Brak uprawnień')
         return [dict(r) for r in rows]
@@ -1275,6 +1282,8 @@ def mark_ready_test(order_id:int,user=Depends(current_user), authorization: str 
         o=con.execute('SELECT farmer_id,status,fulfillment FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not o or o['farmer_id']!=user['id']:
             raise HTTPException(404,'Brak zamówienia')
+        if o['status']=='gotowe_do_odbioru_testowo' and o['fulfillment']=='odbior':
+            return {'status':'gotowe_do_odbioru_testowo','warning':'Tylko test: bez rzeczywistej płatności'}
         if o['status']!='oczekuje_na_platnosc_testowa':
             raise HTTPException(409,'Niewłaściwy status')
         if o['fulfillment'] != 'odbior':
@@ -1386,7 +1395,7 @@ def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), auth
             return {'shipment_id':shipment_id, 'status':'anulowane_testowo',
                     'refund_grosze':sum(p.refund_grosze for p in payments if p),
                     'already_processed':True, 'mode':'test'}
-        if any(o['status'] != 'oczekuje_na_platnosc_testowa' for o in orders):
+        if any(o['status'] != 'oczekuje_na_platnosc_testowa' and not (o['fulfillment']=='odbior' and o['status']=='gotowe_do_odbioru_testowo') for o in orders):
             raise HTTPException(409, 'Anulowanie możliwe tylko przed realizacją przesyłki')
         payments = [checked_refund_payment(con, o) for o in orders]
         if any(p is not None and p.state not in ('paid_test', 'awaiting_payment', 'failed_test') for p in payments):
@@ -1404,7 +1413,7 @@ def cancel_paid_shipment_test(shipment_id: str, user=Depends(current_user), auth
                     raise HTTPException(409, str(exc)) from exc
                 refunded += updated.refund_grosze
             changed = con.execute('UPDATE orders SET status=? WHERE id=? AND status=?',
-                                  ('anulowane_testowo', o['id'], 'oczekuje_na_platnosc_testowa'))
+                                  ('anulowane_testowo', o['id'], o['status']))
             if changed.rowcount != 1:
                 raise HTTPException(409, 'Status zamówienia zmienił się')
             con.execute('UPDATE products SET stock=stock+? WHERE id=?', (o['quantity'], o['product_id']))
@@ -1432,7 +1441,7 @@ def cancel_paid_order_test(order_id: int, user=Depends(current_user), authorizat
                 raise HTTPException(409, 'Brak potwierdzonego pełnego zwrotu testowego')
             return {'order_id': order_id, 'status': 'anulowane_testowo', 'refund_grosze': payment.refund_grosze,
                     'already_processed': True, 'mode': 'test'}
-        if order['status'] != 'oczekuje_na_platnosc_testowa':
+        if order['status'] != 'oczekuje_na_platnosc_testowa' and not (order['fulfillment']=='odbior' and order['status']=='gotowe_do_odbioru_testowo'):
             raise HTTPException(409, 'Anulowanie testowe możliwe tylko przed realizacją zamówienia')
         if payment is None or payment.state != 'paid_test':
             raise HTTPException(409, 'Brak opłaconego zamówienia; użyj zwykłego anulowania')
@@ -2546,7 +2555,11 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
         if address_delivery.enabled() and payload.event_type.startswith('payment_'):
             address_delivery.require_accepted(con, order_id, postgres=bool(DATABASE_URL))
         if payload.event_type.startswith('payment_') and order['status'] != 'oczekuje_na_platnosc_testowa':
-            raise HTTPException(409, 'Nie można rejestrować płatności dla zamkniętego zamówienia')
+            previous = con.execute('SELECT event_type FROM payment_simulation_events WHERE event_id=?', (event_key,)).fetchone()
+            if not (order['fulfillment'] == 'odbior' and order['status'] == 'gotowe_do_odbioru_testowo'
+                    and payload.event_type == 'payment_success_test' and previous
+                    and previous['event_type'] == payload.event_type):
+                raise HTTPException(409, 'Nie można rejestrować płatności dla zamkniętego zamówienia')
         if payload.event_type.startswith('payment_') and payment_deadline_passed(con, order_id, now=datetime.now(timezone.utc)):
             existing = get_payment(con, order_id)
             # A retry of an already committed event never creates a new payment.
@@ -2578,6 +2591,11 @@ def post_payment_test(order_id: int, payload: TestPaymentEventIn, user=Depends(c
             validate_order_refund(con, payment, order)
             updated = persist_event(con, payment, event_key, payload.event_type,
                                     datetime.now(timezone.utc).isoformat())
+            if (payload.event_type == 'payment_success_test' and order['fulfillment'] == 'odbior'
+                    and order['status'] == 'oczekuje_na_platnosc_testowa' and updated.state == 'paid_test'):
+                require_transition('odbior', order['status'], 'gotowe_do_odbioru_testowo')
+                con.execute('UPDATE orders SET status=? WHERE id=?', ('gotowe_do_odbioru_testowo', order_id))
+                record_order_event(con, order_id, user['id'], 'pickup_paid_ready_test', order['status'], 'gotowe_do_odbioru_testowo')
             if payload.event_type == 'delivery_failed_by_courier_test' and order['status'] == 'w_drodze_testowo':
                 # Revoke courier access to the address in the same transaction as the refund.
                 require_transition(order['fulfillment'], order['status'], 'nieudana_dostawa_testowo')
@@ -3296,3 +3314,6 @@ if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
 # Isolated persistent wallet preview: never a real payment authorization path.
 from backend.wallet_preview import install as install_wallet_preview
 install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)
+
+from backend.favorites import install as install_favorites
+install_favorites(app, db, order_write_db, current_user, DATABASE_URL)

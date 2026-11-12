@@ -64,6 +64,11 @@ async function searchNearby(offset=0){
         }));
         card.append(qty,add,node('p','Punkt i dostępność są ponownie sprawdzane przy zamówieniu. W koszyku wybierz wskazany punkt odbioru.'));
       }else card.append(node('p','Zaloguj się jako klient, aby dodać produkt do koszyka.'));
+      if(typeof favoriteButton==='function'&&['klient','rolnik'].includes(role)){
+        const media=node('div','', 'favorite-media');
+        if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)media.append(photoImage('product',product.id));
+        media.append(favoriteButton(product));card.prepend(media);
+      }
       el('nearby-results').append(card);
     }
     el('nearby-next').hidden=!data.has_more||offset+payload.limit>10000;

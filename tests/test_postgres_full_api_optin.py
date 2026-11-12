@@ -1903,3 +1903,25 @@ def test_native_wallet_recovery_is_scoped_per_account(pg_wallet_api):
     con=queued_worker_connection(parameters)
     try:assert inspect_wallets(con)['success']
     finally:con.connection.close()
+
+
+def test_native_owner_favorites_location_and_pickup_summary(pg_api):
+    client,_=pg_api
+    farmer,_=register(client,'rolnik');buyer,_=register(client,'klient');other,_=register(client,'rolnik')
+    pid=product(client,farmer)
+    for _ in range(2):assert client.put(f'/favorites/{pid}',headers=buyer).status_code==200
+    assert [p['id'] for p in client.get('/favorites',headers=buyer).json()['items']]==[pid]
+    assert client.get('/favorites',headers=other).json()['items']==[]
+    location={'latitude_e6':52229676,'longitude_e6':21012229}
+    assert client.put('/account/location',headers=buyer,json=location).status_code==200
+    assert client.get('/account/location',headers=buyer).json()=={'location':location}
+    assert client.get('/account/location',headers=other).json()=={'location':None}
+    point=client.post('/pickup-points',headers=farmer,json={'name':'Punkt PostgreSQL','city':'Legnica','street':'Testowa 1','opening_hours':'8-16'}).json()['id']
+    ordered=client.post('/orders',headers=buyer,json={'product_id':pid,'quantity':2,'fulfillment':'odbior','pickup_point_id':point})
+    assert ordered.status_code==201
+    rows=client.get('/orders/me',headers=farmer).json()
+    assert len(rows)==1 and rows[0]['pickup_point_id']==point and rows[0]['quantity']==2
+    assert rows[0]['product_name']=='Warzywa PostgreSQL' and rows[0]['pickup_point_name']=='Punkt PostgreSQL'
+    assert client.get('/orders/me',headers=other).json()==[]
+    assert client.delete(f'/favorites/{pid}',headers=buyer).status_code==200
+    assert client.delete('/account/location',headers=buyer).status_code==200

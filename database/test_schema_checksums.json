@@ -198,5 +198,10 @@
     "file": "optional_wallet_operation_fences.sql",
     "sha256": "7c08a3982b60645e209e9e4e1006f981702a2a7afbc0402f6ff3e6c385b980ef",
     "bytes": 425
+  },
+  {
+    "file": "optional_account_favorites.sql",
+    "sha256": "6e6b64eff1d7cc9e22a6334ae7fc99edddb13ea5b841300f38fca649bf5f517b",
+    "bytes": 510
   }
 ]

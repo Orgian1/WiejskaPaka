@@ -3,7 +3,7 @@ from typing import Final
 
 TRANSITIONS: Final = {
     ('odbior', 'oczekuje_na_platnosc_testowa'): frozenset({'gotowe_do_odbioru_testowo', 'anulowane_testowo'}),
-    ('odbior', 'gotowe_do_odbioru_testowo'): frozenset({'odebrane'}),
+    ('odbior', 'gotowe_do_odbioru_testowo'): frozenset({'odebrane', 'anulowane_testowo'}),
     ('dostawa', 'oczekuje_na_platnosc_testowa'): frozenset({'w_drodze_testowo', 'anulowane_testowo'}),
     ('dostawa', 'w_drodze_testowo'): frozenset({'odebrane', 'nieudana_dostawa_testowo'}),
 }

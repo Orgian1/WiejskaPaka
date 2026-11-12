@@ -19,7 +19,7 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
         try:
             with page.expect_response('**/catalog/search?*') as response:page.goto(str(client.base_url))
             assert response.value.status==200 and response.value.json()['total']==52
-            page.wait_for_function("document.querySelectorAll('#products > .card').length===24")
+            page.wait_for_function("() => (document.querySelectorAll('#products > .card').length===24)")
             assert page.locator('#catalog-previous').is_disabled()
             for expected_offset,expected_items in [(24,24),(48,4)]:
                 with page.expect_response('**/catalog/search?*') as response:page.click('#catalog-next')
@@ -36,6 +36,9 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
             page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
             page.locator('#auth button[type=submit]').click()
             page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts['klient']['email'])
+            page.locator('#products .favorite-button').first.wait_for(state='visible')
+            page.locator('#products > .card').first.locator('summary > b').click()
+            assert page.locator('#products > .card').first.evaluate('(e)=>e.open')
             add=page.locator('#products > .card').first.get_by_role('button',name='Dodaj do koszyka',exact=True);add.wait_for(state='visible')
             with page.expect_response('**/cart/items') as response:add.click()
             assert response.value.status==200
@@ -44,8 +47,8 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
             page.locator('#cart-items').get_by_text('Katalog testowy 049',exact=False).wait_for(state='visible')
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.click('#logout')
-            page.wait_for_function("document.getElementById('identity').textContent==='Nie zalogowano'")
-            page.wait_for_function("!document.querySelector('#products button')")
+            page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
+            page.wait_for_function("() => (!document.querySelector('#products button'))")
             assert page.locator('#catalog-previous').is_disabled()
             assert not errors
         finally:page.close()
@@ -66,6 +69,8 @@ def test_same_seller_recommendations_create_one_shipment(sample_browser_server,t
             page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
             page.locator('#auth button[type=submit]').click()
             card=page.locator('#products > .card').filter(has_text='Marchew demonstracyjna')
+            card.locator('.favorite-button').wait_for(state='visible')
+            card.locator('summary').click()
             card.get_by_role('button',name='Dodaj do koszyka',exact=True).wait_for(state='visible')
             card.get_by_label('Ilość w jednostce',exact=False).fill('2')
             if direct:

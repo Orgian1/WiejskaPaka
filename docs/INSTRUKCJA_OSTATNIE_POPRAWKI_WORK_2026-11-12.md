@@ -24,3 +24,14 @@ docs/ODBIOR_KONCOWY_DEMO_2026-11-10.md
 docs/INTEGRACJA_CZAT_WORK_2026-11-10.md
 docs/KONTAKT_I_ZGLOS_PROBLEM.md
 docs/ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md
+
+## Uzupełnienie z ostatniego Work — interfejs i obsługa sprzedawcy (12.11)
+13. Katalog: produkty w poziomych rzędach, kolejne rzędy pod spodem. Kliknięcie np. pomidorów rozwija szczegóły bezpośrednio pod wybranym produktem/rzędem, bez przejścia na inną stronę; zadbaj o mobile i dostępność.
+14. Każde zdjęcie produktu: przycisk ulubionych w prawym dolnym rogu zdjęcia. Stan nieaktywny: puste serce z czerwoną obwódką; aktywny: pełne czerwone serce. Działanie klikalne, zsynchronizowane z zakładką Ulubione i zapisane per konto.
+15. Panel sprzedawcy → Zamówienia: podsumowanie według punktów odbioru („Punkt A — 4 zamówienia”, „Punkt B — 7 zamówień”); kliknięcie punktu rozwija listę zamówień z numerami, produktami i ilościami. Nie pokazuj cudzych danych ani numerów telefonów.
+16. Górny pasek sprzedawcy: „Dodaj punkt”; po najechaniu/kliknięciu menu punktów oraz „Przejdź do nawigacji”. Nawigacja powinna prowadzić przez punkty w kolejności ustawionej przez sprzedawcę, z obsługą urządzeń dotykowych. Nie wymyślaj tras ani ETA; korzystaj z obsługiwanego zewnętrznego mechanizmu nawigacji.
+17. Panele sprzedawcy domyślnie zwinięte z wyjątkiem „Aktualne zamówienia” oraz „Uzupełnij towar”, które mają być rozwinięte. Stan zwijania ma być przewidywalny po przeładowaniu.
+18. Zadbaj o regresję ostatnich poprawek i testy interakcji w przeglądarce dla desktopu i telefonu. Zachowaj inne funkcje projektu.
+
+## Krytyczna instrukcja dla Codex — wybór gałęzi
+Repozytorium `Orgian1/WiejskaPaka` ma domyślną gałąź `main`, na której może być tylko README. To NIE jest źródło aktualnej aplikacji. Przełącz workspace Codex na `codex/demo-finalization-20261112`, a jeżeli interfejs nie pozwala, sklonuj/fetch tę gałąź bez usuwania lokalnych zmian. Potwierdź obecność katalogów `web/`, `docs/`, `scripts/` i pliku `requirements-lock.txt`. Nie publikuj samego README, nie kopiuj `main` na gałąź roboczą i nie uruchamiaj `git reset --hard`.

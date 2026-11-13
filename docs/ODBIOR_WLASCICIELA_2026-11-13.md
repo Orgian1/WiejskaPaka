@@ -1,7 +1,9 @@
 # WiejskaPaka — uruchomienie i odbiór przez właściciela
 
-Gałąź: `codex/product-categories-filters-20261113` w `Orgian1/WiejskaPaka`.
+Gałąź: `codex/issue-59-pre-vps-20261113` w `Orgian1/WiejskaPaka`.
 To lokalne demo z fikcyjnymi kontami i symulowanymi płatnościami. Nie wymaga VPS.
+
+Bieżąca paczka: [poprawki #59 i testy przed VPS](ISSUE_59_ODBIOR_I_VPS_2026-11-13.md).
 
 ## Uruchomienie na komputerze
 
@@ -9,7 +11,7 @@ Pobierz wskazaną gałąź do **nowego** katalogu (jeżeli nazwa jest zajęta, w
 inną; nie nadpisuj istniejących plików):
 
 ```bash
-git clone --branch codex/product-categories-filters-20261113 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
+git clone --branch codex/issue-59-pre-vps-20261113 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
 cd WiejskaPaka-odbior
 git rev-parse HEAD
 ```

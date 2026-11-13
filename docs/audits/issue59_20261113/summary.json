@@ -1,0 +1,53 @@
+{
+  "tested_application_commit": "96fd8868dab23ef22e87f3d3c51f72ca7f787612",
+  "base_commit": "6af63fa5efc8d19be8f5c53695bb6195bb8b9139",
+  "application_sha256": "133023e9d61573f00d0d0de9841c40073bf516728e66b563b8578dad3f9c0c75",
+  "full_regression": {
+    "total": 5088,
+    "passed": 4979,
+    "failed": 0,
+    "skipped": 109
+  },
+  "module_count": 408,
+  "native_cohort_sources_unchanged": true,
+  "native_cohort_sha256": {
+    "test_seller_navigation_browser.py": "d0c8638ea2ddcf4c506df37840ff9324184366c015270c0b4c51aeef0af27d51",
+    "test_full_local_demo_browser.py": "0b458788576207c6599c6f615138de0d46ad026604f39639ad82db7fb2dbabe0",
+    "test_user_photos_browser.py": "4603db8c20607b7eab5d0282f7e36b6a404a4101087272188a5d19ea44074830",
+    "test_seller_compliance_browser.py": "e242916f998e1d95d25600a3a65aaed0f00cdc596bf3c20812525b9e521cda3a",
+    "test_wallet_lifecycle_browser.py": "1057a7cb993b7b9d2f3205ee8cfd029ab2b0b1681b94caeba2b06799f59fac68",
+    "test_admin_seller_review_browser.py": "a54f1d1908d5c00a8544c9ff28befc865abc239c3ae44f365cad031f3c3f9354",
+    "test_postgres_environment.py": "ae85487ef11699280140e8a763c1e7dd7d5ef8148a9691391fa2ea1ccd720802",
+    "test_postgres_transaction_integration_optional.py": "b84b99f305f35756bcf1eda2cb87e2ee79c4137c353ce38af89f6dfd99c13f3a",
+    "test_email_verification_browser.py": "2998db99d57f4ea7d4ac15516574b435042ead9e0c3d551ee84f64485e397c15",
+    "test_wallet_browser.py": "707648ca50489cf7c1f4db8b81d8b5c56d5414de8207a2e69197a95df96d56f5",
+    "test_owner_finalization.py": "4809313d128252f43663057548b40d5a2834dd445264e0f94d86b4ec11ccb7ae",
+    "test_next_package_browser.py": "3739c84000aa09eef4a339d6c7567f6a0b59ecfe13b372ec890ef586d9f7bb09",
+    "test_seller_directory_browser.py": "efb296fb0e48638fcd7632c54c86d327197cd31b75fdc934e19801da0a8a81dc",
+    "test_password_reset_browser.py": "ce10ff7a085c8cb9eea956af69942cedb4557d9d1605f7d8e26a8f3af260bb38",
+    "test_pickup_map_promotions_browser.py": "2c3289e659314834b794c4b07954ee2d0c2e8cdb93177e53ff3f86c1324512e5",
+    "test_catalog_page_browser.py": "d51a8ef589b43732f64759c0fef8505ef18cdb63bc163f35bc43e73f0803fd9b",
+    "test_wallet_recovery_browser.py": "8e48495f7a8102e4c980dbcc41685bad575dd263351c1c9c37a5fa62306ce83f",
+    "test_address_delivery_browser.py": "7fd4a933ad25e33cd27600c20fa0711234009046f434d5c2b47f531ca8511312",
+    "test_issue59_browser.py": "264f3748abcbd49538bf8b30942967c9b32321ee733b5d383039e04bd9568053",
+    "test_preview_credentials.py": "6bc33a09fcf7f53bc24ec0469d94c3ca8fbfcb2bdc122bded619f5289fe197c2",
+    "test_roles_offline.py": "7d87a67e3f1e5683d32527997c5480ad8574fb6a68338d7010ace3106d602ed4",
+    "test_postgres_full_api_optin.py": "75c1801178dfd051a14e9ad32fc0e9017b01650ac00993a9e3023fc4a356df4c",
+    "test_product_categories_browser.py": "213d709ab60bad193653c7834948d45e4eca38e6c2934baf9639cd0808f69313",
+    "test_delivery_proposals_browser.py": "fd05c8ba7b0679f0a526b9c29f19ade2a345ddb22f7925c8715cfe19466dbf60",
+    "test_support_cases_browser.py": "bfec8c85960edce56bcf146cdc7961de69775262b182077d1837f1c85ac06aaa",
+    "test_sample_demo_browser.py": "4e515a37c94321c3f4d664b13db63b8196d0be87f2f798b12566d42ddec4baf3",
+    "test_pickup_calendar_browser.py": "afc643abe14aa1dcc330eb6df77ea554370c5f77d99a9521f33a867dc5405673",
+    "test_courier_route_browser.py": "2ea4b052ba784da29afc1edbc9450aae240dc41f1f8c6bcdf9ddb0922ab7925a",
+    "test_mobile_offline.py": "f5c7ceb8e3a6e38d482f72059d453e058e3e9a80fcf404fad5414fbbda898313"
+  },
+  "current_evidence": {
+    "runtime_sha256": "0240efb87f708222643b1f99286bb34c83e2466bc12dd9ce1c68c11f9ed95b01",
+    "tests_sha256": "f8c56cfcfa4ef83e54b49ff6edfa215ed155d99b2f68ba35acbf678f25877d28",
+    "test_sources_sha256": "386ae854fc307a0f2db52d3ddb4e2a8bf7872ad7846f0498c12cf8c475a572b9",
+    "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+    "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+  },
+  "note": "Native gates ran before an unrelated static guard test was updated. Their runtime, workflows, dependencies and all native cohort test sources match final code. Full shard 4 reran the adjusted static guard; other unchanged modules reused verified PASS.",
+  "final_test_commit": "0832f3a9155f840c181663789a4d438b2f75a3fa"
+}

@@ -39,7 +39,7 @@ Mapa i promocje z wcześniejszego pakietu zostały zachowane.
 
 Dowody testów: `docs/audits/github_save_20261113/results.json`.
 Jest to zapis pracy i walidacji wybranych scenariuszy, nie deklaracja zakończenia
-pełnego odbioru aplikacji. Pełna regresja aktualnego pakietu oraz ponowny pełny
-zestaw PostgreSQL pozostają do wykonania. Wcześniejsze pełne wyniki dotyczą
-poprzedniego stanu źródeł. Nie wykonywano testów na fizycznym telefonie ani
+pełnego odbioru aplikacji. Pełną regresję tego pakietu oraz ponowny pełny zestaw PostgreSQL
+wykonano następnie na commicie `2fda7bc874522acec09a1f4ef1b2bf3e8180cb61`.
+Wyniki i ograniczenia zawiera [raport końcowy](RAPORT_PAKIET_KONCOWY_2026-11-13.md). Nie wykonywano testów na fizycznym telefonie ani
 prawdziwych płatności.

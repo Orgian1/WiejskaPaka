@@ -1,0 +1,134 @@
+{
+  "repository": "Orgian1/WiejskaPaka",
+  "branch": "codex/demo-finalization-fixes-20261112",
+  "tested_commit": "2fda7bc874522acec09a1f4ef1b2bf3e8180cb61",
+  "application_sha256": "96872ee847e2c2b9c007e2b04385c54aab256592b9a30fc58a0f76c9dd74c459",
+  "isolated": {
+    "modules": 397,
+    "counts": {
+      "total": 4994,
+      "passed": 4889,
+      "failed": 0,
+      "skipped": 105
+    },
+    "shards": [
+      {
+        "part": 1,
+        "counts": {
+          "total": 902,
+          "passed": 804,
+          "failed": 0,
+          "skipped": 98
+        },
+        "raw_report_sha256": "f3268a0674b985a71e1033a75a2e11d9ab8d68c2cf3a094c28197bd578b5b54c"
+      },
+      {
+        "part": 2,
+        "counts": {
+          "total": 1796,
+          "passed": 1794,
+          "failed": 0,
+          "skipped": 2
+        },
+        "raw_report_sha256": "10648040176fd15ddd8d5259561198e7971579a2a818e389bd633d01db1da84e"
+      },
+      {
+        "part": 3,
+        "counts": {
+          "total": 698,
+          "passed": 697,
+          "failed": 0,
+          "skipped": 1
+        },
+        "raw_report_sha256": "5ae13c26828b67bdba0b4fa441a8f6e244eb533b178871b80e6538b186ad20aa"
+      },
+      {
+        "part": 4,
+        "counts": {
+          "total": 1598,
+          "passed": 1594,
+          "failed": 0,
+          "skipped": 4
+        },
+        "raw_report_sha256": "e019a1a6d18bbaecb5094f0efe4e6919aa48465245886434a0b399dbc808a8ec"
+      }
+    ]
+  },
+  "postgres": [
+    {
+      "suite": "pg",
+      "counts": {
+        "total": 98,
+        "passed": 98,
+        "failed": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "bd58316764be4e7ddd7b5bd27d6d82854ac4ae1514c31557825260f9c33d0e61"
+    },
+    {
+      "suite": "pg-extra",
+      "counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "6892d515a9e76f3b56514ffe6a75113697b0cfc91c6d96ec7e9ee53fa9add5bc"
+    }
+  ],
+  "migration_checksum_lock": {
+    "verified_files": 43,
+    "checksums_match": true
+  },
+  "native_browser": {
+    "gate": "browser",
+    "complete": true,
+    "success": true,
+    "sources_unchanged": true,
+    "system": "Linux",
+    "evidence": {
+      "runtime_sha256": "a25df91abd6a40e57f6e372bc31d0e8664c707c64cf422263bd7aecf851a53cb",
+      "tests_sha256": "232d3341e5be4cb45db9f2f88077e509b87da3a509a7a110129c30543057cc04",
+      "test_sources_sha256": "6464a1a9f36b9eb6a597d866524916d479c576df7fcf90513735574329438643",
+      "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+      "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+    },
+    "tasks": [
+      {
+        "name": "photo_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "offline_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 99,
+          "passed": 99,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "http_viewports",
+        "success": true,
+        "returncode": 0
+      }
+    ]
+  },
+  "limitations": [
+    "Physical phone and Windows not tested",
+    "Two non-POSIX tests skipped on Linux",
+    "Live public geocoding and OSM tiles not verified; previous proxy denial remains",
+    "Navigation order is browser-local per account"
+  ]
+}

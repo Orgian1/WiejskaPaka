@@ -1,0 +1,1297 @@
+{
+  "application_sha256": "96872ee847e2c2b9c007e2b04385c54aab256592b9a30fc58a0f76c9dd74c459",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "executed": 99,
+  "planned": 99,
+  "results": [
+    {
+      "file": "test_account_security_http.py",
+      "sha256": "3340f16b8991dea4f4207bd8f5dff4fcf4b42044ee0105478f928fa826e2a36f",
+      "returncode": 0,
+      "seconds": 29.76,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_address_delivery_browser.py",
+      "sha256": "7fd4a933ad25e33cd27600c20fa0711234009046f434d5c2b47f531ca8511312",
+      "returncode": 0,
+      "seconds": 40.46,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_address_search_ui.py",
+      "sha256": "04cfe9f9c4e050ed6757d75582f5bf2b9ac2c837c3a418150c207eb261fd5744",
+      "returncode": 0,
+      "seconds": 0.87,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_admin_seller_review_ui.py",
+      "sha256": "11ea73335899dd401c1bdfea19cac155ec43e0e58a7b703a3b38ad9970b1b12b",
+      "returncode": 0,
+      "seconds": 1.48,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_auth_failures_offline.py",
+      "sha256": "35b693251c5cafaa012fc9e32c0dfd113a15ce907a00403fd095b659440cb6ca",
+      "returncode": 0,
+      "seconds": 0.61,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b10561_session_revocation_http.py",
+      "sha256": "bb83f45f06ff0f1c07fc5db76fbb037ad3eb9b3ba2628144c51fc53a67fc30e2",
+      "returncode": 0,
+      "seconds": 4.32,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b10921_financial_integrity.py",
+      "sha256": "d669b9dd356ab5edda06ecf5eeed82f0fc2b3fd0cc1ebb91f2f90e43960d77fc",
+      "returncode": 0,
+      "seconds": 5.66,
+      "test_counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b10921_paid_delivery_rule.py",
+      "sha256": "b7724a38000ddf7c6c41a533fdfeccab13cde057f48a8c2d1a5caf308db22f2b",
+      "returncode": 0,
+      "seconds": 2.09,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11281_checkout_multiline_races.py",
+      "sha256": "5bb89d27b4a61699029860b9a509872a231c129f56a45c1b2a700ba9081cae69",
+      "returncode": 0,
+      "seconds": 2.01,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11288_transaction_failure_boundaries.py",
+      "sha256": "86b1b1ed60e6c935cb2125536815ca8e4abdfd2fb850fb82031f5fc648835731",
+      "returncode": 0,
+      "seconds": 1.13,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11298_startup_atomicity.py",
+      "sha256": "80adf0523665effb66462c9e352a0e63b359ba2b38ddf9564543fce8ea237579",
+      "returncode": 0,
+      "seconds": 1.67,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11302_postgres_role_gate.py",
+      "sha256": "e443313ddbb66a9bfc8984f1c2d5e96b21e2e07013d4d009f7c0ed0354983bbc",
+      "returncode": 0,
+      "seconds": 0.93,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11308_runbook.py",
+      "sha256": "a2820d11e179a6b7fe0a78d05b441fc4682b909a51d082e331915da82db4f4be",
+      "returncode": 0,
+      "seconds": 0.63,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11315_generator.py",
+      "sha256": "8ed332afade0cf441e55a9299ae5704d17dd00e5194ecd4fb47d71dc09485b58",
+      "returncode": 0,
+      "seconds": 1.14,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b121_b130_runner_hardening.py",
+      "sha256": "a4e572836375e5f0af1fa61c0eeff3ca0c1b48823306bb0eb39bdf9d1e68e0b9",
+      "returncode": 0,
+      "seconds": 3.0,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b1381_paid_shipment_cancel.py",
+      "sha256": "df73743ebbefd09f9ffb615a38d5a1ef84c9711eab7444854122fc66afdc7841",
+      "returncode": 0,
+      "seconds": 2.28,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b161_b200_manifest.py",
+      "sha256": "ddeb2cbd1adf4d7dc5e20b9c0de8b73e4d3f8e10d4d94195999d6bade415cfe7",
+      "returncode": 0,
+      "seconds": 0.6,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b1801_concurrent_stock.py",
+      "sha256": "f17bd9ceb210091e6f02b7d333df6a5b3730e3bf67d2c4a219cf97efcd52622a",
+      "returncode": 0,
+      "seconds": 2.53,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b201_payment_state_audit.py",
+      "sha256": "94926a6bda16bd7bfd3f5ed98a0b0bee0a2727cf44d960a2340110bb0227d389",
+      "returncode": 0,
+      "seconds": 0.66,
+      "test_counts": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b2281_stale_regression_protection.py",
+      "sha256": "bf76c2f2dc73ad5de6f7fb10cb0b484c675628582530943dea201d3aab3d750d",
+      "returncode": 0,
+      "seconds": 0.51,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b261_b300_order_lifecycle.py",
+      "sha256": "4dcb917e40ae22ad94fec64b41b68be577044c37df5fea534b5cd8aa7c5dbd27",
+      "returncode": 0,
+      "seconds": 0.58,
+      "test_counts": {
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b321_farmer_product_edit.py",
+      "sha256": "8036f9fe54cab396007541ec157e1030dbeafc4b15f4c7bcf8dd577495e400d7",
+      "returncode": 0,
+      "seconds": 2.11,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b341_product_details.py",
+      "sha256": "6f0b453fdf05cbc9ddde6c0ce40e2915995c46d8047173d36d9990f9873ffbc5",
+      "returncode": 0,
+      "seconds": 1.64,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b361_cart_quote.py",
+      "sha256": "866fb2527c8f11cda6c75e40e3a4be05e93b7a5cf61f521dbbcd8aad698123d8",
+      "returncode": 0,
+      "seconds": 2.28,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b3841_regression_progress.py",
+      "sha256": "ef495a60baaf878b2d368a0d1ffa46cbbd7e49fe660006daef881eff9d70a3bd",
+      "returncode": 0,
+      "seconds": 0.8,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b481_multiseller_checkout.py",
+      "sha256": "aa1258ff1ee1054644d89c8d492c80348da622baa8f4041f68a20c8b282029d7",
+      "returncode": 0,
+      "seconds": 1.79,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b581_shipment_pin.py",
+      "sha256": "8f9347200f798167a211e4a756119ab5b93914dc660b2317d62ee76cbc8e77c1",
+      "returncode": 0,
+      "seconds": 2.74,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b681_shipment_details.py",
+      "sha256": "d5f446e6ac2d2b1db8a262f9b064f96de66fc09a2497978192ffed5439ba6db6",
+      "returncode": 0,
+      "seconds": 2.62,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b741_admin_shipments.py",
+      "sha256": "288f6a8db8f2b86008593c36a52793debb25d87f4200ec77d959fbc708783868",
+      "returncode": 0,
+      "seconds": 3.42,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b8761_http_response_headers.py",
+      "sha256": "870dbd94f7a87b1d1e2895f5d784c7bb67f55d7987026113daa3f842fb22c660",
+      "returncode": 0,
+      "seconds": 2.38,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_bounded_reset_worker.py",
+      "sha256": "b70a2dd494e3a3089b12a161a33254b5123af995e0195892eeb7a1112ce919b2",
+      "returncode": 0,
+      "seconds": 9.97,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_browser_navigation_contract_b25.py",
+      "sha256": "1f00a9f9f8862f7c9106b78524bc44fe289d3d69575b710d1460226241470f59",
+      "returncode": 0,
+      "seconds": 0.53,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_capacity_targets.py",
+      "sha256": "7df57c4d9818d53a5073e7c67165809394f78dc40a07c4e1361f48eaea9ad608",
+      "returncode": 0,
+      "seconds": 0.88,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_checkout_vault_api.py",
+      "sha256": "c1f6c270322db86c73959fcbed9e6680e7bde7097e11176bdae5251c1407bde3",
+      "returncode": 0,
+      "seconds": 8.57,
+      "test_counts": {
+        "total": 15,
+        "passed": 15,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_crash_checkout_http.py",
+      "sha256": "e9d4f20b64b534c7f4d2060ff02c6f08a44a96b7d0ce82f0f201a6b91d61b1fd",
+      "returncode": 0,
+      "seconds": 39.84,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_delivery_proposals_browser.py",
+      "sha256": "fd05c8ba7b0679f0a526b9c29f19ade2a345ddb22f7925c8715cfe19466dbf60",
+      "returncode": 0,
+      "seconds": 31.17,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_deployment_guard.py",
+      "sha256": "4639aff872cfd7cdd37212846ccdd156d68796fc6aa3843d42f712f01b10f839",
+      "returncode": 0,
+      "seconds": 0.53,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_email_verification_mail.py",
+      "sha256": "5e259214534c0b1c20f32e6533e62bfbc7d0eb30d1cee566beab48dbbfad5578",
+      "returncode": 0,
+      "seconds": 0.56,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_extended_browser_mode_b115.py",
+      "sha256": "e3263d33d8e153c19d5dfa917c8ed6322e16669a2cb5937c27bcf7f5345af6c2",
+      "returncode": 0,
+      "seconds": 0.48,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_fractional_quote.py",
+      "sha256": "330c49f90acdb6a31e025372cf895228f056fd95c9709066ce0c623526098be5",
+      "returncode": 0,
+      "seconds": 0.88,
+      "test_counts": {
+        "total": 26,
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_header_auth_actions.py",
+      "sha256": "5ab91454fc8bac69adc9ebbd00b83f99851b804d960103e62164a1ad0b09f890",
+      "returncode": 0,
+      "seconds": 0.67,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_http_server_fixture.py",
+      "sha256": "2bffc95c1a2d6343c61aba69462d77bb4f8370656ee4f94d0cf8200c1bcff392",
+      "returncode": 0,
+      "seconds": 0.73,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_inventory_lifecycle_package.py",
+      "sha256": "9fedddd434be2d90963aac85e4b29bb1a6493197c0bef8b74130fe60cf5f3641",
+      "returncode": 0,
+      "seconds": 5.56,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_local_marketplace_http.py",
+      "sha256": "60f8a41c15155d20e64935168d8ac36c913651b00d6aa5f945cf33805017e871",
+      "returncode": 0,
+      "seconds": 5.73,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_mail_queue_key_backup.py",
+      "sha256": "5364eddde9a89e667b31f1769799542f88f0beeaadc1a2d5a1da5c77bfc0a53d",
+      "returncode": 0,
+      "seconds": 2.1,
+      "test_counts": {
+        "total": 22,
+        "passed": 21,
+        "failed": 0,
+        "skipped": 1
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_migrate_all_tables.py",
+      "sha256": "db3d8b980571ea89b2f489069410d46ea042d2756c5793c57f65e40d5df770b9",
+      "returncode": 0,
+      "seconds": 0.78,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_migration_safety06.py",
+      "sha256": "c4fe999931152535898b4023e9747ce8731d1a3153b7e490bc1b98205df969fa",
+      "returncode": 0,
+      "seconds": 0.74,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_mobile_browser_runner.py",
+      "sha256": "69f66bed3bebc3b127b5bc5e58b4ff8722acc5b09ebc1263dd44379e1be02a34",
+      "returncode": 0,
+      "seconds": 0.74,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_native_ci_runner.py",
+      "sha256": "a9c256f6bc22772701b8590be1540dbcd7bf966898b69d8ca0e970c806a619e5",
+      "returncode": 0,
+      "seconds": 7.81,
+      "test_counts": {
+        "total": 42,
+        "passed": 42,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_neon_identity.py",
+      "sha256": "47fdb74f033349d0b56a18495a98de6530b90b48ba987c7a05e0bef35f5f3120",
+      "returncode": 0,
+      "seconds": 0.65,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_neon_readiness.py",
+      "sha256": "e7d444e152c7246ee211b6925570a97f980d7bb27496fa33f15e3ab31d2749ac",
+      "returncode": 0,
+      "seconds": 0.67,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_neon_session_bridge.py",
+      "sha256": "0b52b81423aa8e4248f061d727f2f0ad2c5e94f5917fad32f804c120913f3e00",
+      "returncode": 0,
+      "seconds": 0.88,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_next_package_browser.py",
+      "sha256": "64bcdf3f7fe97086f94a69562f223322fa242d4cf356de98a786eaf3bb1e8de1",
+      "returncode": 0,
+      "seconds": 49.33,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_order_integrity_b241.py",
+      "sha256": "a6c4c1fd16e44b9cdc96d27aaf97effe77554874252938833a7918e1d827f601",
+      "returncode": 0,
+      "seconds": 0.58,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_order_mail_worker.py",
+      "sha256": "a43886d86c6ae4e882f3ae71026ac73338b0a6930e5fbddc5f3fc389855ebd25",
+      "returncode": 0,
+      "seconds": 13.96,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_package3.py",
+      "sha256": "c200f3d0dd680da14d5d6647fee9fffa46069c59789c071fc5dbd6f7d5b7353a",
+      "returncode": 0,
+      "seconds": 0.65,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_package_81_90.py",
+      "sha256": "193a7416337bf1d8afd551dc002b8699845a0501713a106bca212f66dee72360",
+      "returncode": 0,
+      "seconds": 2.13,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_password_reset_browser.py",
+      "sha256": "ce10ff7a085c8cb9eea956af69942cedb4557d9d1605f7d8e26a8f3af260bb38",
+      "returncode": 0,
+      "seconds": 14.86,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_payment_concurrency_audit03.py",
+      "sha256": "6d0e9f2856e098f8c4f26e54345e3c529525f03d023bb616bd8fb3d175b0c93d",
+      "returncode": 0,
+      "seconds": 0.77,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_payment_invariants_audit02.py",
+      "sha256": "9c09e90459167777e548a2f1c33a76b350b0adffbbcc04eb10205f1ec2d01edf",
+      "returncode": 0,
+      "seconds": 1.72,
+      "test_counts": {
+        "total": 1009,
+        "passed": 1009,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_pg_audit_dict_rows.py",
+      "sha256": "10b15ba24f0f7723e255cbd16f7d084727260d96dbb023c3e1da1fff0032002b",
+      "returncode": 0,
+      "seconds": 0.85,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_phone_demo_launcher.py",
+      "sha256": "e3dcc0a2f48c2e3e4ac2da7aff5f4796e1ec103c30b387841206d1f88c2f8a02",
+      "returncode": 0,
+      "seconds": 2.71,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_pickup_dates.py",
+      "sha256": "43ce241414645f73fa6b439ad65d74ea61d1b0ad047656b08700f144d94572f4",
+      "returncode": 0,
+      "seconds": 5.69,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_pin_recovery_api.py",
+      "sha256": "76c4694cf957ec47de207fffeb2d98938a619ed80b8beb35b55e895c5f8c4240",
+      "returncode": 0,
+      "seconds": 51.33,
+      "test_counts": {
+        "total": 48,
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_plan_http_load.py",
+      "sha256": "f7a38460dd33ae83a4d9729c56e87a5f67d8b5a92461474a905edb6dfb0c0789",
+      "returncode": 0,
+      "seconds": 1.13,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_postgres_preflight08.py",
+      "sha256": "5838742cd06b10628863693543d698caecbdeea301d6d90e5867be9a568e7fca",
+      "returncode": 0,
+      "seconds": 0.91,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_postgres_security_preflight_b61_b65.py",
+      "sha256": "0d5e32e64281d0e3b3740ec11c067c81f7801e22812c65530ffd0ca25ae601ed",
+      "returncode": 0,
+      "seconds": 0.75,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_preview_credentials.py",
+      "sha256": "6bc33a09fcf7f53bc24ec0469d94c3ca8fbfcb2bdc122bded619f5289fe197c2",
+      "returncode": 0,
+      "seconds": 15.61,
+      "test_counts": {
+        "total": 9,
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_product_units_http.py",
+      "sha256": "6b80fd5f10fafc6e6b6d69be2841bcd9780acf4ad2462f8cea64d9af14a49372",
+      "returncode": 0,
+      "seconds": 23.89,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_purchase_records_http.py",
+      "sha256": "4ebf7e272a0c8af67d2e7c25295aefe85da6a895d47e02e647ed2c8599d50519",
+      "returncode": 0,
+      "seconds": 5.0,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_refund_retry_integrity.py",
+      "sha256": "e62a8a462094ae3701807814f48b6bc11dd954b5a31cf1838e17b7ad9ff4b1b5",
+      "returncode": 0,
+      "seconds": 8.88,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_release_security_location_logout.py",
+      "sha256": "1f98753bdaf2c721a388c59e7a283d2b02fca7458013868feb90757544537e3c",
+      "returncode": 0,
+      "seconds": 1.25,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_roles_offline.py",
+      "sha256": "7d87a67e3f1e5683d32527997c5480ad8574fb6a68338d7010ace3106d602ed4",
+      "returncode": 0,
+      "seconds": 0.64,
+      "test_counts": {
+        "total": 4,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 1
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_sample_demo_browser.py",
+      "sha256": "4e515a37c94321c3f4d664b13db63b8196d0be87f2f798b12566d42ddec4baf3",
+      "returncode": 0,
+      "seconds": 52.04,
+      "test_counts": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_seller_directory.py",
+      "sha256": "72d3e7130fd4139f702286a5ab996bb10aa5a95570156d68db2002f014938d4c",
+      "returncode": 0,
+      "seconds": 5.67,
+      "test_counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_seller_profile_reminder.py",
+      "sha256": "6065b8eeccf66485b0bfbbe9622f200ba1500359e2088644b525271d6c73634c",
+      "returncode": 0,
+      "seconds": 4.78,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_ses_feedback.py",
+      "sha256": "4270b03fea8f31ec4b37280ddd386c2bd528b712fbb1d9505567f8dcc5c588fa",
+      "returncode": 0,
+      "seconds": 0.88,
+      "test_counts": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_ses_feedback_http.py",
+      "sha256": "4b6f461af8e7471ef4be7aa77d46286506c1f0b917a7ee2075354289240bb228",
+      "returncode": 0,
+      "seconds": 2.77,
+      "test_counts": {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_ses_review_keys.py",
+      "sha256": "7adc14560e06911443458bc841ff445549a0512462aef5dd529d5dad3637e34b",
+      "returncode": 0,
+      "seconds": 0.98,
+      "test_counts": {
+        "total": 26,
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_session_security_api.py",
+      "sha256": "ee10211d9501479d5279adb1784e4c3d5473c0a4c769d0a142211e02b3ea6c66",
+      "returncode": 0,
+      "seconds": 7.47,
+      "test_counts": {
+        "total": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_shipment_groups.py",
+      "sha256": "e87f6a98e16aa2493738c297e7f1e4063d95d84afe33742aba845dff3e831b43",
+      "returncode": 0,
+      "seconds": 0.66,
+      "test_counts": {
+        "total": 11,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_sns_subscription_confirmation.py",
+      "sha256": "e74fcc0321161e4e571a6411430f8d555b90043a94f315cbf0e95dba26240ea0",
+      "returncode": 0,
+      "seconds": 1.47,
+      "test_counts": {
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stabilization_03.py",
+      "sha256": "f8826a7e27dd3b067b642e3d311b0205633eda7388b55189f3d3c500aa559b2d",
+      "returncode": 0,
+      "seconds": 3.15,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage13.py",
+      "sha256": "d54e62fca7c528a20d4881292958967bee60aaa7a689570f851f2358c8b365c2",
+      "returncode": 0,
+      "seconds": 1.79,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage17.py",
+      "sha256": "4df212f9dbbc0a2ee8696fbdc9204663fc719923c57f2e236d39bd2eeb4863bd",
+      "returncode": 0,
+      "seconds": 1.54,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage20.py",
+      "sha256": "71a6d5af1744170bfdf9f009e2d740465eaa19daf7bdcfe9efc8eb76414720f8",
+      "returncode": 0,
+      "seconds": 0.46,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage24.py",
+      "sha256": "11690c80485883669bd4ee7ca9afc4977cfe6af710837bd69744c57332259a6e",
+      "returncode": 0,
+      "seconds": 0.41,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage28.py",
+      "sha256": "adbb342c3d0b7d9ad503bb5c0830b224d827339e1f9ad5aadd2d962fdac55dbf",
+      "returncode": 0,
+      "seconds": 0.48,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage31.py",
+      "sha256": "01bcaa0f75e2e657ff687f0605b01bcdde91554fb3e5f52799085f2fb177b138",
+      "returncode": 0,
+      "seconds": 0.39,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_stage6.py",
+      "sha256": "ba01e674d99f22af68e831af06ec3b13476ab7d08031c86421ddb96888c20661",
+      "returncode": 0,
+      "seconds": 0.4,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_support_cases_http.py",
+      "sha256": "8c58d6d3def2135bffa4f013b8917d21f13a6e62746944a218a4e186422c3ed3",
+      "returncode": 0,
+      "seconds": 12.01,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_transaction_session_boundaries.py",
+      "sha256": "bc47491625db7748dde85219d5acef4e618f477e03ec145e1fa2508b61ec8a52",
+      "returncode": 0,
+      "seconds": 9.34,
+      "test_counts": {
+        "total": 48,
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_user_photos_browser.py",
+      "sha256": "4603db8c20607b7eab5d0282f7e36b6a404a4101087272188a5d19ea44074830",
+      "returncode": 0,
+      "seconds": 14.31,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_wallet_integrity.py",
+      "sha256": "b794acddcf632c7332ab42d9653a97a4d37f10f293412e912b595825079ec03c",
+      "returncode": 0,
+      "seconds": 1.0,
+      "test_counts": {
+        "total": 25,
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_wallet_recovery_browser.py",
+      "sha256": "8e48495f7a8102e4c980dbcc41685bad575dd263351c1c9c37a5fa62306ce83f",
+      "returncode": 0,
+      "seconds": 26.4,
+      "test_counts": {
+        "total": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_courier_confirmation.py",
+      "sha256": "d3998cae1b731a3d4ba01e79fc33c271e6f852a93531036f7b3a4a4333101629",
+      "returncode": 0,
+      "seconds": 0.63,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_farmer_actions_doubleclick.py",
+      "sha256": "180e6a76b9e78e6c5551b814a733d75aa7ac7b50acd238d3107fab4d8df9c630",
+      "returncode": 0,
+      "seconds": 0.46,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_login_race.py",
+      "sha256": "925649ac8c98e39a17b286481df5e12fdb0e4743589a7ac65dfdfda21e03e1ab",
+      "returncode": 0,
+      "seconds": 0.41,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_order_form_safety.py",
+      "sha256": "47240bbbf6d06c507f2ae2afd2257dba8dee24d21731b65147a2bc3097b02153",
+      "returncode": 0,
+      "seconds": 0.5,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    }
+  ]
+}

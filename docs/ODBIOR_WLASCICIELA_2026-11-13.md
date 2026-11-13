@@ -5,7 +5,16 @@ To lokalne demo z fikcyjnymi kontami i symulowanymi płatnościami. Nie wymaga V
 
 ## Uruchomienie na komputerze
 
-W katalogu pobranego projektu, z Pythonem 3.12:
+Pobierz wskazaną gałąź do **nowego** katalogu (jeżeli nazwa jest zajęta, wybierz
+inną; nie nadpisuj istniejących plików):
+
+```bash
+git clone --branch codex/demo-finalization-fixes-20261112 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
+cd WiejskaPaka-odbior
+git rev-parse HEAD
+```
+
+Porównaj SHA z końcowym raportem. W katalogu projektu, z Pythonem 3.12:
 
 ```bash
 python -m venv .venv

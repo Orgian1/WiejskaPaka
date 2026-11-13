@@ -4,7 +4,8 @@ Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
 Odbiór właściciela i uruchomienie demo: [instrukcja 13.11](docs/ODBIOR_WLASCICIELA_2026-11-13.md).
 Bezpieczna aktualizacja bez zmiany obecnego podglądu: [procedura VPS](docs/AKTUALIZACJA_VPS_ODBIOR_2026-11-13.md).
-Wyniki przygotowania odbioru: [raport 13.11](docs/RAPORT_ODBIOR_WLASCICIELA_2026-11-13.md).
+Wyniki poprzedniego przygotowania odbioru: [raport 13.11](docs/RAPORT_ODBIOR_WLASCICIELA_2026-11-13.md).
+Końcowe przygotowanie demo i pełna regresja: [raport](docs/RAPORT_FINALNE_DEMO_2026-11-13.md).
 Historyczny stan odbioru: `docs/ODBIOR_KONCOWY_DEMO_2026-11-10.md`.
 
 Bieżąca odporność portfela: `docs/ODZYSKIWANIE_OPERACJI_PORTFELA_2026-11-10.md`.

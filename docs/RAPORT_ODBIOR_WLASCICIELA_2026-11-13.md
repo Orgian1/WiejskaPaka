@@ -1,5 +1,9 @@
 # WiejskaPaka — przygotowanie do odbioru właściciela, 13.11.2026
 
+Nowszy pakiet: [końcowe demo i pełna regresja](RAPORT_FINALNE_DEMO_2026-11-13.md)
+dodaje HTTPS dla prywatnej sieci Wi-Fi, trwałe komunikaty mapy i trasę dostawcy.
+Poniższy raport dotyczy wcześniejszego stanu źródeł.
+
 Repozytorium: `Orgian1/WiejskaPaka`.
 Gałąź: `codex/demo-finalization-fixes-20261112`.
 Baza pakietu: `2fe1895f3191c76881d9d780b0b935cafcf47442`.

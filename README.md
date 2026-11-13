@@ -2,6 +2,9 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
+Paczka #60: [osobne widoki, demo i plan VPS](docs/ISSUE_60_DEMO_I_VPS_2026-11-13.md) —
+[raport i wyniki](docs/RAPORT_ISSUE_60_2026-11-13.md).
+
 Paczka #59 przed VPS: [odbiór i instrukcja aktualizacji](docs/ISSUE_59_ODBIOR_I_VPS_2026-11-13.md) —
 [raport i wyniki](docs/RAPORT_ISSUE_59_2026-11-13.md).
 

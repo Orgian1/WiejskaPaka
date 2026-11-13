@@ -1,9 +1,9 @@
 # WiejskaPaka — uruchomienie i odbiór przez właściciela
 
-Gałąź: `codex/issue-59-pre-vps-20261113` w `Orgian1/WiejskaPaka`.
+Gałąź: `codex/issue-60-separate-views-20261113` w `Orgian1/WiejskaPaka`.
 To lokalne demo z fikcyjnymi kontami i symulowanymi płatnościami. Nie wymaga VPS.
 
-Bieżąca paczka: [poprawki #59 i testy przed VPS](ISSUE_59_ODBIOR_I_VPS_2026-11-13.md).
+Bieżąca paczka: [osobne widoki #60 i jedno polecenie PowerShell](ISSUE_60_DEMO_I_VPS_2026-11-13.md).
 
 ## Uruchomienie na komputerze
 
@@ -11,7 +11,7 @@ Pobierz wskazaną gałąź do **nowego** katalogu (jeżeli nazwa jest zajęta, w
 inną; nie nadpisuj istniejących plików):
 
 ```bash
-git clone --branch codex/issue-59-pre-vps-20261113 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
+git clone --branch codex/issue-60-separate-views-20261113 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
 cd WiejskaPaka-odbior
 git rev-parse HEAD
 ```
@@ -72,7 +72,7 @@ logowania decyduje konto, którego e-mail i hasło podajesz.
 | --- | --- | --- |
 | Klient | Rozwiń produkt, kliknij serce, przejdź do Ulubionych, wyloguj i zaloguj ponownie | Szczegóły pod odpowiednim rzędem; ulubiony produkt nadal zapisany |
 | Klient | Blisko mnie: GPS za zgodą i zapis lokalizacji | Oferty według wybranej/zapisanej lokalizacji; odmowa GPS nie blokuje ręcznego wyboru |
-| Sprzedawca | Aktualne zamówienia i Uzupełnij towar | Te dwa panele rozwinięte; pozostałe zwinięte po nowym logowaniu |
+| Sprzedawca | Moje ogłoszenia, Punkty odbioru, Zamówienia | Osobne widoki otwierane górną nawigacją; katalog bez rozwiniętych paneli pod produktami |
 | Sprzedawca | Rozwiń punkt w aktualnych zamówieniach | Liczba zamówień, numery, produkty, ilości i statusy |
 | Sprzedawca | Dodaj drugi punkt, zmień kolejność w górnym menu, otwórz Nawigację | Mapy Google otrzymują punkty we wskazanej kolejności; dłuższa trasa ma kolejne części |
 | Sprzedawca | Zaloguj to samo konto w drugiej przeglądarce w tej samej instancji demo | Taka sama kolejność punktów; „Odśwież kolejność z konta” pobiera najnowszą wersję |

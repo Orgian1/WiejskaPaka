@@ -1992,3 +1992,11 @@ def test_native_delivery_schedule_proposal_consent_restart(pg_address_delivery_a
         assert all(r['delivery_date']==schedule['delivery_date'] and r['agreed_from']==840 and r['agreed_to']==900 for r in rows if r['order_id'] in orders)
         assert client.post(f'/test/payments/{orders[0]}/events',headers=buyer,json=event).status_code==200
     else:assert client.post(f'/test/payments/{orders[0]}/events',headers=buyer,json=event).status_code==409
+
+
+def test_native_seller_navigation_cross_device_restart(pg_restart_api):
+    from tests.test_seller_navigation_http import exercise_navigation
+    client,_=pg_restart_api
+    owner,saved=exercise_navigation(client)
+    pg_restart_api.restart()
+    assert client.get('/farmers/me/navigation',headers=owner).json()==saved

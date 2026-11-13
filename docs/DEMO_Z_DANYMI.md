@@ -1,5 +1,7 @@
 # Jednorazowe demo wszystkich ról
 
+Aktualna, skrócona instrukcja: [odbiór właściciela 13.11](ODBIOR_WLASCICIELA_2026-11-13.md).
+
 W katalogu projektu, po zainstalowaniu zależności według README:
 
 ```bash
@@ -35,8 +37,8 @@ Przygotowywane dane:
 1. Zaloguj klienta i otwórz panel przesyłek. Dla przesyłki do odbioru wybierz
    odzyskanie testowego PIN-u i podaj hasło klienta z terminala. Nie zmieniaj
    ani nie regeneruj kodu. Zapisz go wyłącznie na czas sprawdzenia.
-2. Wyloguj klienta, zaloguj rolnika. Potwierdź sprawdzenie towaru i odbiór
-   całej przesyłki podanym PIN-em. Kilku pozycji przesyłki nie odbiera się osobno.
+2. Wyloguj klienta, zaloguj rolnika. Klient sprawdza towar; potwierdź odbiór
+   całej przesyłki podanym PIN-em, bez dodatkowego checkboxa. Kilku pozycji przesyłki nie odbiera się osobno.
 3. Dla dostawy odzyskaj PIN jako klient, następnie zaloguj dostawcę i potwierdź
    odbiór po sprawdzeniu towaru. Dostawca powinien utracić dostęp do adresu
    zakończonej dostawy. Nie wykonano rzeczywistego transportu ani płatności.

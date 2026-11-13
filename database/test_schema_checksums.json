@@ -213,5 +213,10 @@
     "file": "optional_delivery_schedule_proposals.sql",
     "sha256": "2e2564006720c22d5a57e28407ffcf7a19e90ccb2a5750931d7a0527e0ca74cd",
     "bytes": 860
+  },
+  {
+    "file": "optional_seller_navigation.sql",
+    "sha256": "97008fa54992f9d122c4f13c2614c5f73f68a8ad9198774cc62b42d662ebea9f",
+    "bytes": 281
   }
 ]

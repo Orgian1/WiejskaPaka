@@ -1,5 +1,9 @@
 # WiejskaPaka — regresja pakietu końcowego, 13.11.2026
 
+Aktualizacja: [przygotowanie odbioru właściciela](RAPORT_ODBIOR_WLASCICIELA_2026-11-13.md)
+dodaje synchronizację kolejności punktów między urządzeniami. Poniższe wyniki
+i ograniczenia dotyczą wskazanego historycznego commita.
+
 Repozytorium: `Orgian1/WiejskaPaka`.
 Gałąź: `codex/demo-finalization-fixes-20261112`.
 Testowany commit aplikacji: `2fda7bc874522acec09a1f4ef1b2bf3e8180cb61`.

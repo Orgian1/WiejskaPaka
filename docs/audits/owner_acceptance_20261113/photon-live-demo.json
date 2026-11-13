@@ -1,0 +1,12 @@
+{
+  "launcher": "run_phone_demo --full-demo --public-geocoder photon",
+  "health": 200,
+  "config_enabled": true,
+  "search_status": 503,
+  "public_photon_available": false,
+  "local_leaflet_status": 200,
+  "map_selection_after_search": true,
+  "gps_after_search_with_permission": true,
+  "mobile_width": 320,
+  "page_errors": 0
+}

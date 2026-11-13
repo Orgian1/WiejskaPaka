@@ -41,6 +41,7 @@ UPGRADES = (
     'optional_account_favorites.sql',
     'optional_pickup_promotions.sql',
     'optional_delivery_schedule_proposals.sql',
+    'optional_seller_navigation.sql',
 )
 
 

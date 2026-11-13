@@ -51,6 +51,7 @@ async def application_lifespan(application):
         con.execute('SELECT id FROM pickup_promo_grants LIMIT 0')
         con.execute('SELECT point_id FROM pickup_promo_points LIMIT 0')
         con.execute('SELECT user_id,product_id FROM account_favorites LIMIT 0')
+        con.execute('SELECT user_id,revision,point_ids FROM seller_navigation LIMIT 0')
         con.execute('SELECT user_id,latitude_e6,longitude_e6 FROM account_saved_locations LIMIT 0')
         from backend import user_photos, seller_directory
         if seller_directory.enabled():
@@ -3337,3 +3338,6 @@ install_favorites(app, db, order_write_db, current_user, DATABASE_URL)
 
 from backend.pickup_promotions import install as install_pickup_promotions
 install_pickup_promotions(app, db, order_write_db, current_user, DATABASE_URL)
+
+from backend.seller_navigation import install as install_seller_navigation
+install_seller_navigation(app, db, order_write_db, current_user, DATABASE_URL)

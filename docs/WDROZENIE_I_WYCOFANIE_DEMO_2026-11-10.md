@@ -1,5 +1,10 @@
 # Bezpieczne wdrożenie i wycofanie demo na VPS
 
+Aktualizacja 13.11: dla obecnego pakietu stosuj
+[aktualną procedurę odbioru](AKTUALIZACJA_VPS_ODBIOR_2026-11-13.md).
+Poniższy dokument opisuje historyczne wydanie; nie uruchamiaj pełnego łańcucha
+migracji nowej bazy na istniejącym VPS.
+
 Procedura przygotowana, niewykonana. W tej sesji nie ma zweryfikowanego dostępu
 SSH ani stanu VPS. Nie wolno traktować historycznego HTTP 200 jako kontroli
 bieżącego wdrożenia. Nie zmieniać działających usług na podstawie samego raportu.
@@ -49,7 +54,7 @@ właściwego mechanizmu backupu operatora i przećwiczyć odtworzenie przed zmia
 
 ## 3. Nowe wydanie obok starego
 
-Pobrać sprawdzony pełny SHA z gałęzi `preview/demo-environment-isolation-20261110`
+Pobrać sprawdzony pełny SHA z gałęzi `codex/demo-finalization-fixes-20261112`
 do nowego katalogu wydania. Sprawdzić SHA i brak lokalnych zmian.
 Nie wykonywać pull ani checkout w katalogu z niezabezpieczonymi zmianami.
 Utworzyć oddzielny venv i zainstalować requirements-lock.txt. Zachować stare

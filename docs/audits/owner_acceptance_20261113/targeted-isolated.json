@@ -1,0 +1,214 @@
+{
+  "application_sha256": "e5e45eaa731afa27aa286485c478cb407f0d6f8836eb82e8e3e90686f2453634",
+  "complete": true,
+  "success": true,
+  "sources_unchanged": true,
+  "invalid_reason": null,
+  "test_counts": {
+    "total": 97,
+    "passed": 97,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executed": 15,
+  "planned": 15,
+  "passed": 15,
+  "failed": 0,
+  "results": [
+    {
+      "file": "test_seller_navigation_http.py",
+      "sha256": "363f4f3f4bddd07f436b53ecdb144de6a0602425f77335f1f028ef7df83e2ac7",
+      "returncode": 0,
+      "seconds": 4.37,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_photon_geocoder.py",
+      "sha256": "eb8ee3531200cdf721cdcf175a0fac1d136646ee5e8a7a4ca8be7b90fc1d94d7",
+      "returncode": 0,
+      "seconds": 0.71,
+      "test_counts": {
+        "total": 18,
+        "passed": 18,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_address_search.py",
+      "sha256": "e5a240042a46b43e543a485a89ac7b4512e9fbb4bc954e54e13cc6c0676139a2",
+      "returncode": 0,
+      "seconds": 0.77,
+      "test_counts": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_address_search_ui.py",
+      "sha256": "04cfe9f9c4e050ed6757d75582f5bf2b9ac2c837c3a418150c207eb261fd5744",
+      "returncode": 0,
+      "seconds": 0.51,
+      "test_counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_local_address_search.py",
+      "sha256": "c5ebaeb614093a18c679459097388613d1ea79879553fa00b9a631592317771b",
+      "returncode": 0,
+      "seconds": 0.75,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_farmer_profile_session.py",
+      "sha256": "0c211db3295ec6b4566a453f0478fc99b3fc75af88613f525e137433370f3217",
+      "returncode": 0,
+      "seconds": 0.39,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_postgres_schema_preflight.py",
+      "sha256": "cd237fabddd3c15c4e096e36f1353063471a0b307a7d34225abab96ced2ec276",
+      "returncode": 0,
+      "seconds": 0.37,
+      "test_counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11305_migration_manifest.py",
+      "sha256": "470ba8fce3c7baf274cb829f12502dc0d2d6773daab55befd4cdc2bcd632e199",
+      "returncode": 0,
+      "seconds": 0.47,
+      "test_counts": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11306_migration_cli.py",
+      "sha256": "d1eb5fdbdb9c61d9ef8e1bd813521c3610f6dc04da364e7ba724b3ceb4b7b22a",
+      "returncode": 0,
+      "seconds": 0.41,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_b11307_schema_lock.py",
+      "sha256": "4229a3a9bdf814b0e6a25ca278a146375d86e2ac9a80833338cc77314bd8943d",
+      "returncode": 0,
+      "seconds": 0.39,
+      "test_counts": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_native_gate_schema_review.py",
+      "sha256": "d5af10b01f82628ab1498c4aaafab371dd00f00bca7ff24ff9172c9843671a79",
+      "returncode": 0,
+      "seconds": 0.5,
+      "test_counts": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_pickup_map_assets.py",
+      "sha256": "eeb9292cf9c3b3d2659c8454314047d700225e3a1f38973326cc7bfa10ab1797",
+      "returncode": 0,
+      "seconds": 0.39,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_pickup_promotions_http.py",
+      "sha256": "9110a738b22219d524566c6d4d6e8db8aa7c36d870b2e159017568f793d1939d",
+      "returncode": 0,
+      "seconds": 45.19,
+      "test_counts": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_account_view_privacy_ui.py",
+      "sha256": "a72c115953465f3225635f55ab06f968e82e06a1073eaa0d105ac45111cc6b30",
+      "returncode": 0,
+      "seconds": 0.81,
+      "test_counts": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    },
+    {
+      "file": "test_web_session_privacy.py",
+      "sha256": "44d64e08fe73eca1cf048015c1b726ef1f8cc2a598694777a8bf389a4929bd88",
+      "returncode": 0,
+      "seconds": 0.52,
+      "test_counts": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failure_locations": []
+    }
+  ]
+}

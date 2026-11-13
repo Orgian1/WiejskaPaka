@@ -156,8 +156,10 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
             assert page.locator('#farmer > details').evaluate('(e)=>e.open')
             assert page.locator('#orders-section').is_visible()
             page.locator('#seller-point-nav > summary').click()
-            page.get_by_role('button',name='Przesuń wyżej: Drugi punkt testowy',exact=True).click()
-            assert 'Drugi punkt testowy' in page.locator('#seller-point-menu li').first.inner_text()
+            with page.expect_response(lambda r:r.request.method=='PUT' and r.url.endswith('/farmers/me/navigation')) as saved:
+                page.get_by_role('button',name='Przesuń wyżej: Drugi punkt testowy',exact=True).click()
+            assert saved.value.status==200
+            page.wait_for_function('()=>document.querySelector("#seller-point-menu li")?.textContent.includes("Drugi punkt testowy")')
             link=page.get_by_role('link',name='Przejdź do nawigacji',exact=True)
             parsed=urlsplit(link.get_attribute('href'));params=parse_qs(parsed.query)
             assert parsed.hostname=='www.google.com' and params['api']==['1']

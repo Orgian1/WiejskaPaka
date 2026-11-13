@@ -1,0 +1,94 @@
+{
+  "repository": "Orgian1/WiejskaPaka",
+  "branch": "codex/demo-finalization-fixes-20261112",
+  "base_commit": "2fe1895f3191c76881d9d780b0b935cafcf47442",
+  "application_sha256": "e5e45eaa731afa27aa286485c478cb407f0d6f8836eb82e8e3e90686f2453634",
+  "isolated": {
+    "modules": 15,
+    "counts": {
+      "total": 97,
+      "passed": 97,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "postgres_selected": {
+    "deselected": 96,
+    "counts": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "junit_sha256": "4bf4a24847e731200b9158adcbaaa7b65c1cbb044dd2baa9516b86b2e2ac51a9"
+  },
+  "migration_lock": {
+    "files": 44,
+    "checksums_match": true,
+    "previous_43_unchanged": true
+  },
+  "native_browser": {
+    "gate": "browser",
+    "complete": true,
+    "success": true,
+    "sources_unchanged": true,
+    "system": "Linux",
+    "evidence": {
+      "runtime_sha256": "1428588d9839b23d24f4383ed778e231c4a9e84bf97afe19ced839baf9c8b855",
+      "tests_sha256": "a8187fddb899aca615ba079a90b2593b3491502ffb281ae16fb87115c901f48a",
+      "test_sources_sha256": "eada8e92593e3a6c164d880d7c102b000ea7ffc38f28ffcf8026ba0a171fb78b",
+      "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+      "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+    },
+    "tasks": [
+      {
+        "name": "photo_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "offline_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 101,
+          "passed": 101,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "http_viewports",
+        "success": true,
+        "returncode": 0
+      }
+    ]
+  },
+  "photon_demo": {
+    "launcher": "run_phone_demo --full-demo --public-geocoder photon",
+    "health": 200,
+    "config_enabled": true,
+    "search_status": 503,
+    "public_photon_available": false,
+    "local_leaflet_status": 200,
+    "map_selection_after_search": true,
+    "gps_after_search_with_permission": true,
+    "mobile_width": 320,
+    "page_errors": 0
+  },
+  "historical_full_regression": {
+    "commit": "2fda7bc874522acec09a1f4ef1b2bf3e8180cb61",
+    "passed": 4889,
+    "failed": 0,
+    "skipped": 105,
+    "rerun_for_this_package": false
+  }
+}

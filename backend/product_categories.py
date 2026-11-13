@@ -60,7 +60,9 @@ def inferred(name):return EXACT_NAMES.get(name.strip().lower(),('other','other-o
 
 def schema_sql(postgres=False):
     number='BIGINT' if postgres else 'INTEGER'
-    statements=[f'''CREATE TABLE IF NOT EXISTS product_categories(id TEXT PRIMARY KEY,label TEXT NOT NULL,position INTEGER NOT NULL UNIQUE);
+    from backend.product_listings import SCHEMA_SQLITE
+    listing_schema=SCHEMA_SQLITE.replace('INTEGER PRIMARY KEY','BIGINT PRIMARY KEY') if postgres else SCHEMA_SQLITE
+    statements=[listing_schema,f'''CREATE TABLE IF NOT EXISTS product_categories(id TEXT PRIMARY KEY,label TEXT NOT NULL,position INTEGER NOT NULL UNIQUE);
 CREATE TABLE IF NOT EXISTS product_subcategories(id TEXT PRIMARY KEY,category_id TEXT NOT NULL REFERENCES product_categories(id),label TEXT NOT NULL,position INTEGER NOT NULL,UNIQUE(id,category_id));
 CREATE TABLE IF NOT EXISTS product_classifications(product_id {number} PRIMARY KEY REFERENCES products(id),category_id TEXT NOT NULL REFERENCES product_categories(id),subcategory_id TEXT NOT NULL,description TEXT NOT NULL DEFAULT '',FOREIGN KEY(subcategory_id,category_id) REFERENCES product_subcategories(id,category_id));
 CREATE INDEX IF NOT EXISTS product_classification_category ON product_classifications(category_id,subcategory_id,product_id);''']

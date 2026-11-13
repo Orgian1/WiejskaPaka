@@ -8,7 +8,7 @@ from tests.test_owner_finalization import login
 
 
 def sign_in(page,accounts,role):
-    page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+    page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
     page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email',arg=accounts[role]['email'])
 
@@ -22,7 +22,7 @@ def test_offline_map_address_selection_save_and_edit(sample_browser_server,tmp_p
         page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:external.append(r.url) if 'tile.openstreetmap.org' in r.url else None)
         try:
             page.goto(str(client.base_url));sign_in(page,accounts,'rolnik')
-            page.locator('#farmer-details > details > summary').click()
+            page.click('#points-nav-link')
             page.fill('#point-name','Nowy punkt na mapie');page.fill('#point-city','Warszawa');page.fill('#point-street','Publiczna 7');page.fill('#point-hours','9-16')
             page.click('#point-map-open')
             page.locator('#point-map.leaflet-container').wait_for(state='visible')
@@ -41,7 +41,7 @@ def test_offline_map_address_selection_save_and_edit(sample_browser_server,tmp_p
             pid=response.value.json()['id']
             saved=next(p for p in client.get('/farmers/me/pickup-points',headers=farmer).json() if p['id']==pid)
             assert (saved['latitude_e6'],saved['longitude_e6'])==(52229676,21012229)
-            page.locator('#point-location-panel > details > summary').click()
+            page.click('#points-nav-link')
             page.select_option('#point-edit-select',str(pid));page.click('#point-edit-map-open')
             page.locator('#point-edit-map.leaflet-container').wait_for(state='visible')
             page.locator('#point-edit-map').focus();page.keyboard.press('ArrowRight')
@@ -62,7 +62,7 @@ def test_admin_config_and_seller_promo_redemption(sample_browser_server,tmp_path
         page=browser.new_page(viewport={'width':width,'height':900});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         try:
             page.goto(str(client.base_url));sign_in(page,accounts,'admin')
-            form=page.locator('#pickup-promo-create-form');form.locator('[name=code]').fill('TRZY-DEMO')
+            page.click('#panel-nav-link');form=page.locator('#pickup-promo-create-form');form.locator('[name=code]').fill('TRZY-DEMO')
             form.locator('[name=expires_on]').fill('2099-12-31');form.locator('[name=max_redemptions]').fill('1')
             with page.expect_response('**/admin/pickup-promotions') as response:page.click('#pickup-promo-create-submit')
             assert response.value.status==201
@@ -72,7 +72,7 @@ def test_admin_config_and_seller_promo_redemption(sample_browser_server,tmp_path
             assert response.value.status==200
             page.click('#logout');sign_in(page,accounts,'rolnik')
             assert page.locator('#pickup-promotions-admin').is_hidden()
-            page.locator('#farmer-details > details > summary').click();page.fill('#pickup-promo-code','TRZY-DEMO')
+            page.click('#points-nav-link');page.fill('#pickup-promo-code','TRZY-DEMO')
             with page.expect_response('**/farmers/me/pickup-promotions/redeem') as response:page.click('#pickup-promo-redeem-submit')
             assert response.value.status==201 and response.value.json()['remaining']==3
             page.wait_for_function('()=>document.querySelector("#pickup-promo-status").textContent.includes(": 3.")')
@@ -92,7 +92,7 @@ def test_detail_tiles_failure_keeps_local_map_and_selection(sample_browser_serve
     page.route('https://tile.openstreetmap.org/**',lambda route:route.abort('failed'))
     try:
         page.goto(url);sign_in(page,accounts,'rolnik')
-        page.locator('#farmer-details > details > summary').click();page.click('#point-map-open')
+        page.click('#points-nav-link');page.click('#point-map-open')
         page.locator('#point-map.leaflet-container').wait_for(state='visible')
         page.get_by_role('button',name='Włącz szczegółową mapę ulic (OpenStreetMap)',exact=True).first.click()
         page.wait_for_function('()=>document.querySelector("#point-map-status").textContent.includes("Nie można wczytać mapy ulic")')
@@ -111,7 +111,7 @@ def test_search_failure_has_persistent_status_and_keeps_map_gps(sample_browser_s
     page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     try:
         page.goto(url);sign_in(page,accounts,'rolnik')
-        page.locator('#farmer-details > details > summary').click()
+        page.click('#points-nav-link')
         page.fill('#point-city','Warszawa');page.fill('#point-street','Marszałkowska 1')
         page.click('#point-map-open');page.locator('#point-map.leaflet-container').wait_for(state='visible')
         page.route('**/address-search/config',lambda route:route.fulfill(status=503 if failure=='configuration' else 200,json={'enabled':True}))

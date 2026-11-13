@@ -16,10 +16,10 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
-            page.goto(str(client.base_url));page.fill('#email',email);page.fill('#password',password)
+            page.goto(str(client.base_url));page.click('#account-nav-link');page.fill('#email',email);page.fill('#password',password)
             page.locator('#auth button[type=submit]').click()
-            panel=page.locator('#wallet-section');panel.wait_for(state='visible')
-            if role=='rolnik':page.locator('#wallet-nav-link').click()
+            page.locator('#wallet-nav-link').click();panel=page.locator('#wallet-section');panel.wait_for(state='visible')
+            page.locator('#wallet-nav-link').click()
             panel.get_by_role('button',name='Doładuj portfel',exact=True).click()
             dialog=page.locator('#wallet-dialog-topup')
             assert dialog.locator('input[type=password]').count()==0

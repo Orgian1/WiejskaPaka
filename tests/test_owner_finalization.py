@@ -48,9 +48,9 @@ def test_inline_catalog_and_seller_groups_browser(sample_browser_server,width):
         initial_url=page.url
         card.locator('summary').focus();page.keyboard.press('Enter')
         assert card.evaluate('(e)=>e.open') and page.url==initial_url
-        page.fill('#email',accounts['rolnik']['email']);page.fill('#password',accounts['rolnik']['password'])
+        page.click('#account-nav-link');page.fill('#email',accounts['rolnik']['email']);page.fill('#password',accounts['rolnik']['password'])
         page.locator('#auth button[type=submit]').click()
-        group=page.locator('.seller-pickup-group').first
+        page.click('#orders-nav-link');group=page.locator('.seller-pickup-group').first
         group.wait_for(state='visible')
         assert not group.evaluate('(e)=>e.open')
         group.locator(':scope > summary').click()
@@ -70,7 +70,7 @@ def test_favorite_heart_is_persistent_and_does_not_expand_card(sample_browser_se
     page=browser.new_page(viewport={'width':width,'height':900})
     try:
         page.goto(url)
-        page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
+        page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
         page.locator('#auth button[type=submit]').click()
         heart=page.locator('#products .favorite-button').first
         heart.wait_for(state='visible')
@@ -84,12 +84,12 @@ def test_favorite_heart_is_persistent_and_does_not_expand_card(sample_browser_se
         page.wait_for_function("() => (document.querySelector('#products .favorite-button').getAttribute('aria-pressed')==='true')")
         assert not card.evaluate('(e)=>e.open')
         product_id=heart.get_attribute('data-favorite-product')
-        page.locator('#favorites-results .favorite-button[data-favorite-product="'+product_id+'"]').wait_for()
+        page.click('#favorites-nav-link');page.locator('#favorites-results .favorite-button[data-favorite-product="'+product_id+'"]').wait_for()
         page.reload()
-        page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
+        page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
         page.locator('#auth button[type=submit]').click()
         page.wait_for_function("() => (document.querySelector('#products .favorite-button')?.getAttribute('aria-pressed')==='true')")
-        page.locator('#favorites-results .favorite-button[data-favorite-product="'+product_id+'"]').click()
+        page.click('#favorites-nav-link');page.locator('#favorites-results .favorite-button[data-favorite-product="'+product_id+'"]').click()
         page.wait_for_function("() => (document.querySelector('#products .favorite-button').getAttribute('aria-pressed')==='false')")
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
     finally:page.close()
@@ -136,12 +136,12 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
         context=browser.new_context(viewport={'width':width,'height':900},geolocation={'latitude':52.229676,'longitude':21.012229},permissions=['geolocation'])
         page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         def sign_in(role):
-            page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+            page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
             page.locator('#auth button[type=submit]').click()
             page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email',arg=accounts[role]['email'])
         try:
             page.goto(str(client.base_url));sign_in('klient')
-            page.get_by_role('button',name='Zapamiętaj wybraną lokalizację na koncie').wait_for()
+            page.click('#nearby-nav-link');page.get_by_role('button',name='Zapamiętaj wybraną lokalizację na koncie').wait_for()
             page.click('#nearby-geolocate')
             page.wait_for_function('()=>document.querySelector("#nearby-lat").value.length>0')
             with page.expect_response('**/account/location') as response:page.get_by_role('button',name='Zapamiętaj wybraną lokalizację na koncie').click()
@@ -149,13 +149,14 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
             assert client.get('/account/location',headers=buyer).json()['location']=={'latitude_e6':52229676,'longitude_e6':21012229}
             page.reload();sign_in('klient')
             page.wait_for_function('()=>document.querySelector("#nearby-lat").value==="52,229676"')
+            page.click('#nearby-nav-link')
             with page.expect_response('**/account/location') as response:page.get_by_role('button',name='Usuń zapamiętaną lokalizację').click()
             assert response.value.status==200 and client.get('/account/location',headers=buyer).json()['location'] is None
             page.click('#logout');sign_in('rolnik')
             page.locator('#seller-point-menu li').first.wait_for(state='attached')
-            assert not page.locator('#farmer-details > details').evaluate('(e)=>e.open')
-            assert page.locator('#farmer > details').evaluate('(e)=>e.open')
-            assert page.locator('#orders-section').is_visible()
+            assert page.locator('#farmer-details').is_hidden()
+            assert page.locator('#farmer').is_hidden()
+            assert page.locator('#orders-section').is_hidden()
             page.locator('#seller-point-nav > summary').click()
             with page.expect_response(lambda r:r.request.method=='PUT' and r.url.endswith('/farmers/me/navigation')) as saved:
                 page.get_by_role('button',name='Przesuń wyżej: Drugi punkt testowy',exact=True).click()
@@ -166,11 +167,11 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
             assert parsed.hostname=='www.google.com' and params['api']==['1']
             assert params['waypoints']==['Testowa 9, Legnica, Polska']
             page.locator('#seller-point-menu').get_by_role('link',name='Dodaj punkt',exact=True).click()
-            assert page.locator('#farmer-details > details').evaluate('(e)=>e.open')
+            assert page.locator('#farmer-details').is_visible()
             assert page.locator('#point-name').evaluate('(e)=>e===document.activeElement')
             page.reload();sign_in('rolnik')
             page.wait_for_function('()=>document.querySelector("#seller-point-menu li")?.textContent.includes("Drugi punkt testowy")')
-            assert not page.locator('#farmer-details > details').evaluate('(e)=>e.open')
+            assert page.locator('#farmer-details').is_hidden()
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert not errors
         finally:context.close()

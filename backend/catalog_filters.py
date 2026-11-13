@@ -33,7 +33,7 @@ class CatalogQuery(BaseModel):
 
 
 def search(con,query):
-    clauses=['1=1'];params=[]
+    clauses=['NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=p.id AND ls.active=0)'];params=[]
     for field,value in [('category_id',query.category_id),('subcategory_id',query.subcategory_id)]:
         if value is not None:clauses.append("COALESCE(m."+field+",'"+('other' if field=='category_id' else 'other-other')+"')=?");params.append(value)
     if query.farmer_id is not None:clauses.append('p.farmer_id=?');params.append(query.farmer_id)

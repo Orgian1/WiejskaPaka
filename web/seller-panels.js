@@ -2,6 +2,7 @@
 const sellerPanelIds=['farmer','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','dashboard','wallet-section','favorites-section'];
 let sellerPanelState=new Map();
 function ensureSellerPanels(reset=false){
+  if(typeof appRoutesReady!=='undefined'&&appRoutesReady)return;
   for(const id of sellerPanelIds){
     const section=el(id);if(!section)continue;
     let disclosure=section.querySelector(':scope > details[data-seller-panel]');
@@ -24,7 +25,7 @@ function ensureSellerPanels(reset=false){
 function resetSellerPanels(){sellerPanelState=new Map();ensureSellerPanels(true);}
 function revealSellerSection(id){
   const section=el(id);if(!section)return;
-  const disclosure=section.querySelector(':scope > details[data-seller-panel]');if(disclosure)disclosure.open=true;
+  if(typeof navigateApp==='function'){const route=appRouteAliases[id];if(route)navigateApp(route)}const disclosure=section.querySelector(':scope > details[data-seller-panel]');if(disclosure)disclosure.open=true;
 }
 document.addEventListener('click',event=>{
   const link=event.target.closest('a[href^="#"]');if(link)revealSellerSection(link.getAttribute('href').slice(1));

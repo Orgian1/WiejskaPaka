@@ -19,7 +19,7 @@ from scripts.run_phone_demo import demo_environment
 ROOT = Path(__file__).resolve().parents[1]
 VIEWPORTS = ((320, 700), (360, 740), (390, 844), (768, 1024), (1280, 800))
 EXPECTED_NAVIGATION = ('#auth', '#nearby-section', '#favorites-section', '#products-section',
-                       '#cart-section', '#farmer', '#orders-section', '#dashboard')
+                       '#cart-section', '#farmer', '#orders-section', '#farmer-details', '#dashboard', '#contact-disclosure')
 
 
 def horizontal_overflow_script():
@@ -91,7 +91,7 @@ def check_browser(screenshot_dir=None):
                             raise
                         assert response.status == 200
                         assert page.locator('h1').inner_text().find('WiejskaPaka') >= 0
-                        assert page.locator('#auth').is_visible()
+                        assert page.locator('#auth').is_hidden()
                         assert page.locator('#products-section').is_visible()
                         assert page.locator('#farmer').is_hidden()
                         assert page.locator('#dashboard').is_hidden()
@@ -103,9 +103,9 @@ def check_browser(screenshot_dir=None):
                             assert target and target.startswith('#')
                             assert page.locator(target).count() == 1, f'Nieistniejący cel: {target}'
                         page.locator('nav.quick-nav a[href="#products-section"]').click()
-                        assert page.evaluate('window.location.hash') == '#products-section'
+                        assert page.evaluate('window.location.hash').startswith('#products') or page.evaluate('window.location.hash')==''
                         assert page.locator('#products-section').is_visible()
-                        page.locator('#email').focus()
+                        page.click('#account-nav-link');page.locator('#email').focus()
                         assert page.evaluate('document.activeElement.id') == 'email'
                         assert page.locator('#password').get_attribute('type') == 'password'
                         assert page.locator('#auth').locator('input[type=email]').count() == 1

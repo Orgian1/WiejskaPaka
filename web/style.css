@@ -85,3 +85,14 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .catalog-category-bar{display:flex;gap:.5rem;overflow-x:auto;flex-wrap:nowrap;max-width:100%;min-width:0;padding:.5rem 0 .75rem;overscroll-behavior-x:contain;touch-action:pan-x pan-y}.catalog-category-bar button{flex:0 0 auto;width:auto;white-space:nowrap;background:#fff;color:#214f2b;border:2px solid #75947a}.catalog-category-bar button.active{background:#245d32;color:#fff;border-color:#163c20}.catalog-category-bar button:focus-visible{outline:3px solid #b11635;outline-offset:2px}.catalog-filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}.catalog-filters label{max-width:100%}.catalog-filters input[type=checkbox]{width:auto}#product-description,[data-product-editor] textarea{width:100%;box-sizing:border-box;min-height:5rem}
 
 .nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.5em;height:1.5em;padding:0 .25em;border-radius:999px;background:#bb1532;color:#fff;font-weight:700;font-size:.85em;vertical-align:middle}.nav-count[hidden]{display:none}#contact-disclosure>summary{cursor:pointer;font-weight:700;padding:1rem}#contact-disclosure[open]{text-align:left}#contact-disclosure #contact-section{margin-top:0}#contact-disclosure #support-section{background:#fff}
+/* Each route owns one work area; business-feature hidden flags remain independent. */
+[data-route-hidden]{display:none!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.quick-nav a[aria-current=page]{background:#275c39;color:white;text-decoration:underline;text-underline-offset:.25em}
+#catalog-pages{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+#catalog-pages button[aria-current=page]{background:#275c39;color:#fff;font-weight:bold}
+#seller-listings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+#seller-listings img{width:100%;height:180px;object-fit:cover}
+.listing-quick-edit{display:flex;flex-wrap:wrap;gap:.5rem}.listing-quick-edit label{flex:1;min-width:120px}.listing-quick-edit input{width:100%;box-sizing:border-box}
+/* Listings now own the stock editor; avoid the previous duplicate offer list. */
+#seller-stock-summary{display:none}

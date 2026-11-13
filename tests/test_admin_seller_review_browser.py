@@ -24,9 +24,10 @@ def test_admin_queue_decision_browser(tmp_path,width):
                 page=browser.new_page(viewport={'width':width,'height':844})
                 errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
                 page.goto(str(client.base_url));assert page.locator('#admin-seller-review').is_hidden()
-                page.fill('#email',body['email']);page.fill('#password',body['password'])
+                page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
                 page.locator('#auth button[type=submit]').click()
-                page.locator('#admin-seller-review').wait_for(state='visible')
+                page.locator('#logout').wait_for(state='visible');page.click('#panel-nav-link');page.locator('#admin-seller-review').wait_for(state='visible')
+                page.click('#panel-nav-link')
                 with page.expect_response('**/admin/farmers/compliance-queue?*') as response:page.click('#admin-seller-refresh')
                 assert response.value.status==200
                 page.locator('#admin-seller-results textarea').wait_for(state='visible')

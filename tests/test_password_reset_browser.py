@@ -27,7 +27,7 @@ def test_reset_form_and_fragment_in_actual_chromium(monkeypatch,tmp_path,width):
                 page.on('pageerror',lambda error: errors.append(str(error)))
                 page.on('request',lambda request: urls.append(request.url))
                 page.goto(str(client.base_url))
-                page.locator('#password-reset-section').wait_for(state='visible')
+                page.click('#account-nav-link');page.locator('#password-reset-section').wait_for(state='visible')
                 page.fill('#reset-email',EMAIL)
                 with page.expect_response('**/auth/password-reset-test/request') as response:
                     page.click('#request-reset-submit')

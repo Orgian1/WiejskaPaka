@@ -18,7 +18,7 @@ function updateSellerSearchLabels(){
   el('catalog-query').placeholder=seller?'np. @warzywa_marka lub Zielone Gospodarstwo':'np. ziemniaki';
   el('catalog-search-submit').textContent=seller?'Szukaj sprzedawcy':'Szukaj produktów';
   el('products').hidden=seller;el('seller-results').hidden=!seller;el('seller-pagination').hidden=!seller;
-  el('catalog-previous').hidden=seller;el('catalog-next').hidden=seller;
+  el('catalog-previous').hidden=seller;el('catalog-next').hidden=seller;if(el('catalog-pages'))el('catalog-pages').hidden=seller;
 }
 async function loadSellerDirectory(){
   if(!sellerSearchMode())return;

@@ -59,13 +59,13 @@ async function productEditor(product,active){
   const delivery=field('Opłata dostawy w zł','input',(product.delivery_grosze/100).toFixed(2));delivery.inputMode='decimal';
   const stock=field('Stan magazynowy','input',product.stock);stock.type='number';stock.min='0';stock.max='1000000';stock.required=true;
   form.append(node('p','Jednostka sprzedaży: '+saleUnitLabel(product)+'. Zachowujemy jednostkę używaną w koszykach i zamówieniach. Zdjęcie zmienisz w panelu zdjęć.'));
-  const save=node('button','Zapisz produkt');save.type='submit';form.append(save);details.append(form);
+  const photos=node('a','Zmień zdjęcia produktu');photos.href='#user-photo-panel';form.append(photos);const save=node('button','Zapisz produkt');save.type='submit';form.append(save);details.append(form);
   form.onsubmit=event=>{event.preventDefault();act(()=>singleWrite('edit-product:'+product.id,save,async()=>{
     if(!active()||!form.isConnected||role!=='rolnik')return;
     const values={name:name.value,category_id:category.value,subcategory_id:sub.value,description:description.value,price_grosze:parseGrosze(price.value),delivery_grosze:parseGrosze(delivery.value),stock:Number(stock.value)};
     const changes={};for(const [key,value] of Object.entries(values))if(value!==(product[key]??''))changes[key]=value;
     if(!Object.keys(changes).length){msg('Nie zmieniono danych produktu.');return}
-    await api('/products/mine/'+product.id,'PATCH',changes);
-    if(!active())return;msg('Produkt zapisany');await loadDashboard();
+    if('stock' in changes)changes.expected_stock=product.stock;await api('/products/mine/'+product.id,'PATCH',changes);
+    if(!active())return;msg('Produkt zapisany');if(typeof loadSellerListings==='function')await loadSellerListings();await loadProducts();await loadDashboard();
   }))};return details;
 }

@@ -23,12 +23,12 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
         page=delivery_browser.new_page(viewport={'width':width,'height':844});page.set_default_timeout(15_000)
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         def login(actor):
-            page.fill('#email',actor[0]['email']);page.fill('#password',actor[0]['password'])
+            page.click('#account-nav-link');page.fill('#email',actor[0]['email']);page.fill('#password',actor[0]['password'])
             page.locator('#auth button[type=submit]').click()
             page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=actor[0]['email'])
         try:
             page.goto(str(client.base_url));login(actors[0])
-            page.locator('#farmer-details > details > summary').click()
+            page.click('#account-nav-link')
             page.locator('#seller-login-panel').wait_for(state='visible')
             page.fill('#farm-name','Żółta Łąka '+suffix);page.fill('#farm-city','Legnica')
             with page.expect_response('**/farmers/me/profile') as response:

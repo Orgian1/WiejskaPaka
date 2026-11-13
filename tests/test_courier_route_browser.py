@@ -21,7 +21,7 @@ def test_courier_route_deduplicates_and_rechecks_before_opening(sample_browser_s
         assert client.get('/couriers/me/active-addresses',headers=buyer).status_code==403
         page=browser.new_page(viewport={'width':width,'height':900},is_mobile=width==320,has_touch=width==320);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         try:
-            page.goto(str(client.base_url));sign_in(page,accounts,'dostawca')
+            page.goto(str(client.base_url));sign_in(page,accounts,'dostawca');page.click('#panel-nav-link')
             area=page.get_by_role('region',name='Trasa aktywnych dostaw')
             assert area.locator('li').count()==0
             area.get_by_role('button',name='Pokaż trasę aktywnych dostaw',exact=True).click()

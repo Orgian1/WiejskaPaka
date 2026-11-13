@@ -13,6 +13,7 @@ def test_search_filters_and_pagination(tmp_path, monkeypatch):
     from backend.local_marketplace import SCHEMA_SQLITE, refresh_product_index
     with module.db() as con:
         con.executescript(SCHEMA_SQLITE)
+        con.executescript(module.product_listings.SCHEMA_SQLITE)
         refresh_product_index(con)
     client = TestClient(module.app)
     data = client.get('/catalog/search', params={'q': 'jabł', 'limit': 1}).json()

@@ -25,7 +25,7 @@ def test_categories_create_edit_filters_favorites_rows_cart_and_location(sample_
         page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         try:
             page.goto(str(client.base_url));sign_in(page,accounts,'rolnik')
-            page.locator('#product-category option').last.wait_for(state='attached')
+            page.click('#seller-nav-link');page.locator('#product-category option').last.wait_for(state='attached')
             page.select_option('#product-category','vegetables');page.select_option('#product-subcategory','vegetables-tomatoes')
             page.fill('#pname','Specjalne pomidory');page.fill('#price','3,99');page.fill('#delivery','5,01');page.fill('#stock','4');page.fill('#product-description','<b>Opis pomidorów</b>')
             photo=io.BytesIO();Image.new('RGB',(500,400),'red').save(photo,format='JPEG')
@@ -64,7 +64,7 @@ def test_categories_create_edit_filters_favorites_rows_cart_and_location(sample_
             with page.expect_response(lambda r:r.url.endswith('/catalog/query') and r.request.post_data_json.get('sort')=='nearest') as nearest:page.click('#catalog-use-gps')
             assert nearest.value.status==200 and nearest.value.json()['items'][0]['distance_m']>=0
             page.wait_for_function('()=>document.querySelectorAll("#products > .catalog-product").length===1')
-            page.locator('#favorites-results article').filter(has_text='Specjalne pomidory').get_by_role('button',name='Pokaż w katalogu',exact=True).click()
+            page.click('#favorites-nav-link');page.locator('#favorites-results article').filter(has_text='Specjalne pomidory').get_by_role('button',name='Pokaż w katalogu',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#catalog-category-bar button").getAttribute("aria-pressed")=="true"')
             assert page.locator('#catalog-sort').input_value()=='newest'
             assert page.locator('#catalog-subcategory-field').is_hidden()

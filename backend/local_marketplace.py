@@ -81,7 +81,7 @@ def nearby_offers(con, *, latitude_e6, longitude_e6, radius_m, q='', limit=24, o
     if type(limit) is not int or not 1 <= limit <= 100 or type(offset) is not int or not 0 <= offset <= 10000:
         raise ValueError('Nieprawidłowa paginacja')
     chord = 2*math.sin(radius_m/(2*EARTH_RADIUS_M))
-    conditions = ['p.stock>0', 't.active=1', "u.role='rolnik'",
+    conditions = ['NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=p.id AND ls.active=0)', 'p.stock>0', 't.active=1', "u.role='rolnik'",
                   'c.sphere_x BETWEEN ? AND ?', 'c.sphere_y BETWEEN ? AND ?', 'c.sphere_z BETWEEN ? AND ?']
     params = [x,x,y,y,z,z,x-chord,x+chord,y-chord,y+chord,z-chord,z+chord]
     if q.strip():

@@ -10,6 +10,7 @@ def catalog(tmp_path, monkeypatch):
     con.row_factory = sqlite3.Row
     con.execute('CREATE TABLE products(id INTEGER PRIMARY KEY, farmer_id INTEGER, name TEXT, price_grosze INTEGER, delivery_grosze INTEGER, stock INTEGER)')
     con.executemany('INSERT INTO products VALUES (?,?,?,?,?,?)', [(1,3,'Miód',2300,500,4),(2,3,'Ser',1500,0,0)])
+    con.executescript(api.product_listings.SCHEMA_SQLITE)
     con.commit()
     @contextmanager
     def db():

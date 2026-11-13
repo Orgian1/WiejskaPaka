@@ -16,8 +16,8 @@ def owner_account(client):
 
 
 def login(page,url,body):
-    page.goto(url);page.fill('#email',body['email']);page.fill('#password',body['password'])
-    page.locator('#auth button[type=submit]').click();page.locator('#wallet-section').wait_for(state='visible')
+    page.goto(url);page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
+    page.locator('#auth button[type=submit]').click();page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
     return page.locator('#wallet-section')
 
 

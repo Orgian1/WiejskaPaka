@@ -24,12 +24,12 @@ def test_owner_cancel_admin_complete_and_logout(delivery_browser,tmp_path,monkey
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         def login(body):
-            page.goto(str(client.base_url));page.fill('#email',body['email']);page.fill('#password',body['password'])
+            page.goto(str(client.base_url));page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
             page.locator('#auth button[type=submit]').click();page.locator('#logout').wait_for(state='visible')
-            if body.get('role')=='rolnik':page.locator('#wallet-nav-link').click()
+            page.locator('#wallet-nav-link' if not page.evaluate("role==='admin'") else '#wallet-admin-nav-link').click()
         try:
             login(credentials)
-            panel=page.locator('#wallet-section');panel.wait_for(state='visible')
+            page.locator('#wallet-nav-link').click();panel=page.locator('#wallet-section');panel.wait_for(state='visible')
             with page.expect_response('**/cancel-test') as response:
                 panel.get_by_role('button',name='Anuluj wniosek wypłaty',exact=True).click()
             assert response.value.status==201

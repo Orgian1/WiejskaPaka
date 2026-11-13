@@ -31,7 +31,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
 from backend import product_unit_storage, pickup_dates
 from backend import address_delivery
-from backend import product_categories
+from backend import product_categories, product_listings
 from backend.address_delivery import DeliveryPreferenceIn
 
 
@@ -54,6 +54,7 @@ async def application_lifespan(application):
         con.execute('SELECT user_id,product_id FROM account_favorites LIMIT 0')
         con.execute('SELECT user_id,revision,point_ids FROM seller_navigation LIMIT 0')
         con.execute('SELECT product_id,category_id,subcategory_id,description FROM product_classifications LIMIT 0')
+        con.execute('SELECT product_id,active FROM product_listing_states LIMIT 0')
         con.execute('SELECT user_id,latitude_e6,longitude_e6 FROM account_saved_locations LIMIT 0')
         from backend import user_photos, seller_directory
         if seller_directory.enabled():
@@ -507,7 +508,7 @@ def product_units_configuration():
 @app.get('/products')
 def products():
     with db() as con:
-        return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 ORDER BY id DESC')]
+        return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock FROM products WHERE stock>0 AND NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=products.id AND ls.active=0) ORDER BY id DESC')]
 
 @app.get('/catalog/search')
 def catalog_search(q: str = '', min_price_grosze: int | None = None,
@@ -521,7 +522,7 @@ def catalog_search(q: str = '', min_price_grosze: int | None = None,
         raise HTTPException(422, 'Nieprawidłowy zakres cen')
     if min_price_grosze is not None and max_price_grosze is not None and min_price_grosze > max_price_grosze:
         raise HTTPException(422, 'Nieprawidłowy zakres cen')
-    clauses = ['stock > 0']
+    clauses = ['stock > 0', 'NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=p.id AND ls.active=0)']
     params = []
     if farmer_id is not None:
         if not 1 <= farmer_id <= 9_000_000_000_000_000_000:
@@ -553,7 +554,7 @@ def catalog_search(q: str = '', min_price_grosze: int | None = None,
 def my_products(user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        return [dict(product_unit_storage.enrich_product(con,r),**product_categories.metadata(con,r['id'])) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
+        return [dict(product_unit_storage.enrich_product(con,r),**product_categories.metadata(con,r['id']),**product_listings.metadata(con,r['id'])) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
 
 @app.get('/products/{product_id}')
 def product_details(product_id: int):
@@ -563,7 +564,7 @@ def product_details(product_id: int):
     with db() as con:
         row = con.execute(
             'SELECT id,farmer_id,name,price_grosze,delivery_grosze,stock '
-            'FROM products WHERE id=? AND stock>0', (product_id,)
+            'FROM products WHERE id=? AND stock>0 AND NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=products.id AND ls.active=0)', (product_id,)
         ).fetchone()
         if row is not None:
             row = product_unit_storage.enrich_product(con,row)
@@ -613,6 +614,7 @@ def saved_cart_put(payload: SavedCartItemIn, user=Depends(current_user), authori
     require(user, 'klient')
     with order_write_db(user, authorization, ('klient',)) as con:
         lock_buyer_operation(con, user['id'])
+        product_listings.require_active(con,payload.product_id)
         product = con.execute('SELECT stock FROM products WHERE id=?', (payload.product_id,)).fetchone()
         if product is None or product['stock'] < payload.quantity:
             raise HTTPException(409, 'Produkt niedostępny lub niewystarczający stan')
@@ -1004,6 +1006,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         totals = []
         grand_total = 0
         for index, r in enumerate(lines):
+            product_listings.require_active(con,r['product_id'])
             if r['quantity'] < 1 or r['quantity'] > 1000 or r['stock'] < r['quantity']:
                 raise HTTPException(409, 'Zmieniła się dostępność produktu')
             delivery = shared_delivery if index == 0 else 0
@@ -1041,7 +1044,7 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                  payload.delivery_street.strip() if payload.fulfillment == 'dostawa' else None,
                  payload.delivery_postal_code if payload.fulfillment == 'dostawa' else None))
             address_delivery.capture(con, order_id, user['id'], prepared_delivery, CHECKOUT_VAULT)
-            updated = con.execute('UPDATE products SET stock=stock-? WHERE id=? AND stock>=?',
+            updated = con.execute('UPDATE products SET stock=stock-? WHERE id=? AND stock>=? AND NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=products.id AND ls.active=0)',
                                   (r['quantity'],r['product_id'],r['quantity']))
             if updated.rowcount != 1:
                 raise HTTPException(409, 'Stan magazynowy zmienił się; spróbuj ponownie')
@@ -1109,6 +1112,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
         if not has_hold_capacity(con, user['id']):
             raise HTTPException(409, 'Limit 10 nieopłaconych zakupów. Opłać lub anuluj wcześniejsze zamówienia.')
         p=con.execute('SELECT * FROM products WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(payload.product_id,)).fetchone()
+        product_listings.require_active(con,payload.product_id)
         if not p or p['stock']<payload.quantity:
             raise HTTPException(409,'Produkt niedostępny lub niewystarczający stan')
         if payload.fulfillment == 'odbior':
@@ -1138,7 +1142,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
                      payload.delivery_city.strip() if payload.fulfillment=='dostawa' else None,
                      payload.delivery_street.strip() if payload.fulfillment=='dostawa' else None,
                      payload.delivery_postal_code if payload.fulfillment=='dostawa' else None))
-        updated=con.execute('UPDATE products SET stock=stock-? WHERE id=? AND stock>=?',(payload.quantity,p['id'],payload.quantity))
+        updated=con.execute('UPDATE products SET stock=stock-? WHERE id=? AND stock>=? AND NOT EXISTS(SELECT 1 FROM product_listing_states ls WHERE ls.product_id=products.id AND ls.active=0)',(payload.quantity,p['id'],payload.quantity))
         if updated.rowcount != 1:
             raise HTTPException(409,'Stan magazynowy zmienił się; ponów zamówienie')
         reservation_expires_at = add_hold(con, cur.lastrowid, now=datetime.now(timezone.utc))
@@ -1323,6 +1327,8 @@ def auth_me(user=Depends(current_user)):
 
 class ProductUpdateIn(BaseModel):
     model_config = {'extra': 'forbid'}
+    listing_active: bool | None = Field(default=None, strict=True)
+    expected_stock: int | None = Field(default=None, strict=True, ge=0, le=1_000_000)
     category_id: str | None = Field(default=None,max_length=40)
     subcategory_id: str | None = Field(default=None,max_length=80)
     description: CleanText | None = Field(default=None,max_length=2000,pattern=r'^[^\x00]*$')
@@ -1340,8 +1346,14 @@ def update_my_product(product_id: int, payload: ProductUpdateIn,
     if not fields or any(value is None for value in fields.values()):
         raise HTTPException(422, 'Podaj poprawne pola produktu')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        owner=con.execute('SELECT id FROM products WHERE id=? AND farmer_id=?'+(' FOR UPDATE' if DATABASE_URL else ''),(product_id,user['id'])).fetchone()
+        owner=con.execute('SELECT id,stock FROM products WHERE id=? AND farmer_id=?'+(' FOR UPDATE' if DATABASE_URL else ''),(product_id,user['id'])).fetchone()
         if not owner:raise HTTPException(404,'Nie znaleziono produktu')
+        expected=fields.pop('expected_stock',None)
+        if expected is not None and expected!=owner['stock']:
+            raise HTTPException(409,'Stan zmienił się od otwarcia edycji. Odśwież ofertę i sprawdź dostępny towar.')
+        listing_active=fields.pop('listing_active',None)
+        if listing_active is not None:
+            con.execute('INSERT INTO product_listing_states(product_id,active) VALUES(?,?) ON CONFLICT(product_id) DO UPDATE SET active=excluded.active',(product_id,int(listing_active)))
         meta=product_categories.metadata(con,product_id)
         category=fields.pop('category_id',meta['category_id'])
         sub=fields.pop('subcategory_id',meta['subcategory_id'] if category==meta['category_id'] else category+'-other')
@@ -1354,7 +1366,7 @@ def update_my_product(product_id: int, payload: ProductUpdateIn,
                           (product_id, user['id'])).fetchone()
         from backend.local_marketplace import index_product
         index_product(con, product_id, row['name'])
-        return dict(row,**product_categories.metadata(con,product_id))
+        return dict(product_unit_storage.enrich_product(con,row),**product_categories.metadata(con,product_id),**product_listings.metadata(con,product_id))
 
 @app.post('/shipments/{shipment_id}/cancel-test')
 def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authorization: str | None = Header(default=None)):
@@ -1614,7 +1626,7 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
         dates_changed = payload.attendance_dates is not None and payload.attendance_dates != pickup_dates.read(con,point_id)
         if metadata_changed or coords_changed or dates_changed:
             open_order = con.execute("""SELECT 1 FROM order_locations l JOIN orders o ON o.id=l.order_id
-                WHERE l.pickup_point_id=? AND o.status IN ('oczekuje_na_platnosc_testowa','gotowe_do_odbioru_testowo') LIMIT 1""", (point_id,)).fetchone()
+                WHERE l.pickup_point_id=? AND o.status IN ('oczekuje_na_platnosc_testowa','gotowe_do_odbioru_testowo','w_drodze_testowo') LIMIT 1""", (point_id,)).fetchone()
             if open_order:
                 raise HTTPException(409,'Punkt ma niezakończone zamówienia. Możesz wyłączyć nowe zakupy, ale nie zmieniać miejsca ani godzin odbioru.')
         con.execute('UPDATE pickup_points SET name=?,city=?,street=?,opening_hours=?,active=? WHERE id=? AND farmer_id=?',
@@ -3363,3 +3375,20 @@ install_catalog_filters(app, db, DATABASE_URL)
 
 from backend.navigation_counts import install as install_navigation_counts
 install_navigation_counts(app,order_write_db,current_user)
+
+# Availability migration for local SQLite; PostgreSQL is provisioned by reviewed SQL.
+if not DATABASE_URL:
+    with db() as _listing_con:
+        _listing_con.executescript(product_listings.SCHEMA_SQLITE)
+
+@app.delete('/pickup-points/{point_id}')
+def remove_pickup_point(point_id:int,user=Depends(current_user),authorization:str|None=Header(default=None)):
+    require(user,'rolnik')
+    with order_write_db(user,authorization,('rolnik',)) as con:
+        point=con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=?'+(' FOR UPDATE' if DATABASE_URL else ''),(point_id,user['id'])).fetchone()
+        if not point:raise HTTPException(404,'Nie znaleziono punktu')
+        pending=con.execute("SELECT 1 FROM order_locations l JOIN orders o ON o.id=l.order_id WHERE l.pickup_point_id=? AND o.status NOT IN ('odebrane','anulowane_testowo','nieudana_dostawa_testowo') LIMIT 1",(point_id,)).fetchone()
+        if pending:raise HTTPException(409,'Punkt ma aktywne zamówienia. Zakończ je przed usunięciem; możesz wyłączyć nowe zakupy.')
+        # Soft removal preserves all references, PINs, fees and promotion usage.
+        con.execute('UPDATE pickup_points SET active=0 WHERE id=? AND farmer_id=?',(point_id,user['id']))
+        return {'id':point_id,'removed':True,'history_preserved':True}

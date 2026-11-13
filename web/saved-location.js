@@ -10,7 +10,7 @@ async function loadSavedLocation(){
   el('nearby-lat').value=coordinateText(data.location.latitude_e6);
   el('nearby-lon').value=coordinateText(data.location.longitude_e6);
   el('address-status').textContent='Używam lokalizacji zapisanej na Twoim koncie. Możesz wybrać inny adres lub GPS.';
-  if(role==='klient')await searchNearby();
+  if(role==='klient')await searchNearby();if(typeof restoreCatalogRoute==='function'&&appRouteName()==='products')await restoreCatalogRoute();
 }
 const locationControls=node('div');locationControls.id='saved-location-controls';locationControls.hidden=true;
 locationControls.append(node('p','Zapisz wybrane miejsce na swoim koncie, aby używać go po kolejnym zalogowaniu. Zapis jest dobrowolny; możesz go usunąć.'));

@@ -19,10 +19,10 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
         page.set_default_timeout(15_000)
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
-            page.goto(str(client.base_url));page.fill('#email',account['email']);page.fill('#password',account['password'])
+            page.goto(str(client.base_url));page.click('#account-nav-link');page.fill('#email',account['email']);page.fill('#password',account['password'])
             page.locator('#auth button[type=submit]').click()
-            page.locator('#user-photo-panel').wait_for(state='visible')
-            page.locator('#user-photo-panel > details > summary').click()
+            page.locator('#logout').wait_for(state='visible');page.click('#account-nav-link');page.locator('#user-photo-panel').wait_for(state='visible')
+            page.click('#account-nav-link')
             stream=io.BytesIO();Image.new('RGB',(2400,1600),'green').save(stream,'PNG')
             for label in ('Zdjęcie profilowe','Zdjęcie gospodarstwa','Produkt: Pomidor ze zdjęciem'):
                 card=page.locator('#user-photo-editors article').filter(has=page.get_by_role('heading',name=label,exact=True))
@@ -47,15 +47,15 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                     card.get_by_role('button',name='Usuń zdjęcie',exact=True).click()
                 assert response.value.status==200
                 page.wait_for_function('(label)=>Array.from(document.querySelectorAll("#user-photo-editors article")).find(c=>c.querySelector("h3").textContent===label)?.querySelectorAll("img").length===0',arg=label)
-            page.fill('#pname','Marchew ze zdjęciem');page.fill('#price','3,50')
+            page.click('#seller-nav-link');page.fill('#pname','Marchew ze zdjęciem');page.fill('#price','3,50')
             page.fill('#delivery','0');page.fill('#stock','12')
             page.locator('#product-photo-file').set_input_files({'name':'carrot.png','mimeType':'image/png','buffer':stream.getvalue()})
             with page.expect_response('**/products/with-photo') as created:
                 page.locator('#new-product').get_by_role('button',name='Dodaj produkt',exact=True).click()
             assert created.value.status==201
-            inventory=page.get_by_role('region',name='Stan produktów gospodarstwa')
+            inventory=page.locator('#seller-listings')
             item=inventory.locator('article').filter(has=page.get_by_role('heading',name='Marchew ze zdjęciem',exact=True))
-            item.get_by_text('Dostępne w magazynie: 12 szt.',exact=True).wait_for(state='visible')
+            item.get_by_text('dostępny stan: 12',exact=False).wait_for(state='visible')
             item.scroll_into_view_if_needed()
             item.locator('img').wait_for(state='visible')
             page.wait_for_function('(id)=>{const image=document.querySelector(`[src="/user-photos/product/${id}"]`);return image&&image.complete&&image.naturalWidth>0}',arg=created.value.json()['id'])

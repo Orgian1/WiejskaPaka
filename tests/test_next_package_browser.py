@@ -9,7 +9,7 @@ from tests.test_owner_finalization import login
 
 
 def sign_in(page,accounts,role):
-    page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+    page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
     page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email',arg=accounts[role]['email'])
 
@@ -68,13 +68,11 @@ def test_only_orders_and_restock_open_and_point_groups_include_statuses(sample_b
         page=browser.new_page(viewport={'width':width,'height':900},is_mobile=width==320,has_touch=width==320);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         try:
             page.goto(str(client.base_url));sign_in(page,accounts,'rolnik')
-            page.locator('#wallet-section > details > summary').wait_for()
-            assert page.locator('#farmer > details').evaluate('(e)=>e.open')
+            page.click('#orders-nav-link')
             assert page.locator('#orders-section').is_visible()
-            for panel in ('dashboard','wallet-section','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','support-section','favorites-section'):
-                disclosure=page.locator('#'+panel+' > details[data-seller-panel]')
-                if disclosure.count():assert not disclosure.evaluate('(e)=>e.open'),panel
-            page.get_by_role('region',name='Stan produktów gospodarstwa').wait_for(state='visible')
+            assert page.locator('#farmer').is_hidden()
+            for panel in ('wallet-section','farmer-details','point-location-panel','seller-compliance','user-photo-panel','notifications-section','favorites-section'):
+                assert page.locator('#'+panel).is_hidden(),panel
             group=page.locator('#orders .seller-pickup-group').first;group.locator(':scope > summary').click()
             assert '2 zamówienia' in group.locator(':scope > summary').inner_text()
             for order in [o for o in orders if o['fulfillment']=='odbior']:
@@ -91,9 +89,8 @@ def test_only_orders_and_restock_open_and_point_groups_include_statuses(sample_b
                 group.get_by_role('button',name='Potwierdź odbiór całej przesyłki',exact=True).click()
             assert confirmation.value.status==200 and confirmation.value.json()['confirmed']
             assert client.post('/shipments/'+shipment['id']+'/confirm',headers=farmer,json={'pin':recovered.json()['pin_test_only']}).status_code==409
-            page.click('#wallet-nav-link');assert page.locator('#wallet-section > details').evaluate('(e)=>e.open')
-            page.reload();sign_in(page,accounts,'rolnik');page.locator('#wallet-section > details > summary').wait_for()
-            assert not page.locator('#wallet-section > details').evaluate('(e)=>e.open')
-            assert not page.locator('#dashboard > details').evaluate('(e)=>e.open')
+            page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
+            page.reload();sign_in(page,accounts,'rolnik');page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
+            assert page.locator('#dashboard').is_hidden()
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth') and not errors
         finally:page.close()

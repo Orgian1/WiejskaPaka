@@ -20,10 +20,10 @@ def test_seller_consent_in_chromium(tmp_path,width):
                 errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
                 page.goto(str(client.base_url))
                 assert page.locator('#seller-compliance').is_hidden()
-                page.fill('#email',email);page.fill('#password',password)
+                page.click('#account-nav-link');page.fill('#email',email);page.fill('#password',password)
                 page.locator('#auth button[type=submit]').click()
-                page.locator('#seller-compliance').wait_for(state='visible')
-                page.locator('#seller-compliance > details > summary').click()
+                page.locator('#logout').wait_for(state='visible');page.click('#account-nav-link');page.locator('#seller-compliance').wait_for(state='visible')
+                page.click('#account-nav-link')
                 assert not errors
                 with page.expect_response('**/farmers/me/compliance') as refresh:
                     page.click('#seller-compliance-refresh')

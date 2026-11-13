@@ -29,7 +29,7 @@ async function loadFavorites(){
     const find=node('button','Pokaż w katalogu');find.type='button';find.onclick=()=>act(async()=>{
       resetCatalogView();
       el('catalog-query').value=product.name;catalogOffset=0;await loadProducts();
-      el('products-section').scrollIntoView();
+      if(typeof navigateApp==='function')navigateApp('products');el('products-section').scrollIntoView();
     });card.append(find);el('favorites-results').append(card);
   }
   el('favorites-status').textContent=products.length?`Zapisane oferty: ${products.length}`:'Nie masz jeszcze ulubionych ofert.';

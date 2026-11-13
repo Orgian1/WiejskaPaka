@@ -36,7 +36,7 @@ def test_session_reset_race_badges_photos_and_shared_contact(sample_browser_serv
             assert added.value.status==200
             page.locator('#same-package-cancel').wait_for();page.click('#same-package-cancel')
             page.wait_for_function('()=>document.querySelector("#cart-count").textContent==="1"')
-            page.locator('#cart-items input').first.fill('4');page.locator('#cart-items').get_by_role('button',name='Zapisz ilość',exact=True).click()
+            page.click('#cart-nav-link');page.locator('#cart-items input').first.fill('4');page.locator('#cart-items').get_by_role('button',name='Zapisz ilość',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#cart-items input").value==="4"')
             assert page.locator('#cart-count').inner_text()=='1'
             page.locator('#cart-items').get_by_role('button',name='Usuń',exact=True).click()
@@ -58,12 +58,12 @@ def test_session_reset_race_badges_photos_and_shared_contact(sample_browser_serv
                     page.locator('#user-photo-editors input[type=file]').first.wait_for(state='attached')
                     page.wait_for_function('()=>document.querySelector("#orders-count").textContent==="4"')
                     assert page.locator('#favorites-count').is_hidden()
-                disclosure=page.locator('#contact-disclosure');assert not disclosure.evaluate('(e)=>e.open')
+                page.click('#contact-nav-link');disclosure=page.locator('#contact-disclosure');assert not disclosure.evaluate('(e)=>e.open')
                 assert page.locator('#contact-disclosure input:visible,#contact-disclosure textarea:visible').count()==0
                 assert page.locator('footer > details > summary').count()==1
-                page.click('#footer-contact-toggle');page.fill('#contact-message','Szkic kontaktu '+actor)
-                page.click('#footer-contact-toggle');assert page.locator('#contact-message').is_hidden()
-                page.click('#footer-contact-toggle');assert page.locator('#contact-message').input_value()=='Szkic kontaktu '+actor
+                page.click('#contact-nav-link');page.click('#footer-contact-toggle');page.fill('#contact-message','Szkic kontaktu '+actor)
+                page.click('#contact-nav-link');page.click('#footer-contact-toggle');assert page.locator('#contact-message').is_hidden()
+                page.click('#contact-nav-link');page.click('#footer-contact-toggle');assert page.locator('#contact-message').input_value()=='Szkic kontaktu '+actor
                 assert page.locator('#contact-submit').is_disabled()
             page.click('#logout');page.locator('#password-reset-section').wait_for(state='visible')
             assert not page.locator('#contact-disclosure').evaluate('(e)=>e.open') and page.locator('#contact-message').input_value()==''
@@ -118,7 +118,7 @@ def test_hundreds_of_orders_are_grouped_and_rendered_in_small_pages(sample_brows
     try:
         page.goto(url);sign_in(page,accounts,'rolnik')
         page.wait_for_function('()=>document.querySelector("#orders-count").textContent==="335"')
-        groups=page.locator('#orders .seller-pickup-group');groups.last.wait_for();assert groups.count()==2
+        page.click('#orders-nav-link');groups=page.locator('#orders .seller-pickup-group');groups.last.wait_for();assert groups.count()==2
         assert page.locator('#orders [data-order-id]').count()==0
         assert groups.first.locator(':scope > summary').inner_text()=='Punkt A — 220 zamówień'
         assert groups.nth(1).locator(':scope > summary').inner_text()=='Punkt B — 80 zamówień'
@@ -131,7 +131,7 @@ def test_hundreds_of_orders_are_grouped_and_rendered_in_small_pages(sample_brows
         assert deliveries.locator(':scope > summary').inner_text()=='Dostawy na adres — 35 zamówień'
         deliveries.locator(':scope > summary').click();deliveries.locator('[data-order-id]').first.wait_for()
         assert deliveries.locator('[data-order-id]').count()==20
-        page.locator('#seller-stock-summary article').first.wait_for(state='visible')
+        page.click('#seller-nav-link');page.locator('#seller-listings article').first.wait_for(state='visible')
         assert 20<=page.locator('#dashboard-content > details').count()<=25
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth') and not errors
     finally:page.close()

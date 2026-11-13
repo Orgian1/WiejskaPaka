@@ -24,7 +24,7 @@ function supportCreateButton(kind,id,card){
     if(role!=='klient'||!card.isConnected)return;
     const epoch=sessionEpoch,generation=supportGeneration;
     const createHost=el('support-create-host');eraseSupportNode(createHost);
-    el('contact-disclosure').open=true;
+    if(typeof navigateApp==='function')navigateApp('contact');el('contact-disclosure').open=true;
     const form=node('div');form.dataset.supportPrivate='true';
     const category=node('select');category.setAttribute('aria-label','Rodzaj problemu testowego');
     for(const [value,label] of Object.entries(supportCategories)){const option=node('option',label);option.value=value;category.append(option)}

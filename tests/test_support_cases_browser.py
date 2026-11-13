@@ -15,10 +15,10 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
         try:
             page.goto(str(client.base_url))
             def login(role):
-                page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+                page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
-                if role=='rolnik':page.locator('#dashboard > details > summary').click()
+                page.click('#panel-nav-link')
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def logout():
                 page.click('#logout');page.wait_for_function("()=>(document.getElementById('identity').textContent==='Nie zalogowano')")
@@ -26,7 +26,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
                 assert page.locator('#support-detail').text_content()==''
                 assert page.locator('#support-list').text_content()==''
             def open_case():
-                if not page.locator('#contact-disclosure').evaluate('(e)=>e.open'):page.click('#footer-contact-toggle')
+                if not page.locator('#contact-disclosure').evaluate('(e)=>e.open'):page.click('#contact-nav-link');page.click('#footer-contact-toggle')
                 disclosure=page.locator('#support-section > details')
                 if disclosure.count() and not disclosure.evaluate('(e)=>e.open'):disclosure.locator('summary').click()
                 with page.expect_response('**/test/support/cases?*') as response:page.click('#support-refresh')
@@ -56,7 +56,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             assert response.value.status==200 and response.value.json()['case']['status']=='closed_test'
             page.get_by_role('heading',name='Szczegóły zgłoszenia — Zamknięte testowo',exact=True).wait_for(state='visible')
             logout();login('klient')
-            page.click('#footer-contact-toggle');page.click('#support-refresh');page.get_by_role('button',name='Otwórz zgłoszenie testowe',exact=True).first.click()
+            page.click('#contact-nav-link');page.click('#footer-contact-toggle');page.click('#support-refresh');page.get_by_role('button',name='Otwórz zgłoszenie testowe',exact=True).first.click()
             page.get_by_role('heading',name='Szczegóły zgłoszenia — Zamknięte testowo',exact=True).wait_for(state='visible')
             assert page.get_by_label('Odpowiedź testowa do zgłoszenia').count()==0
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')

@@ -25,7 +25,7 @@ def test_public_footer_shared_contact_form(full_demo_server, delivery_browser, w
     page.on('request',capture)
     try:
         page.goto(url)
-        page.locator('#footer-contact-toggle').click()
+        page.click('#contact-nav-link');page.locator('#footer-contact-toggle').click()
         assert page.locator('#contact-topic').input_value() == 'contact'
         page.locator('#contact-email').fill('guest@example.invalid')
         page.locator('#contact-subject').fill('Pytanie o działanie strony')
@@ -68,18 +68,18 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
     errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
     try:
         page.goto(url)
-        page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+        page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
         page.locator('#auth button[type=submit]').click()
-        if role=='rolnik':page.locator('#dashboard > details > summary').click()
+        page.click('#panel-nav-link')
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#header-login-link').is_hidden()
         assert page.locator('#header-register-link').is_hidden()
         assert page.locator('#header-panel-link').is_visible()
         if role in ('klient','rolnik'):
-            page.locator('#wallet-section').wait_for(state='visible')
+            page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
         else:
             assert page.locator('#wallet-nav-link').count()==0 or page.locator('#wallet-nav-link').is_hidden()
-        if role=='rolnik':page.locator('#address-delivery-panel').wait_for(state='visible')
+        if role=='rolnik':page.click('#orders-nav-link');page.locator('#address-delivery-panel').wait_for(state='visible')
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         page.click('#logout')
         page.locator('#auth').wait_for(state='visible')

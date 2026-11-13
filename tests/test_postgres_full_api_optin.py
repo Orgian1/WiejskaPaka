@@ -2038,3 +2038,14 @@ def test_native_private_navigation_counts(pg_restart_api):
     from tests.test_navigation_counts_http import exercise_navigation_counts
     client,_=pg_restart_api
     exercise_navigation_counts(client)
+
+
+def test_native_issue60_listing_reservations_and_point_history(pg_restart_api):
+    from tests.test_issue60_api import exercise_issue60
+    client,_=pg_restart_api
+    farmer,_=register(client,'rolnik');buyer,_=register(client,'klient')
+    product=client.post('/products',headers=farmer,json={'name':'Oferta kontrolna PostgreSQL sześćdziesiąt','stock':10,'price_grosze':199,'delivery_grosze':501})
+    assert product.status_code==201
+    body={'name':'Punkt kontrolny','city':'Opole','street':'Polna 1','opening_hours':'9:00–17:00','latitude_e6':52000000,'longitude_e6':16000000}
+    point=client.post('/pickup-points',headers=farmer,json=body);assert point.status_code==201
+    exercise_issue60(client,farmer,buyer,product.json()['id'],point.json()['id'],body)

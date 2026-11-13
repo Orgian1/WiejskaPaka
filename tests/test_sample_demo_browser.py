@@ -27,7 +27,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
     errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
     try:
         page.goto(url)
-        page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+        page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
         with page.expect_response('**/auth/login') as response:
             page.locator('#auth button[type=submit]').click()
         assert response.value.status==200
@@ -38,7 +38,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.locator('#logout').is_visible()
         assert page.locator('#identity').text_content()==accounts[role]['email']
         assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=140
-        if role=='rolnik':page.locator('#dashboard > details > summary').click()
+        page.click('#panel-nav-link')
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel sprzedawcy','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
@@ -65,10 +65,10 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
             page.locator('#admin-seller-results textarea').wait_for(state='visible')
             page.locator('#admin-seller-results textarea').fill('Robocza fikcyjna notatka')
         elif role=='rolnik':
-            page.locator('#seller-compliance > details > summary').click()
+            page.click('#account-nav-link')
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==0
-            page.get_by_role('heading',name='Rozliczenia testowe',exact=True).wait_for(state='visible')
+            page.click('#panel-nav-link');page.get_by_role('heading',name='Rozliczenia testowe',exact=True).wait_for(state='visible')
             assert 'Do testowej wypłaty: 0,00 zł' in page.locator('#dashboard-content').text_content()
             assert 'Nie wykonano przelewu' in page.locator('#dashboard-content').text_content()
             assert 'eligible_grosze' not in page.locator('#dashboard-content').text_content()
@@ -104,10 +104,10 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
         try:
             page.goto(str(client.base_url))
             def sign_in(role):
-                page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
+                page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
-                if role=='rolnik':page.locator('#dashboard > details > summary').click()
+                page.click('#panel-nav-link')
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def sign_out():
                 page.click('#logout')
@@ -140,9 +140,10 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 assert response.value.status==200 and response.value.json()['confirmed']
                 sign_out()
             sign_in('rolnik')
-            page.locator('#seller-compliance > details > summary').click()
+            page.click('#account-nav-link')
             with page.expect_response('**/farmers/me/compliance') as response:page.click('#seller-compliance-refresh')
             assert response.value.status==200 and response.value.json()['completed_transaction_count']==2
+            page.click('#panel-nav-link')
             for details in page.locator('#dashboard-content > details').all():
                 if not details.evaluate('(node)=>node.open'):
                     details.locator(':scope > summary').click()

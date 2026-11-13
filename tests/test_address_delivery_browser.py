@@ -27,13 +27,13 @@ def delivery_browser():
 
 def login(page, url, account):
     page.goto(url)
-    page.fill('#email', account['email'])
+    page.click('#account-nav-link');page.fill('#email', account['email'])
     page.fill('#password', account['password'])
     page.locator('#auth button[type=submit]').click()
     page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',
                            arg=account['email'])
-    page.locator('#address-delivery-panel').wait_for(state='visible')
-    if account['role']=='rolnik':page.locator('#address-delivery-panel > details > summary').click()
+    page.click('#orders-nav-link');page.locator('#address-delivery-panel').wait_for(state='visible')
+    if account['role']=='rolnik':page.click('#orders-nav-link')
 
 
 @pytest.mark.parametrize('width', [320, 1280])
@@ -74,6 +74,7 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
             seller.locator('#delivery-window-list article').wait_for(state='visible')
             assert seller.evaluate('document.documentElement.scrollWidth <= innerWidth')
             login(buyer, str(client.base_url), accounts[1])
+            buyer.click('#products-nav-link')
             card = buyer.locator('#products > .card').filter(has_text='Pomidory przeglądarkowe')
             card.locator('.favorite-button').wait_for(state='visible')
             card.locator('summary > b').click()
@@ -103,7 +104,7 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
                 button.click()
             assert response.value.status == 200
             request.get_by_text('Zaakceptowana' if decision == 'accepted' else 'Odrzucona', exact=False).wait_for(state='visible')
-            buyer.click('#delivery-view-refresh')
+            buyer.click('#orders-nav-link');buyer.click('#delivery-view-refresh')
             buyer.locator('#delivery-requests').get_by_text('Zaakceptowana' if decision == 'accepted' else 'Odrzucona', exact=False).wait_for(state='visible')
             assert buyer.locator('#delivery-requests button').count() == 0
             for page in (seller, buyer):

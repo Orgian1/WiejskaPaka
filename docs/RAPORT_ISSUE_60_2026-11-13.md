@@ -7,7 +7,7 @@ Baza: `codex/issue-59-pre-vps-20261113`,
 Zgłoszenie: https://github.com/Orgian1/WiejskaPaka/issues/60.
 Commit kodu poddany końcowym testom:
 `b9e902ca09398848c20e3c166558653a87df0825`.
-Późniejszy commit zawiera wyłącznie dokumentację i dowody.
+Późniejsze commity zawierają wyłącznie dokumentację i dowody.
 
 ## Zmiany
 
@@ -55,13 +55,22 @@ Sprawdzono powtórzenie migracji i zachowanie produktów. Brak nowych zależnoś
 
 ## Testy
 
+Środowisko ponowienia: Linux, Python 3.12.14, SQLite 3.53.1,
+PostgreSQL 17.11, Chromium 154.0.8037.57 i Node 24.19.0.
+
 Końcowe wyniki i sumy źródeł: `audits/issue60_20261113/`.
-Wyniki będą uzupełnione po zakończeniu pełnego przebiegu. Przed przerwaniem
-środowiska potwierdzono 4987 PASS / 0 FAIL / 110 SKIP w 410 modułach oraz
-107 PASS / 0 FAIL / 0 SKIP PostgreSQL. Końcowego raportu rozszerzonego Chromium
-nie odebrano. Po odtworzeniu środowiska pliki `/tmp` były niedostępne,
-dlatego ponawiany jest pełny przebieg, z raportami w trwałym `/workspace`.
-Ten zapis jest szkicem raportu, a nie potwierdzeniem zakończenia nowej bramki.
+Po odtworzeniu środowiska powtórzono pełną regresję na niezmienionym kodzie.
+Wyniki są ponownie potwierdzone przez raporty i sumy plików:
+
+| Zestaw | PASS | FAIL | SKIP |
+| --- | ---: | ---: | ---: |
+| Pełna izolowana regresja SQLite, 410 modułów | 4987 | 0 | 110 |
+| Natywny PostgreSQL 17, jednorazowe bazy | 107 | 0 | 0 |
+
+Rozszerzona bramka Chromium pozostaje w toku; jej końcowy wynik nie jest
+jeszcze zaliczony. Ten fragment raportu zostanie uzupełniony po jej zakończeniu.
+Raporty są teraz zapisywane w trwałym `/workspace` i kopiowane do audytu
+bez przechwyconych logów ani sekretów.
 
 Dotychczasowe testy UI przechodzą teraz między widokami przez rzeczywistą
 nawigację. Nie wyłączano testów ani asercji finansowych i prywatności.

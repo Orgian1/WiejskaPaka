@@ -1,0 +1,26 @@
+{
+  "urllib_minimal": {
+    "error": "PROXY_OR_NETWORK_POLICY"
+  },
+  "httpx_minimal_default_trust": {
+    "error": "PROXY_OR_NETWORK_POLICY"
+  },
+  "httpx_legacy_language_system_trust": {
+    "error": "PROXY_OR_NETWORK_POLICY"
+  },
+  "httpx_fixed_system_trust": {
+    "error": "PROXY_OR_NETWORK_POLICY"
+  },
+  "diagnosis": "EXTERNAL_ACCESS_NOT_CONFIRMED",
+  "runtime": {
+    "python": "3.12.14",
+    "httpx": "0.28.1",
+    "platform": "linux"
+  },
+  "bindings_present": {
+    "HTTPS_PROXY": true,
+    "https_proxy": true,
+    "SSL_CERT_FILE": true,
+    "SSL_CERT_DIR": false
+  }
+}

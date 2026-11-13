@@ -37,6 +37,9 @@ def test_separate_routes_history_mobile_and_seller_edits(sample_browser_server,t
             page.locator('#catalog-pages').get_by_role('button',name='Strona produktów 2',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#catalog-status").textContent.includes("Strona 2.")')
             assert page.locator('#products > .catalog-product').count()==20
+            page.reload();sign_in_view(page,accounts,'klient')
+            page.wait_for_function('()=>document.querySelector("#catalog-status").textContent.includes("Strona 2.")')
+            assert page.locator('#catalog-query').input_value()=='OfertaTest'
             before=page.locator('#products > .catalog-product').first.inner_text()
             page.click('#cart-nav-link');page.locator('#cart-section').wait_for()
             assert page.locator('#products-section').is_hidden() and page.locator('#orders-section').is_hidden()

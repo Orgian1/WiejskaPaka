@@ -28,5 +28,6 @@ function revealSellerSection(id){
   if(typeof navigateApp==='function'){const route=appRouteAliases[id];if(route)navigateApp(route)}const disclosure=section.querySelector(':scope > details[data-seller-panel]');if(disclosure)disclosure.open=true;
 }
 document.addEventListener('click',event=>{
+  if(event.defaultPrevented)return;
   const link=event.target.closest('a[href^="#"]');if(link)revealSellerSection(link.getAttribute('href').slice(1));
 });

@@ -56,7 +56,7 @@ function applyAppRoute(focus=false){
  document.title=({'products':'Produkty','listings':'Moje ogłoszenia','points':'Punkty odbioru'}[view]||'Moje konto')+' — WiejskaPaka';
 }
 const appLogged=logged;
-logged=function(user){appLogged(user);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false)};
+logged=function(user){const savedCatalog=catalogRouteSnapshot;appLogged(user);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
 globalThis.addEventListener('hashchange',()=>applyAppRoute(document.activeElement?.id!=='point-name'));
 document.addEventListener('click',event=>{
  const link=event.target.closest('a[href^="#"]');if(!link||event.defaultPrevented)return;
@@ -124,7 +124,7 @@ async function restoreCatalogRoute(){
   el('catalog-sort').value=p.get('sort')==='nearest'?'nearest':'newest';
   const seller=Number(p.get('seller'));catalogSellerId=Number.isSafeInteger(seller)&&seller>0?seller:null;
   await loadProducts();
- }finally{catalogRouteRestoring=false}
+ }finally{catalogRouteSnapshot=catalogRouteParams();catalogRouteRestoring=false}
 }
 globalThis.addEventListener('hashchange',()=>act(restoreCatalogRoute));
 act(restoreCatalogRoute);

@@ -3,6 +3,7 @@ from collections import deque
 from decimal import Decimal
 import json
 import math
+import ssl
 import threading
 import time
 from urllib.parse import urlsplit
@@ -64,7 +65,8 @@ def normalize(data):
         if not isinstance(coords,list) or len(coords)!=2 or any(isinstance(n,bool) or not isinstance(n,(int,float,Decimal)) for n in coords):
             raise ValueError('Nieprawidłowe współrzędne geokodera')
         def text(key):
-            value=props.get(key,'')
+            value=props.get(key)
+            if value is None:return ''
             if not isinstance(value,str) or len(value)>200 or any(ord(c)<32 for c in value):
                 raise ValueError('Nieprawidłowy opis adresu')
             return value.strip()
@@ -86,10 +88,14 @@ def normalize(data):
 
 async def lookup(query,url,*,transport=None):
     params={'q':', '.join(filter(None,(query.street,query.postal_code,query.city))),
-            'countrycode':'PL','lang':'pl','limit':'5'}
+            'countrycode':'PL','lang':'default','limit':'5'}
     # Supported proxy/trust settings are needed for cloud egress. No account
     # bearer token or user-provided URL is accepted or forwarded by this adapter.
-    async with httpx.AsyncClient(timeout=5,follow_redirects=False,trust_env=True,transport=transport) as client:
+    try:
+        context=ssl.create_default_context()
+    except (OSError,ssl.SSLError):
+        raise ValueError('Nie można skonfigurować zaufanych certyfikatów geokodera') from None
+    async with httpx.AsyncClient(timeout=5,follow_redirects=False,trust_env=True,transport=transport,verify=context) as client:
         async with client.stream('GET',url,params=params,headers={'User-Agent':'WiejskaPaka-AddressSearch/1.0','Accept':'application/json'}) as response:
             response.raise_for_status()
             body=bytearray()

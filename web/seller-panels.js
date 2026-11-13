@@ -1,5 +1,5 @@
 "use strict";
-const sellerPanelIds=['farmer','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','support-section','dashboard','wallet-section','favorites-section'];
+const sellerPanelIds=['farmer','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','dashboard','wallet-section','favorites-section'];
 let sellerPanelState=new Map();
 function ensureSellerPanels(reset=false){
   for(const id of sellerPanelIds){

@@ -5,7 +5,7 @@ function element(){return {value:'',hidden:true,disabled:false,required:true,tex
 const fields=new Map();
 const el=id=>{if(!fields.has(id))fields.set(id,element());return fields.get(id)};
 const requests=[];
-const context=vm.createContext({el,node:()=>element(),sessionEpoch:1,AbortController,
+const context=vm.createContext({el,node:()=>element(),sessionEpoch:1,AbortController,setTimeout,clearTimeout,
   invalidateNearby(){},act:fn=>fn(),fetch:async(url,options)=>{
     if(url==='/address-search/config')return {ok:true,json:async()=>({enabled:true})};
     assert.equal(url,'/address-search');assert.equal(options.method,'POST');
@@ -44,7 +44,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
   for(const failure of [false,true]){
     const map=new Map(),get=id=>{if(!map.has(id))map.set(id,element());return map.get(id)};
-    const ctx=vm.createContext({el:get,node:()=>element(),sessionEpoch:1,AbortController,
+    const ctx=vm.createContext({el:get,node:()=>element(),sessionEpoch:1,AbortController,setTimeout,clearTimeout,
       invalidateNearby(){},coordinateText:String,act:fn=>fn(),fetch:async(url,options)=>{
         if(url==='/address-search/config'){
           if(failure)throw Error('offline');

@@ -2032,3 +2032,9 @@ def test_native_category_migration_preserves_existing_rows(pg_restart_api):
         con.execute("UPDATE product_classifications SET description='Poprawione' WHERE product_id=%s",(ids[1],))
         con.execute((ROOT/'database/optional_product_categories.sql').read_text())
         assert con.execute('SELECT description FROM product_classifications WHERE product_id=%s',(ids[1],)).fetchone()[0]=='Poprawione'
+
+
+def test_native_private_navigation_counts(pg_restart_api):
+    from tests.test_navigation_counts_http import exercise_navigation_counts
+    client,_=pg_restart_api
+    exercise_navigation_counts(client)

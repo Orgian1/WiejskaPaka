@@ -44,7 +44,7 @@ def test_bad_geometry_labels_and_excess_results_fail_closed():
 def test_real_photon_transport_sends_bounded_polish_query_without_bearer():
     def handle(request):
         assert request.url.scheme=='https' and request.url.host=='photon.komoot.io'
-        assert request.url.params==httpx.QueryParams({'q':'Testowa 7, 00-001, Warszawa','countrycode':'PL','lang':'pl','limit':'5'})
+        assert request.url.params==httpx.QueryParams({'q':'Testowa 7, 00-001, Warszawa','countrycode':'PL','lang':'default','limit':'5'})
         assert 'authorization' not in request.headers and 'cookie' not in request.headers
         return httpx.Response(200,content=b'{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[21.0122295,52.2296765]},"properties":{"countrycode":"PL","name":"Warszawa"}}]}')
     result=asyncio.run(photon.lookup(address_search.AddressQuery(city='Warszawa',street='Testowa 7',postal_code='00-001'),photon.PUBLIC_URL,transport=httpx.MockTransport(handle)))

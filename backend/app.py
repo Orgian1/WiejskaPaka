@@ -3360,3 +3360,6 @@ install_seller_navigation(app, db, order_write_db, current_user, DATABASE_URL)
 
 from backend.catalog_filters import install as install_catalog_filters
 install_catalog_filters(app, db, DATABASE_URL)
+
+from backend.navigation_counts import install as install_navigation_counts
+install_navigation_counts(app,order_write_db,current_user)

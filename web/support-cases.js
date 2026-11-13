@@ -23,7 +23,8 @@ function supportCreateButton(kind,id,card){
   return supportButton('Zgłoś problem z zakupem (TEST)',async()=>{
     if(role!=='klient'||!card.isConnected)return;
     const epoch=sessionEpoch,generation=supportGeneration;
-    const old=card.querySelector('[data-support-private]');if(old){eraseSupportNode(old);old.remove()}
+    const createHost=el('support-create-host');eraseSupportNode(createHost);
+    el('contact-disclosure').open=true;
     const form=node('div');form.dataset.supportPrivate='true';
     const category=node('select');category.setAttribute('aria-label','Rodzaj problemu testowego');
     for(const [value,label] of Object.entries(supportCategories)){const option=node('option',label);option.value=value;category.append(option)}
@@ -46,7 +47,7 @@ function supportCreateButton(kind,id,card){
       }catch(error){if(supportActive(epoch,generation)&&form.isConnected&&error.message!=='SESSION_CHANGED')status.textContent=error.message+' Po utracie odpowiedzi ponów bez zmieniania treści, aby uniknąć drugiego zgłoszenia.'}
       finally{submit.disabled=false;category.disabled=false;text.disabled=false}
     });
-    form.append(node('p','Używaj fikcyjnych danych. Nie wpisuj PIN-u, hasła, telefonu ani danych dokumentów. Zgłoszenie nie anuluje zakupu i nie uruchamia zwrotu. Dla produktu w przesyłce sprawa dotyczy całej przesyłki.'),category,text,submit,status);card.append(form);text.focus();
+    form.append(node('p','Używaj fikcyjnych danych. Nie wpisuj PIN-u, hasła, telefonu ani danych dokumentów. Zgłoszenie nie anuluje zakupu i nie uruchamia zwrotu. Dla produktu w przesyłce sprawa dotyczy całej przesyłki.'),category,text,submit,status);createHost.append(form);form.scrollIntoView();text.focus();
   });
 }
 async function loadSupportCases(){

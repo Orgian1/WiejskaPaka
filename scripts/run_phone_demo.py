@@ -46,7 +46,7 @@ def enable_public_geocoder(env, source):
     """Explicit Photon opt-in; keep unrelated inherited services and secrets out."""
     env.update(WP_ENABLE_ADDRESS_SEARCH='1',WP_ADDRESS_SEARCH_PROVIDER='photon',
                WP_ADDRESS_SEARCH_URL='https://photon.komoot.io/api/')
-    for key in ('HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','SSL_CERT_FILE','SSL_CERT_DIR'):
+    for key in ('HTTPS_PROXY','HTTP_PROXY','ALL_PROXY','NO_PROXY','https_proxy','http_proxy','all_proxy','no_proxy','SSL_CERT_FILE','SSL_CERT_DIR'):
         if key in source:
             env[key]=source[key]
     return env

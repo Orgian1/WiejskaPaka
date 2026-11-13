@@ -18,7 +18,7 @@ function photoImage(kind,id,digest=''){
 }
 function resetUserPhotoViews(){photoViewSerial++;const host=el('user-photo-editors');if(host)host.replaceChildren();if(el('user-photo-panel'))el('user-photo-panel').hidden=true;if(el('product-photo-file'))el('product-photo-file').value='';}
 async function loadUserPhotoViews(){
-  resetUserPhotoViews();if(!userPhotosEnabled||!role)return;
+  resetUserPhotoViews();if(!userPhotosEnabled||!role||role==='klient')return;
   const epoch=sessionEpoch,serial=photoViewSerial,actorToken=token;
   const current=()=>epoch===sessionEpoch&&serial===photoViewSerial&&token===actorToken;
   const me=await api('/auth/me');if(!current())return;

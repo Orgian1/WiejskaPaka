@@ -25,15 +25,15 @@ def test_public_footer_shared_contact_form(full_demo_server, delivery_browser, w
     page.on('request',capture)
     try:
         page.goto(url)
-        page.locator('#footer-contact-link').click()
+        page.locator('#footer-contact-toggle').click()
         assert page.locator('#contact-topic').input_value() == 'contact'
         page.locator('#contact-email').fill('guest@example.invalid')
         page.locator('#contact-subject').fill('Pytanie o działanie strony')
         page.locator('#contact-message').fill('Treść wiadomości próbnej')
-        page.locator('#footer-report-link').click()
+        page.select_option('#contact-topic','problem')
         assert page.locator('#contact-topic').input_value() == 'problem'
         assert page.locator('#contact-message').input_value() == 'Treść wiadomości próbnej'
-        assert page.locator('#contact-heading').evaluate('(node) => node === document.activeElement')
+        assert page.locator('#contact-disclosure').evaluate('(node)=>node.open')
         assert page.locator('#contact-submit').is_disabled()
         page.locator('#contact-form').evaluate('(form) => form.requestSubmit()')
         assert 'nie została wysłana' in page.locator('#contact-status').inner_text()

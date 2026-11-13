@@ -79,6 +79,7 @@ def test_only_orders_and_restock_open_and_point_groups_include_statuses(sample_b
             assert '2 zamówienia' in group.locator(':scope > summary').inner_text()
             for order in [o for o in orders if o['fulfillment']=='odbior']:
                 item=group.get_by_text(f"#{order['id']} ({order['pickup_code']})",exact=False)
+                item.wait_for(state='visible')
                 assert item.count()==1 and 'ilość:' in item.inner_text() and 'Gotowe do odbioru' in item.inner_text()
             assert '500100200' not in group.inner_text()
             buyer=login(client,accounts['klient'])

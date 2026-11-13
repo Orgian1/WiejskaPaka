@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 import httpx
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 router = APIRouter()
 
@@ -52,7 +52,7 @@ def local_router(connect):
 
 class AddressQuery(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    city: str = Field(min_length=2, max_length=120)
+    city: str = Field(default='', max_length=120)
     street: str = Field(default='', max_length=180)
     postal_code: str = Field(default='', pattern=r'^(?:[0-9]{2}-[0-9]{3})?$')
 
@@ -62,6 +62,12 @@ class AddressQuery(BaseModel):
         if not isinstance(value, str) or any(ord(c) < 32 for c in value):
             raise ValueError('Podaj poprawny adres')
         return value.strip()
+
+    @model_validator(mode='after')
+    def has_address(self):
+        if self.city and len(self.city)<2:raise ValueError('Podaj poprawną miejscowość')
+        if not (self.city or self.street or self.postal_code):raise ValueError('Podaj miejscowość, ulicę lub kod pocztowy')
+        return self
 
 
 def provider_kind():

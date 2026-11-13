@@ -9,7 +9,7 @@ for(const id of ['password-reset-section','reset-status','reset-token','reset-em
 }
 let calls=[],urlRemoved=false,loggedOut=0,finish;const listeners={};
 const ctx=vm.createContext({el:id=>nodes[id],location:{hash:chosen==='fragment_navigation'?'':'#reset-token='+secret,pathname:'/',search:''},
-  history:{replaceState(a,b,url){assert.equal(url,'/');urlRemoved=true;ctx.location.hash=''}},addEventListener(name,handler){listeners[name]=handler},sessionEpoch:0,loginAttempt:0,token:'session',
+  history:{replaceState(a,b,url){assert.equal(url,'/');urlRemoved=true;ctx.location.hash=''}},addEventListener(name,handler){listeners[name]=handler},sessionEpoch:0,loginAttempt:0,token:null,role:null,
   logged(user){assert.equal(user,null);loggedOut++},
   fetch:async(path,options)=>{
     calls.push({path,options});
@@ -40,7 +40,7 @@ const ctx=vm.createContext({el:id=>nodes[id],location:{hash:chosen==='fragment_n
   if(chosen==='duplicate'){
     await nodes['confirm-password-reset'].onsubmit({preventDefault(){}});assert.equal(calls.length,2);finish();
   }
-  if(chosen==='account_switch'){ctx.sessionEpoch++;finish()}
+  if(chosen==='account_switch'){ctx.sessionEpoch++;ctx.token='session';ctx.role='klient';finish()}
   await promise;
   if(chosen==='mismatch'){assert.equal(calls.length,1);assert.equal(loggedOut,0);return}
   assert.equal(nodes['reset-token'].value,'');assert.equal(nodes['reset-new-password'].value,'');

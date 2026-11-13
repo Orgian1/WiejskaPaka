@@ -5,12 +5,11 @@
   const status = document.getElementById('contact-status');
   if (!form || !topic || !status) return;
 
-  for (const link of document.querySelectorAll('[data-contact-topic]')) {
-    link.addEventListener('click', () => {
-      topic.value = link.dataset.contactTopic === 'problem' ? 'problem' : 'contact';
-      document.getElementById('contact-heading').focus({preventScroll: true});
-    });
-  }
+  const disclosure=document.getElementById('contact-disclosure');
+  globalThis.resetContactView=()=>{if(disclosure)disclosure.open=false;form.reset();status.textContent='Wysyłka wiadomości nie jest jeszcze uruchomiona. Zgłoszenia zakupowe zapiszesz po zalogowaniu.'};
+  if(disclosure)disclosure.addEventListener('toggle',()=>{
+    if(disclosure.open&&typeof loadSupportCases==='function')act(loadSupportCases);
+  });
   // Also block implicit submission with Enter. Never put form data in a URL.
   form.addEventListener('submit', event => {
     event.preventDefault();

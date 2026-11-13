@@ -8,10 +8,10 @@ async function main(chosen){
   replaceChildren(...nodes){this.children=nodes}
   querySelectorAll(){return this.children.flatMap(n=>[n,...n.querySelectorAll()])}
   querySelector(){return this.querySelectorAll().find(n=>n.dataset.supportPrivate)||null}
-  setAttribute(){} focus(){} remove(){this.isConnected=false}
+  setAttribute(){} focus(){} scrollIntoView(){} remove(){this.isConnected=false}
  }
  const el=id=>elements[id]||(elements[id]=new N('div'));
- el('support-list').dataset.supportPrivate='true';el('support-detail').dataset.supportPrivate='true';
+ el('support-create-host').dataset.supportPrivate='true';el('support-list').dataset.supportPrivate='true';el('support-detail').dataset.supportPrivate='true';
  const ctx=vm.createContext({el,node:(tag,text)=>new N(tag,text),document:{querySelectorAll:()=>pool.filter(n=>n.dataset.supportPrivate)},sessionEpoch:1,role:'klient',token:'private-token',URLSearchParams,crypto:{randomUUID:()=> 'stable-test-request'},
   act:async fn=>{try{await fn()}catch(e){errors.push(e.message)}},api:(...args)=>{calls.push(args);if(args[0].startsWith('/test/support/cases?')&&!chosen.startsWith('list_'))return Promise.resolve({mode:'test',cases:[],limit:20,offset:0,has_more:false});return new Promise((resolve,reject)=>pending.push({resolve,reject}))}});
  vm.runInContext(fs.readFileSync('web/support-cases.js','utf8'),ctx);

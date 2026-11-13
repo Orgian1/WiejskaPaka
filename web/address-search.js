@@ -5,13 +5,15 @@ function clearAddressSelection(){
   el('address-results').replaceChildren();el('address-status').textContent='';
   el('address-find').disabled=false;
   el('nearby-lat').value='';el('nearby-lon').value='';invalidateNearby();
+  if(typeof refreshCatalogLocation==='function')refreshCatalogLocation();
 }
 async function findAddress(){
   clearAddressSelection();const serial=addressSerial,epoch=sessionEpoch;
   const payload={city:el('address-city').value.trim(),street:el('address-street').value.trim(),postal_code:el('address-postcode').value.trim()};
-  if(payload.city.length<2){el('address-status').textContent='Wpisz miejscowość.';return;}
+  if((payload.city&&payload.city.length<2)||(!payload.city&&!payload.street&&!payload.postal_code)){el('address-status').textContent='Wpisz miejscowość, ulicę lub kod pocztowy.';return;}
   if(payload.postal_code&&!/^\d{2}-\d{3}$/.test(payload.postal_code)){el('address-status').textContent='Kod pocztowy powinien mieć format 00-000.';return;}
-  const controller=new AbortController();addressController=controller;
+  const controller=new AbortController();addressController=controller;let timedOut=false;
+  const timer=setTimeout(()=>{timedOut=true;controller.abort()},10000);
   el('address-find').disabled=true;el('address-status').textContent='Szukam adresu…';
   try{
     const response=await fetch(addressLocal?'/address-search/pickup-locations':'/address-search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store',signal:controller.signal});
@@ -30,8 +32,9 @@ async function findAddress(){
       el('address-results').append(button);
     }
   }catch(error){
-    if(serial===addressSerial&&epoch===sessionEpoch&&error.name!=='AbortError')el('address-status').textContent='Nie udało się wyszukać adresu. Spróbuj ponownie lub użyj lokalizacji urządzenia.';
+    if(serial===addressSerial&&epoch===sessionEpoch&&(timedOut||error.name!=='AbortError'))el('address-status').textContent=timedOut?'Przekroczono czas wyszukiwania adresu. Spróbuj ponownie lub użyj GPS.':'Nie udało się wyszukać adresu. Spróbuj ponownie lub użyj lokalizacji urządzenia.';
   }finally{
+    clearTimeout(timer);
     if(serial===addressSerial){addressController=null;el('address-find').disabled=false;}
   }
 }

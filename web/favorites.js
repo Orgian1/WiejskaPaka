@@ -18,6 +18,7 @@ async function loadFavorites(){
     offset+=100;if(offset>10000)throw Error('Lista ulubionych przekracza limit.');
   }
   favoriteIds=new Set(products.map(p=>p.id));
+  if(typeof setNavigationCount==='function')setNavigationCount('favorites-count',favoriteIds.size,'Ulubione produkty');
   el('favorites-results').replaceChildren();
   for(const product of products){
     const card=node('article','', 'card');

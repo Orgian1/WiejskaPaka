@@ -26,6 +26,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
                 assert page.locator('#support-detail').text_content()==''
                 assert page.locator('#support-list').text_content()==''
             def open_case():
+                if not page.locator('#contact-disclosure').evaluate('(e)=>e.open'):page.click('#footer-contact-toggle')
                 disclosure=page.locator('#support-section > details')
                 if disclosure.count() and not disclosure.evaluate('(e)=>e.open'):disclosure.locator('summary').click()
                 with page.expect_response('**/test/support/cases?*') as response:page.click('#support-refresh')
@@ -39,7 +40,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             with page.expect_response('**/test/support/cases') as response:
                 page.get_by_role('button',name='Wyślij zgłoszenie testowe',exact=True).click()
             assert response.value.status==201
-            page.locator('#dashboard-content').get_by_text('Zgłoszenie testowe zapisane.',exact=False).wait_for(state='visible')
+            page.locator('#support-create-host').get_by_text('Zgłoszenie testowe zapisane.',exact=False).wait_for(state='visible')
             open_case();assert text in page.locator('#support-detail').text_content()
             assert page.locator('#support-detail img').count()==0
             page.get_by_label('Odpowiedź testowa do zgłoszenia').fill('Prywatny szkic do wyczyszczenia')
@@ -55,7 +56,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             assert response.value.status==200 and response.value.json()['case']['status']=='closed_test'
             page.get_by_role('heading',name='Szczegóły zgłoszenia — Zamknięte testowo',exact=True).wait_for(state='visible')
             logout();login('klient')
-            page.click('#support-refresh');page.get_by_role('button',name='Otwórz zgłoszenie testowe',exact=True).first.click()
+            page.click('#footer-contact-toggle');page.click('#support-refresh');page.get_by_role('button',name='Otwórz zgłoszenie testowe',exact=True).first.click()
             page.get_by_role('heading',name='Szczegóły zgłoszenia — Zamknięte testowo',exact=True).wait_for(state='visible')
             assert page.get_by_label('Odpowiedź testowa do zgłoszenia').count()==0
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')

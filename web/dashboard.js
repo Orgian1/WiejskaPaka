@@ -79,6 +79,44 @@ function farmerTestSettlementButton(orderId,active){
   });
   return button;
 }
+// Delivery addresses are fetched only on demand, and rechecked before navigation.
+function courierRouteControls(active){
+  const area=node('section');area.setAttribute('aria-label','Trasa aktywnych dostaw');
+  const results=node('div'),status=node('p');status.setAttribute('role','status');
+  let serial=0;
+  const current=request=>active()&&role==='dostawca'&&area.isConnected&&request===serial;
+  const addresses=rows=>[...new Set(rows.map(row=>[row.delivery_street,row.delivery_postal_code,row.delivery_city,'Polska'].filter(Boolean).join(', ')))];
+  function render(stops){
+    results.replaceChildren();
+    if(!stops.length){status.textContent='Brak aktywnych adresów dostaw.';return}
+    status.textContent='Trasa według kolejności aktywnych zamówień, bez optymalizacji ani prognozy czasu. Po kliknięciu adresy wybranej części trasy zostaną przekazane do Map Google.';
+    const list=node('ol');for(const address of stops)list.append(node('li',address));results.append(list);
+    for(let start=0;start<stops.length;start+=4){
+      const batch=stops.slice(start,start+4),origin=start?stops[start-1]:null;
+      const open=dashboardButton(start?'Nawigacja dostaw — część '+(start/4+1):'Przejdź do nawigacji dostaw',async()=>{
+        if(open.disabled||!active()||!area.isConnected)return;
+        open.disabled=true;const request=++serial;
+        try{
+          const latest=addresses(await api('/couriers/me/active-addresses'));
+          if(!current(request))return;
+          if([...batch,...(origin?[origin]:[])].some(address=>!latest.includes(address))){render(latest);msg('Lista dostaw zmieniła się. Sprawdź trasę ponownie.');return}
+          // A second explicit click uses a normal link, including on browsers
+          // that block windows opened after an asynchronous authorization check.
+          const params=new URLSearchParams({api:'1',travelmode:'driving',destination:batch.at(-1)});
+          if(origin)params.set('origin',origin);
+          if(batch.length>1)params.set('waypoints',batch.slice(0,-1).join('|'));
+          const link=node('a','Otwórz sprawdzoną trasę w Mapach Google');link.href='https://www.google.com/maps/dir/?'+params;link.target='_blank';link.rel='noopener noreferrer';
+          const old=results.querySelector('[data-courier-route-link]');if(old)old.remove();link.dataset.courierRouteLink='true';results.append(link);link.focus();
+        }finally{open.disabled=false}
+      });results.append(open);
+    }
+  }
+  const show=dashboardButton('Pokaż trasę aktywnych dostaw',async()=>{
+    if(show.disabled)return;show.disabled=true;const request=++serial;
+    try{const rows=await api('/couriers/me/active-addresses');if(current(request))render(addresses(rows))}
+    finally{show.disabled=false}
+  });area.append(show,status,results);return area;
+}
 // Szczegóły pobierane na żądanie, bez przechowywania danych przesyłki w przeglądarce.
 function shipmentDetailsButton(shipmentId, card) {
   return dashboardButton('Pokaż szczegóły przesyłki', async()=>{
@@ -269,6 +307,7 @@ async function loadDashboard() {
       'Uwzględnij czas przejazdów pomiędzy punktami oraz czas załadunku i odbioru towaru.',
       'Daj klientowi czas na sprawdzenie towaru, zanim przyjmiesz PIN potwierdzający odbiór.'
     ]));
+    box.append(courierRouteControls(active));
     for(const shipment of shipments){
       const c=dashboardCard(`Przesyłka ${shipment.shipment_id}`,[`Status: ${shipment.status}`,`Produkty: ${shipment.item_count}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Razem: ${money(shipment.total_grosze)}`]);
       if(shipment.status==='w_drodze_testowo'){

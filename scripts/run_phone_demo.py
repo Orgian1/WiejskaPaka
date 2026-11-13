@@ -1,11 +1,14 @@
 """Uruchom lokalny podgląd WiejskaPaka na 127.0.0.1, na jednorazowej SQLite.
 
 Użycie: python scripts/run_phone_demo.py [--port 8765]
-Podgląd jest dostępny wyłącznie na urządzeniu uruchamiającym skrypt.
+Domyślnie podgląd jest dostępny tylko na tym komputerze. Opcjonalny prywatny
+adres LAN wymaga jawnego --host oraz certyfikatu i klucza HTTPS.
 """
 import argparse
 from contextlib import contextmanager, nullcontext
 import json
+import ipaddress
+import ssl
 import os
 from pathlib import Path
 import subprocess
@@ -74,14 +77,45 @@ def private_credentials_file(path, credentials):
             pass
 
 
+def demo_listener(host, certificate=None, key=None):
+    """Explicit private-LAN HTTPS opt-in; never bind all/public interfaces."""
+    try:
+        address=ipaddress.ip_address(host)
+    except ValueError:
+        raise ValueError('Podaj adres IP komputera, nie nazwę hosta') from None
+    local=address.is_loopback
+    private=address.version==4 and any(address in ipaddress.ip_network(network) for network in
+        ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16'))
+    if not local and not private:
+        raise ValueError('Demo może nasłuchiwać tylko na loopback lub prywatnym adresie LAN IPv4')
+    if bool(certificate)!=bool(key) or (not local and not certificate):
+        raise ValueError('Demo w LAN wymaga obu plików: --ssl-certfile i --ssl-keyfile')
+    options=[]
+    if certificate:
+        try:
+            context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(str(certificate),str(key),password=lambda: '')
+        except (OSError,ssl.SSLError):
+            raise ValueError('Nie można wczytać pasującego certyfikatu i klucza TLS') from None
+        options=['--ssl-certfile',str(Path(certificate).resolve()),'--ssl-keyfile',str(Path(key).resolve())]
+    return str(address),options
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Lokalny podgląd WiejskaPaka (bez prawdziwych płatności)')
+    parser.add_argument('--host', default='127.0.0.1', help='Domyślnie tylko ten komputer; prywatny adres LAN IPv4 wymaga HTTPS')
+    parser.add_argument('--ssl-certfile', type=Path, help='Certyfikat TLS z adresem IP komputera; wymagany w LAN')
+    parser.add_argument('--ssl-keyfile', type=Path, help='Prywatny klucz certyfikatu TLS, poza repozytorium')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--full-demo', action='store_true', help='Jednorazowe demo z portfelem, jednostkami, zdjęciami, wyszukiwaniem i terminami dostaw')
     parser.add_argument('--public-geocoder', choices=('photon',), help='Jawnie włącz publiczny geokoder Photon; wyszukiwanie tylko po kliknięciu')
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
     parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
     args = parser.parse_args(argv)
+    try:
+        host,tls_options=demo_listener(args.host,args.ssl_certfile,args.ssl_keyfile)
+    except ValueError as error:
+        parser.error(str(error))
     if args.full_demo:args.sample_data=True
     environment=full_demo_environment if args.full_demo else demo_environment
     if args.credentials_file and not args.sample_data:
@@ -127,8 +161,10 @@ def main(argv=None):
         env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'
         env['WP_TEST_RESET_OUTBOX'] = str(Path(directory) / 'reset-mailbox')
         command = [sys.executable, '-m', 'uvicorn', 'backend.app:app',
-                   '--host', '127.0.0.1', '--port', str(args.port), '--no-access-log']
-        print(f'WiejskaPaka DEMO: http://127.0.0.1:{args.port}', flush=True)
+                   '--host', host, '--port', str(args.port), '--no-access-log', *tls_options]
+        scheme='https' if tls_options else 'http'
+        display_host='['+host+']' if ':' in host else host
+        print(f'WiejskaPaka DEMO: {scheme}://{display_host}:{args.port}', flush=True)
         print('Skrzynka testowa odzyskiwania hasła: '+env['WP_TEST_RESET_OUTBOX'], flush=True)
         try:
             private_output = private_credentials_file(args.credentials_file, credentials) if args.credentials_file else nullcontext()
@@ -142,7 +178,7 @@ def main(argv=None):
                             account = credentials[role]
                             print(f"{role}: {account['email']} | hasło: {account['password']}", flush=True)
                     print('Przygotowano 2 produkty, przesyłkę do odbioru i dostawę w drodze. Płatności są symulowane.', flush=True)
-                print('Tylko na tym urządzeniu; brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
+                print(('Tylko na tym urządzeniu.' if ipaddress.ip_address(host).is_loopback else 'Tryb LAN HTTPS: tylko zaufana prywatna sieć Wi-Fi; nie przekierowuj portu do internetu.')+' Brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
                 return subprocess.call(command, cwd=root, env=env)
         except KeyboardInterrupt:
             return 130

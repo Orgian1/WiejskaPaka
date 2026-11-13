@@ -31,7 +31,10 @@ jak działa ta instancja demo. Na trwałej bazie są zachowywane także po resta
 ## Photon, mapa i lokalizacja
 
 Podana komenda jawnie włącza Photon: `https://photon.komoot.io/api/`, język polski,
-wyniki z Polski. Wpisz miejscowość i ulicę, a następnie kliknij wyszukiwanie.
+wyniki z Polski. Możesz podać samą miejscowość albo miejscowość i ulicę z numerem budynku
+w polu ulicy, np. „Marszałkowska 1”. Następnie kliknij wyszukiwanie.
+Dostępność numeru zależy od danych OpenStreetMap/Photon; brak trafienia nie
+potwierdza, że adres nie istnieje.
 Zapytanie adresowe jest przekazywane publicznej usłudze dopiero po kliknięciu;
 nie wpisuj prywatnych danych klientów. Wynik jest orientacyjny — sprawdź znacznik.
 Publiczne demo ma limit 1 zapytania/s i 120/h, przy jednym procesie serwera.
@@ -63,6 +66,7 @@ logowania decyduje konto, którego e-mail i hasło podajesz.
 | Sprzedawca | Zmień kolejność w obu otwartych przeglądarkach bez odświeżania drugiej | Drugi zapis ze starą wersją zostaje odrzucony; lista pobiera aktualną kolejność |
 | Klient i sprzedawca | Nowe zamówienie z dostawą na adres, alternatywny termin sprzedawcy, decyzja klienta | Płatność testowa dostępna po zgodzie; rezerwacja nie jest przedłużana propozycją |
 | Klient i sprzedawca | Odbiór gotowej przykładowej przesyłki | Klient sprawdza towar i podaje PIN; sprzedawca potwierdza całą przesyłkę, bez dodatkowego checkboxa |
+| Dostawca | „Pokaż trasę aktywnych dostaw”, sprawdzenie trasy i przejście do Map Google | Tylko aktywne przydzielone adresy, bez duplikowania miejsca dla produktów jednej przesyłki |
 | Dostawca | Przypisana przykładowa przesyłka, potwierdzenie PIN-em | Jednorazowy odbiór; po zakończeniu znika dostęp do adresu dostawy |
 | Administrator | Kolejka sprzedawców, testowa decyzja z uzasadnieniem, raport i CSV | Własny panel administratora, zapis decyzji, pobieranie raportu testowego |
 | Administrator i sprzedawca | Kod promocyjny na trzy punkty | Kod konfigurowany przez administratora; sprzedawca nie może wykorzystać go drugi raz |
@@ -80,12 +84,56 @@ przeglądarki: szerokości 320, 360, 390, 768 i 1280 px. Formularze, menu punkt�
 serca i rozwijane zamówienia nie powinny wymagać przewijania poziomego.
 Emulacja dotyku nie zastępuje odbioru na fizycznym telefonie.
 
-Launcher celowo nasłuchuje tylko na pętli lokalnej. Samo wpisanie lokalnego
-adresu komputera w telefonie nie połączy z tym demo. Odbiór fizycznym telefonem
-wymaga osobnego, uwierzytelnionego połączenia z HTTPS przygotowanego przez
-operatora, bez zmiany istniejącego podglądu i bez publicznego wystawiania portu
-z płatnościami testowymi. Lokalizacja urządzenia wymaga bezpiecznego kontekstu
-przeglądarki i osobnej zgody. Takiego połączenia ani wdrożenia tu nie wykonano.
+### Ten sam podgląd na prawdziwym telefonie przez Wi-Fi
+
+Domyślny launcher jest lokalny. Opcjonalny `--host` pozwala wskazać konkretny
+prywatny adres IPv4 komputera (10.x, 172.16–31.x albo 192.168.x) i wymaga HTTPS.
+Nie akceptuje `0.0.0.0` ani adresów publicznych. Komputer i telefon muszą być
+w tej samej zaufanej sieci Wi-Fi, bez izolacji urządzeń. Nie przekierowuj portu
+w routerze. W zaporze dopuszczaj tylko telefon/swoją sieć do portu demo.
+
+1. Ustal adres IPv4 komputera w ustawieniach sieci. Poniższe `192.168.1.20`
+   jest przykładem — zastąp go swoim adresem we wszystkich poleceniach.
+2. Przygotuj zaufany lokalny certyfikat obejmujący ten IP. Możesz użyć bezpłatnego
+   [mkcert](https://github.com/FiloSottile/mkcert#installation), instalowanego
+   zgodnie z oficjalną instrukcją. Nie wymaga usługi zewnętrznej ani klucza API.
+   Własny katalog certyfikatów przechowuj **poza repozytorium**. Przykład POSIX:
+
+   ```bash
+   mkdir -m 700 /tmp/wiejskapaka-owner-tls
+   mkcert -install
+   mkcert -cert-file /tmp/wiejskapaka-owner-tls/demo.pem -key-file /tmp/wiejskapaka-owner-tls/demo-key.pem 192.168.1.20 localhost 127.0.0.1 ::1
+   ```
+
+   Jeśli katalog już istnieje, wybierz nowy prywatny katalog. Na Windows wybierz
+   własny prywatny katalog i odpowiednio zamień ścieżki.
+3. Na telefon przenieś wyłącznie publiczny certyfikat `rootCA.pem` z katalogu
+   pokazanego przez `mkcert -CAROOT`. **Nigdy nie kopiuj `rootCA-key.pem` ani
+   `demo-key.pem` na telefon, do GitHuba ani do zgłoszeń.** Zainstaluj ten CA
+   jako zaufany certyfikat użytkownika. Na iOS po instalacji profilu włącz pełne
+   zaufanie w ustawieniach zaufania certyfikatów; na Androidzie użyj instalacji
+   certyfikatu CA w ustawieniach zabezpieczeń. Nazwy ekranów zależą od systemu.
+4. Zakończ wcześniejsze demo przez Ctrl+C i uruchom jedną nową instancję:
+
+   ```bash
+   .venv/bin/python scripts/run_phone_demo.py --full-demo --public-geocoder photon --host 192.168.1.20 --ssl-certfile /tmp/wiejskapaka-owner-tls/demo.pem --ssl-keyfile /tmp/wiejskapaka-owner-tls/demo-key.pem
+   ```
+
+5. Na komputerze i telefonie wpisz adres HTTPS z terminala, z tym samym IP
+   i portem. Zaloguj ten sam e-mail sprzedawcy z **nowego** uruchomienia demo.
+   Nie kontynuuj przez ostrzeżenie o niezaufanym certyfikacie — popraw zaufanie
+   CA/adres certyfikatu; GPS wymaga bezpiecznego kontekstu. Zezwól na lokalizację
+   dopiero po kliknięciu GPS. Nie musisz otwierać portu do internetu.
+6. Zmień kolejność punktów na komputerze, na telefonie kliknij „Odśwież kolejność
+   z konta”. Porównaj listę i części nawigacji. Następnie wykonaj listę odbioru
+   dla pozostałych ról. Błąd otwarcia strony przy poprawnym certyfikacie oznacza
+   zwykle zaporę, izolację Wi-Fi albo nieprawidłowy IP.
+7. Po odbiorze Ctrl+C zamyka demo i usuwa jego bazę. Usuń tymczasowe certyfikaty
+   demo oraz niepotrzebny profil CA z telefonu. Nie usuwaj innych zaufanych CA.
+
+Zweryfikowano uruchomienie launchera przez HTTPS z rzeczywistą weryfikacją
+certyfikatu na loopback. Samo połączenie z fizycznym telefonem i instalacja CA
+pozostają czynnością właściciela — środowisko testowe nie ma jego urządzenia.
 
 Zapisz wynik jako: rola → czynność → wynik oczekiwany → wynik faktyczny →
 rozmiar ekranu/przeglądarka. Do zgłoszeń dołączaj zrzuty bez haseł, PIN-ów,

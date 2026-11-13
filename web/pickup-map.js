@@ -94,11 +94,17 @@ function createPickupMap(prefix,editing){
     const city=el(editing?'point-edit-city':'point-city').value.trim(),street=el(editing?'point-edit-street':'point-street').value.trim();
     if(city.length<2)throw Error('Wpisz miejscowość punktu.');
     search.disabled=true;results.replaceChildren();status.textContent='Szukam adresu punktu…';
+    const controller=new AbortController();let timedOut=false;
+    const timer=setTimeout(()=>{timedOut=true;controller.abort()},8000);
+    let failure='Wyszukiwanie adresu jest niedostępne. Użyj mapy lub GPS.';
     try{
-      const config=await fetch('/address-search/config',{cache:'no-store'}).then(r=>r.json());if(!current(serial,epoch))return;
-      const response=await fetch(config.enabled?'/address-search':'/address-search/pickup-locations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,street,postal_code:''}),cache:'no-store'});
+      const configResponse=await fetch('/address-search/config',{cache:'no-store',signal:controller.signal});
+      if(!configResponse.ok)throw Error('CONFIG_UNAVAILABLE');
+      const config=await configResponse.json();if(!current(serial,epoch))return;
+      const response=await fetch(config.enabled?'/address-search':'/address-search/pickup-locations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,street,postal_code:''}),cache:'no-store',signal:controller.signal});
+      if(response.status===429)failure='Osiągnięto limit wyszukiwań demo. Poczekaj lub użyj mapy/GPS.';
+      if(!response.ok)throw Error('GEOCODER_UNAVAILABLE');
       const data=await response.json();if(!current(serial,epoch))return;
-      if(!response.ok)throw Error('Wyszukiwanie adresu jest niedostępne. Użyj mapy lub GPS.');
       status.textContent=data.items.length?'Wybierz adres, a potem sprawdź miejsce na mapie.':config.enabled?'Brak wyników. Zmień adres lub użyj mapy/GPS.':'Brak zapisanego punktu pod tym adresem. Pełna wyszukiwarka wymaga konfiguracji geokodera; możesz użyć mapy lub GPS.';
       for(const place of data.items){
         const button=node('button',place.label);button.type='button';button.onclick=()=>act(async()=>{
@@ -106,7 +112,10 @@ function createPickupMap(prefix,editing){
           select(place.latitude_e6/1e6,place.longitude_e6/1e6);results.replaceChildren();if(await initialize())widget.map.setView(widget.marker.getLatLng(),17);
         });results.append(button);
       }
-    }finally{if(current(serial,epoch))search.disabled=false}
+    }catch(_error){
+      if(!current(serial,epoch))return;
+      status.textContent=navigator.onLine===false?'Brak połączenia z internetem. Wybierz punkt na mapie lub użyj GPS.':timedOut?'Wyszukiwanie adresu trwa zbyt długo. Użyj mapy lub GPS.':failure;
+    }finally{clearTimeout(timer);if(current(serial,epoch))search.disabled=false}
   });
   for(const id of editing?['point-edit-city','point-edit-street']:['point-city','point-street'])el(id).addEventListener('input',()=>{
     widget.serial++;lat.value=lon.value='';if(widget.marker){widget.marker.remove();widget.marker=null}

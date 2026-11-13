@@ -100,3 +100,32 @@ def test_detail_tiles_failure_keeps_local_map_and_selection(sample_browser_serve
         assert page.locator('#point-map-lat').input_value() and page.locator('#point-map-lon').input_value()
         assert page.locator('#point-map svg').count()>0
     finally:page.close()
+
+
+@pytest.mark.parametrize('width',[320,1280])
+@pytest.mark.parametrize('failure',['service','configuration','rate','offline','timeout'])
+def test_search_failure_has_persistent_status_and_keeps_map_gps(sample_browser_server,width,failure):
+    browser,url,accounts=sample_browser_server
+    context=browser.new_context(viewport={'width':width,'height':900},is_mobile=width==320,has_touch=width==320,
+        geolocation={'latitude':52.229676,'longitude':21.012229},permissions=['geolocation'])
+    page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+    try:
+        page.goto(url);sign_in(page,accounts,'rolnik')
+        page.locator('#farmer-details > details > summary').click()
+        page.fill('#point-city','Warszawa');page.fill('#point-street','Marszałkowska 1')
+        page.click('#point-map-open');page.locator('#point-map.leaflet-container').wait_for(state='visible')
+        page.route('**/address-search/config',lambda route:route.fulfill(status=503 if failure=='configuration' else 200,json={'enabled':True}))
+        page.route('**/address-search',lambda route:None if failure=='timeout' else route.fulfill(status=429 if failure=='rate' else 503,json={'detail':'unavailable'}))
+        if failure=='offline':context.set_offline(True)
+        page.click('#point-map-search')
+        expected={'service':'niedostępne','configuration':'niedostępne','rate':'limit','offline':'Brak połączenia','timeout':'zbyt długo'}[failure]
+        page.wait_for_function('(text)=>document.querySelector("#point-map-status").textContent.includes(text)',arg=expected,timeout=12000)
+        assert page.locator('#point-map-search').is_enabled()
+        assert page.locator('#point-map-status').get_attribute('aria-live')=='polite'
+        page.get_by_role('button',name='Wybierz środek mapy',exact=True).first.click()
+        assert page.locator('#point-map-lat').input_value()
+        page.click('#point-map-gps')
+        page.wait_for_function('()=>document.querySelector("#point-map-lat").value==="52,229676"')
+        assert page.locator('#point-map-lon').input_value()=='21,012229'
+        assert not errors and page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+    finally:context.close()

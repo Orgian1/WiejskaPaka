@@ -105,7 +105,8 @@ najprostszy odbiór właściciela wykorzystuje fikcyjne dane demo.
 Nie kopiować konfiguracji prawdziwego PayU ani uruchamiać workerów wysyłających
 historyczną pocztę. Symulowane płatności wyłącznie w odizolowanym, zabezpieczonym
 demo. Launcher `run_phone_demo.py` tworzy jednorazową lokalną SQLite i nie służy
-do uruchomienia trwałej bazy VPS. Konfigurację trwałego preview oprzeć o istniejące
+do uruchomienia trwałej bazy VPS. Nowy opcjonalny tryb `--host` z certyfikatem
+HTTPS służy do odbioru w prywatnej sieci Wi-Fi; nie jest wdrożeniem VPS. Konfigurację trwałego preview oprzeć o istniejące
 `deploy/preview/preview.env.example`, guardy i `backend.test_server_launcher`;
 przetestować całą konfigurację i nie ustawiać trybu produkcyjnego w celu obejścia
 guardów. Nowe demo nie może mieć dostępu do produkcyjnych webhooków.

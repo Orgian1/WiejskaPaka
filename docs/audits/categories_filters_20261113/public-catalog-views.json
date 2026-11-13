@@ -1,0 +1,17 @@
+[
+  {
+    "width": 320,
+    "categories": 17,
+    "overflow": false
+  },
+  {
+    "width": 768,
+    "categories": 17,
+    "overflow": false
+  },
+  {
+    "width": 1280,
+    "categories": 17,
+    "overflow": false
+  }
+]

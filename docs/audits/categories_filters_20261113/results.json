@@ -1,0 +1,130 @@
+{
+  "repository": "Orgian1/WiejskaPaka",
+  "branch": "codex/product-categories-filters-20261113",
+  "base_commit": "6ef1d97a05685aac2c7f0569a998c82144978508",
+  "tested_code_commit": "b986571e27683416a9888946b4925b97dcd25680",
+  "application_sha256": "35ebb567d9e4cebb267da854b47aba31b0b8bf769b6ef6955c5f69cf79f1d265",
+  "isolated": {
+    "modules": 404,
+    "counts": {
+      "total": 5056,
+      "passed": 4948,
+      "failed": 0,
+      "skipped": 108
+    },
+    "skips": [
+      {
+        "file": "test_postgres_environment.py",
+        "count": 2
+      },
+      {
+        "file": "test_postgres_transaction_integration_optional.py",
+        "count": 2
+      },
+      {
+        "file": "test_postgres_full_api_optin.py",
+        "count": 101
+      },
+      {
+        "file": "test_roles_offline.py",
+        "count": 1
+      },
+      {
+        "file": "test_mail_queue_key_backup.py",
+        "count": 1
+      },
+      {
+        "file": "test_reset_mail_keys.py",
+        "count": 1
+      }
+    ]
+  },
+  "postgres": {
+    "gate": "postgres",
+    "complete": true,
+    "success": true,
+    "sources_unchanged": true,
+    "system": "Linux",
+    "evidence": {
+      "runtime_sha256": "86cd4ca126167c99f81c28d8927cd57d944b535cfec81ebb5c624cc553c5f3ec",
+      "tests_sha256": "e7835674d8adeadaf87f171b053825b894ef301add90006801abfc3ca4581839",
+      "test_sources_sha256": "ab2ebec93813499858f5554adfd92397ec3016600c87e11364048bb567eaf284",
+      "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+      "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+    },
+    "tasks": [
+      {
+        "name": "native_postgres",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 105,
+          "passed": 105,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      }
+    ]
+  },
+  "migration_lock": {
+    "verified_files": 45,
+    "checksums_match": true,
+    "execution_performed": false
+  },
+  "previous_44_sql_unchanged": true,
+  "browser_timeout_seconds": 1200,
+  "browser": {
+    "gate": "browser",
+    "complete": true,
+    "success": true,
+    "sources_unchanged": true,
+    "system": "Linux",
+    "evidence": {
+      "runtime_sha256": "86cd4ca126167c99f81c28d8927cd57d944b535cfec81ebb5c624cc553c5f3ec",
+      "tests_sha256": "e7835674d8adeadaf87f171b053825b894ef301add90006801abfc3ca4581839",
+      "test_sources_sha256": "ab2ebec93813499858f5554adfd92397ec3016600c87e11364048bb567eaf284",
+      "dependencies_sha256": "3e3164bb0ca28aac906261c3a4a4605dcfae9d13f3c1f5cc60c31c57f7395dd7",
+      "workflow_sha256": "dc084371cc5d738e9bddf3906ceda534c52e002d80a2a7299908af2f2e72d3ee"
+    },
+    "tasks": [
+      {
+        "name": "photo_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "offline_browser",
+        "success": true,
+        "returncode": 0,
+        "test_counts": {
+          "total": 118,
+          "passed": 118,
+          "failed": 0,
+          "skipped": 0
+        },
+        "failure_locations": []
+      },
+      {
+        "name": "http_viewports",
+        "success": true,
+        "returncode": 0
+      }
+    ]
+  },
+  "final_verification": {
+    "all_source_fingerprints_match": true,
+    "physical_phone_tested": false,
+    "windows_tested": false,
+    "main_changed": false,
+    "vps_changed": false,
+    "real_payments_enabled": false
+  }
+}

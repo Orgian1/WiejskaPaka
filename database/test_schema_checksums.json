@@ -218,5 +218,10 @@
     "file": "optional_seller_navigation.sql",
     "sha256": "97008fa54992f9d122c4f13c2614c5f73f68a8ad9198774cc62b42d662ebea9f",
     "bytes": 281
+  },
+  {
+    "file": "optional_product_categories.sql",
+    "sha256": "77ec940f3bdb3814281984e4f355aa024cfd43234a1592bd1e94f4b01770b291",
+    "bytes": 16471
   }
 ]

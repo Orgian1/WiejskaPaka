@@ -17,20 +17,20 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
         page=browser.new_page(viewport={'width':width,'height':844});errors=[]
         page.on('pageerror',lambda error:errors.append(str(error)))
         try:
-            with page.expect_response('**/catalog/search?*') as response:page.goto(str(client.base_url))
+            with page.expect_response('**/catalog/query') as response:page.goto(str(client.base_url))
             assert response.value.status==200 and response.value.json()['total']==52
             page.wait_for_function("() => (document.querySelectorAll('#products > .card').length===24)")
             assert page.locator('#catalog-previous').is_disabled()
             for expected_offset,expected_items in [(24,24),(48,4)]:
-                with page.expect_response('**/catalog/search?*') as response:page.click('#catalog-next')
+                with page.expect_response('**/catalog/query') as response:page.click('#catalog-next')
                 assert response.value.status==200 and response.value.json()['offset']==expected_offset
                 page.wait_for_function('(n)=>document.querySelectorAll("#products > .card").length===n',arg=expected_items)
             assert page.locator('#catalog-next').is_disabled()
-            with page.expect_response('**/catalog/search?*') as response:page.click('#catalog-previous')
+            with page.expect_response('**/catalog/query') as response:page.click('#catalog-previous')
             assert response.value.json()['offset']==24
             for text,total in [('Katalog testowy 049',1),('Brak-wyniku-syntetycznego',0),('',52)]:
                 page.fill('#catalog-query',text)
-                with page.expect_response('**/catalog/search?*') as response:page.locator('#catalog-form button').click()
+                with page.expect_response('**/catalog/query') as response:page.locator('#catalog-form button').click()
                 assert response.value.status==200 and response.value.json()['total']==total and response.value.json()['offset']==0
                 page.wait_for_function('(n)=>document.querySelectorAll("#products > .card").length===n',arg=min(24,total))
             page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])

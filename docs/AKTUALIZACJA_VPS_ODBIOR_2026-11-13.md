@@ -13,7 +13,8 @@ porty, domeny, magazyn zdjęć oraz aktywne flagi. Sprawdzić health i działaj�
 logowanie. Nie drukować plików środowiska ani poświadczeń do publicznego raportu.
 Nie używać `git reset --hard`, `git clean` ani `pull` w działającym katalogu.
 
-Wydanie docelowe pochodzi wyłącznie z `codex/demo-finalization-fixes-20261112`
+Wydanie docelowe pakietu kategorii pochodzi z `codex/product-categories-filters-20261113`,
+utworzonej z `codex/demo-finalization-fixes-20261112`, w
 repozytorium `Orgian1/WiejskaPaka`. Przypiąć pełny SHA z końcowego raportu i
 potwierdzić zgodność z origin. Nie przełączać `main`. Stare wydanie i venv
 zachować w całości, również gdy mają niezacommitowane pliki.
@@ -61,7 +62,7 @@ kopiowania produkcji — nie omijać ich zabezpieczeń.
 ## 3. Migracje najpierw na kopii
 
 Nowy katalog wydania i osobny venv; instalacja z `requirements-lock.txt`.
-`python -m database.verify_test_migrations` kontroluje manifest i sumy **44 plików**,
+`python -m database.verify_test_migrations` kontroluje manifest i sumy **45 plików**,
 ale nie wykonuje SQL i nie dowodzi zgodności istniejącej bazy.
 
 Manifest `database/test_schema_manifest.py` i
@@ -80,6 +81,7 @@ Sprawdzić szczególnie:
 | Ulubione i lokalizacja | `optional_account_favorites.sql` |
 | Kody na trzy punkty | `optional_pickup_promotions.sql` |
 | Propozycje terminów | `optional_delivery_schedule_proposals.sql` |
+| Kategorie, podkategorie i opis | `optional_product_categories.sql`: nowe słowniki i metadane; [procedura](KATEGORIE_I_FILTRY_2026-11-13.md) |
 | Kolejność punktów na koncie | **nowa** `optional_seller_navigation.sql`: `seller_navigation(user_id, revision, point_ids)` |
 | Portfel | `wallet_preview_terms`, `wallet_preview_resolutions`, `wallet_preview_operation_fences` i pozostałe tabele wymagane przez aktywne flagi |
 

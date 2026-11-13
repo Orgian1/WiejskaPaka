@@ -1,6 +1,6 @@
 # WiejskaPaka — uruchomienie i odbiór przez właściciela
 
-Gałąź: `codex/demo-finalization-fixes-20261112` w `Orgian1/WiejskaPaka`.
+Gałąź: `codex/product-categories-filters-20261113` w `Orgian1/WiejskaPaka`.
 To lokalne demo z fikcyjnymi kontami i symulowanymi płatnościami. Nie wymaga VPS.
 
 ## Uruchomienie na komputerze
@@ -9,7 +9,7 @@ Pobierz wskazaną gałąź do **nowego** katalogu (jeżeli nazwa jest zajęta, w
 inną; nie nadpisuj istniejących plików):
 
 ```bash
-git clone --branch codex/demo-finalization-fixes-20261112 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
+git clone --branch codex/product-categories-filters-20261113 --single-branch https://github.com/Orgian1/WiejskaPaka.git WiejskaPaka-odbior
 cd WiejskaPaka-odbior
 git rev-parse HEAD
 ```
@@ -58,6 +58,8 @@ Można nadal wybrać punkt na lokalnej mapie poglądowej albo użyć GPS po wyra
 zgody. Mapa poglądowa nie pokazuje ulic. Szczegółowe kafelki OpenStreetMap są
 opcjonalne i wymagają osobnego dostępu do `tile.openstreetmap.org`.
 Bez `--public-geocoder photon` wyszukiwanie ogranicza się do zapisanych punktów.
+
+Kategorie i łączone filtry: [dodatkowa lista odbioru](KATEGORIE_I_FILTRY_2026-11-13.md).
 
 ## Lista odbioru
 

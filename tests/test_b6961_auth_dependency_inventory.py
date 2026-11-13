@@ -43,3 +43,12 @@ def test_pickup_calendar_config_exception_is_exact():
     assert is_public('GET', '/pickup-point-dates/config')
     assert not is_public('POST', '/pickup-point-dates/config')
     assert not is_public('GET', '/pickup-point-dates/private')
+
+
+def test_category_public_routes_have_exact_method_exceptions():
+    from scripts.audit_route_auth_dependencies import is_public
+    assert is_public('GET','/product-categories')
+    assert is_public('POST','/catalog/query')
+    assert not is_public('POST','/product-categories')
+    assert not is_public('DELETE','/catalog/query')
+    assert not is_public('POST','/catalog/query-private')

@@ -284,7 +284,8 @@ async function loadDashboard() {
       const availability=Number.isSafeInteger(stock)&&stock>=0?`${stock} ${saleUnitLabel(product)}`:'Stan niedostępny';
       const item=dashboardCard(product.name,[`Dostępne w magazynie: ${availability}`,`Cena: ${money(product.price_grosze)} / ${saleUnitLabel(product)}${packageLabel(product)}`,`Dostawa: ${money(product.delivery_grosze)}`]);
       if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)item.prepend(photoImage('product',product.id));
-      inventory.append(item);
+      if(typeof productEditor==='function')item.append(await productEditor(product,active));
+      if(!active())return;inventory.append(item);
     }
     el('seller-stock-summary').replaceChildren(inventoryRegion);
     for(const o of orders){const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});

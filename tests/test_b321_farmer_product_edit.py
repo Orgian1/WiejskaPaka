@@ -12,6 +12,8 @@ def store(tmp_path, monkeypatch):
     conn.executemany('INSERT INTO products VALUES(?,?,?,?,?,?)', [(1,10,'Marchew',100,0,5),(2,20,'Jablka',200,0,7)])
     from backend.local_marketplace import SCHEMA_SQLITE
     conn.executescript(SCHEMA_SQLITE)
+    from backend.product_categories import schema_sql
+    conn.executescript(schema_sql())
     conn.commit()
     @contextmanager
     def write(*args, **kwargs):

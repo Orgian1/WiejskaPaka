@@ -31,6 +31,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
 from backend import product_unit_storage, pickup_dates
 from backend import address_delivery
+from backend import product_categories
 from backend.address_delivery import DeliveryPreferenceIn
 
 
@@ -52,6 +53,7 @@ async def application_lifespan(application):
         con.execute('SELECT point_id FROM pickup_promo_points LIMIT 0')
         con.execute('SELECT user_id,product_id FROM account_favorites LIMIT 0')
         con.execute('SELECT user_id,revision,point_ids FROM seller_navigation LIMIT 0')
+        con.execute('SELECT product_id,category_id,subcategory_id,description FROM product_classifications LIMIT 0')
         con.execute('SELECT user_id,latitude_e6,longitude_e6 FROM account_saved_locations LIMIT 0')
         from backend import user_photos, seller_directory
         if seller_directory.enabled():
@@ -272,6 +274,9 @@ class ProductIn(BaseModel):
     price_grosze: int = Field(strict=True, ge=1, le=100_000_000)
     delivery_grosze: int = Field(strict=True, ge=0, le=10_000_000)
     stock: int = Field(strict=True, ge=0, le=1_000_000)
+    category_id: str | None = Field(default=None,max_length=40)
+    subcategory_id: str | None = Field(default=None,max_length=80)
+    description: CleanText = Field(default='',max_length=2000,pattern=r'^[^\x00]*$')
     sale_unit: Literal['szt','kg','g','l','ml','opak','peczek','sloik','butelka','worek','skrzynka','tacka'] = 'szt'
     content_amount: str | None = Field(default=None, max_length=32)
     content_unit: Literal['szt','kg','g','l','ml'] | None = None
@@ -475,6 +480,9 @@ def save_product(payload, user, authorization, photo=None):
         raise HTTPException(503, 'Jednostki sprzedaży nie zostały jeszcze włączone')
     with order_write_db(user, authorization, ('rolnik',)) as con:
         cur = con.execute('INSERT INTO products(farmer_id,name,price_grosze,delivery_grosze,stock) VALUES(?,?,?,?,?)',(user['id'],payload.name,payload.price_grosze,payload.delivery_grosze,payload.stock))
+        category,sub=product_categories.inferred(payload.name) if payload.category_id is None else (payload.category_id,payload.subcategory_id or payload.category_id+'-other')
+        if payload.category_id is None and payload.subcategory_id is not None:raise HTTPException(422,'Wybierz kategorię główną')
+        product_categories.save(con,cur.lastrowid,category,sub,payload.description)
         from backend.local_marketplace import index_product
         index_product(con, cur.lastrowid, payload.name)
         if product_unit_storage.enabled():
@@ -545,7 +553,7 @@ def catalog_search(q: str = '', min_price_grosze: int | None = None,
 def my_products(user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user, 'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        return [product_unit_storage.enrich_product(con,r) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
+        return [dict(product_unit_storage.enrich_product(con,r),**product_categories.metadata(con,r['id'])) for r in con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE farmer_id=? ORDER BY id DESC', (user['id'],))]
 
 @app.get('/products/{product_id}')
 def product_details(product_id: int):
@@ -1315,6 +1323,9 @@ def auth_me(user=Depends(current_user)):
 
 class ProductUpdateIn(BaseModel):
     model_config = {'extra': 'forbid'}
+    category_id: str | None = Field(default=None,max_length=40)
+    subcategory_id: str | None = Field(default=None,max_length=80)
+    description: CleanText | None = Field(default=None,max_length=2000,pattern=r'^[^\x00]*$')
     name: CleanText | None = Field(default=None, min_length=2, max_length=120)
     price_grosze: int | None = Field(strict=True, default=None, ge=1, le=100_000_000)
     delivery_grosze: int | None = Field(strict=True, default=None, ge=0, le=10_000_000)
@@ -1329,16 +1340,21 @@ def update_my_product(product_id: int, payload: ProductUpdateIn,
     if not fields or any(value is None for value in fields.values()):
         raise HTTPException(422, 'Podaj poprawne pola produktu')
     with order_write_db(user, authorization, ('rolnik',)) as con:
-        assignments = ', '.join(f'{field}=?' for field in fields)
-        cur = con.execute(f'UPDATE products SET {assignments} WHERE id=? AND farmer_id=?',
-                          (*fields.values(), product_id, user['id']))
-        if cur.rowcount != 1:
-            raise HTTPException(404, 'Nie znaleziono produktu')
+        owner=con.execute('SELECT id FROM products WHERE id=? AND farmer_id=?'+(' FOR UPDATE' if DATABASE_URL else ''),(product_id,user['id'])).fetchone()
+        if not owner:raise HTTPException(404,'Nie znaleziono produktu')
+        meta=product_categories.metadata(con,product_id)
+        category=fields.pop('category_id',meta['category_id'])
+        sub=fields.pop('subcategory_id',meta['subcategory_id'] if category==meta['category_id'] else category+'-other')
+        description=fields.pop('description',meta['description'])
+        product_categories.save(con,product_id,category,sub,description)
+        if fields:
+            assignments = ', '.join(f'{field}=?' for field in fields)
+            con.execute(f'UPDATE products SET {assignments} WHERE id=? AND farmer_id=?',(*fields.values(),product_id,user['id']))
         row = con.execute('SELECT id,name,price_grosze,delivery_grosze,stock FROM products WHERE id=? AND farmer_id=?',
                           (product_id, user['id'])).fetchone()
         from backend.local_marketplace import index_product
         index_product(con, product_id, row['name'])
-        return dict(row)
+        return dict(row,**product_categories.metadata(con,product_id))
 
 @app.post('/shipments/{shipment_id}/cancel-test')
 def cancel_shipment_test(shipment_id: str, user=Depends(current_user), authorization: str | None = Header(default=None)):
@@ -3341,3 +3357,6 @@ install_pickup_promotions(app, db, order_write_db, current_user, DATABASE_URL)
 
 from backend.seller_navigation import install as install_seller_navigation
 install_seller_navigation(app, db, order_write_db, current_user, DATABASE_URL)
+
+from backend.catalog_filters import install as install_catalog_filters
+install_catalog_filters(app, db, DATABASE_URL)

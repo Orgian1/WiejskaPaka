@@ -4,6 +4,7 @@ Not a replacement for migrations, RLS verification or integration tests.
 """
 
 CORE_TABLES = (
+    'product_categories','product_subcategories','product_classifications',
     'users', 'sessions', 'login_attempts', 'products', 'farmer_profiles',
     'pickup_points', 'orders', 'order_locations', 'delivery_assignments',
     'order_events', 'notifications',

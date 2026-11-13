@@ -2,6 +2,8 @@
 
 Marketplace rolnik–klient. Hasło: **Z pola pod Twój dom.**
 
+Nowe [kategorie i filtry katalogu](docs/KATEGORIE_I_FILTRY_2026-11-13.md).
+
 Odbiór właściciela i uruchomienie demo: [instrukcja 13.11](docs/ODBIOR_WLASCICIELA_2026-11-13.md).
 Bezpieczna aktualizacja bez zmiany obecnego podglądu: [procedura VPS](docs/AKTUALIZACJA_VPS_ODBIOR_2026-11-13.md).
 Wyniki poprzedniego przygotowania odbioru: [raport 13.11](docs/RAPORT_ODBIOR_WLASCICIELA_2026-11-13.md).
@@ -41,7 +43,8 @@ Bieżący pakiet zarządzania sesjami opisuje `docs/ZARZADZANIE_SESJAMI.md`.
 Historyczne dowody pakietu sesji: `docs/RAPORT_SESJE_2026-10-16.md` oraz
 `audit_sessions_final_*.json`. Poprzednie pakiety bezpieczeństwa opisują
 `docs/ODZYSKIWANIE_PIN.md` i `docs/BEZPIECZENSTWO_KONTA.md`.
-Aktualna gałąź demo: `codex/demo-finalization-fixes-20261112`.
+Aktualna gałąź kategorii i filtrów: `codex/product-categories-filters-20261113`.
+Gałąź bazowa demo: `codex/demo-finalization-fixes-20261112`.
 Historyczna gałąź podglądu: `preview/footer-contact-form-20261110` (PR #55).
 Historyczna gałąź importu: `wiejskapaka-import`.
 Pakiety v1–v9 są już na GitHubie. Stan synchronizacji i mapowanie commitów:

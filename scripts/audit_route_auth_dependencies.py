@@ -22,6 +22,9 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    # Public taxonomy and bounded product discovery; no account data or writes.
+    if (method,path) in {('GET','/product-categories'),('POST','/catalog/query')}:
+        return True
     # Public feature availability only; account status/request/confirm require a session.
     if method == 'GET' and path == '/auth/email-verification/options':
         return True

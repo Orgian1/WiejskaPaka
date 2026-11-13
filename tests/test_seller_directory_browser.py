@@ -56,10 +56,10 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert actors[0][0]['email'] not in page.locator('#seller-results').inner_text()
             assert page.locator('#products').is_hidden()
             assert page.locator('#seller-previous').is_disabled() and page.locator('#seller-next').is_disabled()
-            with page.expect_response('**/catalog/search?*') as response:
+            with page.expect_response('**/catalog/query') as response:
                 seller.get_by_role('button',name='Zobacz produkty sprzedawcy @'+handle,exact=True).click()
             assert response.value.status==200
-            assert 'farmer_id='+str(actors[0][2]) in response.value.url
+            assert response.value.request.post_data_json['farmer_id']==actors[0][2]
             card=page.locator('#products > .card')
             card.get_by_text('Pomidory sprzedawcy 0',exact=True).wait_for(state='visible')
             assert card.count()==1 and 'Pomidory sprzedawcy 1' not in page.locator('#products').inner_text()
@@ -72,7 +72,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             assert response.value.status==200
             expect(card.get_by_role('button',name='Dodaj do koszyka',exact=True)).to_be_enabled()
             assert page.get_by_role('dialog').count()==0
-            with page.expect_response(lambda r:'/catalog/search?' in r.url and 'farmer_id' not in parse_qs(urlsplit(r.url).query)) as response:page.click('#catalog-clear-seller')
+            with page.expect_response(lambda r:r.url.endswith('/catalog/query') and 'farmer_id' not in r.request.post_data_json) as response:page.click('#catalog-clear-seller')
             assert response.value.status==200
             page.wait_for_function('()=>(document.querySelectorAll("#products > .card").length===2)')
             page.select_option('#catalog-search-mode','seller');page.fill('#catalog-query','ZOLTA LAKA '+suffix)

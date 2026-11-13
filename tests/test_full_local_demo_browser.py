@@ -17,8 +17,12 @@ ROOT=Path(__file__).resolve().parents[1]
 def test_public_footer_shared_contact_form(full_demo_server, delivery_browser, width):
     url, _ = full_demo_server
     page = delivery_browser.new_page(viewport={'width': width, 'height': 844})
-    writes = []
-    page.on('request', lambda request: writes.append(request.url) if request.method == 'POST' else None)
+    writes,queries = [],[]
+    def capture(request):
+        if request.method!='POST':return
+        if request.url.endswith('/catalog/query'):queries.append(request.post_data_json)
+        else:writes.append(request.url)
+    page.on('request',capture)
     try:
         page.goto(url)
         page.locator('#footer-contact-link').click()
@@ -34,6 +38,8 @@ def test_public_footer_shared_contact_form(full_demo_server, delivery_browser, w
         page.locator('#contact-form').evaluate('(form) => form.requestSubmit()')
         assert 'nie została wysłana' in page.locator('#contact-status').inner_text()
         assert not writes
+        assert all(set(query)<= {'q','limit','offset','category_id','subcategory_id','available_now','fulfillment','sort','farmer_id','latitude_e6','longitude_e6'} for query in queries)
+        assert all('guest@example.invalid' not in json.dumps(query) and 'Treść wiadomości próbnej' not in json.dumps(query,ensure_ascii=False) for query in queries)
         assert '?' not in page.url
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.locator('#contact-form button[type=reset]').click()

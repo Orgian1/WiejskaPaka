@@ -2000,3 +2000,35 @@ def test_native_seller_navigation_cross_device_restart(pg_restart_api):
     owner,saved=exercise_navigation(client)
     pg_restart_api.restart()
     assert client.get('/farmers/me/navigation',headers=owner).json()==saved
+
+
+def test_native_categories_combined_filters_and_orders(pg_address_delivery_api):
+    from tests.test_product_categories_http import exercise_catalog
+    client,_=pg_address_delivery_api
+    farmer,pid,tag=exercise_catalog(client)
+    pg_address_delivery_api.restart()
+    result=client.post('/catalog/query',json={'q':tag,'category_id':'fruit'}).json()
+    assert any(p['id']==pid and p['description']=='Poprawiony opis' for p in result['items'])
+
+
+def test_native_category_migration_preserves_existing_rows(pg_restart_api):
+    import psycopg
+    from psycopg import sql
+    from psycopg.conninfo import conninfo_to_dict
+    client,parameters=pg_restart_api
+    farmer,_=register(client,'rolnik')
+    ids=[]
+    for name in ['Pomidory','Pomidory i miód']:
+        response=client.post('/products',headers=farmer,json={'name':name,'stock':7,'price_grosze':299,'delivery_grosze':501})
+        assert response.status_code==201;ids.append(response.json()['id'])
+    owner={**conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN']),'dbname':parameters['dbname']}
+    with psycopg.connect(**owner,autocommit=True) as con:
+        before=con.execute('SELECT * FROM products ORDER BY id').fetchall()
+        con.execute('DELETE FROM product_classifications WHERE product_id=ANY(%s)',(ids,))
+        con.execute((ROOT/'database/optional_product_categories.sql').read_text())
+        assert con.execute('SELECT * FROM products ORDER BY id').fetchall()==before
+        rows=con.execute('SELECT product_id,category_id FROM product_classifications WHERE product_id=ANY(%s) ORDER BY product_id',(ids,)).fetchall()
+        assert rows==[(ids[0],'vegetables'),(ids[1],'other')]
+        con.execute("UPDATE product_classifications SET description='Poprawione' WHERE product_id=%s",(ids[1],))
+        con.execute((ROOT/'database/optional_product_categories.sql').read_text())
+        assert con.execute('SELECT description FROM product_classifications WHERE product_id=%s',(ids[1],)).fetchone()[0]=='Poprawione'

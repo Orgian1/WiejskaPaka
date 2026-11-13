@@ -26,6 +26,7 @@ async function loadFavorites(){
     if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)media.append(photoImage('product',product.id));
     media.append(favoriteButton(product));card.append(media);
     const find=node('button','Pokaż w katalogu');find.type='button';find.onclick=()=>act(async()=>{
+      resetCatalogView();
       el('catalog-query').value=product.name;catalogOffset=0;await loadProducts();
       el('products-section').scrollIntoView();
     });card.append(find);el('favorites-results').append(card);

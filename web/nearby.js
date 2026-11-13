@@ -26,9 +26,11 @@ function resetNearbySearch(){
   if(typeof clearAddressSelection==='function')clearAddressSelection();
   // reset() respects the HTML defaults; sensitive coordinates have no defaults.
   el('nearby-lat').value='';el('nearby-lon').value='';
+  if(typeof refreshCatalogLocation==='function')refreshCatalogLocation();
 }
 async function searchNearby(offset=0){
   if(!el('nearby-lat').value||!el('nearby-lon').value){el('nearby-status').textContent='Wpisz miejscowość i wybierz miejsce lub użyj swojej lokalizacji.';return;}
+  if(typeof refreshCatalogLocation==='function')refreshCatalogLocation();
   const payload={latitude_e6:coordinateE6(el('nearby-lat').value,90),longitude_e6:coordinateE6(el('nearby-lon').value,180),
     radius_m:Number(el('nearby-radius').value),q:el('nearby-query').value.trim(),limit:24,offset};
   if(el('nearby-min-price').value.trim())payload.min_price_grosze=parseGrosze(el('nearby-min-price').value);

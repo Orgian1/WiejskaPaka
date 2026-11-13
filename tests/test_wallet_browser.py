@@ -19,6 +19,7 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
             page.goto(str(client.base_url));page.fill('#email',email);page.fill('#password',password)
             page.locator('#auth button[type=submit]').click()
             panel=page.locator('#wallet-section');panel.wait_for(state='visible')
+            if role=='rolnik':page.locator('#wallet-nav-link').click()
             panel.get_by_role('button',name='Doładuj portfel',exact=True).click()
             dialog=page.locator('#wallet-dialog-topup')
             assert dialog.locator('input[type=password]').count()==0

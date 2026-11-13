@@ -26,6 +26,7 @@ def test_owner_cancel_admin_complete_and_logout(delivery_browser,tmp_path,monkey
         def login(body):
             page.goto(str(client.base_url));page.fill('#email',body['email']);page.fill('#password',body['password'])
             page.locator('#auth button[type=submit]').click();page.locator('#logout').wait_for(state='visible')
+            if body.get('role')=='rolnik':page.locator('#wallet-nav-link').click()
         try:
             login(credentials)
             panel=page.locator('#wallet-section');panel.wait_for(state='visible')

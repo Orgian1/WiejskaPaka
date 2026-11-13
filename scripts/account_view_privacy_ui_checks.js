@@ -21,7 +21,7 @@ function main(name){
  const fields=['cart-city','cart-street','cart-postal','email','password'];
  for(const id of fields)el(id).value='PRIVATE-OLD-'+id;
  const detached=[];
- for(const id of ['products','orders','my-points','dashboard-content','notifications-list','cart-items']){
+ for(const id of ['products','orders','my-points','dashboard-content','notifications-list','cart-items','seller-stock-summary']){
    const row=new Element(),text=new Element(),input=new Element();text.textContent='PRIVATE-ADDRESS-PIN';input.value='PRIVATE-INPUT';input.checked=true;
    row.append(text,input);el(id).append(row);detached.push(text,input);
  }
@@ -32,7 +32,7 @@ function main(name){
  c.logged(user);if(name==='repeat_reset')c.logged(null);
  for(const id of fields)assert.equal(el(id).value,'',id);
  for(const item of detached){assert.equal(item.value,'');assert.equal(item.textContent,'');assert.equal(item.checked,false)}
- for(const id of ['products','orders','my-points','dashboard-content','notifications-list','cart-items','cart-point','cart-farmer-select'])assert.equal(el(id).children.length,0,id);
+ for(const id of ['products','orders','my-points','dashboard-content','notifications-list','cart-items','seller-stock-summary','cart-point','cart-farmer-select'])assert.equal(el(id).children.length,0,id);
  for(const id of ['cart-checkout','profile-form','point-form','new-product'])assert(el(id).resets>=1,id);
  assert.equal(el('cart-total').textContent,'');assert.equal(el('cart-address').hidden,true);assert.equal(el('cart-pickup').hidden,false);
  assert.equal(c.expandedCatalogProducts.size,0);

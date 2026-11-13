@@ -13,8 +13,8 @@ from tests.test_purchase_record_http_restart import server
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def prepare_sample(directory,env=None):
-    result=subprocess.run([sys.executable,'-m','scripts.prepare_sample_demo','--directory',str(directory)],
+def prepare_sample(directory,env=None,*,full_demo=False):
+    result=subprocess.run([sys.executable,'-m','scripts.prepare_sample_demo',*(['--full-demo'] if full_demo else []),'--directory',str(directory)],
         cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf-8',timeout=120)
     assert result.returncode==0,'Sample setup failed (private output withheld)'
     return json.loads(result.stdout)

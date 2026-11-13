@@ -39,7 +39,7 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
             page.locator('#products .favorite-button').first.wait_for(state='visible')
             page.locator('#products > .card').first.locator('summary > b').click()
             assert page.locator('#products > .card').first.evaluate('(e)=>e.open')
-            add=page.locator('#products > .card').first.get_by_role('button',name='Dodaj do koszyka',exact=True);add.wait_for(state='visible')
+            add=page.locator('#catalog-details-'+page.locator('#products > .card').first.get_attribute('data-product-id')).get_by_role('button',name='Dodaj do koszyka',exact=True);add.wait_for(state='visible')
             with page.expect_response('**/cart/items') as response:add.click()
             assert response.value.status==200
             page.locator('#same-package-products article').first.wait_for(state='visible')
@@ -70,7 +70,8 @@ def test_same_seller_recommendations_create_one_shipment(sample_browser_server,t
             page.locator('#auth button[type=submit]').click()
             card=page.locator('#products > .card').filter(has_text='Marchew demonstracyjna')
             card.locator('.favorite-button').wait_for(state='visible')
-            card.locator('summary').click()
+            card.locator('summary > b').click()
+            card=page.locator('#catalog-details-'+card.get_attribute('data-product-id'))
             card.get_by_role('button',name='Dodaj do koszyka',exact=True).wait_for(state='visible')
             card.get_by_label('Ilość w jednostce',exact=False).fill('2')
             if direct:

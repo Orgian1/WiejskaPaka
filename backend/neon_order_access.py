@@ -15,6 +15,7 @@ def buyer_orders(connection, actor_id):
     actor_id = validate_actor_id(actor_id)
     return connection.execute(
         "SELECT id, pickup_code, product_id, quantity, total_grosze, fulfillment, status, created_at, "
+        "(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id, "
         "(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at "
         "FROM orders WHERE buyer_id = %s ORDER BY id DESC", (actor_id,)
     ).fetchall()
@@ -24,6 +25,7 @@ def farmer_orders(connection, actor_id):
     actor_id = validate_actor_id(actor_id)
     return connection.execute(
         "SELECT id, pickup_code, product_id, quantity, total_grosze, fulfillment, status, created_at, "
+        "(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id, "
         "(SELECT name FROM products WHERE id=orders.product_id) AS product_name, "
         "(SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id, "
         "(SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name, "

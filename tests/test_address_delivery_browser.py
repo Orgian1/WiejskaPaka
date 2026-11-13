@@ -77,6 +77,7 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
             card = buyer.locator('#products > .card').filter(has_text='Pomidory przeglądarkowe')
             card.locator('.favorite-button').wait_for(state='visible')
             card.locator('summary > b').click()
+            card=buyer.locator('#catalog-details-'+card.get_attribute('data-product-id'))
             card.get_by_label('Sposób realizacji').select_option('dostawa')
             card.get_by_label('Miejscowość dostawy', exact=True).fill('Legnica')
             card.get_by_label('Ulica i numer dostawy', exact=True).fill('Testowa 1')

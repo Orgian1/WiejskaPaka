@@ -58,6 +58,7 @@ async def application_lifespan(application):
         if user_photos.enabled():
             con.execute('SELECT kind,subject_id,owner_id,data,digest,width,height FROM user_photos WHERE 1=0')
         if address_delivery.enabled():
+            con.execute('SELECT id FROM delivery_schedule_proposals LIMIT 0')
             con.execute('SELECT id FROM seller_delivery_windows LIMIT 0')
             con.execute('SELECT order_id FROM address_delivery_requests LIMIT 0')
         elif address_delivery.has_table(con, bool(DATABASE_URL)):
@@ -1168,9 +1169,9 @@ def my_orders(user=Depends(current_user), authorization: str | None = Header(def
             raise HTTPException(401, 'Sesja nieważna')
     with db() as con:
         if user['role']=='klient':
-            rows=con.execute('SELECT id,pickup_code,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
+            rows=con.execute('SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
         elif user['role']=='rolnik':
-            rows=con.execute('''SELECT id,pickup_code,product_id,quantity,total_grosze,fulfillment,status,created_at,
+            rows=con.execute('''SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,product_id,quantity,total_grosze,fulfillment,status,created_at,
                 (SELECT name FROM products WHERE id=orders.product_id) AS product_name,
                 (SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id,
                 (SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name,
@@ -1674,6 +1675,9 @@ def record_order_event(con, order_id, actor_id, event_type, old_status, new_stat
     if not order:
         raise ValueError('Nie istnieje zamówienie')
     messages = {
+        'delivery_schedule_proposed_test': ('Propozycja terminu dostawy', 'Sprzedawca proponuje nowy termin. Zdecyduj w panelu dostaw przed opłaceniem zamówienia.'),
+        'delivery_schedule_accepted_test': ('Termin zaakceptowany przez klienta', 'Klient zaakceptował nowy termin dostawy.'),
+        'delivery_schedule_declined_test': ('Termin odrzucony przez klienta', 'Klient odrzucił proponowany termin. Zamówienie nadal oczekuje na uzgodnienie terminu.'),
         'address_delivery_accepted': ('Dostawa zaakceptowana', 'Sprzedawca zaakceptował termin dostawy na adres. Sprawdź termin rezerwacji przed płatnością.'),
         'address_delivery_declined': ('Dostawa odrzucona', 'Sprzedawca odrzucił dostawę na adres. Rezerwacja towaru została zwolniona.'),
         'order_created': ('Nowe zamówienie', 'Utworzono zamówienie testowe, bez pobrania płatności.'),
@@ -3298,6 +3302,8 @@ if address_delivery.enabled() and not DATABASE_URL:
     with db() as _delivery_con:
         _delivery_con.executescript(address_delivery.SCHEMA_SQLITE)
 address_delivery.register_routes(app, db, order_write_db, current_user, record_order_event, postgres=bool(DATABASE_URL))
+from backend import delivery_proposals
+delivery_proposals.register(app,db,order_write_db,current_user,record_order_event,postgres=bool(DATABASE_URL))
 
 from backend import user_photos
 if user_photos.enabled() and not DATABASE_URL:

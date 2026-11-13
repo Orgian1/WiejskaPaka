@@ -53,7 +53,7 @@ def test_inline_catalog_and_seller_groups_browser(sample_browser_server,width):
         group=page.locator('.seller-pickup-group').first
         group.wait_for(state='visible')
         assert not group.evaluate('(e)=>e.open')
-        group.locator('summary').click()
+        group.locator(':scope > summary').click()
         assert group.locator('li').count()==2
         assert 'ilość:' in group.inner_text()
         assert page.get_by_text('Klient sprawdził produkty',exact=True).count()==0

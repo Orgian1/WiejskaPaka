@@ -200,7 +200,6 @@ async function loadDashboard() {
     const farmerOrderCards=new Map();
     const [products,orders,shipmentData]=await Promise.all([api('/products/mine'),api('/orders/me'),api('/shipments/farmer/mine')]);
     if(!active())return;
-    box.append(sellerPickupGroups(orders));
     box.append(dashboardCard('Gospodarstwo',[`Produkty: ${products.length}`,`Zamówienia: ${orders.length}`]));
     box.append(dashboardCard('Pamiętaj przed wyjazdem',[
       'Jeśli możesz, zabierz kilka dodatkowych sztuk, np. pomidorów, aby klient mógł wybrać inny egzemplarz.',
@@ -239,8 +238,8 @@ async function loadDashboard() {
       c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
       box.append(c);
     }
-    const inventoryRegion=node('section');inventoryRegion.setAttribute('aria-label','Stan produktów gospodarstwa');const inventory=node('details');inventory.open=true;inventoryRegion.append(inventory);
-    inventory.append(node('summary','Uzupełnij towar — moje produkty i stany magazynowe'));
+    const inventoryRegion=node('section');inventoryRegion.setAttribute('aria-label','Stan produktów gospodarstwa');const inventory=inventoryRegion;
+    inventory.append(node('h3','Uzupełnij towar — moje produkty i stany magazynowe'));
     if(!products.length)inventory.append(node('p','Nie dodano jeszcze produktów. Użyj formularza Dodaj produkt.'));
     for(const product of products){
       const stock=Number(product.stock);
@@ -249,7 +248,7 @@ async function loadDashboard() {
       if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)item.prepend(photoImage('product',product.id));
       inventory.append(item);
     }
-    box.append(inventoryRegion);
+    el('seller-stock-summary').replaceChildren(inventoryRegion);
     for(const o of orders){const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
@@ -437,7 +436,7 @@ el('notifications-refresh').onclick=()=>act(loadNotifications);
 function sellerPickupGroups(orders){
   const section=node('section');section.setAttribute('aria-label','Zamówienia według punktów odbioru');
   section.append(node('h3','Zamówienia według punktów odbioru'));
-  const groups=new Map();
+  const groups=new Map();section._orderContainers=new Map();
   for(const order of orders){
     if(order.fulfillment!=='odbior'||['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(order.status))continue;
     const key=order.pickup_point_id;
@@ -446,11 +445,27 @@ function sellerPickupGroups(orders){
   }
   for(const group of groups.values()){
     const details=node('details','', 'card seller-pickup-group');
-    details.append(node('summary',`${group.name} — ${group.orders.length} zamówień`));
+    details.append(node('summary',`${group.name} — ${sellerOrderCount(group.orders.length)}`));
     const list=node('ul');
-    for(const order of group.orders)list.append(node('li',`#${order.id} (${order.pickup_code}) — ${order.product_name||'Produkt #'+order.product_id} — ilość: ${order.quantity}`));
-    details.append(list);section.append(details);
+    for(const order of group.orders){const item=node('li',`#${order.id} (${order.pickup_code}) — ${order.product_name||'Produkt #'+order.product_id} — ilość: ${order.quantity} — ${sellerOrderStatus(order.status)}`);list.append(item);section._orderContainers.set(order.id,item)}
+    details.append(list);
+    const shipments=new Map();for(const order of group.orders){if(order.shipment_id){if(!shipments.has(order.shipment_id))shipments.set(order.shipment_id,[]);shipments.get(order.shipment_id).push(order)}}
+    for(const [shipmentId,members] of shipments){if(members.every(o=>o.status==='gotowe_do_odbioru_testowo')){
+      const pin=node('input');pin.inputMode='numeric';pin.maxLength=6;pin.autocomplete='off';pin.setAttribute('aria-label','PIN przesyłki '+shipmentId);pin.placeholder='Jednorazowy PIN całej przesyłki';
+      const confirm=node('button','Potwierdź odbiór całej przesyłki');confirm.type='button';const epoch=sessionEpoch;
+      confirm.onclick=()=>act(async()=>{
+        if(confirm.disabled||epoch!==sessionEpoch||role!=='rolnik'||!section.isConnected)return;
+        if(!/^[0-9]{6}$/.test(pin.value))throw Error('PIN musi mieć 6 cyfr');confirm.disabled=true;
+        try{const result=await api('/shipments/'+encodeURIComponent(shipmentId)+'/confirm','POST',{pin:pin.value});
+          if(epoch!==sessionEpoch)return;msg(result.confirmed?'Odebrano całą przesyłkę':'Nieprawidłowy PIN; pozostało prób: '+result.remaining_attempts);await loadOrders();await loadDashboard();
+        }finally{pin.value='';confirm.disabled=false}
+      });details.append(node('p','Przesyłka '+shipmentId+' — klient sprawdza produkty i podaje jeden PIN dla wszystkich pozycji.'),pin,confirm);
+    }}
+    section.append(details);
   }
   if(!groups.size)section.append(node('p','Brak aktualnych zamówień do odbioru w punktach.'));
   return section;
 }
+
+function sellerOrderCount(count){const tail=count%100;return `${count} ${count===1?'zamówienie':count%10>=2&&count%10<=4&&(tail<12||tail>14)?'zamówienia':'zamówień'}`;}
+function sellerOrderStatus(status){return {oczekuje_na_platnosc_testowa:'Oczekuje na płatność testową',gotowe_do_odbioru_testowo:'Gotowe do odbioru',w_drodze_testowo:'W drodze',odebrane:'Odebrane',anulowane_testowo:'Anulowane',nieudana_dostawa_testowo:'Nieudana dostawa'}[status]||status;}

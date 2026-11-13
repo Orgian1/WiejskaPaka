@@ -38,6 +38,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         assert page.locator('#logout').is_visible()
         assert page.locator('#identity').text_content()==accounts[role]['email']
         assert page.locator('#account-section').evaluate('(e)=>e.getBoundingClientRect().height')<=140
+        if role=='rolnik':page.locator('#dashboard > details > summary').click()
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#dashboard-title').text_content()=={'klient':'Panel klienta','rolnik':'Panel sprzedawcy','dostawca':'Panel dostawcy','admin':'Panel administratora'}[role]
         if role=='admin':
@@ -106,6 +107,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
                 page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
+                if role=='rolnik':page.locator('#dashboard > details > summary').click()
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def sign_out():
                 page.click('#logout')

@@ -14,7 +14,7 @@ def test_order_projection_contains_parcel_code_required_by_frontend(read):
     with sqlite3.connect(':memory:') as con:
         con.row_factory = sqlite3.Row
         con.execute('CREATE TABLE orders(id integer,pickup_code text,product_id integer,quantity integer,total_grosze integer,fulfillment text,status text,created_at text,buyer_id integer,farmer_id integer)')
-        con.executescript("CREATE TABLE products(id integer primary key,name text); CREATE TABLE pickup_points(id integer primary key,name text); CREATE TABLE order_locations(order_id integer,pickup_point_id integer); INSERT INTO products VALUES(2,'Warzywa'); INSERT INTO pickup_points VALUES(3,'Punkt A'); INSERT INTO order_locations VALUES(1,3);")
+        con.executescript("CREATE TABLE shipment_order_links(order_id integer,shipment_id text); CREATE TABLE products(id integer primary key,name text); CREATE TABLE pickup_points(id integer primary key,name text); CREATE TABLE order_locations(order_id integer,pickup_point_id integer); INSERT INTO products VALUES(2,'Warzywa'); INSERT INTO pickup_points VALUES(3,'Punkt A'); INSERT INTO order_locations VALUES(1,3);")
         from backend.inventory_reservations import SCHEMA_SQLITE as HOLD_SCHEMA
         con.executescript(HOLD_SCHEMA)
         con.execute("INSERT INTO orders VALUES(1,'WP-TEST',2,3,999,'odbior','odebrane','2026-10-15',42,42)")

@@ -1953,3 +1953,42 @@ def test_native_pickup_promotion_limits_and_point_credits(pg_api):
         grant=con.execute('SELECT id,remaining FROM pickup_promo_grants WHERE code=%s',(code,)).fetchone()
         assert grant[1]==0
         assert con.execute('SELECT count(*) FROM pickup_promo_points WHERE grant_id=%s',(grant[0],)).fetchone()[0]==3
+
+
+@pytest.mark.parametrize('shipment,choice',[(False,'accepted'),(False,'declined'),(True,'accepted')])
+def test_native_delivery_schedule_proposal_consent_restart(pg_address_delivery_api,shipment,choice):
+    import json
+    from datetime import datetime,timedelta
+    from zoneinfo import ZoneInfo
+    client,parameters=pg_address_delivery_api
+    farmer,_=register(client,'rolnik');buyer,_=register(client,'klient');other,_=register(client,'klient')
+    day=datetime.now(ZoneInfo('Europe/Warsaw')).date()+timedelta(days=7)
+    window=client.post('/address-delivery/windows',headers=farmer,json={'city':'Legnica','postal_code':'59-220','weekday':day.weekday(),'from_time':'10:00','to_time':'16:00'})
+    assert window.status_code==200
+    ids=[product(client,farmer) for _ in range(2 if shipment else 1)]
+    body={**delivery(ids[0]),'address_delivery':{'window_id':window.json()['id'],'delivery_date':day.isoformat(),'available_from':'12:00','available_to':'18:00','phone':'+48 500 100 200'}}
+    if shipment:
+        for pid in ids:assert client.put('/cart/items',headers=buyer,json={'product_id':pid,'quantity':1}).status_code==200
+        body.pop('product_id');body.pop('quantity')
+    receipt=client.post('/cart/checkout-test' if shipment else '/orders',headers=buyer,json=body)
+    assert receipt.status_code==201
+    orders=[o['id'] for o in receipt.json()['orders']] if shipment else [receipt.json()['id']]
+    schedule={'revision':0,'delivery_date':(day+timedelta(days=1)).isoformat(),'from_time':'14:00','to_time':'15:00'}
+    proposal=client.post(f'/address-delivery/requests/{orders[-1]}/proposal',headers=farmer,json=schedule)
+    assert proposal.status_code==200;proposal=proposal.json()['proposal']
+    event={'event_id':uuid4().hex,'event_type':'payment_success_test'}
+    assert client.post(f'/test/payments/{orders[0]}/events',headers=buyer,json=event).status_code==409
+    answer='/address-delivery/proposals/'+proposal['id']+'/decision'
+    decision={'decision':choice,'revision':proposal['request_revision']}
+    assert client.post(answer,headers=other,json=decision).status_code==404
+    assert client.post(answer,headers=farmer,json=decision).status_code==403
+    assert client.post(answer,headers=buyer,json=decision).status_code==200
+    assert client.post(answer,headers=buyer,json=decision).json()['already_processed']
+    pg_address_delivery_api.restart()
+    rows=client.get('/address-delivery/requests/mine',headers=buyer).json()['items']
+    assert all(r['proposal']['state']==choice and r['state']==('accepted' if choice=='accepted' else 'pending') for r in rows if r['order_id'] in orders)
+    assert '500100200' not in json.dumps(rows) and 'phone' not in json.dumps(rows)
+    if choice=='accepted':
+        assert all(r['delivery_date']==schedule['delivery_date'] and r['agreed_from']==840 and r['agreed_to']==900 for r in rows if r['order_id'] in orders)
+        assert client.post(f'/test/payments/{orders[0]}/events',headers=buyer,json=event).status_code==200
+    else:assert client.post(f'/test/payments/{orders[0]}/events',headers=buyer,json=event).status_code==409

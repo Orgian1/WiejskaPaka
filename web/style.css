@@ -79,3 +79,5 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .pickup-map{height:320px;width:100%;max-width:100%;margin:12px 0;background:#c9e2ec}.pickup-map-widget{min-width:0;margin:14px 0}.pickup-map-widget .leaflet-control a{min-width:30px}.pickup-map-widget p{overflow-wrap:anywhere}
 
 #pickup-promotions-admin input[type=checkbox]{display:inline;width:auto;margin-right:8px}
+
+.catalog-row-details{grid-column:1/-1;min-width:0;padding:20px;border:2px solid #39714a;border-radius:10px;background:#f2f8ee}.catalog-row-details input,.catalog-row-details select{max-width:100%}.seller-pickup-group ul{padding-left:18px}.seller-pickup-group summary{overflow-wrap:anywhere}

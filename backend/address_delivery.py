@@ -233,7 +233,9 @@ def register_routes(app, db, order_write_db, current_user, record_event, *, post
                 LEFT JOIN shipment_order_links lk ON lk.order_id=o.id
                 LEFT JOIN order_purchase_records pr ON pr.order_id=o.id WHERE o.''' + key + '=? AND '+group_expression+
                 '=? ORDER BY o.id DESC', (user['id'], group['delivery_group'])).fetchall())
-            return {'items': [dict(row) for row in rows],
+            from backend.delivery_proposals import latest,proposal_view
+            items=[{**dict(row),'proposal':proposal_view(latest(con,row['order_id']))} for row in rows]
+            return {'items': items,
                     'next_before': grouped[19]['last_order'] if len(grouped)>20 else None}
 
     @app.post('/address-delivery/requests/{order_id}/decision')
@@ -251,6 +253,8 @@ def register_routes(app, db, order_write_db, current_user, record_event, *, post
             preferences = [con.execute('SELECT * FROM address_delivery_requests WHERE order_id=?', (o['id'],)).fetchone() for o in rows]
             if any(p is None for p in preferences):
                 raise HTTPException(409, 'Niekompletne dane dostawy')
+            from backend.delivery_proposals import assert_no_pending
+            assert_no_pending(con,order_id)
             if all(p['state'] == payload.decision and p['revision'] == payload.revision + 1 for p in preferences):
                 return {'state': payload.decision, 'already_processed': True}
             if any(p['state'] != 'pending' or p['revision'] != payload.revision for p in preferences):

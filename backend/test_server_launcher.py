@@ -7,7 +7,7 @@ OPTIONAL_PREVIEW_TABLES = {
     'WP_ENABLE_WALLET_PREVIEW': ('wallet_preview_accounts','wallet_preview_entries','wallet_preview_terms','wallet_preview_resolutions','wallet_preview_operation_fences'),
     'WP_ENABLE_PICKUP_DATES': ('pickup_point_dates',),
     'WP_ENABLE_PRODUCT_UNITS': ('product_sale_units', 'order_sale_units'),
-    'WP_ENABLE_ADDRESS_DELIVERY': ('seller_delivery_windows', 'address_delivery_requests'),
+    'WP_ENABLE_ADDRESS_DELIVERY': ('seller_delivery_windows', 'address_delivery_requests', 'delivery_schedule_proposals'),
     'WP_ENABLE_USER_PHOTOS': ('user_photos',),
     'WP_ENABLE_SELLER_SEARCH': ('seller_public_logins',),
     'WP_ENABLE_EMAIL_VERIFICATION': ('account_email_proofs', 'email_verification_limits', 'email_verification_queue'),

@@ -1,6 +1,7 @@
 "use strict";
-const sellerPanelIds=['farmer','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','support-section'];
-function resetSellerPanels(){
+const sellerPanelIds=['farmer','farmer-details','point-location-panel','seller-compliance','user-photo-panel','address-delivery-panel','notifications-section','support-section','dashboard','wallet-section','favorites-section'];
+let sellerPanelState=new Map();
+function ensureSellerPanels(reset=false){
   for(const id of sellerPanelIds){
     const section=el(id);if(!section)continue;
     let disclosure=section.querySelector(':scope > details[data-seller-panel]');
@@ -14,11 +15,17 @@ function resetSellerPanels(){
       const summary=node('summary');summary.append(heading);disclosure.append(summary);
       while(section.firstChild)disclosure.append(section.firstChild);
       section.append(disclosure);
+      disclosure.open=sellerPanelState.get(id)??(id==='farmer');
+      disclosure.addEventListener('toggle',()=>{if(disclosure.isConnected&&role==='rolnik')sellerPanelState.set(id,disclosure.open)});
     }
-    disclosure.open=id==='farmer';
+    if(reset)disclosure.open=id==='farmer';
   }
 }
+function resetSellerPanels(){sellerPanelState=new Map();ensureSellerPanels(true);}
 function revealSellerSection(id){
   const section=el(id);if(!section)return;
   const disclosure=section.querySelector(':scope > details[data-seller-panel]');if(disclosure)disclosure.open=true;
 }
+document.addEventListener('click',event=>{
+  const link=event.target.closest('a[href^="#"]');if(link)revealSellerSection(link.getAttribute('href').slice(1));
+});

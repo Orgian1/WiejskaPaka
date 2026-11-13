@@ -76,6 +76,7 @@ async function refreshWallet(){
  const cancel=node('button','Anuluj wniosek wypłaty');cancel.type='button';cancel.onclick=()=>walletMutation('/wallet/withdrawals/'+encodeURIComponent(entry.id)+'/cancel-test',cancel,current,'Wniosek anulowany. Środki są ponownie dostępne.');card.append(cancel);
  }
  box.append(card);}
+ if(typeof ensureSellerPanels==='function')ensureSellerPanels();
 }
 async function walletMutation(path,button,current,notice){
  if(walletBusy||walletRecovering||!current())return;walletBusy=true;button.disabled=true;

@@ -66,6 +66,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
             page.locator('#catalog-seller-filter').wait_for(state='visible')
             assert page.locator('#catalog-search-mode').input_value()=='product'
             card.locator('summary > b').click()
+            card=page.locator('#catalog-details-'+card.get_attribute('data-product-id'))
             with page.expect_response('**/cart/items') as response:
                 card.get_by_role('button',name='Dodaj do koszyka',exact=True).click()
             assert response.value.status==200

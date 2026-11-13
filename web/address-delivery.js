@@ -60,9 +60,23 @@ async function loadAddressDeliveryViews(before=null){
       for(const item of data.items.filter(x=>(x.shipment_id||String(x.order_id))===key)){
         card.append(node('p',`${item.product_name||'Produkt'} • ilość: ${item.quantity} • ${money(item.total_grosze)}`));
       }
+      const proposal=request.proposal;
+      if(proposal){card.append(node('p',`Proponowany termin: ${proposal.delivery_date}, ${coordinateTime(proposal.from_minute)}–${coordinateTime(proposal.to_minute)} • ${{pending:'Oczekuje na decyzję klienta',accepted:'Klient zaakceptował termin',declined:'Klient odrzucił termin',superseded:'Zastąpiono nową propozycją'}[proposal.state]||proposal.state}`));}
+      if(actor==='klient'&&proposal?.state==='pending'&&request.state==='pending'&&request.status==='oczekuje_na_platnosc_testowa'){
+        card.append(node('p','Przyjmij nowy termin lub go odrzuć. Odrzucenie propozycji pozostawia zamówienie oczekujące na uzgodnienie; możesz je osobno anulować. Termin nie przedłuża 30-minutowej rezerwacji.'));
+        const choices=[];
+        for(const [decision,label] of [['accepted','Akceptuję proponowany termin'],['declined','Odrzucam proponowany termin']]){
+          const button=node('button',label);button.type='button';choices.push(button);
+          button.onclick=()=>act(async()=>{
+            if(!current()||button.disabled)return;choices.forEach(b=>b.disabled=true);
+            try{await api(`/address-delivery/proposals/${proposal.id}/decision`,'POST',{decision,revision:proposal.request_revision});if(current()){await loadAddressDeliveryViews();await loadOrders();await loadDashboard();}}
+            finally{if(current())choices.forEach(b=>b.disabled=false)}
+          });card.append(button);
+        }
+      }
       if(actor==='rolnik'&&request.state==='pending'&&request.status==='oczekuje_na_platnosc_testowa'){
         const buttons=[];
-        for(const [decision,label] of [['accepted','Akceptuję dostawę'],['declined','Odrzucam dostawę']]){
+        for(const [decision,label] of (proposal?.state==='pending'?[]:[['accepted','Akceptuję dostawę'],['declined','Odrzucam dostawę']])){
           const button=node('button',label);button.type='button';buttons.push(button);
           button.onclick=()=>act(async()=>{
             if(!current()||button.disabled)return;buttons.forEach(b=>b.disabled=true);
@@ -70,6 +84,18 @@ async function loadAddressDeliveryViews(before=null){
             finally{if(current())buttons.forEach(b=>b.disabled=false)}
           });card.append(button);
         }
+      }
+      if(actor==='rolnik'&&request.state==='pending'&&request.status==='oczekuje_na_platnosc_testowa'){
+        const form=node('form');form.className='delivery-proposal-form';form.append(node('h4','Zaproponuj inny termin dostawy'));
+        const date=node('input'),from=node('input'),to=node('input');date.type='date';date.required=true;date.value=request.delivery_date;
+        from.type=to.type='time';from.required=to.required=true;from.value=coordinateTime(request.agreed_from);to.value=coordinateTime(request.agreed_to);
+        date.setAttribute('aria-label','Nowa data dostawy');from.setAttribute('aria-label','Nowy termin od godziny');to.setAttribute('aria-label','Nowy termin do godziny');
+        const save=node('button','Zaproponuj termin klientowi');save.type='submit';
+        form.append(deliveryLabel('Nowa data dostawy',date),deliveryLabel('Nowy termin od godziny',from),deliveryLabel('Nowy termin do godziny',to),node('p','Klient musi zaakceptować nową datę i przedział godzin. Oczekiwanie nie przedłuża rezerwacji towaru.'),save);
+        form.onsubmit=event=>{event.preventDefault();act(()=>singleWrite('delivery-proposal:'+request.order_id,save,async()=>{
+          if(!current())return;await api(`/address-delivery/requests/${request.order_id}/proposal`,'POST',{revision:request.revision,delivery_date:date.value,from_time:from.value,to_time:to.value});
+          if(current()){await loadAddressDeliveryViews();await loadOrders();await loadDashboard();}
+        }))};card.append(form);
       }
       host.append(card);
     }

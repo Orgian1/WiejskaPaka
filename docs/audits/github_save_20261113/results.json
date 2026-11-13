@@ -1,0 +1,18 @@
+{
+  "api_sqlite": {
+    "pass": 17,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "055e0585ba256d228f3f12cdecdf7b08fd1654884742dc2fa4413229cc60129d"
+  },
+  "browser_mobile_desktop": {
+    "pass": 8,
+    "fail": 0,
+    "skip": 0,
+    "junit_sha256": "cb1cd426866af65ff7cc5fc0229c32038f4afd6afd66e88bde8cfd9c912824b2"
+  },
+  "scope": "Targeted validation before saving the recovered working tree; not a new complete regression.",
+  "starting_commit": "d3c517c4df0655b0e59918cb04bf6bea263c0174",
+  "repository": "Orgian1/WiejskaPaka",
+  "branch": "codex/demo-finalization-fixes-20261112"
+}

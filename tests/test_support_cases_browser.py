@@ -18,6 +18,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
                 page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
+                if role=='rolnik':page.locator('#dashboard > details > summary').click()
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
             def logout():
                 page.click('#logout');page.wait_for_function("()=>(document.getElementById('identity').textContent==='Nie zalogowano')")

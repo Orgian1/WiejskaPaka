@@ -14,6 +14,7 @@ class Cursor:
 class FakeConnection:
     def __init__(self, row):
         self.row = row
+        self.gateway = False  # This fixture exercises the legacy transaction path.
         self.calls = []
         self.transaction_open = False
     def execute(self, sql, params=()):

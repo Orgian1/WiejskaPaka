@@ -146,6 +146,8 @@ def init_postgres(url):
     """Validate schema; apply schema only when WP_AUTO_INIT_POSTGRES=1 (development)."""
     import os
     with postgres_db(url) as con:
+        from .postgres_runtime_role import assert_runtime_role
+        assert_runtime_role(con)
         row = con.execute("SELECT to_regclass('public.users') AS table_name").fetchone()
     if row['table_name'] is not None:
         return

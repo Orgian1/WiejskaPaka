@@ -9,6 +9,7 @@ __pycache__/
 !.env.example
 .venv/
 venv/
+work/
 node_modules/
 artifacts/private/
 

@@ -33,7 +33,9 @@ def test_photo_upload_replace_error_delete_and_logout(delivery_browser,tmp_path,
                 assert stored.status_code==200 and stored.headers['content-type']=='image/jpeg'
                 assert 0<len(stored.content)<=1_000_000
                 card.locator('img').wait_for(state='visible')
-                page.wait_for_function('Array.from(document.querySelectorAll("#user-photo-editors img")).every(i=>i.complete&&i.naturalWidth>0)')
+                # An explicit function avoids Playwright evaluating a string
+                # expression through eval under the application's strict CSP.
+                page.wait_for_function('() => Array.from(document.querySelectorAll("#user-photo-editors img")).every(i=>i.complete&&i.naturalWidth>0)')
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 old_src=card.locator('img').get_attribute('src')
                 card.locator('input[type=file]').set_input_files({'name':'bad.png','mimeType':'image/png','buffer':b'broken'})

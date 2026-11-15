@@ -104,6 +104,9 @@ def test_outbox_rejects_symlink_and_public_directory(tmp_path):
         pytest.skip('POSIX permissions and symlinks')
     box = tmp_path/'mail'
     box.mkdir(mode=0o755)
+    # A private process umask (e.g. 0077) otherwise turns this into 0700,
+    # so the test would never exercise rejection of a public directory.
+    box.chmod(0o755)
     with pytest.raises(ValueError):
         reset.prepare_outbox(box)
     link = tmp_path/'link'

@@ -1,0 +1,1647 @@
+{
+  "scope": "Static FastAPI route dependencies; indirect authentication and authorization not determined",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "endpoint": "index",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/audit/me",
+      "endpoint": "my_accounting_audit",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/commission-drafts",
+      "endpoint": "create_commission_draft",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/commission-drafts/me",
+      "endpoint": "my_commission_drafts",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/correction-requests",
+      "endpoint": "request_invoice_correction",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/correction-requests/me",
+      "endpoint": "my_correction_requests",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/me",
+      "endpoint": "my_accounting_export_jobs",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{draft_id}",
+      "endpoint": "prepare_accounting_export",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{job_id}/acknowledge-validation",
+      "endpoint": "acknowledge_accounting_validation",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/diagnostics",
+      "endpoint": "accounting_export_diagnostics",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/review-status",
+      "endpoint": "accounting_review_status",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/export-jobs/{job_id}/validate",
+      "endpoint": "validate_accounting_export",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-jobs/{job_id}/validation-history",
+      "endpoint": "accounting_validation_history",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/export-preview/{draft_id}",
+      "endpoint": "accounting_export_preview",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/accounting/invoice-drafts",
+      "endpoint": "create_invoice_draft",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/accounting/invoice-drafts/me",
+      "endpoint": "my_invoice_drafts",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/address-delivery/config",
+      "endpoint": "delivery_config",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/address-delivery/requests/mine",
+      "endpoint": "requests",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/address-delivery/requests/{order_id}/decision",
+      "endpoint": "decision",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/address-delivery/windows",
+      "endpoint": "add_window",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/address-delivery/windows/mine",
+      "endpoint": "my_windows",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PATCH",
+      "path": "/address-delivery/windows/{window_id}",
+      "endpoint": "activate_window",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/farmers/compliance-queue",
+      "endpoint": "admin_seller_compliance_queue",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/farmers/{farmer_id}/compliance/review",
+      "endpoint": "review_farmer_compliance",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/orders/purchase-record-audit",
+      "endpoint": "audit_order_purchase_records",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/overview",
+      "endpoint": "admin_shipments_overview",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/reconciliation",
+      "endpoint": "admin_shipments_reconciliation",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/shipments/{shipment_id}/audit",
+      "endpoint": "admin_shipment_audit",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/wallet/withdrawals-test",
+      "endpoint": "pending_withdrawals",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/wallet/withdrawals/{withdrawal_id}/complete-test",
+      "endpoint": "complete_withdrawal",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/change-password",
+      "endpoint": "change_account_password",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/email-verification/confirm",
+      "endpoint": "confirm",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/email-verification/options",
+      "endpoint": "options",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/email-verification/request",
+      "endpoint": "request_link",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/email-verification/status",
+      "endpoint": "status",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "endpoint": "login",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "endpoint": "logout",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout-all",
+      "endpoint": "logout_all",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout-others",
+      "endpoint": "logout_other_sessions",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "endpoint": "auth_me",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/password-reset-test/confirm",
+      "endpoint": "confirm_test_password_reset",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "RECOVERY_TOKEN_FLOW"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/password-reset-test/options",
+      "endpoint": "password_reset_options",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "RECOVERY_TOKEN_FLOW"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/password-reset-test/request",
+      "endpoint": "request_test_password_reset",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "RECOVERY_TOKEN_FLOW"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/password-reset/confirm",
+      "endpoint": "confirm_queued_password_reset",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "RECOVERY_TOKEN_FLOW"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/password-reset/request",
+      "endpoint": "request_queued_password_reset",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "RECOVERY_TOKEN_FLOW"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "endpoint": "register",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/sessions",
+      "endpoint": "my_sessions",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/checkout-test",
+      "endpoint": "checkout_saved_cart",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "DELETE",
+      "path": "/cart/items",
+      "endpoint": "saved_cart_clear",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/cart/items",
+      "endpoint": "saved_cart_get",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PUT",
+      "path": "/cart/items",
+      "endpoint": "saved_cart_put",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "DELETE",
+      "path": "/cart/items/{product_id}",
+      "endpoint": "saved_cart_delete",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/quote",
+      "endpoint": "cart_quote",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/cart/quote-quantities-test",
+      "endpoint": "cart_quantity_quote",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/catalog/search",
+      "endpoint": "catalog_search",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/active-addresses",
+      "endpoint": "courier_active_addresses",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/orders",
+      "endpoint": "courier_orders",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/couriers/me/shipments",
+      "endpoint": "courier_shipments",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/compliance",
+      "endpoint": "my_seller_compliance",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/farmers/me/compliance/acknowledge",
+      "endpoint": "acknowledge_compliance",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/pickup-points",
+      "endpoint": "my_pickup_points",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/me/profile",
+      "endpoint": "get_farmer_profile",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PUT",
+      "path": "/farmers/me/profile",
+      "endpoint": "update_farmer_profile",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/{farmer_id}/delivery-windows",
+      "endpoint": "windows",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/farmers/{farmer_id}/pickup-points",
+      "endpoint": "list_pickup_points",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "endpoint": "health",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/marketplace/accounting-policy",
+      "endpoint": "marketplace_accounting_policy",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "POST",
+      "path": "/marketplace/nearby",
+      "endpoint": "search_nearby",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/marketplace/orders/{order_id}/settlement-preview",
+      "endpoint": "order_settlement_preview",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/me",
+      "endpoint": "my_notifications",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/me/unread-count",
+      "endpoint": "unread_notification_count",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/{notification_id}/read",
+      "endpoint": "mark_notification_read",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders",
+      "endpoint": "create_order",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/idempotency-status/{request_key}",
+      "endpoint": "direct_order_idempotency_status",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/me",
+      "endpoint": "my_orders",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/assign-courier-test",
+      "endpoint": "assign_courier_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/cancel-paid-test",
+      "endpoint": "cancel_paid_order_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/cancel-test",
+      "endpoint": "cancel_order_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/confirm",
+      "endpoint": "confirm_order",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/dispatch-test",
+      "endpoint": "dispatch_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/events",
+      "endpoint": "order_events",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/location",
+      "endpoint": "order_location",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/orders/{order_id}/purchase-record",
+      "endpoint": "get_order_purchase_record",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/orders/{order_id}/recover-pin-test",
+      "endpoint": "recover_order_pin",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/pickup-point-dates/config",
+      "endpoint": "pickup_dates_config",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "POST",
+      "path": "/pickup-points",
+      "endpoint": "create_pickup_point",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PUT",
+      "path": "/pickup-points/{point_id}",
+      "endpoint": "update_pickup_point",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/product-units",
+      "endpoint": "product_units_configuration",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/products",
+      "endpoint": "products",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "POST",
+      "path": "/products",
+      "endpoint": "create_product",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/products/mine",
+      "endpoint": "my_products",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PATCH",
+      "path": "/products/mine/{product_id}",
+      "endpoint": "update_my_product",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/products/with-photo",
+      "endpoint": "create_product_with_photo",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/products/{product_id}",
+      "endpoint": "product_details",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/config",
+      "endpoint": "seller_config",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/login",
+      "endpoint": "my_public_login",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PUT",
+      "path": "/sellers/me/login",
+      "endpoint": "set_public_login",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/search",
+      "endpoint": "seller_search",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/farmer/mine",
+      "endpoint": "farmer_shipments",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/mine",
+      "endpoint": "my_shipments",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/assign-courier-test",
+      "endpoint": "assign_shipment_courier",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/cancel-paid-test",
+      "endpoint": "cancel_paid_shipment_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/cancel-test",
+      "endpoint": "cancel_shipment_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/confirm",
+      "endpoint": "confirm_shipment",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/courier-failure-test",
+      "endpoint": "fail_shipment_by_courier",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/details",
+      "endpoint": "shipment_details",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/dispatch-test",
+      "endpoint": "dispatch_shipment",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/financial-history-test",
+      "endpoint": "shipment_financial_history_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/shipments/{shipment_id}/purchase-record",
+      "endpoint": "get_shipment_purchase_record",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/shipments/{shipment_id}/recover-pin-test",
+      "endpoint": "recover_shipment_pin",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/admin/finance/monthly/{month}",
+      "endpoint": "admin_monthly_finance_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/admin/finance/monthly/{month}/export.csv",
+      "endpoint": "admin_monthly_finance_csv_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/admin/finance/reconcile",
+      "endpoint": "reconcile_test_finance",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/admin/payout-schedule/run",
+      "endpoint": "run_payout_schedule_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans",
+      "endpoint": "create_payout_plan_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}",
+      "endpoint": "get_payout_plan_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/cancel-reservation",
+      "endpoint": "cancel_reservation_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reconciliation",
+      "endpoint": "payout_plan_reconciliation_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reservation-review",
+      "endpoint": "reservation_review_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-plans/{payout_date}/reserve",
+      "endpoint": "reserve_payout_plan_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/farmers/me/payout-report",
+      "endpoint": "payout_report_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/farmers/me/payout-reservations/reconcile-all",
+      "endpoint": "reconcile_all_payout_reservations_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/orders/{order_id}/ready",
+      "endpoint": "mark_ready_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/payments/{order_id}",
+      "endpoint": "get_payment_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/payments/{order_id}/events",
+      "endpoint": "post_payment_test",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/support/cases",
+      "endpoint": "list_support_cases",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/support/cases",
+      "endpoint": "create_support_case",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/test/support/cases/{case_id}",
+      "endpoint": "support_case_detail",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/test/support/cases/{case_id}/replies",
+      "endpoint": "reply_support_case",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/user-photos/config",
+      "endpoint": "photo_config",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "GET",
+      "path": "/user-photos/mine",
+      "endpoint": "photos_mine",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "DELETE",
+      "path": "/user-photos/{kind}/{subject_id}",
+      "endpoint": "photo_delete",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/user-photos/{kind}/{subject_id}",
+      "endpoint": "photo_read",
+      "dependencies": [],
+      "auth_header_parameter": false,
+      "public_candidate": true,
+      "manual_review_required": true,
+      "review_flag": "PUBLIC_CANDIDATE"
+    },
+    {
+      "method": "PUT",
+      "path": "/user-photos/{kind}/{subject_id}",
+      "endpoint": "photo_upload",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "GET",
+      "path": "/wallet",
+      "endpoint": "read_wallet",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": false,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/wallet/operations/reconcile-test",
+      "endpoint": "reconcile_operation",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "PUT",
+      "path": "/wallet/pin",
+      "endpoint": "set_pin",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/wallet/topups",
+      "endpoint": "topup",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/wallet/withdrawals",
+      "endpoint": "withdraw",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    },
+    {
+      "method": "POST",
+      "path": "/wallet/withdrawals/{withdrawal_id}/cancel-test",
+      "endpoint": "cancel_withdrawal",
+      "dependencies": [
+        "current_user"
+      ],
+      "auth_header_parameter": true,
+      "public_candidate": false,
+      "manual_review_required": true,
+      "review_flag": "DIRECT_AUTH_DEPENDENCY"
+    }
+  ],
+  "total": 140,
+  "no_direct_auth_dependency": 0,
+  "warning": "NO_DIRECT_AUTH_DEPENDENCY does not establish a vulnerability; handlers may authenticate internally.",
+  "revision_base": "473c75514fa4816a2d61a05c8983742f1497404a",
+  "review_date": "2026-11-15",
+  "rls_compatibility_verified": false,
+  "notes": [
+    "140 routes structurally inspected; object authorization assessed by code review and existing/new API tests.",
+    "Legacy API is not compatible with the candidate RLS migration; no production deployment authorized or performed."
+  ]
+}

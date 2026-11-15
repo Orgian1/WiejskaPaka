@@ -1,0 +1,3 @@
+# Optional self-contained local PostgreSQL tests; never used by API runtime.
+-r requirements-lock.txt
+pgserver==0.1.4

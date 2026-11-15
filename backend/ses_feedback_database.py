@@ -48,6 +48,14 @@ class Target:
                     raise ValueError('Schema access required')
                 if raw.execute("SELECT current_setting('default_transaction_read_only') AS value").fetchone()['value']!='off':
                     raise ValueError('Writable receiver sessions required')
+                if os.environ.get('WP_RLS_GATEWAY')=='1':
+                    from backend.rls_gateway import load_key
+                    from backend.postgres_runtime_role import assert_runtime_role
+                    assert_runtime_role(raw);load_key()
+                    tables=raw.execute("SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity AND c.relforcerowsecurity AND c.relname=ANY(%s)",(list(TABLES),)).fetchall()
+                    if {r['relname'] for r in tables}!=set(TABLES):raise ValueError('Missing protected tables')
+                    if raw.execute("SELECT has_function_privilege(current_user,'wp_rls.execute(text,text)','EXECUTE') AS allowed").fetchone()['allowed'] is not True:raise ValueError('Missing gateway')
+                    return PgConnection(raw,gateway=True)
                 rows=raw.execute('SELECT table_name FROM information_schema.tables '
                     "WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name=ANY(%s)",
                     (list(TABLES),)).fetchall()

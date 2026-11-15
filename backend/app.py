@@ -162,6 +162,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 from backend.http_limits import RequestBodyLimitMiddleware
 app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+from backend.rls_gateway import DatabaseContextMiddleware
+app.add_middleware(DatabaseContextMiddleware)
 
 @contextmanager
 def db():

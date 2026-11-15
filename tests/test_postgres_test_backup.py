@@ -205,8 +205,10 @@ def test_rehearsal_drops_only_its_created_database_even_after_failure(archive, m
         assert pg.rehearse(path, key, 'private')['rehearsal_database_removed']
     else:
         with pytest.raises(ValueError):pg.rehearse(path, key, 'private')
-    assert len(commands) == 3
+    assert len(commands) == (3 if failure=='restore' else 6)
+    if failure!='restore':
+        assert commands[2:-1]==['DROP SCHEMA IF EXISTS wp_rls CASCADE','DROP SCHEMA IF EXISTS wp_rls_keys CASCADE','DROP SCHEMA IF EXISTS wp_security CASCADE']
     created = commands[1].split('"')[1]
-    dropped = commands[2].split('"')[1]
+    dropped = commands[-1].split('"')[1]
     assert created == dropped and created.startswith('wp_test_restore_')
     assert 'wp_test_seed' not in ''.join(commands)

@@ -71,7 +71,7 @@ def main():
 
 
 def verify_test_database_connection(dsn, expected_name, connect=None, *, require_schema=False,
-                                    required_tables=()):
+                                    required_tables=(), allow_backup=False):
     """Verify the actual PostgreSQL target before starting the HTTP listener.
 
     This only performs a read-only probe; it never creates or migrates a database.
@@ -101,6 +101,26 @@ def verify_test_database_connection(dsn, expected_name, connect=None, *, require
             from backend.postgres_schema_preflight import CORE_TABLES
             tables = tuple(dict.fromkeys((*CORE_TABLES, *required_tables)))
             with connection.cursor() as cursor:
+                if os.environ.get('WP_RLS_GATEWAY') == '1':
+                    from backend.rls_gateway import load_key
+                    from backend.postgres_runtime_role import assert_runtime_role
+                    from psycopg.rows import dict_row
+                    with connection.cursor(row_factory=dict_row) as role_cursor:
+                        class RoleConnection:
+                            def execute(self,query):role_cursor.execute(query);return role_cursor
+                        assert_runtime_role(RoleConnection(),allow_backup=allow_backup)
+                    if not allow_backup:load_key()
+                    cursor.execute('SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace '
+                        "WHERE n.nspname=%s AND c.relkind='r' AND c.relrowsecurity AND c.relforcerowsecurity AND c.relname=ANY(%s)",
+                        ('public',list(tables)))
+                    rows=cursor.fetchall()
+                    if {row[0] for row in rows} != set(tables):raise RuntimeError('RLS schema incomplete')
+                    cursor.execute("SELECT has_function_privilege(current_user,'wp_rls.execute(text,text)','EXECUTE')")
+                    if cursor.fetchone() != (True,):
+                        if not allow_backup:raise RuntimeError('RLS gateway privilege required')
+                        cursor.execute("SELECT pg_has_role(current_user,'wp_rls_backup','MEMBER')")
+                        if cursor.fetchone() != (True,):raise RuntimeError('Backup membership required')
+                    return
                 cursor.execute(
                     'SELECT table_name FROM information_schema.tables '
                     'WHERE table_schema = %s AND table_type = %s AND table_name = ANY(%s)',

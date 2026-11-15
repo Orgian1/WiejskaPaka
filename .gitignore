@@ -9,6 +9,7 @@ __pycache__/
 !.env.example
 .venv/
 venv/
+work/
 node_modules/
 artifacts/private/
 
@@ -61,3 +62,8 @@ tests/test_postgres_test_guard_hardening.py
 .wp-backup-*
 .wp-snapshot-*
 .wp-restore-*
+
+# Server-side RLS capability signing keys
+*.rls-key*
+.rls-key-*
+capability.key

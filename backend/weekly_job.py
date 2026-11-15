@@ -24,7 +24,8 @@ def execute(con, *, now=None, enabled=False):
         return {'status': 'skipped_not_monday', 'date': local.date().isoformat(), 'transfer_executed': False}
     # SQLite serializes writers via BEGIN IMMEDIATE. PostgreSQL locks the
     # stable advisory key across concurrent workers for the transaction.
-    if os.environ.get('DATABASE_URL', '').strip():
+    from backend.pg_adapter import PgConnection
+    if isinstance(con,PgConnection):
         con.execute('SELECT pg_advisory_xact_lock(?)', (291029,))
     else:
         con.execute('BEGIN IMMEDIATE')

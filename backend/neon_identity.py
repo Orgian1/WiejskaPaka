@@ -27,6 +27,11 @@ def authenticated_actor(connection, actor_id):
     reuse a prior authenticated identity between requests.
     """
     actor_id = validate_actor_id(actor_id)
+    if getattr(connection,'gateway',False):
+        # Integrated RLS resolves the bearer proof inside PostgreSQL. An ID GUC
+        # is neither needed nor accepted as identity by these policies.
+        yield connection
+        return
     # Parameter binding, never SQL interpolation. `true` => transaction-local.
     connection.execute("SELECT set_config('wiejskapaka.actor_id', %s, true)", (str(actor_id),))
     try:

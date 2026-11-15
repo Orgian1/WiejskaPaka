@@ -109,8 +109,10 @@ class PgCursor:
 
 
 class PgConnection:
-    def __init__(self, connection):
+    def __init__(self, connection, *, gateway=None):
         self.connection = connection
+        import os
+        self.gateway = (os.environ.get('WP_RLS_GATEWAY') == '1' or bool(os.environ.get('WP_RLS_KEY_FILE'))) if gateway is None else gateway
 
     def execute(self, sql, params=()):
         # Consume the row only when the compatibility layer added RETURNING id.
@@ -124,7 +126,11 @@ class PgConnection:
             and not re.search(r'\bRETURNING\b', sql, re.I)
             and re.search(r'\bRETURNING\s+id\s*;?\s*$', translated, re.I) is not None
         )
-        cursor = self.connection.execute(translated, params)
+        if self.gateway:
+            from .rls_gateway import execute
+            cursor = execute(self.connection, translated, params)
+        else:
+            cursor = self.connection.execute(translated, params)
         identity = cursor.fetchone() if added_identity else None
         lastrowid = identity['id'] if identity is not None else None
         return PgCursor(cursor, lastrowid)
@@ -139,13 +145,24 @@ def postgres_db(url):
         raise RuntimeError('PostgreSQL wymaga pakietu psycopg[binary]') from exc
     with psycopg.connect(url, row_factory=dict_row, connect_timeout=5) as connection:
         with connection.transaction():
-            yield PgConnection(connection)
+            import os
+            installed = connection.execute("SELECT to_regprocedure('wp_rls.execute(text,text)') IS NOT NULL AS installed").fetchone()['installed']
+            if installed:
+                from .rls_gateway import load_key
+                from .postgres_runtime_role import assert_runtime_role
+                assert_runtime_role(connection)
+                load_key()  # No legacy fallback when the secured schema exists.
+            elif os.environ.get('WP_RLS_GATEWAY') == '1' or os.environ.get('WP_RLS_KEY_FILE'):
+                raise RuntimeError('RLS schema required; legacy fallback forbidden')
+            yield PgConnection(connection, gateway=installed)
 
 
 def init_postgres(url):
     """Validate schema; apply schema only when WP_AUTO_INIT_POSTGRES=1 (development)."""
     import os
     with postgres_db(url) as con:
+        from .postgres_runtime_role import assert_runtime_role
+        assert_runtime_role(con.connection)
         row = con.execute("SELECT to_regclass('public.users') AS table_name").fetchone()
     if row['table_name'] is not None:
         return
@@ -166,6 +183,10 @@ def postgres_verified_db(url, authorization, *, now=None):
     """
     from .neon_session_bridge import verified_actor
 
+    from .rls_gateway import database_context
+    from contextlib import nullcontext
     with postgres_db(url) as connection:
-        with verified_actor(connection, authorization, now=now) as actor_id:
-            yield connection, actor_id
+        context=database_context('request',authorization) if connection.gateway else nullcontext()
+        with context:
+            with verified_actor(connection, authorization, now=now) as actor_id:
+                yield connection, actor_id

@@ -72,7 +72,7 @@ def run():
                 def login(role):
                     credentials(role)
                     page.locator('#auth button[type=submit]').click()
-                    page.wait_for_function('(r)=>document.querySelector("#identity").textContent.includes("("+r+")")', arg=role)
+                    page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email', arg=f'bridge-{role}@example.invalid')
 
                 def logout():
                     page.locator('#logout').click()
@@ -97,7 +97,8 @@ def run():
                 page.locator('#delivery').fill('5,01')
                 page.locator('#stock').fill('3')
                 page.locator('#new-product button').click()
-                page.wait_for_function('document.querySelector("#products").textContent.includes("Marchew integracyjna")')
+                page.wait_for_function('() => document.querySelector("#dashboard-content").textContent.includes("Marchew integracyjna")')
+                page.locator('#point-name').evaluate('node => { for(let p=node.parentElement;p;p=p.parentElement) if(p.tagName==="DETAILS"&&!p.open)p.querySelector("summary").click(); }')
                 page.locator('#point-name').fill('Punkt testowy')
                 page.locator('#point-city').fill('Radom')
                 page.locator('#point-street').fill('Polna 2')
@@ -109,7 +110,7 @@ def run():
 
                 # B/38: pickup order with exact integer-grosz amount.
                 login('klient')
-                page.wait_for_function('document.querySelector("#products").textContent.includes("Marchew integracyjna")')
+                page.wait_for_function('() => document.querySelector("#products").textContent.includes("Marchew integracyjna")')
                 page.wait_for_function('document.querySelectorAll("#products select").length >= 2 && [...document.querySelectorAll("#products select")].some(x => x.getAttribute("aria-label") === "Punkt odbioru" && x.options.length > 0)')
                 page.locator('#products button', has_text='Zamów testowo').first.click()
                 try:
@@ -172,9 +173,11 @@ def run():
                 }).json() if o['fulfillment'] == 'odbior')
                 page.wait_for_function('document.querySelector("#orders").textContent.includes("oczekuje_na_platnosc_testowa")')
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
+                pickup_card.evaluate('node => { if(node.tagName==="DETAILS"&&!node.open)node.querySelector("summary").click(); }')
                 pickup_card.get_by_role('button', name='Gotowe do odbioru (test)').click()
                 page.wait_for_function('document.querySelector("#orders").textContent.includes("gotowe_do_odbioru_testowo")')
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
+                pickup_card.evaluate('node => { if(node.tagName==="DETAILS"&&!node.open)node.querySelector("summary").click(); }')
                 pickup_card.get_by_role('textbox', name='Sześciocyfrowy PIN odbioru').fill('999999' if pickup_pin != '999999' else '888888')
                 pickup_card.get_by_role('checkbox').check()
                 pickup_card.get_by_role('button', name='Potwierdź odbiór').click()
@@ -183,10 +186,11 @@ def run():
 
                 # B/45: correct PIN confirms exactly once; reuse must fail.
                 pickup_card = page.locator('#orders .card').filter(has_text=pickup_order['pickup_code'])
+                pickup_card.evaluate('node => { if(node.tagName==="DETAILS"&&!node.open)node.querySelector("summary").click(); }')
                 pickup_card.get_by_role('textbox', name='Sześciocyfrowy PIN odbioru').fill(pickup_pin, timeout=5000)
                 pickup_card.get_by_role('checkbox').check()
                 pickup_card.get_by_role('button', name='Potwierdź odbiór').click()
-                page.wait_for_function('document.querySelector("#orders").textContent.includes("odebrane")', timeout=10000)
+                page.wait_for_function('() => document.querySelector("#notice").textContent.includes("Odbiór potwierdzony")', timeout=10000)
                 farmer_headers = {'Authorization': 'Bearer ' + page.evaluate('token')}
                 reused = client.post(f"/orders/{pickup_order['id']}/confirm", headers=farmer_headers,
                                      json={'pin': pickup_pin, 'checked_goods': True})

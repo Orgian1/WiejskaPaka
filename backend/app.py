@@ -136,12 +136,21 @@ async def private_validation_error(request: Request, exc: RequestValidationError
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
+        # Check on every request as well as import. A long-lived worker must
+        # fail closed if its environment changes after application startup.
+        # This covers test flows without a /test path (wallet, PIN recovery,
+        # checkout and routes supplied by feature routers).
+        try:
+            assert_safe_environment()
+        except RuntimeError:
+            response = JSONResponse(status_code=503, content={'detail': 'Środowisko niedozwolone'})
+        else:
+            response = await call_next(request)
         response.headers.update(SECURITY_RESPONSE_HEADERS)
         # Bezpieczna reguła domyślna: nowe endpointy nie mogą przypadkowo
         # udostępnić danych prywatnych pamięci podręcznej przeglądarki.
         public_get_paths = {'/', '/health', '/products', '/marketplace/accounting-policy'}
-        is_public = request.method in ('GET', 'HEAD') and (
+        is_public = response.status_code < 400 and request.method in ('GET', 'HEAD') and (
             request.url.path in public_get_paths or
             request.url.path.startswith('/assets/')
         )
@@ -153,6 +162,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 from backend.http_limits import RequestBodyLimitMiddleware
 app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+from backend.rls_gateway import DatabaseContextMiddleware
+app.add_middleware(DatabaseContextMiddleware)
 
 @contextmanager
 def db():

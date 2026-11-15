@@ -219,3 +219,8 @@ Końcowy wynik testów bez hostingu i rzeczywistych płatności (18.10.2026):
 
 Rozszerzony zestaw z restartami PostgreSQL, zakończony 18.10.2026:
 `docs/RESTART_APLIKACJI_POSTGRESQL_2026-10-18.md`.
+
+
+## Integracja PostgreSQL RLS — kontynuacja PR #61
+
+Aktualny model ról, podpisywane uprawnienia do zapytań, odbiór całego API z RLS oraz procedury wdrożenia i rollbacku opisuje [raport integracji](docs/RLS_INTEGRACJA_API_2026-11-15.md). [Wyniki testów i pokrycie 140 tras](docs/RLS_INTEGRACJA_WYNIKI_2026-11-15.json). Migracje są ręczne; nie wykonano wdrożenia produkcyjnego.

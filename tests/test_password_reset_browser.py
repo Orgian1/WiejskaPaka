@@ -37,14 +37,14 @@ def test_reset_form_and_fragment_in_actual_chromium(monkeypatch,tmp_path,width):
                 fragment = json.loads(files[0].read_text())['fragment']
                 token = fragment.split('=',1)[1]
                 page.goto(str(client.base_url)+fragment)
-                page.wait_for_function("location.hash === ''")
+                page.wait_for_function("() => location.hash === ''")
                 assert page.locator('#reset-token').input_value() == token
                 page.fill('#reset-new-password',NEW)
                 page.fill('#reset-repeat-password',NEW)
                 with page.expect_response('**/auth/password-reset-test/confirm') as response:
                     page.click('#confirm-reset-submit')
                 assert response.value.status == 200
-                page.wait_for_function("document.getElementById('reset-status').textContent.includes('Hasło zmienione')")
+                page.wait_for_function("() => document.getElementById('reset-status').textContent.includes('Hasło zmienione')")
                 assert not page.locator('#reset-token').input_value()
                 assert not page.locator('#reset-new-password').input_value()
                 assert all(token not in url for url in urls)

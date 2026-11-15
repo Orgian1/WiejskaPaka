@@ -23,7 +23,9 @@ przepływy pozostają na istniejącej ścieżce, testowanej osobno bez RLS.
 | SEC-05 | Wysoka przy niewłaściwym wdrożeniu | RLS nie ukrywa kolumn, a właściciel może go wyłączyć. Projekt roli nie ma własności ani BYPASSRLS; grant orders nie obejmuje PIN/hash, users nie obejmuje hasła, sessions nie jest czytelne przez runtime. Wymaga migracji SELECT * i bootstrap logowania przed użyciem przez API. |
 | SEC-06 | Ograniczenie architektury | Część odczytów używa db() po current_user, a nowy kontekst sesji nie obejmuje wszystkich połączeń i workers. Pełna izolacja SQL nie jest dziś wdrożona. Nie rozwiązano tego przez przyznanie ogólnego bypassu systemowego. |
 | TEST-01 | Naprawiono test | Lista skryptów w test_local_marketplace_ui nie uwzględniała istniejącego contact.js. Zachowano ścisłą kontrolę kolejności i defer, uzupełniając oczekiwaną listę. |
-| TEST-02 | Naprawiono test | Test publicznego katalogu resetu pod umask 0077 tworzył faktycznie katalog 0700. Jawne chmod(0755) zapewnia badanie odmowy dla rzeczywiście publicznego katalogu. |
+| TEST-02 | Naprawiono test | Testy publicznego katalogu resetu i katalogu poświadczeń preview pod umask 0077 tworzyły faktycznie katalog 0700. Jawne chmod(0755) zapewnia badanie odmowy dla rzeczywiście publicznego katalogu. |
+
+| TEST-03 | Naprawiono test | Warunek gotowości zdjęć w Playwright używał wyrażenia wymagającego eval pod ścisłym CSP. Jawna funkcja sprawdza te same complete/naturalWidth bez zmiany polityki CSP aplikacji. |
 
 ## Powierzchnia API i sprawdzone reguły
 
@@ -79,3 +81,42 @@ bezpiecznych polityk `owner_id = actor_id FOR ALL` projekt odmawia tych zapisów
 Instrukcja wdrożenia i rollbacku: `BEZPIECZENSTWO_POSTGRES_WDROZENIE_2026-11-15.md`.
 Dokładne wyniki bieżącego przebiegu: `SECURITY_TEST_RESULTS_2026-11-15.json` oraz
 uzupełnienie wyników poniżej po zakończeniu uruchomionych procesów.
+
+## Wyniki końcowe — kod 5470741
+
+| Zestaw | PASS | FAIL | SKIP |
+|---|---:|---:|---:|
+| Pełna regresja, 392 moduły, izolacja per moduł | 4881 | 0 | 100 |
+| Natywny PostgreSQL: 93 API + 2 adapter, pełne ponowienie | 95 | 0 | 0 |
+| Dodatkowe sondy środowiska PostgreSQL | 2 | 0 | 0 |
+| Rozszerzone role Chromium z mock API, 12 scenariuszy | 4 | 0 | 0 |
+| Projekt RLS na rzeczywistym PostgreSQL, także rollback | 31 | 0 | 0 |
+| Dodatkowy historyczny browser/backend bridge | 0 | 1 | 0 |
+
+95 natywnych testów PostgreSQL, dwie sondy PostgreSQL i jeden rozszerzony test
+przeglądarkowy uzupełniły **98 ze 100 SKIP** pełnego zestawu. Pozostałe dwa SKIP
+to odmowa pracy z kluczami na systemach nie-POSIX; środowisko ma Linux/POSIX.
+Efektywne pokrycie tego zestawu to **4979 PASS, 0 FAIL, 2 SKIP**. Wynik 31 RLS
+oraz trzy z czterech testów rozszerzonych występują już w pełnym zestawie — nie
+należy sumować wszystkich wierszy jako unikalnych przypadków.
+
+Osobny `python -m scripts.check_browser_backend_bridge` pozostaje **FAIL**:
+historyczny harness oczekuje `(rola)` w #identity, podczas gdy obecny interfejs
+wyświetla e-mail. To narzędzie spoza powyższego pełnego zestawu. Nie zmieniono
+produktu, aby dopasować go do starego oczekiwania. Bieżące rzeczywiste testy
+browser/HTTP w pełnym zestawie przechodzą. Ten otwarty problem jest również
+zapisany w JSON wyników i nie został ukryty przez zbiorcze „0 FAIL”.
+
+Pierwsza próba ośmiu równoległych części została przerwana po przekroczeniach
+czasu na limicie dwóch CPU; zastąpił ją kompletny przebieg dwóch części. Po
+naprawie przygotowania testów powtórzono zmienione moduły, wykorzystując
+weryfikowane hashem PASS niezmienionych modułów. Obie części końcowego raportu
+mają complete=true i sources_unchanged=true oraz zgodny fingerprint aplikacji.
+Dwa początkowe błędy natywnego backupu wynikały z braku pg_dump w PATH; po
+wskazaniu klientów PostgreSQL 16.2 przeszły dwa ponowienia, a następnie cały
+95-przypadkowy zestaw na końcowym kodzie. `pip check` i `git diff --check`: PASS.
+
+Przetestowany kod: `5470741fce44e8888f421b868b17e48ab55d11fa`. Końcowy commit
+raportu zmienia wyłącznie dokumentację i wynikowy JSON. Środowisko: Python 3.12,
+PostgreSQL 16.2 z pgserver 0.1.4, lokalne jednorazowe klastry, Chromium i SQLite
+per moduł. Nie wykonano wdrożenia, nie użyto produkcyjnego DSN ani sekretów VPS.

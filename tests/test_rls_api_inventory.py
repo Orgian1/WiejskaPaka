@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 from uuid import uuid4
 import pytest
-from tests.test_postgres_full_api_optin import pg_api,register,product,inspection_connect
+from tests.test_postgres_full_api_optin import pg_api,pg_photo_api,pg_seller_api,pg_address_delivery_api,pg_units_api,register,product,inspection_connect
 
 pytestmark=pytest.mark.skipif(os.environ.get('WP_TEST_ENABLE_RLS')!='1',reason='Run scripts.run_rls_api_gate for the complete RLS database fixture')
 
@@ -109,3 +109,82 @@ def test_weekly_job_uses_restricted_rls_connection_without_http_actor(pg_api):
             second=execute(con,now=now,enabled=True)
     assert first['transfer_executed'] is False and second['transfer_executed'] is False
     assert second['already_prepared'] is True
+
+
+
+def test_extended_endpoint_coverage(pg_api,pg_photo_api,pg_seller_api,pg_address_delivery_api,pg_units_api):
+    from datetime import datetime,timezone
+    client,parameters=pg_api
+    password='RLS-coverage-password-2026'
+    seller,seller_id=register(client,'rolnik');buyer,_=register(client,'klient',password=password)
+    courier,courier_id=register(client,'dostawca');admin,admin_id=register(client,'klient')
+    with inspection_connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(admin_id,))
+    def ok(method,path,headers=None,**kw):
+        r=client.request(method,path,headers=headers,**kw)
+        assert 200<=r.status_code<300,(method,path,r.status_code,r.text)
+        return r
+    for path in ('/','/products','/product-units','/pickup-point-dates/config','/sellers/config','/user-photos/config','/address-delivery/config','/auth/email-verification/options','/marketplace/accounting-policy'):
+        ok('GET',path)
+    ok('PUT','/farmers/me/profile',seller,json={'farm_name':'RLS coverage farm','city':'Radom','description':'Test'})
+    ok('GET','/farmers/me/profile',seller)
+    point=ok('POST','/pickup-points',seller,json={'name':'Point','city':'Radom','street':'Public point 1','opening_hours':'8-16'}).json()['id']
+    ok('GET',f'/farmers/{seller_id}/pickup-points')
+    pid=product(client,seller,stock=20)
+    ok('POST','/cart/quote',buyer,json={'items':[{'product_id':pid,'quantity':1}],'fulfillment':'dostawa'})
+    ok('PUT','/cart/items',buyer,json={'product_id':pid,'quantity':1});ok('GET','/cart/items',buyer)
+    ok('DELETE',f'/cart/items/{pid}',buyer);ok('DELETE','/cart/items',buyer)
+    body={'fulfillment':'dostawa','delivery_city':'Radom','delivery_street':'Private delivery 1','delivery_postal_code':'26-600'}
+    def shipment():
+        ok('PUT','/cart/items',buyer,json={'product_id':pid,'quantity':1})
+        return ok('POST','/cart/checkout-test',buyer,json=body).json()
+    first=shipment();sid=first['shipment_id']
+    for path,actor in [('/shipments/mine',buyer),('/shipments/farmer/mine',seller),
+                       (f'/shipments/{sid}/details',buyer),(f'/shipments/{sid}/financial-history-test',buyer),
+                       (f'/shipments/{sid}/purchase-record',seller),(f'/admin/shipments/{sid}/audit',admin)]:ok('GET',path,actor)
+    ok('POST',f'/shipments/{sid}/recover-pin-test',buyer,json={'password':password})
+    ok('POST',f'/shipments/{sid}/cancel-test',buyer)
+    second=shipment()
+    for order in second['orders']:ok('POST',f"/test/payments/{order['id']}/events",buyer,json={'event_id':uuid4().hex,'event_type':'payment_success_test'})
+    ok('POST',f"/shipments/{second['shipment_id']}/cancel-paid-test",buyer)
+    request_key=uuid4().hex
+    direct=ok('POST','/orders',{**buyer,'Idempotency-Key':request_key},json={**body,'product_id':pid,'quantity':1}).json()
+    oid=direct['id'];ok('GET','/orders/idempotency-status/'+request_key,buyer)
+    ok('POST',f'/orders/{oid}/assign-courier-test',seller,json={'courier_id':courier_id})
+    ok('POST',f'/test/payments/{oid}/events',buyer,json={'event_id':uuid4().hex,'event_type':'payment_success_test'})
+    ok('POST',f'/orders/{oid}/dispatch-test',seller)
+    for path,actor in [('/couriers/me/orders',courier),('/couriers/me/shipments',courier),
+                       (f'/orders/{oid}/events',seller),(f'/orders/{oid}/location',buyer),(f'/orders/{oid}/location',courier),
+                       (f'/marketplace/orders/{oid}/settlement-preview',seller),('/accounting/export-jobs/me',seller)]:ok('GET',path,actor)
+    notices=ok('GET','/notifications/me',buyer).json()
+    assert isinstance(notices,list) and notices
+    ok('POST',f"/notifications/{notices[0]['id']}/read",buyer)
+    month=datetime.now(timezone.utc).strftime('%Y-%m')
+    ok('GET',f'/test/admin/finance/monthly/{month}',admin)
+    ok('GET',f'/test/admin/finance/monthly/{month}/export.csv',admin)
+    ok('POST','/test/admin/finance/reconcile',admin,json=[])
+    scheduler=client.post('/test/admin/payout-schedule/run',headers=admin)
+    assert scheduler.status_code==(200 if datetime.now(timezone.utc).weekday()==0 else 409),scheduler.text
+    photos,_=pg_photo_api
+    photo_seller,_=register(photos,'rolnik')
+    from tests.test_user_photos import picture
+    import base64
+    image=photos.post('/products/with-photo',headers=photo_seller,json={'name':'With photo','price_grosze':100,'delivery_grosze':50,'stock':1,'photo_base64':base64.b64encode(picture()).decode()})
+    assert image.status_code==201,image.text
+    assert photos.get('/user-photos/mine',headers=photo_seller).status_code==200
+    sellers,_=pg_seller_api
+    login_owner,_=register(sellers,'rolnik')
+    assert sellers.put('/sellers/me/login',headers=login_owner,json={'login':'rls'+uuid4().hex[:12]}).status_code==200
+    assert sellers.get('/sellers/me/login',headers=login_owner).status_code==200
+    delivery,_=pg_address_delivery_api
+    window_owner,window_farmer=register(delivery,'rolnik')
+    window=delivery.post('/address-delivery/windows',headers=window_owner,json={'city':'Radom','postal_code':'26-600','weekday':0,'from_time':'10:00','to_time':'16:00'})
+    assert window.status_code==200,window.text
+    assert delivery.get('/address-delivery/windows/mine',headers=window_owner).status_code==200
+    assert delivery.get(f'/farmers/{window_farmer}/delivery-windows').status_code==200
+    changed=delivery.patch('/address-delivery/windows/'+window.json()['id'],headers=window_owner,json={'active':False})
+    assert changed.status_code==200,changed.text
+    units,_=pg_units_api
+    unit_owner,_=register(units,'rolnik');unit_buyer,_=register(units,'klient')
+    unit_pid=product(units,unit_owner)
+    quote=units.post('/cart/quote-quantities-test',headers=unit_buyer,json={'items':[{'product_id':unit_pid,'quantity_text':'1'}],'fulfillment':'odbior'})
+    assert quote.status_code==200,quote.text

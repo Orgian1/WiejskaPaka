@@ -191,6 +191,7 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     env['WP_ENABLE_PICKUP_DATES'] = '1'
                 if units:
                     env['WP_ENABLE_PRODUCT_UNITS'] = '1'
+                    env['WP_ENABLE_FRACTIONAL_QUOTE'] = '1'
                 if sellers:
                     env['WP_ENABLE_SELLER_SEARCH'] = '1'
                 if photos:

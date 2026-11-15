@@ -1,5 +1,7 @@
 # Audyt bezpieczeństwa PostgreSQL i autoryzacji WiejskaPaka
 
+> Raport historyczny PR #61. Integrację zamyka [aktualny raport RLS](RLS_INTEGRACJA_API_2026-11-15.md), z wynikami całego API przy włączonym RLS.
+
 Data: 15.11.2026. Baza pracy: `codex/demo-finalization-20261112`, commit
 `473c75514fa4816a2d61a05c8983742f1497404a`. Gałąź poprawek:
 `codex/security-audit-20261115`. Zakres nie obejmuje dostępu do VPS ani danych produkcji.

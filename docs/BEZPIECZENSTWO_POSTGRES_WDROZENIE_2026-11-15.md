@@ -1,5 +1,7 @@
 # PostgreSQL i autoryzacja — pakiet do przeglądu, 15.11.2026
 
+> Historyczny projekt PR #61. Aktualna ścieżka to `database/security_rls/`; zobacz [integrację API i procedurę wdrożenia](RLS_INTEGRACJA_API_2026-11-15.md). Nie łączyć starych polityk security_review z nową migracją.
+
 Status: **NIE WDRAŻAĆ RLS do istniejącej aplikacji**. Paczka zawiera aktywne
 zabezpieczenia procesu API oraz wykonujący się na PostgreSQL projekt RLS.
 Nie jest ukończoną integracją aplikacji z RLS. Nie zmieniono VPS ani produkcyjnej bazy.

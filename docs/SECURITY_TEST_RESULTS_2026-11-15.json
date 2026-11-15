@@ -4016,5 +4016,6 @@
   },
   "remaining_platform_only_skips": 2,
   "production_ready": false,
-  "rls_rollout_allowed": false
+  "rls_rollout_allowed": false,
+  "superseded_by": "RLS_INTEGRACJA_WYNIKI_2026-11-15.json"
 }

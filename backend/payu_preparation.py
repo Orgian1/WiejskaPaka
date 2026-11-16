@@ -96,7 +96,7 @@ class SimulatedPaymentProvider:
         raise KeyError("Unknown simulated payment")
 
     def set_test_status(self, operation_id: str, status: PaymentStatus):
-        if status not in (PaymentStatus.CONFIRMED, PaymentStatus.FAILED,
+        if type(status) is not PaymentStatus or status not in (PaymentStatus.CONFIRMED, PaymentStatus.FAILED,
                           PaymentStatus.CANCELLED):
             raise ValueError("Unsupported test status")
         existing = self._payments[operation_id]

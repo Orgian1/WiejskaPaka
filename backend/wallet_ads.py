@@ -7,6 +7,7 @@ import base64
 import binascii
 import secrets
 from datetime import datetime, timezone
+from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import Depends, Header, HTTPException, Query
@@ -45,7 +46,7 @@ class Campaign(BaseModel):
     ends_at: datetime
     enabled: bool = False
     sort_order: int = Field(default=0, strict=True, ge=0, le=100000)
-    audience: str = Field(default='both')
+    audience: Literal['klient', 'rolnik', 'both'] = 'both'
     @field_validator('advertiser')
     @classmethod
     def name(cls, value):

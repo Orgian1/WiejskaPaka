@@ -192,12 +192,12 @@ def test_wallet_ads_sqlite_existing_database_adds_audience_without_losing_campai
         with closing(sqlite3.connect(path)) as con:
             con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
             con.commit()
-        assert client.post('/admin/wallet-ads',headers=admin,json=campaign()).status_code==201
+        ad=client.post('/admin/wallet-ads',headers=admin,json=campaign())
+        assert ad.status_code==201,ad.text
+    # Simulate a pre-targeting SQLite database with the exact old table schema.
+    # Dropping the added column through SQLite's DDL retains the rows and keys.
     with closing(sqlite3.connect(path)) as con:
-        con.execute("ALTER TABLE wallet_ads RENAME TO wallet_ads_new")
-        con.execute("CREATE TABLE wallet_ads (id TEXT PRIMARY KEY, advertiser TEXT NOT NULL, url TEXT NOT NULL, image TEXT NOT NULL, starts_at BIGINT NOT NULL, ends_at BIGINT NOT NULL, enabled INTEGER NOT NULL, sort_order INTEGER NOT NULL, deleted INTEGER NOT NULL DEFAULT 0)")
-        con.execute("INSERT INTO wallet_ads(id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted) SELECT id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted FROM wallet_ads_new")
-        con.execute("DROP TABLE wallet_ads_new")
+        con.execute('ALTER TABLE wallet_ads DROP COLUMN audience')
         con.commit()
     with server(path) as client:
         result=client.get('/admin/wallet-ads',headers=admin)

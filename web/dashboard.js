@@ -190,6 +190,7 @@ async function loadDashboard() {
   const box=el('dashboard-content');box.replaceChildren();
   const titles={klient:'Panel klienta',rolnik:'Panel sprzedawcy',dostawca:'Panel dostawcy',admin:'Panel administratora'};
   el('dashboard-title').textContent=titles[role]||'Mój panel';
+  if(role==='rolnik'&&checkoutOwner&&typeof sellerRatingSummary==='function')box.append(sellerRatingSummary(checkoutOwner));
   if(role==='klient'){
     const [orders, shipmentData]=await Promise.all([api('/orders/me'),api('/shipments/mine')]);
     if(!active())return;
@@ -228,6 +229,7 @@ async function loadDashboard() {
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if(role==='klient'&&typeof pinRecoveryControls==='function'&&!['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(o.status))c.append(pinRecoveryControls('order',o.id));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
+      if(role==='klient'&&typeof sellerRatingControls==='function')c.append(sellerRatingControls(o));
       if(o.status==='oczekuje_na_platnosc_testowa'||(o.fulfillment==='odbior'&&o.status==='gotowe_do_odbioru_testowo')){
         c.append(dashboardButton('Anuluj opłacone zamówienie i zwróć kwotę (TEST)',async()=>{
           if(!window.confirm('To wyłącznie symulacja. Anulować opłacone zamówienie i zarejestrować pełny zwrot testowy?'))return;

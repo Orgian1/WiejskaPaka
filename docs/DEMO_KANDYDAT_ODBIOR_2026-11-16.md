@@ -21,3 +21,9 @@ Baza: codex/seller-ratings-20261116 (PR #64), zawiera PR #63 (reklamy portfela) 
 
 ## Status
 Kod skonsolidowany w kandydacie; testy i migracje na docelowym środowisku: NIE WYKONANE. Bez zmian na VPS.
+
+## Dodatkowe testy integracyjne na kandydacie
+- Granica limitu reklam: tests/test_wallet_ads_http.py::test_wallet_ad_exact_30_minute_boundary
+- Pełna ścieżka zakupu/odbioru/oceny/portfela: tests/test_demo_purchase_pin_rating_wallet_ads.py
+- Uruchomienie lokalne na jednorazowej bazie: python -m pytest -q tests/test_wallet_ads_http.py tests/test_demo_purchase_pin_rating_wallet_ads.py tests/test_seller_ratings_http.py
+- Status: testy dodane do repozytorium, jeszcze NIE uruchomione w tej kontroli. Nie traktować ich jako PASS bez logów.

@@ -15,6 +15,7 @@ def record_verified_payment_event(conn, *, event_id: str, operation_id: str,
         raise ValueError("Invalid operation ID")
     if type(incoming_status) is not PaymentStatus:
         raise ValueError("Invalid status")
+    # Caller must supply a verified event; this method does not authenticate it.
     # Transaction ownership is the responsibility of the caller. The savepoint
     # guarantees atomic rollback without committing unrelated caller changes.
     conn.execute("SAVEPOINT verified_payment_event")

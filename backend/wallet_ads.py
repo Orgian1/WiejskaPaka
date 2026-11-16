@@ -127,6 +127,14 @@ def install(app, db, write_db, current_user, database_url):
         with db() as con:
             con.executescript(SCHEMA_SQLITE)
 
+    # Existing test/preview databases created before audience targeting need a
+    # non-destructive, SQLite-only upgrade. PostgreSQL uses the reviewed 004 migration.
+    if not database_url:
+        with db() as con:
+            columns = {row['name'] for row in con.execute('PRAGMA table_info(wallet_ads)').fetchall()}
+            if 'audience' not in columns:
+                con.execute("ALTER TABLE wallet_ads ADD COLUMN audience TEXT NOT NULL DEFAULT 'both' CHECK(audience IN ('klient','rolnik','both'))")
+
     def admin(user):
         if user['role'] != 'admin':
             raise HTTPException(403, 'Brak uprawnień')

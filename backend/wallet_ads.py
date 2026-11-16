@@ -116,7 +116,7 @@ def claim_ad(con, user_id, key):
     ad = con.execute('SELECT * FROM wallet_ads WHERE id=?', (campaigns[index]['id'],)).fetchone()
     impression = secrets.token_hex(16)
     con.execute('INSERT INTO wallet_ad_impressions(id,user_id,ad_id,request_key,created_at) VALUES(?,?,?,?,?)', (impression, user_id, ad['id'], key, now))
-    con.execute('UPDATE wallet_ad_accounts SET last_shown=?,last_ad_id=? WHERE user_id=?', (now+1, ad['id'], user_id))
+    con.execute('UPDATE wallet_ad_accounts SET last_shown=?,last_ad_id=? WHERE user_id=?', (now, ad['id'], user_id))
     return {'ad': {'id': ad['id'], 'impression_id': impression, 'advertiser': ad['advertiser'], 'url': ad['url'], 'image': ad['image'], 'duration_seconds': 5}}
 
 

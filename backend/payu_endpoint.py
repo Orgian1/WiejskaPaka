@@ -2,8 +2,8 @@
 from urllib.parse import urlparse
 
 
-SANDBOX_HOSTS = frozenset({"secure.snd.payu.com", "secure.snd.payu.com.tr"})
-PRODUCTION_HOSTS = frozenset({"secure.payu.com", "secure.payu.com.tr"})
+SANDBOX_HOSTS = frozenset({"secure.snd.payu.com"})
+PRODUCTION_HOSTS = frozenset({"secure.payu.com"})
 
 
 def validate_payu_api_url(url: str, *, sandbox: bool) -> str:

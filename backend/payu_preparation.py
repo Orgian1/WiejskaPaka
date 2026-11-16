@@ -139,3 +139,50 @@ def customer_withdrawal_split(gross_grosze: int) -> tuple[int, int]:
     if type(gross_grosze) is not int or gross_grosze <= 0:
         raise ValueError("gross_grosze must be positive integer")
     return gross_grosze, 0
+
+
+class PayoutStatus(str, Enum):
+    REQUESTED = "REQUESTED"
+    APPROVED = "APPROVED"
+    SENT = "SENT"
+    SETTLED = "SETTLED"
+    REJECTED = "REJECTED"
+    FAILED = "FAILED"
+
+
+@dataclass(frozen=True)
+class PayoutRequest:
+    payout_id: str
+    user_id: int
+    role: str
+    gross_grosze: int
+
+    def __post_init__(self):
+        if not self.payout_id or not isinstance(self.payout_id, str):
+            raise ValueError("payout_id is required")
+        if type(self.user_id) is not int or self.user_id <= 0:
+            raise ValueError("Invalid user")
+        if self.role not in ("klient", "rolnik"):
+            raise ValueError("Unsupported payout role")
+        if type(self.gross_grosze) is not int or self.gross_grosze <= 0:
+            raise ValueError("Payout amount must be positive integer")
+
+    @property
+    def net_and_fee(self) -> tuple[int, int]:
+        if self.role == "rolnik":
+            return seller_withdrawal_split(self.gross_grosze)
+        return customer_withdrawal_split(self.gross_grosze)
+
+
+class PayoutProvider(Protocol):
+    def submit_payout(self, request: PayoutRequest) -> PayoutStatus: ...
+    def get_payout_status(self, payout_id: str) -> PayoutStatus: ...
+
+
+class DisabledPayoutProvider:
+    """No production payout method until operator contract and KYC are verified."""
+    def submit_payout(self, request: PayoutRequest) -> PayoutStatus:
+        raise PayUNotConfigured("Payouts require an approved operator agreement")
+
+    def get_payout_status(self, payout_id: str) -> PayoutStatus:
+        raise PayUNotConfigured("Payouts require an approved operator agreement")

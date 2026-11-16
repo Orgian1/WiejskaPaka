@@ -111,7 +111,7 @@ def claim_ad(con, user_id, key, role):
     if now-account['last_shown'] < 1800 or con.execute(
             'SELECT id FROM wallet_ad_impressions WHERE user_id=? AND request_key=?', (user_id, key)).fetchone():
         return {'ad': None}
-    campaigns = con.execute('SELECT id FROM wallet_ads WHERE enabled=1 AND deleted=0 AND starts_at<=? AND ends_at>? AND audience IN (?, 'both') ORDER BY sort_order,id', (now, now, role)).fetchall()
+    campaigns = con.execute('SELECT id FROM wallet_ads WHERE enabled=1 AND deleted=0 AND starts_at<=? AND ends_at>? AND audience IN (?, \'both\') ORDER BY sort_order,id', (now, now, role)).fetchall()
     if not campaigns:
         return {'ad': None}
     ids = [row['id'] for row in campaigns]

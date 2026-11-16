@@ -203,3 +203,55 @@ def test_rollback_refuses_to_disable_new_unreviewed_policies(secured):
             admin.execute('ROLLBACK')
             assert admin.execute("SELECT relrowsecurity,relforcerowsecurity FROM pg_class WHERE oid='public.orders'::regclass").fetchone()==(True,True)
         finally:admin.execute('DROP POLICY later_security_review ON public.orders')
+
+@pytest.mark.parametrize('actor',[1,2,3,4,5,6])
+def test_wallet_ads_signed_cross_account_or_campaign_writes_denied(raw,secured,actor):
+    raw.execute("SELECT set_config('wiejskapaka.actor_id','7',true),set_config('wiejskapaka.role','admin',true)")
+    with database_context('request','Bearer '+secured[2][actor]):
+        c=PgConnection(raw)
+        # Even a valid SQL capability does not grant campaign management.
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            c.execute("INSERT INTO wallet_ads VALUES('forged','forged','https://example.org','image',1,2,1,0,0)")
+    raw.rollback()
+    with database_context('request','Bearer '+secured[2][actor]):
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            PgConnection(raw).execute('INSERT INTO wallet_ad_accounts(user_id) VALUES(?)',(7 if actor!=7 else 1,))
+
+
+def test_wallet_ads_account_isolation_and_unprivileged_sql_cannot_set_actor(raw,secured):
+    with database_context('request','Bearer '+secured[2][1]):
+        c=PgConnection(raw);c.execute('INSERT INTO wallet_ad_accounts(user_id) VALUES(1)')
+        assert c.execute('SELECT user_id FROM wallet_ad_accounts').fetchall()==[{'user_id':1}]
+    with database_context('request','Bearer '+secured[2][2]):
+        assert PgConnection(raw).execute('SELECT user_id FROM wallet_ad_accounts').fetchall()==[]
+        assert PgConnection(raw).execute('UPDATE wallet_ad_accounts SET last_shown=0 WHERE user_id=1').rowcount==0
+    raw.rollback()
+    with pytest.raises(psycopg.errors.InsufficientPrivilege):raw.execute('SELECT * FROM wallet_ad_accounts')
+
+
+def test_wallet_ads_manual_upgrade_rollback_and_forced_rls(secured):
+    with psycopg.connect(secured[0],autocommit=True) as admin:
+        before=admin.execute('SELECT * FROM wallet_preview_accounts ORDER BY user_id').fetchall()
+        admin.execute((ROOT/'database/security_rls/002_wallet_ads.down.sql').read_text())
+        assert admin.execute("SELECT to_regclass('wallet_ads')").fetchone()==(None,)
+        with pytest.raises(psycopg.Error,match='compatibility verification'):
+            admin.execute((ROOT/'database/security_rls/002_wallet_ads.up.sql').read_text())
+        admin.execute('ROLLBACK')
+        admin.execute("SET wp_rls.disposable_test='yes'")
+        admin.execute((ROOT/'database/security_rls/002_wallet_ads.up.sql').read_text())
+        flags=admin.execute("SELECT relrowsecurity,relforcerowsecurity FROM pg_class WHERE relname IN ('wallet_ads','wallet_ad_accounts','wallet_ad_impressions')").fetchall()
+        assert flags==[(True,True)]*3
+        assert admin.execute('SELECT * FROM wallet_preview_accounts ORDER BY user_id').fetchall()==before
+
+
+def test_wallet_ads_unknown_policy_prevents_upgrade_and_rollback(secured):
+    with psycopg.connect(secured[0],autocommit=True) as admin:
+        admin.execute('CREATE POLICY custom_ads ON wallet_ads USING (false)')
+        try:
+            for name in ('002_wallet_ads.up.sql','002_wallet_ads.down.sql'):
+                admin.execute("SET wp_rls.disposable_test='yes'")
+                with pytest.raises(psycopg.Error,match='Unknown ads policy'):
+                    admin.execute((ROOT/'database/security_rls'/name).read_text())
+                admin.execute('ROLLBACK')
+                assert admin.execute("SELECT to_regclass('wallet_ads')").fetchone()[0]
+        finally:admin.execute('DROP POLICY custom_ads ON wallet_ads')

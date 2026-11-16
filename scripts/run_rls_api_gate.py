@@ -23,6 +23,7 @@ def main(argv=None):
     import pgserver,psycopg
     from pgserver._commands import POSTGRES_BIN_PATH
     root=Path(__file__).resolve().parents[1]
+    sys.path.insert(0,str(root))
     report=Path(args.report).resolve();report.parent.mkdir(parents=True,exist_ok=True)
     coverage=Path(args.coverage).resolve();coverage.parent.mkdir(parents=True,exist_ok=True);coverage.unlink(missing_ok=True)
     with tempfile.TemporaryDirectory(prefix='wp-rls-api-') as folder:
@@ -37,7 +38,7 @@ def main(argv=None):
             from scripts.run_tests_isolated import test_environment
             env=test_environment(os.environ,Path(folder)/'unused.sqlite3')
             env.update(WP_ENV='test',WP_TEST_POSTGRES_DSN=dsn,WP_TEST_ENABLE_RLS='1',WP_RLS_GATEWAY='1',WP_RLS_KEY_FILE=str(key),WP_TEST_RLS_COVERAGE=str(coverage),PATH=str(POSTGRES_BIN_PATH)+os.pathsep+os.environ['PATH'])
-            command=[sys.executable,'-m','pytest','-q','tests/test_postgres_full_api_optin.py','tests/test_rls_api_inventory.py','tests/test_rls_gateway_postgres.py',f'--junitxml={report}']
+            command=[sys.executable,'-m','pytest','-q','tests/test_postgres_full_api_optin.py','tests/test_rls_api_inventory.py','tests/test_rls_gateway_postgres.py','tests/test_wallet_ads_postgres.py',f'--junitxml={report}']
             if args.select:command.extend(['-k',args.select])
             return subprocess.run(command,cwd=root,env=env).returncode
         finally:pgserver.pg_ctl(['-w','stop'],pgdata=data)

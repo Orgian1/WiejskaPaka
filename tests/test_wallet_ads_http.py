@@ -136,3 +136,26 @@ def test_all_ad_routes_require_authentication(tmp_path):
     with server(tmp_path/'anonymous.sqlite3') as client:
         for method,path in [('POST','/wallet/ads/claim'),('POST','/wallet/ads/impressions/unknown/click'),('GET','/admin/wallet-ads'),('POST','/admin/wallet-ads'),('PUT','/admin/wallet-ads/unknown'),('DELETE','/admin/wallet-ads/unknown')]:
             assert client.request(method,path,json={}).status_code==401
+
+
+def test_wallet_ad_exact_30_minute_boundary(tmp_path,monkeypatch):
+    """At exactly 1800 elapsed DB seconds the next campaign may be claimed."""
+    monkeypatch.setenv('WP_ENABLE_WALLET_PREVIEW','1')
+    path=tmp_path/'ads_boundary.sqlite3'
+    with server(path) as client:
+        buyer,uid=register(client,'klient')
+        admin,admin_id=register(client,'klient')
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
+            con.commit()
+        created=client.post('/admin/wallet-ads',headers=admin,json=campaign())
+        assert created.status_code==201,created.text
+        assert claim(client,buyer).json()['ad'] is not None
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1799 WHERE user_id=?",(uid,))
+            con.commit()
+        assert claim(client,buyer).json()=={'ad':None}
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1800 WHERE user_id=?",(uid,))
+            con.commit()
+        assert claim(client,buyer).json()['ad'] is not None

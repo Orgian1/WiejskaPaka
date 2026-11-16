@@ -20,7 +20,7 @@ function updateSellerSearchLabels(){
   el('products').hidden=seller;el('seller-results').hidden=!seller;el('seller-pagination').hidden=!seller;
   el('catalog-previous').hidden=seller;el('catalog-next').hidden=seller;
 }
-async function loadSellerDirectory(){
+async function loadSellerDirectory(){if(typeof refreshSellerRatingSummaries==='function')refreshSellerRatingSummaries();
   if(!sellerSearchMode())return;
   const serial=++sellerSearchSerial,epoch=sessionEpoch,offset=sellerOffset,q=el('catalog-query').value.trim();
   const current=()=>serial===sellerSearchSerial&&epoch===sessionEpoch&&sellerSearchMode();
@@ -33,6 +33,7 @@ async function loadSellerDirectory(){
     for(const seller of data.items){
       const card=node('article','','card');card.append(node('h3','@'+seller.login));
       if(seller.farm_name)card.append(node('p',seller.farm_name));if(seller.city)card.append(node('p',seller.city));
+      if(typeof sellerRatingSummary==='function')card.append(sellerRatingSummary(seller.farmer_id));
       const button=node('button','Zobacz produkty sprzedawcy @'+seller.login);button.type='button';
       button.onclick=()=>{
         if(!current())return;sellerSearchSerial++;productRequest++;catalogSellerId=seller.farmer_id;catalogOffset=0;

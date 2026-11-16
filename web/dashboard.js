@@ -138,6 +138,7 @@ function shipmentFinancialHistoryButton(shipmentId, card) {
 }
 let dashboardRequestId=0;
 async function loadDashboard() {
+  if(typeof refreshSellerRatingSummaries==='function')refreshSellerRatingSummaries();
   const requestId=++dashboardRequestId;
   const epoch=sessionEpoch;
   const active=()=>epoch===sessionEpoch && requestId===dashboardRequestId;
@@ -147,6 +148,7 @@ async function loadDashboard() {
   const box=el('dashboard-content');box.replaceChildren();
   const titles={klient:'Panel klienta',rolnik:'Panel sprzedawcy',dostawca:'Panel dostawcy',admin:'Panel administratora'};
   el('dashboard-title').textContent=titles[role]||'Mój panel';
+  if(role==='rolnik'&&checkoutOwner&&typeof sellerRatingSummary==='function')box.append(sellerRatingSummary(checkoutOwner));
   if(role==='klient'){
     const [orders, shipmentData]=await Promise.all([api('/orders/me'),api('/shipments/mine')]);
     if(!active())return;
@@ -181,6 +183,7 @@ async function loadDashboard() {
       box.append(c);}
     box.append(dashboardCard('Twoje zakupy',[`Liczba zamówień: ${orders.length}`]));
     for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Razem: ${money(o.total_grosze)}`]);
+      if(typeof sellerRatingControls==='function')c.append(sellerRatingControls(o));
       if(typeof supportCreateButton==='function')c.append(supportCreateButton('order',o.id,c));
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if(role==='klient'&&typeof pinRecoveryControls==='function'&&!['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(o.status))c.append(pinRecoveryControls('order',o.id));

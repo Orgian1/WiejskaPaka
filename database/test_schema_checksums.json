@@ -203,5 +203,10 @@
     "file": "optional_wallet_ads.sql",
     "sha256": "6515730ce6d146eb86bff6b3cdb30e7d794654d4a0e994602e0cc5c72cc4f5d4",
     "bytes": 994
+  },
+  {
+    "file": "optional_seller_ratings.sql",
+    "sha256": "a0fb490c33e847ea78b8b2dcade83e8823b518dabb8e6fe9829cff992b342008",
+    "bytes": 445
   }
 ]

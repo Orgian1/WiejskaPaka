@@ -3310,3 +3310,6 @@ install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_UR
 
 from backend.wallet_ads import install as install_wallet_ads
 install_wallet_ads(app, db, order_write_db, current_user, DATABASE_URL)
+
+from backend.seller_ratings import install as install_seller_ratings
+install_seller_ratings(app, db, order_write_db, current_user, DATABASE_URL)

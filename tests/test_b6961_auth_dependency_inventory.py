@@ -43,3 +43,10 @@ def test_pickup_calendar_config_exception_is_exact():
     assert is_public('GET', '/pickup-point-dates/config')
     assert not is_public('POST', '/pickup-point-dates/config')
     assert not is_public('GET', '/pickup-point-dates/private')
+
+
+def test_only_aggregate_seller_rating_read_is_public():
+    from scripts.audit_route_auth_dependencies import is_public
+    assert is_public('GET','/farmers/{farmer_id}/ratings')
+    for method,path in [('POST','/farmers/{farmer_id}/ratings'),('GET','/farmers/{farmer_id}/ratings/private'),('GET','/orders/{order_id}/seller-rating'),('POST','/orders/{order_id}/seller-rating')]:
+        assert not is_public(method,path)

@@ -70,3 +70,9 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .wallet-ad-dialog img{display:block;width:100%;max-height:68dvh;object-fit:contain}
 .wallet-ad-preview{display:block;width:100%;max-width:400px;max-height:200px;object-fit:contain}
 @media(max-width:600px){.wallet-ad-dialog{width:94vw;padding:.7rem}.wallet-ad-dialog img{max-height:65dvh}}
+
+.seller-rating-summary{font-weight:600;color:#365b27}
+.seller-rating-stars{display:flex;gap:.3rem;flex-wrap:wrap}
+.seller-rating-stars button{min-width:44px;min-height:44px;font-size:1.6rem;color:#666;background:#fff;border:1px solid #777}
+.seller-rating-stars button.selected{color:#765000;background:#fff5cb;border-color:#765000}
+.seller-rating-controls{margin-top:.75rem}

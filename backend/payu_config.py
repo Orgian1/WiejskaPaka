@@ -42,6 +42,6 @@ def load_payu_settings(environ=None) -> PayUSettings:
     values = [env.get(key) or None for key in keys]
     if environment == PayUEnvironment.PRODUCTION:
         raise ValueError("PayU production remains disabled pending explicit rollout approval")
-    if environment == PayUEnvironment.SANDBOX and any(not value for value in values):
+    if environment == PayUEnvironment.SANDBOX and any(not value or not value.strip() for value in values):
         raise ValueError("PayU sandbox requires all credentials")
     return PayUSettings(environment, *values)

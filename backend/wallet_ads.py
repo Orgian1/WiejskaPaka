@@ -45,7 +45,7 @@ class Campaign(BaseModel):
     ends_at: datetime
     enabled: bool = False
     sort_order: int = Field(default=0, strict=True, ge=0, le=100000)
-    audience: str = Field(default='both', pattern=r'^(klient|rolnik|both)
+    audience: str = Field(default='both')
     @field_validator('advertiser')
     @classmethod
     def name(cls, value):

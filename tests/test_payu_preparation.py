@@ -46,3 +46,22 @@ def test_seller_commission_preserves_every_grosz(amount):
     assert net + fee == amount
     assert fee == (amount * 5 + 50) // 100
     assert customer_withdrawal_split(amount) == (amount, 0)
+
+
+def test_simulated_operation_id_cannot_change_amount():
+    provider = SimulatedPaymentProvider()
+    provider.create_topup(PaymentRequest("same", 1, 100))
+    with pytest.raises(ValueError):
+        provider.create_topup(PaymentRequest("same", 1, 200))
+
+
+def test_simulated_refunds_never_exceed_original_payment():
+    provider = SimulatedPaymentProvider()
+    payment = provider.create_topup(PaymentRequest("payment", 1, 100))
+    provider.set_test_status("payment", PaymentStatus.CONFIRMED)
+    assert provider.request_refund(payment.provider_order_id, 40, "first") == "first"
+    assert provider.request_refund(payment.provider_order_id, 60, "second") == "second"
+    with pytest.raises(ValueError):
+        provider.request_refund(payment.provider_order_id, 1, "third")
+    with pytest.raises(ValueError):
+        provider.request_refund(payment.provider_order_id, 41, "first")

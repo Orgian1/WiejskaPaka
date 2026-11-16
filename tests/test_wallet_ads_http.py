@@ -159,3 +159,47 @@ def test_wallet_ad_exact_30_minute_boundary(tmp_path,monkeypatch):
             con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1800 WHERE user_id=?",(uid,))
             con.commit()
         assert claim(client,buyer).json()['ad'] is not None
+
+
+def test_wallet_ads_target_client_and_seller_without_cross_display(tmp_path):
+    """Role targeting is resolved server-side, never from the claim request."""
+    path=tmp_path/'targeted-ads.sqlite3'
+    with server(path) as client:
+        buyer,_=register(client,'klient')
+        seller,_=register(client,'rolnik')
+        admin,admin_id=register(client,'klient')
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
+            con.commit()
+        buyer_body=campaign();buyer_body['audience']='klient'
+        seller_body=campaign();seller_body['audience']='rolnik'
+        buyer_ad=client.post('/admin/wallet-ads',headers=admin,json=buyer_body)
+        seller_ad=client.post('/admin/wallet-ads',headers=admin,json=seller_body)
+        assert buyer_ad.status_code==201,buyer_ad.text
+        assert seller_ad.status_code==201,seller_ad.text
+        assert claim(client,buyer).json()['ad']['id']==buyer_ad.json()['id']
+        assert claim(client,seller).json()['ad']['id']==seller_ad.json()['id']
+        assert claim(client,buyer).json()=={'ad':None}
+        assert claim(client,seller).json()=={'ad':None}
+        assert client.post('/admin/wallet-ads',headers=buyer,json=buyer_body).status_code==403
+        assert client.post('/admin/wallet-ads',headers=admin,json=campaign(audience='invalid')).status_code==422
+
+
+def test_wallet_ads_sqlite_existing_database_adds_audience_without_losing_campaign(tmp_path):
+    path=tmp_path/'legacy-ads.sqlite3'
+    with server(path) as client:
+        admin,admin_id=register(client,'klient')
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
+            con.commit()
+        assert client.post('/admin/wallet-ads',headers=admin,json=campaign()).status_code==201
+    with closing(sqlite3.connect(path)) as con:
+        con.execute("ALTER TABLE wallet_ads RENAME TO wallet_ads_new")
+        con.execute("CREATE TABLE wallet_ads (id TEXT PRIMARY KEY, advertiser TEXT NOT NULL, url TEXT NOT NULL, image TEXT NOT NULL, starts_at BIGINT NOT NULL, ends_at BIGINT NOT NULL, enabled INTEGER NOT NULL, sort_order INTEGER NOT NULL, deleted INTEGER NOT NULL DEFAULT 0)")
+        con.execute("INSERT INTO wallet_ads(id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted) SELECT id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted FROM wallet_ads_new")
+        con.execute("DROP TABLE wallet_ads_new")
+        con.commit()
+    with server(path) as client:
+        result=client.get('/admin/wallet-ads',headers=admin)
+        assert result.status_code==200,result.text
+        assert result.json()['items'][0]['audience']=='both'

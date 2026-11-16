@@ -59,20 +59,40 @@ header{position:relative;padding-right:250px;padding-left:250px}
 @media(max-width:850px){header{padding:16px}.header-auth-actions{position:static;margin-top:12px;justify-content:center}}
 @media(max-width:420px){.header-auth-actions a{flex:1 1 130px}}
 
-/* Wallet advertisement only; existing layout and financial controls unchanged. */
-.wallet-ad-dialog{width:min(94vw,1000px);max-height:94dvh;padding:1rem;border:0;border-radius:1rem;overflow:auto;box-shadow:0 1rem 4rem #0005}
-.wallet-ad-dialog::backdrop{background:rgba(0,0,0,.78)}
-.wallet-ad-heading{display:flex;align-items:center;gap:1rem;margin-bottom:.75rem}
-.wallet-ad-heading strong{margin-right:auto}
-.wallet-ad-heading button{font-size:2.4rem;min-width:56px;min-height:56px;line-height:1;background:#fff;color:#172b1b;border:2px solid #172b1b}
-.wallet-ad-heading button:disabled{opacity:.65;cursor:wait}
-.wallet-ad-heading [role=timer]{font-size:1.8rem;font-weight:bold;font-variant-numeric:tabular-nums}
-.wallet-ad-dialog img{display:block;width:100%;max-height:68dvh;object-fit:contain}
-.wallet-ad-preview{display:block;width:100%;max-width:400px;max-height:200px;object-fit:contain}
-@media(max-width:600px){.wallet-ad-dialog{width:94vw;padding:.7rem}.wallet-ad-dialog img{max-height:65dvh}}
+/* Catalog rows keep each offer and its inline disclosure in the same grid cell. */
+#products{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;align-items:start}
+.catalog-product{min-width:0;border:1px solid #dce6dc;border-radius:10px;padding:12px}
+.catalog-product summary{cursor:pointer;min-height:44px;overflow-wrap:anywhere}
+.catalog-product summary:focus-visible{outline:3px solid #c98b00;outline-offset:3px}
+.catalog-product summary img{display:block;max-width:100%;height:180px;object-fit:contain}
+.catalog-product[open]{background:#f5faf4}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
-.seller-rating-summary{font-weight:600;color:#365b27}
-.seller-rating-stars{display:flex;gap:.3rem;flex-wrap:wrap}
-.seller-rating-stars button{min-width:44px;min-height:44px;font-size:1.6rem;color:#666;background:#fff;border:1px solid #777}
-.seller-rating-stars button.selected{color:#765000;background:#fff5cb;border-color:#765000}
-.seller-rating-controls{margin-top:.75rem}
+.favorite-media{position:relative;min-height:52px}.favorite-button{position:absolute;right:4px;bottom:4px;min-width:44px;min-height:44px;background:white;color:#bd1635;border:2px solid #bd1635;font-size:28px;line-height:1}.favorite-button:hover{background:#ffe8ed;color:#9d0b28}.favorite-button[aria-pressed="true"]{color:#bd1635}#favorites-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+
+#seller-point-nav{max-width:900px;margin:12px auto;text-align:left;background:#fff;color:#20392a;border-radius:8px;padding:10px}#seller-point-nav summary{cursor:pointer;min-height:44px;font-weight:600}#seller-point-menu a{display:block;padding:10px;color:#164a2a;min-height:44px}#seller-point-menu li{overflow-wrap:anywhere;margin-bottom:10px}
+
+[data-seller-panel]>summary{cursor:pointer;min-height:44px}[data-seller-panel]>summary h2{display:inline;font-size:1.25rem}[data-seller-panel]>summary:focus-visible{outline:3px solid #c98b00}
+
+.card .favorite-button{width:44px;margin:0}
+
+.pickup-map{height:320px;width:100%;max-width:100%;margin:12px 0;background:#c9e2ec}.pickup-map-widget{min-width:0;margin:14px 0}.pickup-map-widget .leaflet-control a{min-width:30px}.pickup-map-widget p{overflow-wrap:anywhere}
+
+#pickup-promotions-admin input[type=checkbox]{display:inline;width:auto;margin-right:8px}
+
+.catalog-row-details{grid-column:1/-1;min-width:0;padding:20px;border:2px solid #39714a;border-radius:10px;background:#f2f8ee}.catalog-row-details input,.catalog-row-details select{max-width:100%}.seller-pickup-group ul{padding-left:18px}.seller-pickup-group summary{overflow-wrap:anywhere}
+
+.catalog-category-bar{display:flex;gap:.5rem;overflow-x:auto;flex-wrap:nowrap;max-width:100%;min-width:0;padding:.5rem 0 .75rem;overscroll-behavior-x:contain;touch-action:pan-x pan-y}.catalog-category-bar button{flex:0 0 auto;width:auto;white-space:nowrap;background:#fff;color:#214f2b;border:2px solid #75947a}.catalog-category-bar button.active{background:#245d32;color:#fff;border-color:#163c20}.catalog-category-bar button:focus-visible{outline:3px solid #b11635;outline-offset:2px}.catalog-filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}.catalog-filters label{max-width:100%}.catalog-filters input[type=checkbox]{width:auto}#product-description,[data-product-editor] textarea{width:100%;box-sizing:border-box;min-height:5rem}
+
+.nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.5em;height:1.5em;padding:0 .25em;border-radius:999px;background:#bb1532;color:#fff;font-weight:700;font-size:.85em;vertical-align:middle}.nav-count[hidden]{display:none}#contact-disclosure>summary{cursor:pointer;font-weight:700;padding:1rem}#contact-disclosure[open]{text-align:left}#contact-disclosure #contact-section{margin-top:0}#contact-disclosure #support-section{background:#fff}
+/* Each route owns one work area; business-feature hidden flags remain independent. */
+[data-route-hidden]{display:none!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.quick-nav a[aria-current=page]{background:#275c39;color:white;text-decoration:underline;text-underline-offset:.25em}
+#catalog-pages{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+#catalog-pages button[aria-current=page]{background:#275c39;color:#fff;font-weight:bold}
+#seller-listings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+#seller-listings img{width:100%;height:180px;object-fit:cover}
+.listing-quick-edit{display:flex;flex-wrap:wrap;gap:.5rem}.listing-quick-edit label{flex:1;min-width:120px}.listing-quick-edit input{width:100%;box-sizing:border-box}
+/* Listings now own the stock editor; avoid the previous duplicate offer list. */
+#seller-stock-summary{display:none}

@@ -27,9 +27,9 @@ DO $upgrade$ DECLARE n text; BEGIN
   GRANT SELECT ON public.seller_ratings TO wp_rls_guard,wp_rls_backup;
   CREATE POLICY wp_guard ON public.seller_ratings FOR SELECT TO wp_rls_guard,wp_rls_backup USING(true);
   CREATE POLICY wp_read ON public.seller_ratings FOR SELECT TO wp_rls_executor
-   USING(wp_rls.allowed('sessions',jsonb_build_object('user_id',buyer_id),'select'));
+   USING(wp_rls.allowed('seller_ratings',jsonb_build_object('user_id',buyer_id),'select'));
   CREATE POLICY wp_insert ON public.seller_ratings FOR INSERT TO wp_rls_executor WITH CHECK (
-   wp_rls.allowed('sessions',jsonb_build_object('user_id',buyer_id),'insert')
+   wp_rls.allowed('seller_ratings',jsonb_build_object('user_id',buyer_id),'insert')
    AND EXISTS(SELECT 1 FROM public.users u WHERE u.id=seller_ratings.buyer_id AND u.role='klient')
    AND EXISTS(SELECT 1 FROM public.orders o WHERE o.id=seller_ratings.order_id AND o.buyer_id=seller_ratings.buyer_id AND o.farmer_id=seller_ratings.farmer_id AND o.status='odebrane' AND o.pin_used=1 AND o.confirmed_at IS NOT NULL));
   CREATE POLICY wp_update ON public.seller_ratings FOR UPDATE TO wp_rls_executor USING(false) WITH CHECK(false);

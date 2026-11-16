@@ -64,3 +64,13 @@ def test_unknown_rating_policy_blocks_migration_and_rollback(rated):
                 with pytest.raises(psycopg.Error,match='Unknown ratings policy'):con.execute((ROOT/'database/security_rls'/name).read_text())
                 con.execute('ROLLBACK')
         finally:con.execute('DROP POLICY custom_rating_policy ON seller_ratings')
+
+
+def test_auth_bootstrap_without_identity_cannot_read_or_create_ratings(raw,rated):
+    with psycopg.connect(rated[0],autocommit=True) as admin:
+        admin.execute('INSERT INTO seller_ratings(order_id,buyer_id,farmer_id,stars) VALUES(1,1,3,5) ON CONFLICT(order_id) DO NOTHING')
+    with database_context('auth',None):
+        con=PgConnection(raw)
+        assert con.execute('SELECT order_id FROM seller_ratings').fetchall()==[]
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            con.execute('INSERT INTO seller_ratings(order_id,buyer_id,farmer_id,stars) VALUES(1,1,3,5)')

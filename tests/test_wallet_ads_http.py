@@ -11,6 +11,8 @@ from PIL import Image
 from tests.test_purchase_record_http_restart import server
 from tests.test_postgres_full_api_optin import register
 
+DEVICE_PASSWORD='Synthetic-wallet-ads-two-device-password-2026!'
+
 
 def campaign(**overrides):
     data=BytesIO();Image.new('RGB',(900,400),'green').save(data,'PNG')
@@ -41,9 +43,14 @@ def exercise(client,admin,buyer,seller,other,expire):
     bid=second.json()['id']
     before=client.get('/wallet',headers=buyer).json()
     key=uuid4().hex
-    # Independent entry keys model two devices for one authenticated account.
+    # Distinct live sessions and entry keys model two independently logged-in devices.
+    email=client.get('/auth/me',headers=buyer).json()['email']
+    login=client.post('/auth/login',json={'email':email,'password':DEVICE_PASSWORD})
+    assert login.status_code==200,login.text
+    second_device={'Authorization':'Bearer '+login.json()['access_token']}
+    assert second_device!=buyer
     with ThreadPoolExecutor(2) as pool:
-        responses=list(pool.map(lambda _:claim(client,buyer),range(2)))
+        responses=list(pool.map(lambda headers:claim(client,headers),[buyer,second_device]))
     assert all(r.status_code==200 for r in responses),[r.text for r in responses]
     ads=[r.json()['ad'] for r in responses if r.json()['ad']]
     assert len(ads)==1
@@ -78,7 +85,7 @@ def exercise(client,admin,buyer,seller,other,expire):
 def test_wallet_ads_full_http(tmp_path,monkeypatch):
     monkeypatch.setenv('WP_ENABLE_WALLET_PREVIEW','1');path=tmp_path/'ads.sqlite3'
     with server(path) as client:
-        buyer,uid=register(client,'klient');seller,_=register(client,'rolnik');other,_=register(client,'klient');admin,aid=register(client,'klient')
+        buyer,uid=register(client,'klient',password=DEVICE_PASSWORD);seller,_=register(client,'rolnik');other,_=register(client,'klient');admin,aid=register(client,'klient')
         with closing(sqlite3.connect(path)) as con:
             con.execute("UPDATE users SET role='admin' WHERE id=?",(aid,));con.commit()
         def expire():

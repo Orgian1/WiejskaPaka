@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS wallet_ads (
  id TEXT PRIMARY KEY, advertiser TEXT NOT NULL, url TEXT NOT NULL,
  image TEXT NOT NULL, starts_at BIGINT NOT NULL, ends_at BIGINT NOT NULL,
  enabled INTEGER NOT NULL CHECK(enabled IN (0,1)), sort_order INTEGER NOT NULL,
+ audience TEXT NOT NULL DEFAULT 'both' CHECK(audience IN ('klient','rolnik','both')),
  deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)), CHECK(ends_at>starts_at)
 );
 CREATE TABLE IF NOT EXISTS wallet_ad_accounts (

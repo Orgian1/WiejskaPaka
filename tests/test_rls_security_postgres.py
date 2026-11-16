@@ -8,12 +8,13 @@ from pathlib import Path
 import pytest
 
 pgserver = pytest.importorskip('pgserver')
+from tests.local_postgres import LocalPostgres
 psycopg = pytest.importorskip('psycopg')
 ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope='module')
 def cluster(tmp_path_factory):
-    server = pgserver.get_server(tmp_path_factory.mktemp('security-pg') / 'data')
+    server = LocalPostgres(tmp_path_factory.mktemp('security-pg') / 'data')
     uri = server.get_uri()
     with psycopg.connect(uri, autocommit=True) as admin:
         from database.verify_test_migrations import verify

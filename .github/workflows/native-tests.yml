@@ -1,7 +1,7 @@
 name: Native test gates
 on:
   push:
-    branches: [wiejskapaka-import, 'preview/**', 'fix/header-auth-links-20261109']
+    branches: [wiejskapaka-import, 'preview/**', 'fix/**', 'integration/**']
   workflow_dispatch:
 
 permissions:
@@ -173,4 +173,28 @@ jobs:
         with:
           name: chromium-summary
           path: ${{ runner.temp }}/ci/browser.json
+          retention-days: 7
+
+  rls_api:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-security-test.txt
+      - run: python -m pip install -r requirements-security-test.txt
+      - name: Disposable PostgreSQL FORCE RLS and complete API inventory
+        run: python -m scripts.run_rls_api_gate --report work/rls-api.xml --coverage work/rls-route-coverage.jsonl
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: rls-api-summary
+          path: |
+            work/rls-api.xml
+            work/rls-route-coverage.jsonl
           retention-days: 7

@@ -30,7 +30,9 @@ def main(argv=None):
         data=Path(folder)/'data'
         pgserver.initdb(['-A','trust','-U','security_admin'],pgdata=data)
         with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
-        pgserver.pg_ctl(['-w','-l',str(Path(folder)/'pg.log'),'-o',f'-h 127.0.0.1 -p {port} -k {folder}','start'],pgdata=data)
+        # The gate uses TCP DSNs only. Do not require Unix-domain sockets:
+        # managed environments may allow loopback TCP while denying AF_UNIX.
+        pgserver.pg_ctl(['-w','-l',str(Path(folder)/'pg.log'),'-o',f"-h 127.0.0.1 -p {port} -k ''",'start'],pgdata=data)
         try:
             dsn=f'postgresql://security_admin:disposable-local-only@127.0.0.1:{port}/wp_test_rls_gate'
             with psycopg.connect(dsn.replace('/wp_test_rls_gate','/postgres'),autocommit=True) as c:c.execute('CREATE DATABASE wp_test_rls_gate')

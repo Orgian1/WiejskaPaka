@@ -10,6 +10,7 @@ from pathlib import Path
 import time
 import pytest
 pgserver=pytest.importorskip('pgserver')
+from tests.local_postgres import LocalPostgres
 psycopg=pytest.importorskip('psycopg')
 from psycopg.rows import dict_row
 from backend.pg_adapter import PgConnection
@@ -19,7 +20,7 @@ ROOT=Path(__file__).resolve().parents[1]
 @pytest.fixture(scope='module')
 def secured(tmp_path_factory):
     directory=tmp_path_factory.mktemp('capability-rls')
-    server=pgserver.get_server(directory/'data')
+    server=LocalPostgres(directory/'data')
     uri=server.get_uri('wp_test_capabilities')
     key=secrets.token_bytes(32);path=directory/'key.json'
     path.write_text(json.dumps({'key':key.hex()}));path.chmod(0o600)

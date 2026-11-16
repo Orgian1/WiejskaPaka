@@ -96,3 +96,11 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .listing-quick-edit{display:flex;flex-wrap:wrap;gap:.5rem}.listing-quick-edit label{flex:1;min-width:120px}.listing-quick-edit input{width:100%;box-sizing:border-box}
 /* Listings now own the stock editor; avoid the previous duplicate offer list. */
 #seller-stock-summary{display:none}
+
+/* Recovery: one full-width application view; only product cards form columns. */
+main#tresc{display:block;width:min(100% - 28px,1440px);max-width:1440px;margin:24px auto;padding:0}
+main#tresc > section,main#tresc > details{box-sizing:border-box;width:100%;max-width:100%;margin:0 0 16px}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:16px;align-items:start}
+#products > .catalog-product{box-sizing:border-box;width:100%;margin:0}
+#products > .catalog-row-details{grid-column:1/-1}
+@media(max-width:520px){main#tresc{width:calc(100% - 20px)}#products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.catalog-product{padding:8px}.catalog-product summary img{height:120px}}

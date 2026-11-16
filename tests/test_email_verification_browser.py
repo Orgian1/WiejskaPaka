@@ -7,6 +7,7 @@ from tests.test_purchase_record_http_restart import server
 
 @pytest.mark.parametrize('width',[320,1280])
 def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
+    from playwright.sync_api import expect
     database,keys,key_path=enabled
     with server(database,verification_keys=key_path) as client:
         body={'email':'browser-proof@example.invalid','password':'SyntheticEmailBrowser2026!','role':'klient'}
@@ -26,7 +27,9 @@ def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
             with page.expect_response(lambda r:'/auth/email-verification/confirm' in r.url) as result:
                 page.click('#email-verification-confirm')
             assert result.value.status==200
-            page.get_by_text('Adres e-mail potwierdzony.',exact=True).wait_for()
+            # The toast and persistent status can coexist after the response.
+            # Assert the actual account status, independent of toast timing.
+            expect(page.locator('#email-verification-status')).to_have_text('Adres e-mail potwierdzony.')
             assert client.get('/auth/email-verification/status',headers=headers).json()=={'verified':True}
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert secret not in page.content()

@@ -9,7 +9,7 @@ permissions:
 
 concurrency:
   group: native-gates-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   PYTHONUTF8: "1"

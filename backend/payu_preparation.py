@@ -25,7 +25,7 @@ class PaymentRequest:
     currency: str = "PLN"
 
     def __post_init__(self):
-        if not self.operation_id or not isinstance(self.operation_id, str):
+        if not self.operation_id or not isinstance(self.operation_id, str) or len(self.operation_id) > 120:
             raise ValueError("operation_id is required")
         if type(self.user_id) is not int or self.user_id <= 0:
             raise ValueError("user_id must be positive")
@@ -106,7 +106,7 @@ class SimulatedPaymentProvider:
                                                      existing.provider_order_id, status)
 
     def request_refund(self, provider_order_id: str, amount_grosze: int, refund_id: str) -> str:
-        if type(amount_grosze) is not int or amount_grosze <= 0 or not refund_id:
+        if type(amount_grosze) is not int or amount_grosze <= 0 or not isinstance(refund_id, str) or not refund_id or len(refund_id) > 120:
             raise ValueError("Invalid refund")
         if self.get_payment_status(provider_order_id) != PaymentStatus.CONFIRMED:
             raise ValueError("Payment is not confirmed")
@@ -158,7 +158,7 @@ class PayoutRequest:
     gross_grosze: int
 
     def __post_init__(self):
-        if not self.payout_id or not isinstance(self.payout_id, str):
+        if not self.payout_id or not isinstance(self.payout_id, str) or len(self.payout_id) > 120:
             raise ValueError("payout_id is required")
         if type(self.user_id) is not int or self.user_id <= 0:
             raise ValueError("Invalid user")

@@ -86,7 +86,10 @@ def checked_counts(data):
     return result
 
 
-def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
+def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run, shard='1/1'):
+    index, count = map(int, shard.split('/'))
+    if not 1 <= index <= count <= 1024:
+        raise ValueError('Invalid regression shard')
     root = Path(root).resolve()
     before = evidence(root)
     result = {'gate': gate, 'complete': False, 'success': False, 'sources_unchanged': False,
@@ -108,7 +111,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             else:
                 tasks = [('windows_recovery', [sys.executable, '-m', 'pytest', '-q',
                     *[str(root/'tests'/name) for name in RECOVERY_TESTS], '--junitxml', str(xml)], 'junit'),
-                         ('isolated_regression', [sys.executable, str(root/'scripts/run_tests_per_file.py'), '--timeout', '180', '--report', str(raw)], 'full')]
+                         ('isolated_regression', [sys.executable, str(root/'scripts/run_full_regression.py'), '--shard', shard, '--timeout', '180', '--report', str(raw)], 'full')]
                 if gate == 'windows-recovery':
                     tasks = tasks[:1]
         elif gate == 'postgres':
@@ -220,8 +223,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('gate', choices=('windows', 'windows-recovery', 'postgres', 'browser'))
     parser.add_argument('--report', type=Path, required=True)
+    parser.add_argument('--shard', default='1/1', help='Windows regression partition, e.g. 1/4')
     args = parser.parse_args()
-    result = run(args.gate, args.report)
+    result = run(args.gate, args.report, shard=args.shard)
     print(args.gate + ': ' + ('PASS' if result['success'] else 'FAIL'))
     return 0 if result['success'] else 1
 

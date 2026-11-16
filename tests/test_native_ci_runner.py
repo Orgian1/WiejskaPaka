@@ -290,3 +290,27 @@ def test_windows_preserves_sanitized_junit_locations_without_output_tail(tmp_pat
     result=ci.run('windows',path,source={},runner=runner)
     assert result['tasks'][-1]['failure_locations']==[{'file':'test_sns_pinned_notification.py','line':42}]
     assert SENSITIVE not in path.read_text() and 'private-path' not in path.read_text()
+
+
+def test_windows_forwards_requested_partition_to_isolated_runner(tmp_path, monkeypatch):
+    monkeypatch.setattr(ci.platform, 'system', lambda: 'Windows')
+    commands = []
+    def runner(command, **kwargs):
+        commands.append(command)
+        if '--junitxml' in command:
+            junit(command, passed=80)
+            return subprocess.CompletedProcess(command, 0, '', '')
+        assert command[command.index('--shard') + 1] == '2/4'
+        assert Path(command[1]).name == 'run_full_regression.py'
+        raise OSError('Synthetic launch failure after partition verification')
+    result = ci.run('windows', tmp_path/'partition.json', source={}, runner=runner, shard='2/4')
+    assert len(commands) == 2
+    assert result['tasks'][-1]['error'] == 'PROCESS_OR_RESULT_UNAVAILABLE'
+
+
+@pytest.mark.parametrize('shard', ['0/4', '5/4', '1/0', 'bad', '1/1025'])
+def test_invalid_windows_partition_never_launches_tests(tmp_path, shard):
+    def forbidden(*args, **kwargs):
+        pytest.fail('Invalid partition must not execute a process')
+    with pytest.raises(ValueError):
+        ci.run('windows', tmp_path/'invalid.json', source={}, runner=forbidden, shard=shard)

@@ -9,8 +9,6 @@ import secrets
 from pathlib import Path
 import time
 import pytest
-pgserver=pytest.importorskip('pgserver')
-from tests.local_postgres import LocalPostgres
 psycopg=pytest.importorskip('psycopg')
 from psycopg.rows import dict_row
 from backend.pg_adapter import PgConnection
@@ -19,6 +17,10 @@ ROOT=Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope='module')
 def secured(tmp_path_factory):
+    # Collect the tests even without the optional server dependency. A module
+    # containing only an import-time skip exits pytest with code 5 in isolation.
+    pytest.importorskip('pgserver')
+    from tests.local_postgres import LocalPostgres
     directory=tmp_path_factory.mktemp('capability-rls')
     server=LocalPostgres(directory/'data')
     uri=server.get_uri('wp_test_capabilities')

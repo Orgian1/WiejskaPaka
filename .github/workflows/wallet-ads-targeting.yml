@@ -10,6 +10,8 @@ on:
       - 'web/style.css'
       - 'database/**'
       - 'tests/test_wallet_ads_http.py'
+      - 'backend/payu_preparation.py'
+      - 'tests/test_payu_preparation.py'
       - '.github/workflows/wallet-ads-targeting.yml'
   workflow_dispatch:
 jobs:
@@ -30,6 +32,6 @@ jobs:
       - name: JavaScript syntax check
         run: node --check web/wallet-ads.js
       - name: Compile backend and test code
-        run: python -m py_compile backend/wallet_ads.py tests/test_wallet_ads_http.py
+        run: python -m py_compile backend/wallet_ads.py tests/test_wallet_ads_http.py backend/payu_preparation.py tests/test_payu_preparation.py
       - name: Wallet ads regression and targeting
-        run: python -m pytest -q tests/test_wallet_ads_http.py
+        run: python -m pytest -q tests/test_wallet_ads_http.py tests/test_payu_preparation.py

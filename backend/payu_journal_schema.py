@@ -55,4 +55,5 @@ CREATE TABLE IF NOT EXISTS provider_payout_requests (
 
 def initialize_test_journal(connection):
     """Only use in isolated test databases, not as a production migration."""
+    connection.execute('PRAGMA foreign_keys=ON')
     connection.executescript(SQLITE_SCHEMA)

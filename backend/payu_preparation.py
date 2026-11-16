@@ -1,0 +1,128 @@
+"""PayU-ready, provider-neutral payment preparation. No live PayU credentials or API calls.
+
+This module deliberately does not modify the wallet balance. A separate, reviewed
+ledger integration must consume verified events transactionally and idempotently.
+"""
+from dataclasses import dataclass
+from enum import Enum
+from typing import Protocol
+
+
+class PaymentStatus(str, Enum):
+    CREATED = "CREATED"
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    REFUNDED = "REFUNDED"
+
+
+@dataclass(frozen=True)
+class PaymentRequest:
+    operation_id: str
+    user_id: int
+    amount_grosze: int
+    currency: str = "PLN"
+
+    def __post_init__(self):
+        if not self.operation_id or not isinstance(self.operation_id, str):
+            raise ValueError("operation_id is required")
+        if type(self.user_id) is not int or self.user_id <= 0:
+            raise ValueError("user_id must be positive")
+        if type(self.amount_grosze) is not int or self.amount_grosze <= 0:
+            raise ValueError("amount_grosze must be a positive integer")
+        if self.currency != "PLN":
+            raise ValueError("Only PLN is supported")
+
+
+@dataclass(frozen=True)
+class PaymentResult:
+    operation_id: str
+    provider_order_id: str
+    status: PaymentStatus
+    redirect_url: str | None = None
+
+
+class PaymentProvider(Protocol):
+    def create_topup(self, request: PaymentRequest) -> PaymentResult: ...
+    def get_payment_status(self, provider_order_id: str) -> PaymentStatus: ...
+    def request_refund(self, provider_order_id: str, amount_grosze: int, refund_id: str) -> str: ...
+
+
+class PayUNotConfigured(RuntimeError):
+    pass
+
+
+class PayUDisabledAdapter:
+    """Safe default: prevents accidental real payment initiation."""
+
+    def create_topup(self, request: PaymentRequest) -> PaymentResult:
+        raise PayUNotConfigured("PayU has not been configured or verified")
+
+    def get_payment_status(self, provider_order_id: str) -> PaymentStatus:
+        raise PayUNotConfigured("PayU has not been configured or verified")
+
+    def request_refund(self, provider_order_id: str, amount_grosze: int, refund_id: str) -> str:
+        raise PayUNotConfigured("PayU has not been configured or verified")
+
+
+class SimulatedPaymentProvider:
+    """In-memory test double. Never use as evidence of actual payment.
+
+    It does not expose an unverified callback endpoint and cannot credit a wallet.
+    """
+    def __init__(self):
+        self._payments: dict[str, PaymentResult] = {}
+        self._refunds: dict[str, str] = {}
+
+    def create_topup(self, request: PaymentRequest) -> PaymentResult:
+        existing = self._payments.get(request.operation_id)
+        if existing is not None:
+            return existing
+        result = PaymentResult(request.operation_id, "SIM-" + request.operation_id,
+                               PaymentStatus.PENDING)
+        self._payments[request.operation_id] = result
+        return result
+
+    def get_payment_status(self, provider_order_id: str) -> PaymentStatus:
+        for payment in self._payments.values():
+            if payment.provider_order_id == provider_order_id:
+                return payment.status
+        raise KeyError("Unknown simulated payment")
+
+    def set_test_status(self, operation_id: str, status: PaymentStatus):
+        if status not in (PaymentStatus.CONFIRMED, PaymentStatus.FAILED,
+                          PaymentStatus.CANCELLED):
+            raise ValueError("Unsupported test status")
+        existing = self._payments[operation_id]
+        if existing.status != PaymentStatus.PENDING:
+            raise ValueError("Terminal status cannot be overwritten")
+        self._payments[operation_id] = PaymentResult(existing.operation_id,
+                                                     existing.provider_order_id, status)
+
+    def request_refund(self, provider_order_id: str, amount_grosze: int, refund_id: str) -> str:
+        if type(amount_grosze) is not int or amount_grosze <= 0 or not refund_id:
+            raise ValueError("Invalid refund")
+        if self.get_payment_status(provider_order_id) != PaymentStatus.CONFIRMED:
+            raise ValueError("Payment is not confirmed")
+        existing = self._refunds.get(refund_id)
+        if existing is not None:
+            if existing != provider_order_id:
+                raise ValueError("Refund id already used for another payment")
+            return refund_id
+        self._refunds[refund_id] = provider_order_id
+        return refund_id
+
+
+def seller_withdrawal_split(gross_grosze: int) -> tuple[int, int]:
+    """5% platform commission, half-up to nearest grosz, seller receives remainder."""
+    if type(gross_grosze) is not int or gross_grosze <= 0:
+        raise ValueError("gross_grosze must be positive integer")
+    fee = (gross_grosze * 5 + 50) // 100
+    return gross_grosze - fee, fee
+
+
+def customer_withdrawal_split(gross_grosze: int) -> tuple[int, int]:
+    if type(gross_grosze) is not int or gross_grosze <= 0:
+        raise ValueError("gross_grosze must be positive integer")
+    return gross_grosze, 0

@@ -123,7 +123,7 @@ def test_extended_endpoint_coverage(pg_api,pg_photo_api,pg_seller_api,pg_address
         r=client.request(method,path,headers=headers,**kw)
         assert 200<=r.status_code<300,(method,path,r.status_code,r.text)
         return r
-    for path in ('/','/products','/product-units','/pickup-point-dates/config','/sellers/config','/user-photos/config','/address-delivery/config','/auth/email-verification/options','/marketplace/accounting-policy'):
+    for path in ('/','/test/contact/options','/products','/product-units','/pickup-point-dates/config','/sellers/config','/user-photos/config','/address-delivery/config','/auth/email-verification/options','/marketplace/accounting-policy'):
         ok('GET',path)
     ok('PUT','/farmers/me/profile',seller,json={'farm_name':'RLS coverage farm','city':'Radom','description':'Test'})
     ok('GET','/farmers/me/profile',seller)

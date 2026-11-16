@@ -3313,3 +3313,7 @@ install_wallet_ads(app, db, order_write_db, current_user, DATABASE_URL)
 
 from backend.seller_ratings import install as install_seller_ratings
 install_seller_ratings(app, db, order_write_db, current_user, DATABASE_URL)
+
+# Contact is captured only in the disposable, explicitly enabled SQLite demo.
+from backend.contact_demo import install as install_contact_demo
+install_contact_demo(app, current_user, os.environ, DATABASE_URL)

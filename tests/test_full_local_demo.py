@@ -32,7 +32,10 @@ def test_full_profile_launcher_seeds_all_roles_and_preserves_options(tmp_path,mo
         assert all(env[flag]=='1' for flag in FULL_DEMO_FLAGS)
         assert 'WP_ENABLE_ORDER_SMTP' not in env
         assert command[command.index('--host')+1]=='127.0.0.1'
-        with patch.dict(os.environ,env,clear=True),server(seen[-1]) as client:
+        assert env['WP_ENABLE_TEST_CONTACT']=='1'
+        assert Path(env['WP_TEST_CONTACT_OUTBOX']).is_absolute()
+        with patch.dict(os.environ,env,clear=True),server(seen[-1],contact_outbox=env['WP_TEST_CONTACT_OUTBOX']) as client:
+            assert client.get('/test/contact/options').json()['enabled'] is True
             for endpoint in ('/sellers/config','/product-units','/pickup-point-dates/config','/address-delivery/config'):
                 r=client.get(endpoint)
                 assert r.status_code==200 and r.json()['enabled']

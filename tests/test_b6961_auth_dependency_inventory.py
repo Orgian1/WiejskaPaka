@@ -50,3 +50,11 @@ def test_only_aggregate_seller_rating_read_is_public():
     assert is_public('GET','/farmers/{farmer_id}/ratings')
     for method,path in [('POST','/farmers/{farmer_id}/ratings'),('GET','/farmers/{farmer_id}/ratings/private'),('GET','/orders/{order_id}/seller-rating'),('POST','/orders/{order_id}/seller-rating')]:
         assert not is_public(method,path)
+
+
+def test_contact_demo_public_exceptions_do_not_include_admin_mailbox():
+    from scripts.audit_route_auth_dependencies import is_public
+    assert is_public('GET','/test/contact/options')
+    assert is_public('POST','/test/contact/messages')
+    for method,path in [('POST','/test/contact/options'),('GET','/test/contact/messages'),('GET','/test/admin/contact/messages'),('POST','/test/contact/messages/private')]:
+        assert not is_public(method,path)

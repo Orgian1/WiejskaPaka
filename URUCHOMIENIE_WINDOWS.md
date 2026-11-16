@@ -15,6 +15,7 @@ Każde uruchomienie tworzy nową bazę SQLite oraz fikcyjne konta, dwa produkty,
 - **Klient po odbiorze:** wystaw ocenę sprzedawcy, sprawdź jej zapis po odświeżeniu; druga inna ocena tego zamówienia powinna zostać odrzucona.
 - **Portfel:** sprawdź saldo oraz testowe operacje, w tym podgląd prowizji sprzedawcy.
 - **Administrator:** przegląd sprzedawców, raporty, zgłoszenia i kampanie reklamowe. Dodaj fikcyjny baner z terminem obejmującym dzisiaj. Przy wejściu klienta lub rolnika do portfela reklama trwa 5 sekund i znika sama; ponowne wejście przed upływem 30 minut nie powinno jej pokazywać. Brak kampanii nie powinien blokować portfela.
+- **Kontakt / Zgłoś problem:** otwórz formularz w stopce, wpisz fikcyjny adres, temat i wiadomość. Po zapisie zobaczysz numer zgłoszenia. Zaloguj administratora i otwórz „Kontakt (TEST)”, aby odczytać wiadomość. To skrzynka testowa; prawdziwy e-mail nie jest wysyłany.
 - **Dostawca:** dostawa testowa i potwierdzenie PIN-em; po zakończeniu adres klienta powinien przestać być dostępny.
 
 Szczegółowe scenariusze są w `docs/DEMO_Z_DANYMI.md`. Informacja o „sprawdzeniu towaru” w tym starszym dokumencie może różnić się od bieżącego interfejsu.

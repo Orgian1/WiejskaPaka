@@ -111,11 +111,16 @@ def main(argv=None):
         env = environment(os.environ, database)
         if args.sample_data:
             env['WP_ENABLE_TEST_PAYMENTS'] = '1'
+        if args.full_demo:
+            env['WP_ENABLE_TEST_CONTACT'] = '1'
+            env['WP_TEST_CONTACT_OUTBOX'] = str(Path(directory) / 'contact-mailbox')
         env['WP_ENABLE_TEST_PASSWORD_RESET'] = '1'
         env['WP_TEST_RESET_OUTBOX'] = str(Path(directory) / 'reset-mailbox')
         command = [sys.executable, '-m', 'uvicorn', 'backend.app:app',
                    '--host', '127.0.0.1', '--port', str(args.port), '--no-access-log']
         print(f'WiejskaPaka DEMO: http://127.0.0.1:{args.port}', flush=True)
+        if args.full_demo:
+            print('Skrzynka kontaktowa TEST: '+env['WP_TEST_CONTACT_OUTBOX'], flush=True)
         print('Skrzynka testowa odzyskiwania hasła: '+env['WP_TEST_RESET_OUTBOX'], flush=True)
         try:
             private_output = private_credentials_file(args.credentials_file, credentials) if args.credentials_file else nullcontext()

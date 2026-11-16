@@ -22,6 +22,9 @@ RECOVERY_ROUTES = {('GET', '/auth/password-reset-test/options'),
                    ('POST', '/auth/password-reset/confirm')}
 
 def is_public(method, path):
+    # Public demo availability and explicit file-backed test submission only.
+    if (method, path) in {('GET', '/test/contact/options'), ('POST', '/test/contact/messages')}:
+        return True
     # Reviewed numeric seller reputation only: never buyer IDs or individual ratings.
     if method == 'GET' and path == '/farmers/{farmer_id}/ratings':
         return True

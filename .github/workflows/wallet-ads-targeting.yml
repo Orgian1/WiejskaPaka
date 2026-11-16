@@ -32,6 +32,8 @@ on:
       - 'tests/test_payu_endpoint.py'
       - 'backend/payu_redaction.py'
       - 'tests/test_payu_redaction.py'
+      - 'backend/payu_payout_state.py'
+      - 'tests/test_payu_payout_state.py'
       - '.github/workflows/wallet-ads-targeting.yml'
   workflow_dispatch:
 jobs:
@@ -52,6 +54,6 @@ jobs:
       - name: JavaScript syntax check
         run: node --check web/wallet-ads.js
       - name: Compile backend and test code
-        run: python -m py_compile backend/wallet_ads.py tests/test_wallet_ads_http.py backend/payu_preparation.py tests/test_payu_preparation.py backend/payu_journal_schema.py tests/test_payu_journal_schema.py backend/payu_state.py tests/test_payu_state.py backend/payu_reconciliation.py tests/test_payu_reconciliation.py backend/payu_config.py tests/test_payu_config.py backend/payu_notification.py tests/test_payu_notification.py backend/payu_order_guard.py tests/test_payu_order_guard.py backend/payu_payout_review.py tests/test_payu_payout_review.py backend/payu_accounting.py tests/test_payu_accounting.py backend/payu_endpoint.py tests/test_payu_endpoint.py backend/payu_redaction.py tests/test_payu_redaction.py
+        run: python -m py_compile backend/wallet_ads.py tests/test_wallet_ads_http.py backend/payu_preparation.py tests/test_payu_preparation.py backend/payu_journal_schema.py tests/test_payu_journal_schema.py backend/payu_state.py tests/test_payu_state.py backend/payu_reconciliation.py tests/test_payu_reconciliation.py backend/payu_config.py tests/test_payu_config.py backend/payu_notification.py tests/test_payu_notification.py backend/payu_order_guard.py tests/test_payu_order_guard.py backend/payu_payout_review.py tests/test_payu_payout_review.py backend/payu_accounting.py tests/test_payu_accounting.py backend/payu_endpoint.py tests/test_payu_endpoint.py backend/payu_redaction.py tests/test_payu_redaction.py backend/payu_payout_state.py tests/test_payu_payout_state.py
       - name: Wallet ads regression and targeting
-        run: python -m pytest -q tests/test_wallet_ads_http.py tests/test_payu_preparation.py tests/test_payu_journal_schema.py tests/test_payu_state.py tests/test_payu_reconciliation.py tests/test_payu_config.py tests/test_payu_notification.py tests/test_payu_order_guard.py tests/test_payu_payout_review.py tests/test_payu_accounting.py tests/test_payu_endpoint.py tests/test_payu_redaction.py
+        run: python -m pytest -q tests/test_wallet_ads_http.py tests/test_payu_preparation.py tests/test_payu_journal_schema.py tests/test_payu_state.py tests/test_payu_reconciliation.py tests/test_payu_config.py tests/test_payu_notification.py tests/test_payu_order_guard.py tests/test_payu_payout_review.py tests/test_payu_accounting.py tests/test_payu_endpoint.py tests/test_payu_redaction.py tests/test_payu_payout_state.py

@@ -73,15 +73,20 @@ class SimulatedPaymentProvider:
     """
     def __init__(self):
         self._payments: dict[str, PaymentResult] = {}
-        self._refunds: dict[str, str] = {}
+        self._requests: dict[str, PaymentRequest] = {}
+        self._refunds: dict[str, tuple[str, int]] = {}
+        self._refunded_grosze: dict[str, int] = {}
 
     def create_topup(self, request: PaymentRequest) -> PaymentResult:
         existing = self._payments.get(request.operation_id)
         if existing is not None:
+            if self._requests[request.operation_id] != request:
+                raise ValueError('Operation id reused with different payment details')
             return existing
         result = PaymentResult(request.operation_id, "SIM-" + request.operation_id,
                                PaymentStatus.PENDING)
         self._payments[request.operation_id] = result
+        self._requests[request.operation_id] = request
         return result
 
     def get_payment_status(self, provider_order_id: str) -> PaymentStatus:
@@ -107,10 +112,18 @@ class SimulatedPaymentProvider:
             raise ValueError("Payment is not confirmed")
         existing = self._refunds.get(refund_id)
         if existing is not None:
-            if existing != provider_order_id:
-                raise ValueError("Refund id already used for another payment")
+            if existing != (provider_order_id, amount_grosze):
+                raise ValueError('Refund id reused with different details')
             return refund_id
-        self._refunds[refund_id] = provider_order_id
+        operation_id = next((key for key, payment in self._payments.items()
+                             if payment.provider_order_id == provider_order_id), None)
+        if operation_id is None:
+            raise KeyError('Unknown simulated payment')
+        already_refunded = self._refunded_grosze.get(provider_order_id, 0)
+        if already_refunded + amount_grosze > self._requests[operation_id].amount_grosze:
+            raise ValueError('Refund exceeds original payment')
+        self._refunds[refund_id] = (provider_order_id, amount_grosze)
+        self._refunded_grosze[provider_order_id] = already_refunded + amount_grosze
         return refund_id
 
 

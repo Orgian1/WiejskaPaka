@@ -32,5 +32,11 @@ def test_provider_journal_schema_rejects_duplicate_events_and_bad_money():
         con.execute("""INSERT INTO provider_payout_requests
             (payout_id,user_id,role,gross_grosze,net_grosze,fee_grosze,status)
             VALUES ('p-2',1,'rolnik',100,95,5,'REQUESTED')""")
+        con.execute("""UPDATE provider_payment_operations SET status='CONFIRMED',
+            credited_ledger_entry_id='ledger-1',credited_at=100 WHERE operation_id='op-1'""")
+        with pytest.raises(sqlite3.IntegrityError):
+            con.execute("""INSERT INTO provider_payment_operations
+                (operation_id,user_id,provider,amount_grosze,status,credited_at,credited_ledger_entry_id)
+                VALUES ('op-3',1,'simulated',100,'CONFIRMED',100,'ledger-1')""")
     finally:
         con.close()

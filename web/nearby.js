@@ -26,9 +26,11 @@ function resetNearbySearch(){
   if(typeof clearAddressSelection==='function')clearAddressSelection();
   // reset() respects the HTML defaults; sensitive coordinates have no defaults.
   el('nearby-lat').value='';el('nearby-lon').value='';
+  if(typeof refreshCatalogLocation==='function')refreshCatalogLocation();
 }
 async function searchNearby(offset=0){
   if(!el('nearby-lat').value||!el('nearby-lon').value){el('nearby-status').textContent='Wpisz miejscowość i wybierz miejsce lub użyj swojej lokalizacji.';return;}
+  if(typeof refreshCatalogLocation==='function')refreshCatalogLocation();
   const payload={latitude_e6:coordinateE6(el('nearby-lat').value,90),longitude_e6:coordinateE6(el('nearby-lon').value,180),
     radius_m:Number(el('nearby-radius').value),q:el('nearby-query').value.trim(),limit:24,offset};
   if(el('nearby-min-price').value.trim())payload.min_price_grosze=parseGrosze(el('nearby-min-price').value);
@@ -64,6 +66,11 @@ async function searchNearby(offset=0){
         }));
         card.append(qty,add,node('p','Punkt i dostępność są ponownie sprawdzane przy zamówieniu. W koszyku wybierz wskazany punkt odbioru.'));
       }else card.append(node('p','Zaloguj się jako klient, aby dodać produkt do koszyka.'));
+      if(typeof favoriteButton==='function'&&['klient','rolnik'].includes(role)){
+        const media=node('div','', 'favorite-media');
+        if(typeof userPhotosEnabled!=='undefined'&&userPhotosEnabled)media.append(photoImage('product',product.id));
+        media.append(favoriteButton(product));card.prepend(media);
+      }
       el('nearby-results').append(card);
     }
     el('nearby-next').hidden=!data.has_more||offset+payload.limit>10000;
@@ -76,6 +83,7 @@ async function searchNearby(offset=0){
 }
 function locateNearby(){
   invalidateNearby();const serial=nearbySerial,epoch=sessionEpoch;
+  if(globalThis.isSecureContext===false){el('nearby-status').textContent='GPS wymaga HTTPS albo localhost. Wybierz adres lub użyj bezpiecznego połączenia.';return;}
   if(!globalThis.navigator?.geolocation){el('nearby-status').textContent='Lokalizacja urządzenia jest niedostępna. Wpisz miejscowość i wybierz miejsce.';return;}
   el('nearby-geolocate').disabled=true;el('nearby-status').textContent='Oczekuję na zgodę przeglądarki na bieżącą lokalizację…';
   navigator.geolocation.getCurrentPosition(position=>{
@@ -87,8 +95,21 @@ function locateNearby(){
   },error=>{
     if(serial!==nearbySerial||epoch!==sessionEpoch)return;
     el('nearby-geolocate').disabled=false;
-    el('nearby-status').textContent=error.code===1?'Nie udzielono zgody na lokalizację. Możesz wpisać miejscowość i wybrać miejsce.':'Nie udało się ustalić lokalizacji. Wpisz miejscowość i wybierz miejsce.';
+    el('nearby-status').textContent=error.code===1?'Nie udzielono zgody na lokalizację. Możesz wpisać miejscowość i wybrać miejsce.':error.code===3?'Przekroczono czas oczekiwania na GPS. Spróbuj ponownie lub wybierz adres.':'Nie udało się ustalić lokalizacji. Wpisz miejscowość i wybierz miejsce.';
   },{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
+}
+
+async function openNearby(){
+  el('nearby-section').scrollIntoView();
+  if(el('nearby-lat').value&&el('nearby-lon').value){await searchNearby();return}
+  invalidateNearby();const serial=nearbySerial,epoch=sessionEpoch;
+  if(['klient','rolnik'].includes(role)){
+    try{
+      const data=await api('/account/location');if(epoch!==sessionEpoch||serial!==nearbySerial)return;
+      if(data.location){el('nearby-lat').value=coordinateText(data.location.latitude_e6);el('nearby-lon').value=coordinateText(data.location.longitude_e6);await searchNearby();return}
+    }catch(error){if(epoch===sessionEpoch&&serial===nearbySerial)el('nearby-status').textContent='Nie udało się odczytać zapisanej lokalizacji. Użyj GPS albo wybierz adres.';return}
+  }
+  if(epoch===sessionEpoch&&serial===nearbySerial)el('nearby-geolocate').click();
 }
 
 function showPointEditor(){
@@ -100,6 +121,7 @@ function showPointEditor(){
   el('point-edit-lat').value=coordinateText(point.latitude_e6);el('point-edit-lon').value=coordinateText(point.longitude_e6);
   el('point-edit-active').checked=Boolean(point.active);el('point-edit-clear-coordinates').checked=false;
   el('point-edit-lat').disabled=false;el('point-edit-lon').disabled=false;
+  if(typeof resetPickupMap==='function')resetPickupMap('point-edit');
 }
 async function loadPointEditor(){
   if(!el('point-location-panel')||role!=='rolnik')return;
@@ -146,5 +168,6 @@ if(el('nearby-form')){
   el('point-edit-select').onchange=()=>{pointEditorSerial++;el('point-edit-status').textContent='';showPointEditor();};
   el('point-edit-clear-coordinates').onchange=()=>{const clear=el('point-edit-clear-coordinates').checked;el('point-edit-lat').disabled=clear;el('point-edit-lon').disabled=clear;};
   el('point-edit-form').onsubmit=event=>{event.preventDefault();act(()=>singleWrite('point-editor',el('point-edit-submit'),savePointEditor));};
+  if(el('nearby-nav-link'))el('nearby-nav-link').onclick=event=>{event.preventDefault();act(openNearby)};
   refreshNearbyRole();
 }

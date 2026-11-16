@@ -197,7 +197,10 @@ def test_wallet_ads_sqlite_existing_database_adds_audience_without_losing_campai
     # Simulate a pre-targeting SQLite database with the exact old table schema.
     # Dropping the added column through SQLite's DDL retains the rows and keys.
     with closing(sqlite3.connect(path)) as con:
-        con.execute('ALTER TABLE wallet_ads DROP COLUMN audience')
+        con.execute('PRAGMA foreign_keys=OFF')
+        con.execute('''CREATE TABLE wallet_ads_legacy AS SELECT id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted FROM wallet_ads''')
+        con.execute('DROP TABLE wallet_ads')
+        con.execute('ALTER TABLE wallet_ads_legacy RENAME TO wallet_ads')
         con.commit()
     with server(path) as client:
         result=client.get('/admin/wallet-ads',headers=admin)

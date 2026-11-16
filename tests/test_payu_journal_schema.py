@@ -19,6 +19,9 @@ def test_provider_journal_schema_rejects_duplicate_events_and_bad_money():
             con.execute("""INSERT INTO provider_payment_events
                 (event_id,operation_id,event_type) VALUES ('event-1','op-1','paid')""")
         with pytest.raises(sqlite3.IntegrityError):
+            con.execute("""INSERT INTO provider_payment_events
+                (event_id,operation_id,event_type) VALUES ('orphan','missing','paid')""")
+        with pytest.raises(sqlite3.IntegrityError):
             con.execute("""INSERT INTO provider_payment_operations
                 (operation_id,user_id,provider,amount_grosze,status)
                 VALUES ('op-2',1,'simulated',-1,'PENDING')""")

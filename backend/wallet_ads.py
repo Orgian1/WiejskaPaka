@@ -66,13 +66,14 @@ class Campaign(BaseModel):
             parsed.hostname.encode('idna')
         except (ValueError, UnicodeError):
             raise ValueError('Podaj poprawny adres HTTP lub HTTPS bez danych logowania') from None
-        return value
+        return parsed._replace(scheme=parsed.scheme.lower()).geturl()
 
     @model_validator(mode='after')
     def dates(self):
         if (self.starts_at.tzinfo is None or self.ends_at.tzinfo is None
+                or self.starts_at.microsecond or self.ends_at.microsecond
                 or self.ends_at <= self.starts_at):
-            raise ValueError('Podaj daty ze strefą czasową; koniec musi być po początku')
+            raise ValueError('Podaj daty ze strefą i dokładnością do sekund; koniec musi być po początku')
         return self
 
 

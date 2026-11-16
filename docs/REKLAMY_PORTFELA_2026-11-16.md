@@ -4,7 +4,7 @@ Zmiana opiera się na PR #62 (23fd019). Nie uruchamia płatności ani nie zmieni
 
 ## Obsługa
 
-Administrator ma zakładkę **Reklamy portfela**. Formularz umożliwia dodanie nazwy reklamodawcy, zdjęcia JPEG/PNG/WebP do 1 MB, adresu HTTP(S), dat ze strefą czasową, kolejności i przełącznika emisji. Daty w panelu są w lokalnym czasie przeglądarki, API zapisuje czas UTC. Edycja może zachować poprzednie zdjęcie. Usunięcie jest logiczne: zatrzymuje przyszłe emisje, zachowuje statystyki w bazie. Lista ma stronicowanie po 10 reklam. Zdjęcie jest ponownie kodowane do JPEG, maksymalnie 500 KB / 2048 px; metadane, w tym GPS, nie są zachowywane. SVG, animacje i uszkodzone pliki są odrzucane.
+Administrator ma zakładkę **Reklamy portfela**. Formularz umożliwia dodanie nazwy reklamodawcy, zdjęcia JPEG/PNG/WebP do 1 MB, adresu HTTP(S), dat ze strefą czasową, kolejności i przełącznika emisji. Daty w panelu są w lokalnym czasie przeglądarki, API zapisuje czas UTC z dokładnością do pełnych sekund (ułamki są odrzucane zamiast niejawnego zaokrąglania). Edycja może zachować poprzednie zdjęcie. Usunięcie jest logiczne: zatrzymuje przyszłe emisje, zachowuje statystyki w bazie. Lista ma stronicowanie po 10 reklam. Zdjęcie jest ponownie kodowane do JPEG, maksymalnie 500 KB / 2048 px; metadane, w tym GPS, nie są zachowywane. SVG, animacje i uszkodzone pliki są odrzucane.
 
 Aktywne reklamy są uporządkowane po `sort_order,id`; każde konto przechodzi tę listę cyklicznie. Pierwsza emisja zaczyna się od pierwszej aktywnej pozycji. Zmiana harmonogramu lub usunięcie reklamy nie przerywa już wydanej emisji. Przy braku aktywnych reklam limit nie jest zużywany.
 

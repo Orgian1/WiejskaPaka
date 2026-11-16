@@ -14,7 +14,7 @@ from tests.test_postgres_full_api_optin import register
 
 def campaign(**overrides):
     data=BytesIO();Image.new('RGB',(900,400),'green').save(data,'PNG')
-    now=datetime.now(timezone.utc)
+    now=datetime.now(timezone.utc).replace(microsecond=0)
     return dict(advertiser='Gospodarstwo testowe',url='https://example.org/oferta',
         image_base64=base64.b64encode(data.getvalue()).decode(),
         starts_at=(now-timedelta(hours=1)).isoformat(),ends_at=(now+timedelta(days=1)).isoformat(),
@@ -26,7 +26,7 @@ def claim(client,headers,key=None):
 
 
 def exercise(client,admin,buyer,seller,other,expire):
-    body=campaign()
+    body=campaign();body['url']='HTTPS://example.org/oferta'
     assert claim(client,buyer).json()=={'ad':None}
     for headers in (buyer,seller,other):
         assert client.get('/admin/wallet-ads',headers=headers).status_code==403
@@ -48,6 +48,7 @@ def exercise(client,admin,buyer,seller,other,expire):
     ads=[r.json()['ad'] for r in responses if r.json()['ad']]
     assert len(ads)==1
     ad=ads[0];assert ad['id']==aid and ad['duration_seconds']==5
+    assert ad['url']=='https://example.org/oferta'
     assert ad['image'].startswith('data:image/jpeg;base64,')
     assert claim(client,buyer,key).json()=={'ad':None}
     assert claim(client,buyer,key).json()=={'ad':None}
@@ -86,7 +87,7 @@ def test_wallet_ads_full_http(tmp_path,monkeypatch):
         exercise(client,admin,buyer,seller,other,expire)
 
 
-@pytest.mark.parametrize('field,value', [('url','javascript:alert(1)'),('url','data:text/html,bad'),('url','https://user:secret@example.org'),('url','https://example.org\\@evil.org'),('url','https://example.org\n.evil.org'),('image_base64','<svg onload=alert(1)>'),('image_base64',base64.b64encode(b'<svg/>').decode()),('ends_at','2020-01-01T00:00:00Z'),('starts_at','2026-01-01T00:00:00'),('user_id',2)])
+@pytest.mark.parametrize('field,value', [('url','javascript:alert(1)'),('url','data:text/html,bad'),('url','https://user:secret@example.org'),('url','https://example.org\\@evil.org'),('url','https://example.org\n.evil.org'),('image_base64','<svg onload=alert(1)>'),('image_base64',base64.b64encode(b'<svg/>').decode()),('ends_at','2020-01-01T00:00:00Z'),('starts_at','2026-01-01T00:00:00'),('user_id',2),('starts_at','2026-01-01T00:00:00.123Z')])
 def test_campaign_validation(tmp_path,field,value):
     path=tmp_path/'invalid.sqlite3'
     with server(path) as client:
@@ -109,7 +110,7 @@ def test_ads_schedule_roles_spoofing_and_cap_survives_restart(tmp_path,monkeypat
         body=campaign();body['enabled']=False
         ad=client.post('/admin/wallet-ads',headers=admin,json=body).json()['id']
         assert claim(client,buyer).json()=={'ad':None}
-        now=datetime.now(timezone.utc);body.update(enabled=True,starts_at=(now+timedelta(hours=1)).isoformat(),ends_at=(now+timedelta(hours=2)).isoformat())
+        now=datetime.now(timezone.utc).replace(microsecond=0);body.update(enabled=True,starts_at=(now+timedelta(hours=1)).isoformat(),ends_at=(now+timedelta(hours=2)).isoformat())
         assert client.put('/admin/wallet-ads/'+ad,headers=admin,json=body).status_code==200
         assert claim(client,buyer).json()=={'ad':None}
         body.update(starts_at=(now-timedelta(hours=2)).isoformat(),ends_at=(now-timedelta(hours=1)).isoformat())

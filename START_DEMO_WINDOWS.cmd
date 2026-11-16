@@ -19,6 +19,7 @@ if errorlevel 1 goto failed
 ".venv-demo\Scripts\python.exe" -m pip check
 if errorlevel 1 goto failed
 ".venv-demo\Scripts\python.exe" scripts\run_phone_demo.py --full-demo
+if "%ERRORLEVEL%"=="130" exit /b 0
 if errorlevel 1 goto failed
 exit /b 0
 :failed

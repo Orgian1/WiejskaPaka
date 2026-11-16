@@ -65,3 +65,20 @@ def test_simulated_refunds_never_exceed_original_payment():
         provider.request_refund(payment.provider_order_id, 1, "third")
     with pytest.raises(ValueError):
         provider.request_refund(payment.provider_order_id, 41, "first")
+
+
+def test_payout_role_fee_and_disabled_provider():
+    from backend.payu_preparation import PayoutRequest, DisabledPayoutProvider
+    seller = PayoutRequest("seller-1", 1, "rolnik", 101)
+    buyer = PayoutRequest("buyer-1", 2, "klient", 101)
+    assert seller.net_and_fee == (96, 5)
+    assert buyer.net_and_fee == (101, 0)
+    with pytest.raises(PayUNotConfigured):
+        DisabledPayoutProvider().submit_payout(seller)
+
+
+def test_payout_rejects_float_and_unknown_role():
+    from backend.payu_preparation import PayoutRequest
+    for role, amount in (("admin", 100), ("rolnik", 1.5), ("klient", 0)):
+        with pytest.raises(ValueError):
+            PayoutRequest("payout", 1, role, amount)

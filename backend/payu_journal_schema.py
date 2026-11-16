@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS provider_payment_operations (
     status TEXT NOT NULL CHECK(status IN
         ('CREATED','PENDING','CONFIRMED','FAILED','CANCELLED','REFUNDED')),
     credited_at INTEGER,
+    credited_ledger_entry_id TEXT UNIQUE,
     created_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER)),
     updated_at INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER)),
     CHECK(credited_at IS NULL OR status IN ('CONFIRMED','REFUNDED'))

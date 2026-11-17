@@ -29,7 +29,7 @@ def seed(tmp_path_factory):
                 actors.append(({'Authorization':'Bearer '+token},registered.json()['id']))
             (farmer,_),(buyer,buyer_id)=actors
             products=[]
-            for price in (349,299):
+            for price in (549,299):
                 r=client.post('/products',headers=farmer,json={'name':'Towar '+str(price),'stock':10,
                     'price_grosze':price,'delivery_grosze':501,'sale_unit':'kg'})
                 assert r.status_code==201;products.append(r.json()['id'])
@@ -78,7 +78,7 @@ def test_one_job_per_purchase_and_durable_start_before_submission(store,key):
         assert recipient=='klient@example.invalid' and kwargs=={'email_verified':True}
         assert purchase.pin==store[3 if key.startswith('direct:') else 4]['pin_test_only' if key.startswith('direct:') else 'shipment_pin_test_only']
         assert purchase.delivery_grosze==501
-        assert purchase.total_grosze==(850 if key.startswith('direct:') else 1149)
+        assert purchase.total_grosze==(1050 if key.startswith('direct:') else 1349)
         assert all(line[2]=='kg' for line in purchase.lines)
         seen.append(purchase.reference);return outcome('ACCEPTED',accepted=True)
     assert dispatch(store,transport)=='ACCEPTED'

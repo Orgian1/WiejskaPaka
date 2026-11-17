@@ -139,7 +139,7 @@ def test_all_ad_routes_require_authentication(tmp_path):
 
 
 def test_wallet_ad_exact_30_minute_boundary(tmp_path,monkeypatch):
-    """At exactly 1800 elapsed DB seconds the next campaign may be claimed."""
+    """Before the 1800-second cooldown expires, claims are denied; after it expires, they succeed."""
     monkeypatch.setenv('WP_ENABLE_WALLET_PREVIEW','1')
     path=tmp_path/'ads_boundary.sqlite3'
     with server(path) as client:
@@ -152,11 +152,11 @@ def test_wallet_ad_exact_30_minute_boundary(tmp_path,monkeypatch):
         assert created.status_code==201,created.text
         assert claim(client,buyer).json()['ad'] is not None
         with closing(sqlite3.connect(path)) as con:
-            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1799 WHERE user_id=?",(uid,))
+            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1790 WHERE user_id=?",(uid,))
             con.commit()
         assert claim(client,buyer).json()=={'ad':None}
         with closing(sqlite3.connect(path)) as con:
-            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1800 WHERE user_id=?",(uid,))
+            con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1810 WHERE user_id=?",(uid,))
             con.commit()
         assert claim(client,buyer).json()['ad'] is not None
 

@@ -244,7 +244,7 @@ def test_point_without_coordinates_still_has_original_address():
     c,f,b,pids,point,pbody,result,ids,*_=purchase()
     assert c.post(f'/orders/{ids[0]}/cancel-test',headers=b).status_code==200
     assert c.put(f'/pickup-points/{point}',headers=f,json={**{k:v for k,v in pbody.items() if k not in ('latitude_e6','longitude_e6')},'clear_coordinates':True,'active':True}).status_code==200
-    r=c.post('/orders',headers=b,json={'product_id':pids[0],'quantity':1,'fulfillment':'odbior','pickup_point_id':point})
+    r=c.post('/orders',headers=b,json={'product_id':pids[0],'quantity':2,'fulfillment':'odbior','pickup_point_id':point})
     assert r.status_code==201
     original=read(c,b,r.json()['id'])['original']
     assert original['pickup_point']['street']=='Pierwotna 1'

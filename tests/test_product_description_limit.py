@@ -19,4 +19,4 @@ def test_description_rejects_201_characters():
 
 def test_description_rejects_embedded_null():
     with pytest.raises(ValidationError):
-        product('Marchew\\x00test')
+        product('Marchew' + chr(0) + 'test')

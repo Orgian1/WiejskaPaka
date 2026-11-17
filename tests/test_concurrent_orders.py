@@ -9,7 +9,7 @@ def test_parallel_buyers_do_not_oversell():
     farmer = reg(f'parallel-farmer-{suffix}@example.com', 'rolnik')
     buyers = [reg(f'parallel-buyer-{i}-{suffix}@example.com', 'klient') for i in range(2)]
     product_response = c.post('/products', json={
-        'name': 'Ostatnia sztuka', 'price_grosze': 101, 'delivery_grosze': 0, 'stock': 1
+        'name': 'Ostatnia sztuka', 'price_grosze': 501, 'delivery_grosze': 0, 'stock': 1
     }, headers=farmer)
     assert product_response.status_code == 201
     product_id = product_response.json()['id']

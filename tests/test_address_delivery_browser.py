@@ -53,7 +53,7 @@ def test_delivery_window_checkout_and_seller_decision(delivery_browser, tmp_path
             accounts.append(account)
             headers.append({'Authorization': 'Bearer '+token})
         product = client.post('/products', headers=headers[0], json={
-            'name': 'Pomidory przeglądarkowe', 'stock': 10, 'price_grosze': 200, 'delivery_grosze': 500})
+            'name': 'Pomidory przeglądarkowe', 'stock': 10, 'price_grosze': 500, 'delivery_grosze': 500})
         assert product.status_code == 201, product.text
         seller = delivery_browser.new_page(viewport={'width': width, 'height': 844})
         buyer = delivery_browser.new_page(viewport={'width': width, 'height': 844})

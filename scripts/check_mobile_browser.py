@@ -139,4 +139,9 @@ if __name__ == '__main__':
     parser.add_argument('--screenshots', type=Path, default=None, metavar='KATALOG',
                         help='Zapisz zrzuty PUBLICZNEJ strony (bez logowania) w podanym katalogu')
     args = parser.parse_args()
-    check_browser(screenshot_dir=args.screenshots)
+    try:
+        check_browser(screenshot_dir=args.screenshots)
+    except AssertionError as exc:
+        # Report the failed public UI invariant without printing private data.
+        print('MOBILE_BROWSER_ASSERTION: '+(str(exc)[:240] or 'unnamed assertion'), file=sys.stderr)
+        raise

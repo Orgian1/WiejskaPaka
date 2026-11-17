@@ -25,10 +25,16 @@ function appViewAllowed(view){
  return !!role;
 }
 function navigateApp(view){
+ if(view==='wallet'&&typeof walletAdAccessGranted!=='undefined'&&!walletAdAccessGranted){void enterWalletWithAd();return;}
  if(appRouteName()===view){applyAppRoute(true);return}
  location.hash=view;applyAppRoute(false);
 }
 function applyAppRoute(focus=false){
+ if(appRouteName()==='wallet'&&typeof walletAdAccessGranted!=='undefined'&&!walletAdAccessGranted&&['klient','rolnik'].includes(role)){
+  history.replaceState(null,'','#account');
+  void enterWalletWithAd();
+  return;
+ }
  const wanted=(el('reset-token').value||(typeof emailProofToken!=='undefined'&&emailProofToken))?'account':appRouteName(),view=appViewAllowed(wanted)?wanted:'account';
  const visible=new Set(appViewGroups[view]);
  for(const id of new Set(Object.values(appViewGroups).flat())){
@@ -56,7 +62,7 @@ function applyAppRoute(focus=false){
  document.title=({'products':'Produkty','listings':'Moje ogłoszenia','points':'Punkty odbioru'}[view]||'Moje konto')+' — WiejskaPaka';
 }
 const appLogged=logged;
-logged=function(user){const savedCatalog=catalogRouteSnapshot;appLogged(user);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
+logged=function(user){if(typeof resetWalletAds==='function')resetWalletAds();const savedCatalog=catalogRouteSnapshot;appLogged(user);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
 globalThis.addEventListener('hashchange',()=>applyAppRoute(document.activeElement?.id!=='point-name'));
 document.addEventListener('click',event=>{
  const link=event.target.closest('a[href^="#"]');if(!link||event.defaultPrevented)return;

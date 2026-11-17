@@ -11,6 +11,13 @@ const appViewGroups={
 };
 const appRouteAliases={'products-section':'products','nearby-section':'nearby','favorites-section':'favorites','cart-section':'cart','orders-section':'orders','address-delivery-panel':'orders','wallet-section':'wallet','account-section':'account','auth':'account','role':'account','account-security':'account','farmer':'listings','farmer-details':'points','point-form':'points','point-location-panel':'points','support-section':'contact','contact-section':'contact','contact-disclosure':'contact','seller-compliance':'account','user-photo-panel':'account','wallet-admin-section':'dashboard','wallet-ads-admin':'dashboard','pickup-promotions-admin':'dashboard','admin-seller-review':'dashboard','notifications-section':'notifications'};
 let appCurrentView=null;
+let pendingGuestProductId=null;
+function loginForProduct(productId){
+ if(!Number.isSafeInteger(productId)||productId<1)return;
+ pendingGuestProductId=productId;
+ navigateApp('account');
+ const email=el('email');if(email)email.focus();
+}
 function appRouteName(){
  const raw=location.hash.slice(1).split('?')[0];
  if(raw.startsWith('reset-password')||raw.startsWith('verify-email'))return 'account';
@@ -63,7 +70,7 @@ function applyAppRoute(focus=false){
  document.title=({'products':'Produkty','listings':'Moje ogłoszenia','points':'Punkty odbioru'}[view]||'Moje konto')+' — WiejskaPaka';
 }
 const appLogged=logged;
-logged=function(user){if(typeof resetWalletAds==='function')resetWalletAds();const savedCatalog=catalogRouteSnapshot;appLogged(user);if(user&&role==='admin'&&typeof refreshWalletAdsAdmin==='function')act(refreshWalletAdsAdmin);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
+logged=function(user){if(typeof resetWalletAds==='function')resetWalletAds();const savedCatalog=catalogRouteSnapshot;appLogged(user);if(user&&role==='admin'&&typeof refreshWalletAdsAdmin==='function')act(refreshWalletAdsAdmin);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}if(user&&role==='klient'&&pendingGuestProductId!==null){const productId=pendingGuestProductId;pendingGuestProductId=null;expandedCatalogProducts.add(productId);navigateApp('products');act(async()=>{await loadProducts();const product=[...document.querySelectorAll('#products details.catalog-product')].find(card=>card.querySelector('summary')?.textContent&&card.open);if(product)product.scrollIntoView({block:'nearest'});});}else if(user){pendingGuestProductId=null;}};
 globalThis.addEventListener('hashchange',()=>applyAppRoute(document.activeElement?.id!=='point-name'));
 document.addEventListener('click',event=>{
  const link=event.target.closest('a[href^="#"]');if(!link||event.defaultPrevented)return;

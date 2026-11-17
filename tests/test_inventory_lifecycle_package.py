@@ -7,7 +7,7 @@ def test_inventory_conservation_across_multiple_buyers_and_cancellation():
     tag = uuid4().hex[:10]
     farmer = reg(f'inv-f-{tag}@example.com', 'rolnik')
     buyers = [reg(f'inv-b-{i}-{tag}@example.com', 'klient') for i in range(3)]
-    p = c.post('/products', json={'name': 'Marchew', 'price_grosze': 137, 'delivery_grosze': 23, 'stock': 5}, headers=farmer)
+    p = c.post('/products', json={'name': 'Marchew', 'price_grosze': 250, 'delivery_grosze': 23, 'stock': 5}, headers=farmer)
     assert p.status_code == 201
     pid = p.json()['id']
     point = c.post('/pickup-points', json={'name': 'Punkt', 'city': 'Radom', 'street': 'Polna 1', 'opening_hours': '8-16'}, headers=farmer)
@@ -21,8 +21,8 @@ def test_inventory_conservation_across_multiple_buyers_and_cancellation():
     second = buy(buyers[1], 2)
     rejected = buy(buyers[2], 1)
     assert (first.status_code, second.status_code, rejected.status_code) == (201, 201, 409)
-    assert first.json()['total_grosze'] == 411
-    assert second.json()['total_grosze'] == 274
+    assert first.json()['total_grosze'] == 750
+    assert second.json()['total_grosze'] == 500
 
     def stock():
         response = c.get('/products/mine', headers=farmer)

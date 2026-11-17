@@ -9,7 +9,7 @@ def test_zero_delivery_rate_cannot_create_free_home_delivery():
     farmer, _ = actor('rolnik')
     buyer, bid = actor('klient')
     pid = client.post('/products', headers=farmer, json={
-        'name': 'Tylko odbiór', 'price_grosze': 100, 'delivery_grosze': 0, 'stock': 3}).json()['id']
+        'name': 'Tylko odbiór', 'price_grosze': 500, 'delivery_grosze': 0, 'stock': 3}).json()['id']
     address = {'fulfillment': 'dostawa', 'delivery_city': 'Legnica',
                'delivery_street': 'Polna 1', 'delivery_postal_code': '59-220'}
     assert client.post('/orders', headers=buyer, json={**address, 'product_id': pid, 'quantity': 1}).status_code == 422

@@ -48,7 +48,7 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.click('#logout')
             page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
-            page.wait_for_function("() => (!document.querySelector('#products button:not(.guest-login-buy-button):not(.favorite-button)'))")
+            page.wait_for_function("() => [...document.querySelectorAll('#products button')].every(b => b.textContent.includes('Zaloguj się lub zarejestruj, aby kupić'))")
             assert page.locator('#catalog-previous').is_disabled()
             assert not errors
         finally:page.close()

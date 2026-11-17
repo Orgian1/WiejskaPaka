@@ -33,7 +33,7 @@ def actors():
 
 def new_product(client, farmer):
     response = client.post('/products', headers=farmer, json={
-        'name': 'Towar do domu', 'stock': 10, 'price_grosze': 200, 'delivery_grosze': 500})
+        'name': 'Towar do domu', 'stock': 10, 'price_grosze': 300, 'delivery_grosze': 500})
     assert response.status_code == 201, response.text
     return response.json()['id']
 

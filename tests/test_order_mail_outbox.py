@@ -139,7 +139,7 @@ def test_email_uses_captured_terms_after_product_edit(store):
     with closing(store[0]()) as con,outbox.transaction(con):
         con.execute("UPDATE products SET name='Zmodyfikowana oferta',price_grosze=9999")
     def submit(recipient,purchase,**kwargs):
-        assert {line[0] for line in purchase.lines}=={'Towar 349','Towar 299'}
+        assert {line[0] for line in purchase.lines}=={'Towar 549','Towar 299'}
         assert purchase.total_grosze==1349 and purchase.delivery_grosze==501
         return outcome('ACCEPTED',accepted=True)
     assert dispatch(store,submit)=='ACCEPTED'

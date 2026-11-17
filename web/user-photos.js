@@ -6,7 +6,8 @@ async function newProductPhotoPayload(){
   if(!file||!file.size||file.size>20000000)throw Error('Wybierz jedno zdjęcie produktu JPEG, PNG lub WebP do 20 MB.');
   if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Zdjęcie musi być w formacie JPEG, PNG lub WebP.');
   // Compress before JSON/Base64 transport, not only after the API receives it.
-  const bitmap=await createImageBitmap(file).catch(()=>{throw Error('Nie można odczytać zdjęcia. Wybierz poprawny plik.');});
+  if(typeof createImageBitmap!=='function')throw Error('Ta przeglądarka nie obsługuje zmniejszania zdjęć. Zaktualizuj ją.');
+  const bitmap=await createImageBitmap(file,{imageOrientation:'from-image'}).catch(()=>{throw Error('Nie można odczytać zdjęcia. Wybierz poprawny plik.');});
   try{
     if(bitmap.width*bitmap.height>50000000)throw Error('Zdjęcie ma zbyt dużą rozdzielczość (maksymalnie 50 mln pikseli).');
     let scale=Math.min(1,2048/bitmap.width,2048/bitmap.height);

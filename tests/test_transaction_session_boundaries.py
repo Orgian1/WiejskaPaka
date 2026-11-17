@@ -32,7 +32,7 @@ def scenario(name):
     buyer, bid = actor('klient')
     point_body = {'name': 'Punkt testowy', 'city': 'Opole', 'street': 'Testowa 1', 'opening_hours': '9-17'}
     point = client.post('/pickup-points', headers=farmer, json=point_body).json()['id']
-    product_body = {'name': 'Testowe jabłka', 'price_grosze': 199, 'delivery_grosze': 501, 'stock': 20}
+    product_body = {'name': 'Testowe jabłka', 'price_grosze': 599, 'delivery_grosze': 501, 'stock': 20}
     product = client.post('/products', headers=farmer, json=product_body).json()['id']
     assert client.put('/cart/items', headers=buyer, json={'product_id': product, 'quantity': 1}).status_code == 200
     body = {'product_id': product, 'quantity': 1, 'fulfillment': 'odbior', 'pickup_point_id': point}
@@ -107,7 +107,7 @@ def test_concurrent_logout_prevents_a_paused_product_write():
     try:
         with ThreadPoolExecutor(max_workers=1) as pool:
             future = pool.submit(client.post, '/products', headers=headers, json={
-                'name': 'Zablokowany zapis', 'price_grosze': 199, 'delivery_grosze': 501, 'stock': 1})
+                'name': 'Zablokowany zapis', 'price_grosze': 599, 'delivery_grosze': 501, 'stock': 1})
             try:
                 assert paused.wait(timeout=5)
                 assert client.post('/auth/logout', headers=headers).status_code == 200
@@ -167,7 +167,7 @@ def test_courier_address_read_rechecks_session_in_its_snapshot(change):
     buyer, _ = actor('klient')
     courier, cid = actor('dostawca')
     product = client.post('/products', headers=farmer, json={
-        'name': 'Dostawa testowa', 'price_grosze': 199, 'delivery_grosze': 501, 'stock': 2}).json()['id']
+        'name': 'Dostawa testowa', 'price_grosze': 599, 'delivery_grosze': 501, 'stock': 2}).json()['id']
     order = client.post('/orders', headers=buyer, json={
         'product_id': product, 'quantity': 1, 'fulfillment': 'dostawa',
         'delivery_city': 'Opole', 'delivery_street': 'Poufna Testowa 91', 'delivery_postal_code': '45-001'}).json()

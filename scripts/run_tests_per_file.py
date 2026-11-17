@@ -116,7 +116,17 @@ def run(root, *, selected=None, timeout=90, report=None, resume=False, refresh_s
                 proc = subprocess.run([sys.executable, '-m', 'pytest', '-q', '--disable-warnings',
                                        '--junitxml', str(junit), str(resolved)],
                                       cwd=root, env=env, capture_output=True, text=True, encoding='utf-8', timeout=timeout)
-                # pytest exit 5 can mean an entirely skipped optional pgserver module.\n                # Accept only the three explicitly identified PostgreSQL-only modules\n                # on Windows, and only when JUnit confirms skips and zero failures.\n                optional_pg = {'test_rls_gateway_postgres.py', 'test_rls_security_postgres.py', 'test_seller_ratings_rls.py'}\n                observed = testcase_counts(junit)\n                skipped_optional = (sys.platform == 'win32' and resolved.name in optional_pg\n                                    and proc.returncode == 5 and observed is not None\n                                    and observed['failed'] == 0 and observed['passed'] == 0\n                                    and observed['skipped'] > 0)\n                effective_returncode = 0 if skipped_optional else proc.returncode\n                entry = {'file': resolved.name, 'sha256': hashlib.sha256(resolved.read_bytes()).hexdigest(), 'returncode': effective_returncode,
+                # pytest exit 5 can mean an entirely skipped optional pgserver module.
+                # Accept only the three explicitly identified PostgreSQL-only modules
+                # on Windows, and only when JUnit confirms skips and zero failures.
+                optional_pg = {'test_rls_gateway_postgres.py', 'test_rls_security_postgres.py', 'test_seller_ratings_rls.py'}
+                observed = testcase_counts(junit)
+                skipped_optional = (sys.platform == 'win32' and resolved.name in optional_pg
+                                    and proc.returncode == 5 and observed is not None
+                                    and observed['failed'] == 0 and observed['passed'] == 0
+                                    and observed['skipped'] > 0)
+                effective_returncode = 0 if skipped_optional else proc.returncode
+                entry = {'file': resolved.name, 'sha256': hashlib.sha256(resolved.read_bytes()).hexdigest(), 'returncode': effective_returncode,
                          'seconds': round(time.monotonic() - started, 2),
                          'test_counts': observed, 'optional_postgres_skipped': skipped_optional,
                          'failure_locations': failure_locations(junit,root),

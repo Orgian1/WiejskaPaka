@@ -8,13 +8,13 @@ def exercise_issue60(client, farmer, buyer, product, point, body):
     original=client.get('/products/mine',headers=farmer).json()
     listing=next(p for p in original if p['id']==product)
     quantity=listing['stock']
-    order=client.post('/orders',headers=buyer,json={'product_id':product,'quantity':2,'fulfillment':'odbior','pickup_point_id':point})
+    order=client.post('/orders',headers=buyer,json={'product_id':product,'quantity':3,'fulfillment':'odbior','pickup_point_id':point})
     assert order.status_code==201,order.text
     order_id=order.json()['order_id'] if 'order_id' in order.json() else order.json()['id']
     before=next(o for o in client.get('/orders/me',headers=buyer).json() if o['id']==order_id)
     stale=client.patch('/products/mine/'+str(product),headers=farmer,json={'stock':quantity,'expected_stock':quantity,'price_grosze':999})
     assert stale.status_code==409
-    changed=client.patch('/products/mine/'+str(product),headers=farmer,json={'price_grosze':777,'stock':quantity-2,'expected_stock':quantity-2,'description':'Nowy opis oferty'})
+    changed=client.patch('/products/mine/'+str(product),headers=farmer,json={'price_grosze':777,'stock':quantity-3,'expected_stock':quantity-3,'description':'Nowy opis oferty'})
     assert changed.status_code==200,changed.text
     after=next(o for o in client.get('/orders/me',headers=buyer).json() if o['id']==order_id)
     assert after==before

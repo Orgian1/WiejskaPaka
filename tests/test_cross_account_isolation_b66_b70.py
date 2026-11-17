@@ -25,7 +25,7 @@ def scenario():
         another_buyer = account(client, 'klient')
         courier = account(client, 'dostawca')
         product = client.post('/products', headers=farmer, json={
-            'name': 'Test izolacji kont', 'price_grosze': 349,
+            'name': 'Test izolacji kont', 'price_grosze': 549,
             'delivery_grosze': 501, 'stock': 10})
         assert product.status_code == 201, product.text
         point = client.post('/pickup-points', headers=farmer, json={

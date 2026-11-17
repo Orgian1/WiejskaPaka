@@ -3,13 +3,36 @@ let userPhotosEnabled=false,photoViewSerial=0;
 async function newProductPhotoPayload(){
   if(!userPhotosEnabled)return null;
   const file=el('product-photo-file').files?.[0];
-  if(!file||!file.size||file.size>20000000)throw Error('Wybierz jedno zdjęcie produktu JPEG, PNG lub WebP do 20 MB. Zmniejszymy je do 500 KB.');
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(String(reader.result).split(',')[1]);
-    reader.onerror=()=>reject(Error('Nie udało się odczytać zdjęcia. Wybierz je ponownie.'));
-    reader.readAsDataURL(file);
-  });
+  if(!file||!file.size||file.size>20000000)throw Error('Wybierz jedno zdjęcie produktu JPEG, PNG lub WebP do 20 MB.');
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Zdjęcie musi być w formacie JPEG, PNG lub WebP.');
+  // Compress before JSON/Base64 transport, not only after the API receives it.
+  const bitmap=await createImageBitmap(file).catch(()=>{throw Error('Nie można odczytać zdjęcia. Wybierz poprawny plik.');});
+  try{
+    if(bitmap.width*bitmap.height>50000000)throw Error('Zdjęcie ma zbyt dużą rozdzielczość (maksymalnie 50 mln pikseli).');
+    let scale=Math.min(1,2048/bitmap.width,2048/bitmap.height);
+    for(let attempt=0;attempt<9;attempt++){
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      if(!ctx)throw Error('Przeglądarka nie obsługuje zmniejszania zdjęć.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      for(const quality of [.88,.78,.68,.55,.42]){
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+        if(blob&&blob.size<=500000){
+          return await new Promise((resolve,reject)=>{
+            const reader=new FileReader();
+            reader.onload=()=>resolve(String(reader.result).split(',')[1]);
+            reader.onerror=()=>reject(Error('Nie udało się przygotować zdjęcia.'));
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+      scale*=.75;
+    }
+    throw Error('Nie udało się zmniejszyć zdjęcia do 500 KB.');
+  }finally{bitmap.close();}
 }
 function photoImage(kind,id,digest=''){
   const image=node('img');image.alt=kind==='product'?'Zdjęcie produktu':kind==='farm'?'Zdjęcie gospodarstwa':'Zdjęcie profilowe';

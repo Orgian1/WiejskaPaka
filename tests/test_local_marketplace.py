@@ -12,7 +12,7 @@ from tests.test_b10921_security_boundaries import actor
 def setup_market(*, lat=52_000_000,lon=16_000_000,stock=10,name='Ziemniaki ŁĄKOWE'):
     client=TestClient(api.app)
     farmer,fid=actor('rolnik');buyer,bid=actor('klient')
-    product=client.post('/products',headers=farmer,json={'name':name,'price_grosze':199,'delivery_grosze':501,'stock':stock})
+    product=client.post('/products',headers=farmer,json={'name':name,'price_grosze':299,'delivery_grosze':501,'stock':stock})
     assert product.status_code==201,product.text
     body={'name':'Przystanek '+uuid4().hex[:6],'city':'Opole','street':'Polna 1','opening_hours':'9:00–17:00',
           'latitude_e6':lat,'longitude_e6':lon}
@@ -31,7 +31,7 @@ def test_search_shows_one_public_point_product_and_integer_prices():
     assert r.status_code==200,r.text
     offer=next(i for i in r.json()['items'] if i['product']['id']==pid)
     assert offer['distance_m']==0 and offer['distance_bucket_m']==100
-    assert offer['pickup_point']['id']==point and offer['product']['price_grosze']==199
+    assert offer['pickup_point']['id']==point and offer['product']['price_grosze']==299
     assert set(offer)=={'distance_m','distance_bucket_m','product','pickup_point'}
     assert set(offer['pickup_point'])=={'id','name','city','street','opening_hours'}
     assert all(x not in r.text for x in ('password_hash','pin_hash','token_hash','@example','delivery_street','latitude_e6','longitude_e6','phone'))

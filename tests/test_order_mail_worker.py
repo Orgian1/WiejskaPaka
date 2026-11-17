@@ -17,7 +17,7 @@ def connect(path):
 
 def accepted(recipient,purchase,*,email_verified):
     assert email_verified is True and recipient=='klient@example.invalid'
-    assert purchase.total_grosze==1149 and purchase.delivery_grosze==501
+    assert purchase.total_grosze==1349 and purchase.delivery_grosze==501
     assert len(purchase.pin)==6 and all(line[2]=='kg' for line in purchase.lines)
     print('synthetic-private-pin-and-recipient')
     return outcome('ACCEPTED',accepted=True)

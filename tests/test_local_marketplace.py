@@ -116,12 +116,12 @@ def test_stock_price_and_product_renaming_are_live():
 
 def test_farmer_can_disable_point_without_cancelling_existing_pickup():
     c,f,b,fid,pid,point,body=setup_market()
-    order=c.post('/orders',headers=b,json={'product_id':pid,'quantity':1,'fulfillment':'odbior','pickup_point_id':point})
+    order=c.post('/orders',headers=b,json={'product_id':pid,'quantity':2,'fulfillment':'odbior','pickup_point_id':point})
     assert order.status_code==201
     assert c.put(f'/pickup-points/{point}',headers=f,json={**body,'active':False}).status_code==200
     assert not any(i['pickup_point']['id']==point for i in query(c).json()['items'])
     assert all(p['id']!=point for p in c.get(f'/farmers/{fid}/pickup-points').json())
-    assert c.post('/orders',headers=b,json={'product_id':pid,'quantity':1,'fulfillment':'odbior','pickup_point_id':point}).status_code==422
+    assert c.post('/orders',headers=b,json={'product_id':pid,'quantity':2,'fulfillment':'odbior','pickup_point_id':point}).status_code==422
     oid=order.json()['id']
     assert c.post(f'/test/orders/{oid}/ready',headers=f).status_code==200
     assert c.post(f'/orders/{oid}/confirm',headers=f,json={'pin':order.json()['pin_test_only'],'checked_goods':True}).json()['confirmed']
@@ -133,7 +133,7 @@ def test_farmer_can_disable_point_without_cancelling_existing_pickup():
 ])
 def test_open_order_prevents_silent_change_of_pickup_contract(change):
     c,f,b,fid,pid,point,body=setup_market()
-    oid=c.post('/orders',headers=b,json={'product_id':pid,'quantity':1,'fulfillment':'odbior','pickup_point_id':point}).json()['id']
+    oid=c.post('/orders',headers=b,json={'product_id':pid,'quantity':2,'fulfillment':'odbior','pickup_point_id':point}).json()['id']
     update={**body,'active':True,**change}
     if change.get('clear_coordinates'):
         update.pop('latitude_e6');update.pop('longitude_e6')
@@ -246,7 +246,7 @@ def test_point_edit_and_checkout_are_serialized():
     from concurrent.futures import ThreadPoolExecutor
     c,f,b,fid,pid,point,body=setup_market()
     with ThreadPoolExecutor(max_workers=2) as pool:
-        order=pool.submit(c.post,'/orders',headers=b,json={'product_id':pid,'quantity':1,'fulfillment':'odbior','pickup_point_id':point})
+        order=pool.submit(c.post,'/orders',headers=b,json={'product_id':pid,'quantity':2,'fulfillment':'odbior','pickup_point_id':point})
         update=pool.submit(c.put,f'/pickup-points/{point}',headers=f,json={**body,'street':'Nowa 99','active':True})
         r_order,r_update=order.result(),update.result()
     assert r_order.status_code==201

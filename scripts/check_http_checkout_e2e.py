@@ -53,13 +53,13 @@ def run():
                     ids[role] = registered.get('id')
                     token = call('login ' + role, 'POST', '/auth/login', body={'email':email, 'password':'TestoweHaslo_123456789'})['access_token']
                     auth[role] = {'Authorization':'Bearer '+token}
-                product = call('create product', 'POST', '/products', 201, auth['rolnik'], {'name':'Marchew HTTP', 'price_grosze':349, 'delivery_grosze':501, 'stock':5})
+                product = call('create product', 'POST', '/products', 201, auth['rolnik'], {'name':'Marchew HTTP', 'price_grosze':549, 'delivery_grosze':501, 'stock':5})
                 product_id = product['id']
                 call('stranger denied private orders', 'GET', '/orders/me', 200, auth['obcy'])
                 order_body = {'product_id':product_id,'quantity':1,'fulfillment':'dostawa','delivery_city':'Radom','delivery_street':'Tajna 9','delivery_postal_code':'26-600'}
                 order = call('buyer creates delivery', 'POST', '/orders', 201, auth['klient'], order_body)
-                assert order['total_grosze'] == 850 and isinstance(order['total_grosze'], int)
-                checks.append('349 + single 501 shipping = 850 grosze')
+                assert order['total_grosze'] == 1050 and isinstance(order['total_grosze'], int)
+                checks.append('549 + single 501 shipping = 1050 grosze')
                 oid, pin = order['id'], order['pin_test_only']
                 call('unassigned courier denied address', 'GET', f'/orders/{oid}/location', 403, auth['dostawca'])
                 call('stranger denied address', 'GET', f'/orders/{oid}/location', 403, auth['obcy'])
@@ -76,18 +76,18 @@ def run():
                 assert confirmed['confirmed'] is True
                 call('address revoked after delivery', 'GET', f'/orders/{oid}/location', 403, auth['dostawca'])
                 failed = call('new delivery to fail', 'POST', '/orders', 201, auth['klient'], {**order_body, 'delivery_street':'Tajna 11'})
-                assert failed['total_grosze'] == 850
+                assert failed['total_grosze'] == 1050
                 fid = failed['id']
                 call('simulate payment', 'POST', f'/test/payments/{fid}/events', 200, auth['klient'], {'event_id':'pay-http-e2e','event_type':'payment_success_test'})
                 call('assign failing delivery', 'POST', f'/orders/{fid}/assign-courier-test', 200, auth['rolnik'], {'courier_id':ids['dostawca']})
                 call('dispatch failing delivery', 'POST', f'/orders/{fid}/dispatch-test', 200, auth['rolnik'])
                 refund = call('courier failure refund', 'POST', f'/test/payments/{fid}/events', 200, auth['rolnik'], {'event_id':'refund-http-e2e','event_type':'delivery_failed_by_courier_test'})
-                assert refund['refund_grosze'] == 850 and refund['state'] == 'refunded_test'
+                assert refund['refund_grosze'] == 1050 and refund['state'] == 'refunded_test'
                 checks.append('100% refund including shipping')
                 # Multiple units in one shipment must never multiply the delivery fee.
                 multi = call('multi-unit delivery order', 'POST', '/orders', 201, auth['klient'], {**order_body, 'quantity':2, 'delivery_street':'Tajna 13'})
-                assert multi['total_grosze'] == 1199, multi  # 2 * 349 + 501
-                checks.append('two units share one delivery fee: 698 + 501 = 1199 grosze')
+                assert multi['total_grosze'] == 1599, multi  # 2 * 549 + 501
+                checks.append('two units share one delivery fee: 1098 + 501 = 1599 grosze')
                 assert isinstance(multi['total_grosze'], int)
                 checks.append('multi-unit amount stored in integer grosze')
                 call('stranger denied multi-unit address', 'GET', f"/orders/{multi['id']}/location", 403, auth['obcy'])

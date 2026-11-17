@@ -4,10 +4,10 @@ from tests.test_local_marketplace import setup_market
 
 def test_direct_checkout_minimum_ignores_delivery_fee():
     client, farmer, buyer, _, product, point, _ = setup_market()
+    # Pickup isolates the minimum from optional delivery scheduling.
     below = client.post('/orders', headers=buyer, json={
-        'product_id': product, 'quantity': 1, 'fulfillment': 'dostawa',
-        'delivery_city': 'Opole', 'delivery_street': 'Polna 1',
-        'delivery_postal_code': '45-001'})
+        'product_id': product, 'quantity': 1, 'fulfillment': 'odbior',
+        'pickup_point_id': point})
     assert below.status_code == 422
     assert '5,00 zł' in below.json()['detail']
     exact_or_more = client.post('/orders', headers=buyer, json={

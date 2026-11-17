@@ -7,8 +7,8 @@
 4. Pokaz reklamodawcom i inkubatorowi. PayU live, wypłaty, prawdziwe zamówienia i doładowania pozostają wyłączone do osobnego odbioru prawnego i płatniczego.
 
 ## Treści zastępczych reklam
-- Dla klientów: **TU MOŻE BYĆ TWOJA REKLAMA!** „Dotrzyj ze swoją ofertą do klientów kupujących bezpośrednio od rolników.” „Zapytaj o reklamę na WiejskaPaka”.
-- Dla rolników/sprzedawców: **TU MOŻE BYĆ TWOJA REKLAMA!** „Dotrzyj do rolników i producentów sprzedających swoje produkty.” „Zareklamuj swoją firmę na WiejskaPaka”.
+- Dla klientów: **TUTAJ JEST MIEJSCE NA TWOJĄ REKLAMĘ — DOTRZYJ DO KLIENTÓW!**
+- Dla rolników/sprzedawców: **TUTAJ JEST MIEJSCE NA TWOJĄ REKLAMĘ — DOTRZYJ DO ROLNIKÓW I SPRZEDAWCÓW!**
 - Kontakt prowadzi do formularza lub firmowej skrzynki, bez publicznych numerów użytkowników.
 - Reklamy w portfelu: 5 sekund, czerwony X z odliczaniem, automatyczne zamknięcie, maksymalnie jedna emisja na konto na 30 minut.
 

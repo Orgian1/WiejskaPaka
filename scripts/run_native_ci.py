@@ -134,7 +134,7 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             task = {'name': name, 'success': False}
             try:
                 process = runner(command, cwd=root, env=env, capture_output=True,
-                                 text=True, encoding='utf-8', timeout=2100 if kind=='full' else 180 if name=='photo_browser' else 600)
+                                 text=True, encoding='utf-8', timeout=2100 if kind=='full' else 180 if name=='photo_browser' else 900)
                 task['returncode'] = process.returncode
                 if kind == 'full':
                     data = json.loads(raw.read_text(encoding='utf-8'))

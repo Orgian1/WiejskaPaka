@@ -69,7 +69,7 @@ def account(client,role):
 def setup(client):
     farmer=account(client,'rolnik');buyer=account(client,'klient')
     products=[]
-    for amount in (199,301):
+    for amount in (599,301):
         r=client.post('/products',headers=farmer,json={'name':'Trwała oferta','price_grosze':amount,'delivery_grosze':501,'stock':100})
         assert r.status_code==201;products.append(r.json()['id'])
     return farmer,buyer,products

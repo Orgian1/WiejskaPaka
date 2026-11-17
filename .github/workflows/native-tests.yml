@@ -1,7 +1,7 @@
 name: Native test gates
 on:
   push:
-    branches: [wiejskapaka-import, 'preview/**', 'fix/header-auth-links-20261109']
+    branches: [wiejskapaka-import, 'preview/**', 'fix/header-auth-links-20261109', 'integration/zatwierdzony-wyglad-rls-20261117']
   workflow_dispatch:
 
 permissions:

@@ -44,6 +44,7 @@ UPGRADES = (
     'optional_seller_navigation.sql',
     'optional_product_categories.sql',
     'optional_product_listing_states.sql',
+    'optional_wallet_ads.sql',
 )
 
 

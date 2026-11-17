@@ -159,3 +159,50 @@ def test_wallet_ad_exact_30_minute_boundary(tmp_path,monkeypatch):
             con.execute("UPDATE wallet_ad_accounts SET last_shown=CAST(strftime('%s','now') AS INTEGER)-1800 WHERE user_id=?",(uid,))
             con.commit()
         assert claim(client,buyer).json()['ad'] is not None
+
+
+def test_wallet_ads_target_client_and_seller_without_cross_display(tmp_path):
+    """Role targeting is resolved server-side, never from the claim request."""
+    path=tmp_path/'targeted-ads.sqlite3'
+    with server(path) as client:
+        buyer,_=register(client,'klient')
+        seller,_=register(client,'rolnik')
+        admin,admin_id=register(client,'klient')
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
+            con.commit()
+        buyer_body=campaign();buyer_body['audience']='klient'
+        seller_body=campaign();seller_body['audience']='rolnik'
+        buyer_ad=client.post('/admin/wallet-ads',headers=admin,json=buyer_body)
+        seller_ad=client.post('/admin/wallet-ads',headers=admin,json=seller_body)
+        assert buyer_ad.status_code==201,buyer_ad.text
+        assert seller_ad.status_code==201,seller_ad.text
+        assert claim(client,buyer).json()['ad']['id']==buyer_ad.json()['id']
+        assert claim(client,seller).json()['ad']['id']==seller_ad.json()['id']
+        assert claim(client,buyer).json()=={'ad':None}
+        assert claim(client,seller).json()=={'ad':None}
+        assert client.post('/admin/wallet-ads',headers=buyer,json=buyer_body).status_code==403
+        assert client.post('/admin/wallet-ads',headers=admin,json=campaign(audience='invalid')).status_code==422
+
+
+def test_wallet_ads_sqlite_existing_database_adds_audience_without_losing_campaign(tmp_path):
+    path=tmp_path/'legacy-ads.sqlite3'
+    with server(path) as client:
+        admin,admin_id=register(client,'klient')
+        with closing(sqlite3.connect(path)) as con:
+            con.execute("UPDATE users SET role='admin' WHERE id=?",(admin_id,))
+            con.commit()
+        ad=client.post('/admin/wallet-ads',headers=admin,json=campaign())
+        assert ad.status_code==201,ad.text
+    # Simulate a pre-targeting SQLite database with the exact old table schema.
+    # Dropping the added column through SQLite's DDL retains the rows and keys.
+    with closing(sqlite3.connect(path)) as con:
+        con.execute('PRAGMA foreign_keys=OFF')
+        con.execute('''CREATE TABLE wallet_ads_legacy AS SELECT id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,deleted FROM wallet_ads''')
+        con.execute('DROP TABLE wallet_ads')
+        con.execute('ALTER TABLE wallet_ads_legacy RENAME TO wallet_ads')
+        con.commit()
+    with server(path) as client:
+        result=client.get('/admin/wallet-ads',headers=admin)
+        assert result.status_code==200,result.text
+        assert result.json()['items'][0]['audience']=='both'

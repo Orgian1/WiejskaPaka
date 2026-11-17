@@ -1,0 +1,74 @@
+name: Wallet ads role targeting checks
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  pull_request:
+    paths:
+      - 'backend/wallet_ads.py'
+      - 'web/wallet-ads.js'
+      - 'web/style.css'
+      - 'database/**'
+      - 'tests/test_wallet_ads_http.py'
+      - 'tests/test_demo_ad_placeholders.py'
+      - 'scripts/demo_ad_banners.py'
+      - 'scripts/prepare_sample_demo.py'
+      - 'backend/payu_preparation.py'
+      - 'tests/test_payu_preparation.py'
+      - 'backend/payu_journal_schema.py'
+      - 'tests/test_payu_journal_schema.py'
+      - 'backend/payu_state.py'
+      - 'tests/test_payu_state.py'
+      - 'backend/payu_reconciliation.py'
+      - 'tests/test_payu_reconciliation.py'
+      - 'backend/payu_config.py'
+      - 'tests/test_payu_config.py'
+      - 'backend/payu_notification.py'
+      - 'tests/test_payu_notification.py'
+      - 'backend/payu_order_guard.py'
+      - 'tests/test_payu_order_guard.py'
+      - 'backend/payu_payout_review.py'
+      - 'tests/test_payu_payout_review.py'
+      - 'backend/payu_accounting.py'
+      - 'tests/test_payu_accounting.py'
+      - 'backend/payu_endpoint.py'
+      - 'tests/test_payu_endpoint.py'
+      - 'backend/payu_redaction.py'
+      - 'tests/test_payu_redaction.py'
+      - 'backend/payu_payout_state.py'
+      - 'tests/test_payu_payout_state.py'
+      - 'backend/payu_topup_intent.py'
+      - 'tests/test_payu_topup_intent.py'
+      - 'backend/payu_journal_events.py'
+      - 'tests/test_payu_journal_events.py'
+      - 'tests/test_payu_wallet_compatibility.py'
+      - 'backend/wallet_preview.py'
+      - 'backend/wallet_integrity.py'
+      - 'tests/test_wallet_preview_http.py'
+      - 'tests/test_purchase_record_http_restart.py'
+      - 'tests/test_wallet_ads_browser.py'
+      - '.github/workflows/wallet-ads-targeting.yml'
+  workflow_dispatch:
+jobs:
+  wallet-ads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: JavaScript syntax check
+        run: node --check web/wallet-ads.js
+      - name: Compile backend and test code
+        run: python -m py_compile backend/wallet_ads.py tests/test_wallet_ads_http.py tests/test_demo_ad_placeholders.py scripts/demo_ad_banners.py scripts/prepare_sample_demo.py backend/payu_preparation.py tests/test_payu_preparation.py backend/payu_journal_schema.py tests/test_payu_journal_schema.py backend/payu_state.py tests/test_payu_state.py backend/payu_reconciliation.py tests/test_payu_reconciliation.py backend/payu_config.py tests/test_payu_config.py backend/payu_notification.py tests/test_payu_notification.py backend/payu_order_guard.py tests/test_payu_order_guard.py backend/payu_payout_review.py tests/test_payu_payout_review.py backend/payu_accounting.py tests/test_payu_accounting.py backend/payu_endpoint.py tests/test_payu_endpoint.py backend/payu_redaction.py tests/test_payu_redaction.py backend/payu_payout_state.py tests/test_payu_payout_state.py backend/payu_topup_intent.py tests/test_payu_topup_intent.py backend/payu_journal_events.py tests/test_payu_journal_events.py tests/test_payu_wallet_compatibility.py tests/test_wallet_preview_http.py tests/test_purchase_record_http_restart.py tests/test_wallet_ads_browser.py
+      - name: Wallet and security regression (no browser dependency)
+        run: python -m pytest -q tests/test_wallet_ads_http.py tests/test_demo_ad_placeholders.py tests/test_payu_preparation.py tests/test_payu_journal_schema.py tests/test_payu_state.py tests/test_payu_reconciliation.py tests/test_payu_config.py tests/test_payu_notification.py tests/test_payu_order_guard.py tests/test_payu_payout_review.py tests/test_payu_accounting.py tests/test_payu_endpoint.py tests/test_payu_redaction.py tests/test_payu_payout_state.py tests/test_payu_topup_intent.py tests/test_payu_journal_events.py tests/test_payu_wallet_compatibility.py tests/test_wallet_preview_http.py tests/test_purchase_record_http_restart.py tests/test_neon_rls_policy_plan.py
+      - name: Account authorization matrix in isolated Python process
+        run: python -m pytest -q tests/test_security_account_matrix_http.py

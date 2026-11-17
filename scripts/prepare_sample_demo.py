@@ -60,6 +60,18 @@ def prepare(directory, *, full_demo=False):
                         body={**credentials[role], 'role': role})['id']
                 login = request('POST', '/auth/login', body=credentials[role])
                 headers[role] = {'Authorization': 'Bearer '+login['access_token']}
+            if full_demo:
+                from datetime import datetime, timedelta, timezone
+                from scripts.demo_ad_banners import make_banner
+                now = datetime.now(timezone.utc).replace(microsecond=0)
+                for audience in ('klient', 'rolnik'):
+                    request('POST', '/admin/wallet-ads', 201, actor='admin', body={
+                        'advertiser': 'WiejskaPaka - miejsce na reklamę',
+                        'url': 'https://example.invalid/wiejskapaka-demo-placeholder-' + audience,
+                        'image_base64': make_banner(audience),
+                        'starts_at': (now - timedelta(minutes=1)).isoformat(),
+                        'ends_at': (now + timedelta(days=365)).isoformat(),
+                        'enabled': True, 'sort_order': 100000, 'audience': audience})
             request('PUT', '/farmers/me/profile', actor='rolnik', body={
                 'farm_name': 'Gospodarstwo demonstracyjne', 'city': 'Legnica',
                 'description': 'Fikcyjna oferta do sprawdzania aplikacji.'})

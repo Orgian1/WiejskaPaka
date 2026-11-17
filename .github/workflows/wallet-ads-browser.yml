@@ -1,0 +1,23 @@
+name: Wallet ads Chromium browser checks
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  workflow_dispatch:
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install application and browser dependencies
+        run: |
+          python -m pip install -r requirements.txt playwright
+          sudo apt-get update -qq
+          sudo apt-get install -y chromium
+      - name: Chromium wallet ad scenarios
+        run: python -m pytest -q tests/test_wallet_ads_browser.py

@@ -1,0 +1,29 @@
+name: RLS disposable PostgreSQL API gate
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  workflow_dispatch:
+jobs:
+  rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install isolated PostgreSQL test requirements
+        run: python -m pip install -r requirements-security-test.txt
+      - name: Run disposable local PostgreSQL RLS API gate
+        run: python -m scripts.run_rls_api_gate --report work/rls-api.xml --coverage work/rls-route-coverage.jsonl
+      - name: Upload RLS results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rls-disposable-postgres-results
+          path: |
+            work/rls-api.xml
+            work/rls-route-coverage.jsonl
+          if-no-files-found: ignore

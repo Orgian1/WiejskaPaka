@@ -1,0 +1,43 @@
+name: Downloadable correct Windows demo ZIP
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  demo-zip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Create clean tracked-source archive (no .git or private runtime files)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          git archive --format=zip --output=dist/WiejskaPaka-DEMO-WINDOWS-WLASCIWY-WYGLAD.zip HEAD
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          archive=Path('dist/WiejskaPaka-DEMO-WINDOWS-WLASCIWY-WYGLAD.zip')
+          with zipfile.ZipFile(archive) as package:
+              names=package.namelist()
+              assert 'START_DEMO_WINDOWS.cmd' in names
+              assert 'scripts/prepare_sample_demo.py' in names
+              assert 'scripts/demo_ad_banners.py' in names
+              assert 'web/wallet-ads.js' in names
+              assert all(not n.startswith(('.git/','.venv/','.venv-demo/')) for n in names)
+              assert not any(n.endswith(('.sqlite3','.db','.pyc')) for n in names)
+              assert not any('/.env' in '/'+n or n=='.env' for n in names)
+          print('Archive validated:',len(names),'tracked files')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WiejskaPaka-DEMO-WINDOWS-WLASCIWY-WYGLAD
+          path: dist/WiejskaPaka-DEMO-WINDOWS-WLASCIWY-WYGLAD.zip
+          if-no-files-found: error
+          retention-days: 14

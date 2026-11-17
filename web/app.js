@@ -214,7 +214,7 @@ el('logout').onclick=()=>act(async()=>{
 el('new-product').onsubmit=e=>{e.preventDefault();act(()=>singleWrite('new-product',el('new-product').querySelector('button'),async()=>{
   const epoch=sessionEpoch;
   const payload={name:el('pname').value,price_grosze:parseGrosze(el('price').value),delivery_grosze:parseGrosze(el('delivery').value),stock:Number(el('stock').value)};
-  if(typeof productTaxonomy!=='undefined'&&productTaxonomy){payload.category_id=el('product-category').value;payload.subcategory_id=el('product-subcategory').value;payload.description=el('product-description').value}
+  if(typeof productTaxonomy!=='undefined'&&productTaxonomy){payload.category_id=el('product-category').value;payload.subcategory_id=el('product-subcategory').value;payload.description=el('product-description').value.slice(0,200)}
   if(saleUnitsEnabled){payload.sale_unit=el('sale-unit').value;if(!el('package-content-fields').hidden){payload.content_amount=el('content-amount').value;payload.content_unit=el('content-unit').value}}
   const photo=typeof newProductPhotoPayload==='function'?await newProductPhotoPayload():null;
   if(epoch!==sessionEpoch)return;
@@ -234,6 +234,9 @@ el('profile-form').onsubmit=e=>{e.preventDefault();act(()=>singleWrite('profile-
   await api('/farmers/me/profile','PUT',{farm_name:el('farm-name').value,city:el('farm-city').value,description:el('farm-description').value});
   if(epoch===sessionEpoch)msg('Profil gospodarstwa zapisany');
 }))};
+const productDescriptionInput=el('product-description');
+const productDescriptionCounter=el('product-description-counter');
+if(productDescriptionInput&&productDescriptionCounter){const updateDescriptionCounter=()=>{productDescriptionCounter.textContent=`${productDescriptionInput.value.length}/200 znaków`};productDescriptionInput.addEventListener('input',updateDescriptionCounter);updateDescriptionCounter()}
 el('point-form').onsubmit=e=>{e.preventDefault();act(()=>singleWrite('point-form',el('point-create-submit'),async()=>{
   const epoch=sessionEpoch;
   await api('/pickup-points','POST',{name:el('point-name').value,city:el('point-city').value,street:el('point-street').value,opening_hours:el('point-hours').value,...(typeof pickupPointCoordinates==='function'?pickupPointCoordinates():{}),...(typeof pickupDatesPayload==='function'?pickupDatesPayload():{})});

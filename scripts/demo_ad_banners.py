@@ -15,8 +15,8 @@ def make_banner(audience):
         title_font = ImageFont.load_default()
         subtitle_font = title_font
     lines = [
-        ('TU JEST MIEJSCE NA TWOJA REKLAME', 160, title_font),
-        ('DOTRZYJ DO ROLNIKOW I SPRZEDAWCOW' if audience == 'rolnik' else 'DOTRZYJ DO KLIENTOW', 275, subtitle_font),
+        ('TU JEST MIEJSCE NA TWOJĄ REKLAMĘ', 160, title_font),
+        ('DOTRZYJ DO ROLNIKÓW I SPRZEDAWCÓW' if audience == 'rolnik' else 'DOTRZYJ DO KLIENTÓW', 275, subtitle_font),
     ]
     for line, y, font in lines:
         bounds = draw.textbbox((0, 0), line, font=font)

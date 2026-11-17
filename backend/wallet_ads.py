@@ -7,6 +7,7 @@ import base64
 import binascii
 import secrets
 from datetime import datetime, timezone
+from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import Depends, Header, HTTPException, Query
@@ -19,6 +20,7 @@ CREATE TABLE IF NOT EXISTS wallet_ads (
  id TEXT PRIMARY KEY, advertiser TEXT NOT NULL, url TEXT NOT NULL,
  image TEXT NOT NULL, starts_at BIGINT NOT NULL, ends_at BIGINT NOT NULL,
  enabled INTEGER NOT NULL CHECK(enabled IN (0,1)), sort_order INTEGER NOT NULL,
+ audience TEXT NOT NULL DEFAULT 'both' CHECK(audience IN ('klient','rolnik','both')),
  deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)), CHECK(ends_at>starts_at)
 );
 CREATE TABLE IF NOT EXISTS wallet_ad_accounts (
@@ -44,6 +46,7 @@ class Campaign(BaseModel):
     ends_at: datetime
     enabled: bool = False
     sort_order: int = Field(default=0, strict=True, ge=0, le=100000)
+    audience: Literal['klient', 'rolnik', 'both'] = 'both'
 
     @field_validator('advertiser')
     @classmethod
@@ -99,7 +102,7 @@ def database_now(con):
     return con.execute(sql).fetchone()['now']
 
 
-def claim_ad(con, user_id, key):
+def claim_ad(con, user_id, key, role):
     con.execute('INSERT INTO wallet_ad_accounts(user_id) VALUES(?) ON CONFLICT(user_id) DO NOTHING', (user_id,))
     suffix = ' FOR UPDATE' if _postgres(con) else ''
     account = con.execute('SELECT * FROM wallet_ad_accounts WHERE user_id=?' + suffix, (user_id,)).fetchone()
@@ -108,7 +111,7 @@ def claim_ad(con, user_id, key):
     if now-account['last_shown'] < 1800 or con.execute(
             'SELECT id FROM wallet_ad_impressions WHERE user_id=? AND request_key=?', (user_id, key)).fetchone():
         return {'ad': None}
-    campaigns = con.execute('SELECT id FROM wallet_ads WHERE enabled=1 AND deleted=0 AND starts_at<=? AND ends_at>? ORDER BY sort_order,id', (now, now)).fetchall()
+    campaigns = con.execute('SELECT id FROM wallet_ads WHERE enabled=1 AND deleted=0 AND starts_at<=? AND ends_at>? AND audience IN (?, \'both\') ORDER BY sort_order,id', (now, now, role)).fetchall()
     if not campaigns:
         return {'ad': None}
     ids = [row['id'] for row in campaigns]
@@ -116,7 +119,7 @@ def claim_ad(con, user_id, key):
     ad = con.execute('SELECT * FROM wallet_ads WHERE id=?', (campaigns[index]['id'],)).fetchone()
     impression = secrets.token_hex(16)
     con.execute('INSERT INTO wallet_ad_impressions(id,user_id,ad_id,request_key,created_at) VALUES(?,?,?,?,?)', (impression, user_id, ad['id'], key, now))
-    con.execute('UPDATE wallet_ad_accounts SET last_shown=?,last_ad_id=? WHERE user_id=?', (now+1, ad['id'], user_id))
+    con.execute('UPDATE wallet_ad_accounts SET last_shown=?,last_ad_id=? WHERE user_id=?', (now, ad['id'], user_id))
     return {'ad': {'id': ad['id'], 'impression_id': impression, 'advertiser': ad['advertiser'], 'url': ad['url'], 'image': ad['image'], 'duration_seconds': 5}}
 
 
@@ -124,6 +127,9 @@ def install(app, db, write_db, current_user, database_url):
     if not database_url:
         with db() as con:
             con.executescript(SCHEMA_SQLITE)
+            columns = {row['name'] for row in con.execute('PRAGMA table_info(wallet_ads)')}
+            if 'audience' not in columns:
+                con.execute("ALTER TABLE wallet_ads ADD COLUMN audience TEXT NOT NULL DEFAULT 'both' CHECK(audience IN ('klient','rolnik','both'))")
 
     def admin(user):
         if user['role'] != 'admin':
@@ -132,7 +138,7 @@ def install(app, db, write_db, current_user, database_url):
     @app.post('/wallet/ads/claim')
     def claim(payload: Claim, authorization: str = Header(default=''), user=Depends(current_user)):
         with write_db(user, authorization, ('klient', 'rolnik')) as con:
-            return claim_ad(con, user['id'], payload.request_key)
+            return claim_ad(con, user['id'], payload.request_key, user['role'])
 
     @app.post('/wallet/ads/impressions/{impression_id}/click')
     def click(impression_id: str, authorization: str = Header(default=''), user=Depends(current_user)):
@@ -163,11 +169,20 @@ def install(app, db, write_db, current_user, database_url):
                 if not row:
                     raise HTTPException(404, 'Nie znaleziono reklamy')
                 image = image or row['image']
-            values = (payload.advertiser, payload.url, image, int(payload.starts_at.timestamp()), int(payload.ends_at.timestamp()), int(payload.enabled), payload.sort_order)
+            values = (payload.advertiser, payload.url, image, int(payload.starts_at.timestamp()), int(payload.ends_at.timestamp()), int(payload.enabled), payload.sort_order, payload.audience)
+            if payload.enabled and not payload.url.startswith('https://example.invalid/wiejskapaka-demo-placeholder-'):
+                # Retire temporary demo artwork when a real campaign is activated
+                # for the same audience. Never touch other campaigns.
+                for target in (('klient', 'rolnik') if payload.audience == 'both' else (payload.audience,)):
+                    con.execute("""UPDATE wallet_ads SET enabled=0,deleted=1
+                        WHERE audience=? AND url=? AND advertiser=?""",
+                        (target,
+                         'https://example.invalid/wiejskapaka-demo-placeholder-' + target,
+                         'WiejskaPaka - miejsce na reklamę'))
             if creating:
-                con.execute('INSERT INTO wallet_ads(advertiser,url,image,starts_at,ends_at,enabled,sort_order,id) VALUES(?,?,?,?,?,?,?,?)', (*values, ad_id))
+                con.execute('INSERT INTO wallet_ads(advertiser,url,image,starts_at,ends_at,enabled,sort_order,audience,id) VALUES(?,?,?,?,?,?,?,?,?)', (*values, ad_id))
             else:
-                con.execute('UPDATE wallet_ads SET advertiser=?,url=?,image=?,starts_at=?,ends_at=?,enabled=?,sort_order=? WHERE id=? AND deleted=0', (*values, ad_id))
+                con.execute('UPDATE wallet_ads SET advertiser=?,url=?,image=?,starts_at=?,ends_at=?,enabled=?,sort_order=?,audience=? WHERE id=? AND deleted=0', (*values, ad_id))
         return {'id': ad_id}
 
     @app.post('/admin/wallet-ads', status_code=201)

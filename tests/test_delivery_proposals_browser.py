@@ -18,7 +18,7 @@ def test_schedule_proposal_and_buyer_consent(delivery_browser,tmp_path,monkeypat
             body={'email':uuid4().hex+'@example.invalid','password':'SyntheticProposalBrowser2026!','role':role}
             assert client.post('/auth/register',json=body).status_code==201
             headers.append({'Authorization':'Bearer '+client.post('/auth/login',json=body).json()['access_token']});accounts.append(body)
-        product=client.post('/products',headers=headers[0],json={'name':'Produkt z nowym terminem','price_grosze':200,'delivery_grosze':500,'stock':5}).json()['id']
+        product=client.post('/products',headers=headers[0],json={'name':'Produkt z nowym terminem','price_grosze':500,'delivery_grosze':500,'stock':5}).json()['id']
         window=client.post('/address-delivery/windows',headers=headers[0],json={'city':'Legnica','postal_code':'59-220','weekday':day.weekday(),'from_time':'10:00','to_time':'16:00'}).json()['id']
         receipt=client.post('/orders',headers=headers[1],json={'product_id':product,'quantity':1,'fulfillment':'dostawa','delivery_city':'Legnica','delivery_street':'Testowa 7','delivery_postal_code':'59-220','address_delivery':{'window_id':window,'delivery_date':day.isoformat(),'available_from':'12:00','available_to':'18:00','phone':'+48 500 100 200'}})
         assert receipt.status_code==201;oid=receipt.json()['id']
@@ -43,7 +43,7 @@ def test_schedule_proposal_and_buyer_consent(delivery_browser,tmp_path,monkeypat
             assert rows[0]['state']==('accepted' if choice=='accepted' else 'pending')
             assert client.post(f'/test/payments/{oid}/events',headers=headers[1],json=event).status_code==(200 if choice=='accepted' else 409)
             assert client.get(f'/products/{product}').json()['stock']==4
-            assert rows[0]['total_grosze']==700
+            assert rows[0]['total_grosze']==1000
             for page in (seller,buyer):
                 assert '500100200' not in page.locator('#delivery-requests').inner_text()
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')

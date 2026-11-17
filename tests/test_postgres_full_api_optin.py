@@ -237,7 +237,7 @@ def register(client, role, *, password=None):
 
 def product(client, farmer, stock=10):
     response = client.post('/products', headers=farmer, json={
-        'name': 'Warzywa PostgreSQL', 'price_grosze': 349, 'delivery_grosze': 501, 'stock': stock})
+        'name': 'Warzywa PostgreSQL', 'price_grosze': 549, 'delivery_grosze': 501, 'stock': stock})
     assert response.status_code == 201, response.text
     return response.json()['id']
 
@@ -256,7 +256,7 @@ def test_native_sale_units_checkout_restart_and_insert_only_records(pg_units_api
     farmer, _ = register(client, 'rolnik')
     buyer, _ = register(client, 'klient')
     created = client.post('/products', headers=farmer, json={
-        'name': 'Jednostki PostgreSQL', 'price_grosze': 201,
+        'name': 'Jednostki PostgreSQL', 'price_grosze': 301,
         'delivery_grosze': 501, 'stock': 10, 'sale_unit': unit, **content})
     assert created.status_code == 201, created.text
     pid = created.json()['id']
@@ -1184,7 +1184,7 @@ def test_native_seller_directory_restart_and_profile_index(pg_seller_api):
     pg_seller_api.restart()
     result=client.get('/sellers/search',params={'q':'nowy sad '+alias}).json()
     assert result['items']==[{'farmer_id':uid,'login':alias,'farm_name':'Nowy Sad '+alias,'city':'Legnica'}]
-    pid=client.post('/products',headers=farmer,json={'name':'Towar sprzedawcy','stock':5,'price_grosze':200,'delivery_grosze':500}).json()['id']
+    pid=client.post('/products',headers=farmer,json={'name':'Towar sprzedawcy','stock':5,'price_grosze':500,'delivery_grosze':500}).json()['id']
     assert client.get('/catalog/search',params={'farmer_id':uid}).json()['items'][0]['id']==pid
 
 
@@ -2019,7 +2019,7 @@ def test_native_category_migration_preserves_existing_rows(pg_restart_api):
     farmer,_=register(client,'rolnik')
     ids=[]
     for name in ['Pomidory','Pomidory i miód']:
-        response=client.post('/products',headers=farmer,json={'name':name,'stock':7,'price_grosze':299,'delivery_grosze':501})
+        response=client.post('/products',headers=farmer,json={'name':name,'stock':7,'price_grosze':599,'delivery_grosze':501})
         assert response.status_code==201;ids.append(response.json()['id'])
     owner={**conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN']),'dbname':parameters['dbname']}
     with psycopg.connect(**owner,autocommit=True) as con:
@@ -2044,7 +2044,7 @@ def test_native_issue60_listing_reservations_and_point_history(pg_restart_api):
     from tests.test_issue60_api import exercise_issue60
     client,_=pg_restart_api
     farmer,_=register(client,'rolnik');buyer,_=register(client,'klient')
-    product=client.post('/products',headers=farmer,json={'name':'Oferta kontrolna PostgreSQL sześćdziesiąt','stock':10,'price_grosze':199,'delivery_grosze':501})
+    product=client.post('/products',headers=farmer,json={'name':'Oferta kontrolna PostgreSQL sześćdziesiąt','stock':10,'price_grosze':599,'delivery_grosze':501})
     assert product.status_code==201
     body={'name':'Punkt kontrolny','city':'Opole','street':'Polna 1','opening_hours':'9:00–17:00','latitude_e6':52000000,'longitude_e6':16000000}
     point=client.post('/pickup-points',headers=farmer,json=body);assert point.status_code==201

@@ -277,7 +277,7 @@ class ProductIn(BaseModel):
     stock: int = Field(strict=True, ge=0, le=1_000_000)
     category_id: str | None = Field(default=None,max_length=40)
     subcategory_id: str | None = Field(default=None,max_length=80)
-    description: CleanText = Field(default='',max_length=200,pattern=r'^[^\x00]*
+    description: CleanText = Field(default='', max_length=200)
     sale_unit: Literal['szt','kg','g','l','ml','opak','peczek','sloik','butelka','worek','skrzynka','tacka'] = 'szt'
     content_amount: str | None = Field(default=None, max_length=32)
     content_unit: Literal['szt','kg','g','l','ml'] | None = None

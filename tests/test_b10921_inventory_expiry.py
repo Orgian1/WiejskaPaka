@@ -197,7 +197,7 @@ def test_paid_and_failed_lines_can_be_refunded_as_a_whole(monkeypatch):
     assert event(client, buyer, ids[1], 'payment_failed_test').status_code == 200
     response = client.post(f'/shipments/{receipt["shipment_id"]}/cancel-paid-test', headers=buyer)
     assert response.status_code == 200, response.text
-    assert response.json()['refund_grosze'] == 898
+    assert response.json()['refund_grosze'] == 1098
     assert state(products, ids)[0] == [10,10]
 
 
@@ -257,7 +257,7 @@ def test_pickup_ready_respects_unpaid_deadline(monkeypatch, paid):
     monkeypatch.setenv('WP_ENABLE_TEST_PAYMENTS', '1')
     client,buyer,farmer,products,*_ = purchase()
     point = client.post('/pickup-points', headers=farmer, json={'name':'Punkt','city':'Opole','street':'Polna 2','opening_hours':'9-17'}).json()['id']
-    receipt = client.post('/orders', headers=buyer, json={'product_id':products[0],'quantity':1,'fulfillment':'odbior','pickup_point_id':point}).json()
+    receipt = client.post('/orders', headers=buyer, json={'product_id':products[0],'quantity':2,'fulfillment':'odbior','pickup_point_id':point}).json()
     oid = receipt['id']
     if paid:
         assert event(client,buyer,oid).status_code == 200

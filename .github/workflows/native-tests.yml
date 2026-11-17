@@ -42,7 +42,7 @@ jobs:
           node --check web/user-photos.js
           node --check web/app.js
       - name: Product photo sanitization regression
-        run: python -m pytest -q tests/test_user_photos.py tests/test_product_description_limit.py --tb=short
+        run: python -m pytest -q tests/test_user_photos.py tests/test_product_description_limit.py tests/test_wallet_ads_http.py --tb=short
       - name: Synthetic SNS signature diagnostics
         run: python -m pytest -q tests/test_sns_pinned_notification.py --tb=short
       - name: Synthetic SNS HTTP boundary diagnostics

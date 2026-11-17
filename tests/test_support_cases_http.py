@@ -13,7 +13,7 @@ def exercise_support(client,admin):
     farmer,buyer,products=setup(client)
     outsider=account(client,'klient');other_farmer=account(client,'rolnik');courier=account(client,'dostawca')
     _,ids,_=checkout(client,buyer,products,True)
-    standalone=client.post('/orders',headers={**buyer,'Idempotency-Key':uuid4().hex},json={'product_id':products[0],'quantity':1,'fulfillment':'dostawa','delivery_city':'Legnica','delivery_street':'Fikcyjna 1','delivery_postal_code':'59-220'}).json()
+    standalone=client.post('/orders',headers={**buyer,'Idempotency-Key':uuid4().hex},json={'product_id':products[0],'quantity':3,'fulfillment':'dostawa','delivery_city':'Legnica','delivery_street':'Fikcyjna 1','delivery_postal_code':'59-220'}).json()
     url='/test/support/cases'
     assert client.get(url).status_code==401
     assert client.get(url,headers=courier).status_code==403

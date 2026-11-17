@@ -8,7 +8,7 @@ def exercise_navigation_counts(client):
     farmer=account(client,'rolnik');other_farmer=account(client,'rolnik');buyer=account(client,'klient');other_buyer=account(client,'klient');courier=account(client,'dostawca')
     ids=[]
     for name in ['Towar A','Towar B']:
-        p=client.post('/products',headers=farmer,json={'name':name,'stock':30,'price_grosze':299,'delivery_grosze':0});assert p.status_code==201;ids.append(p.json()['id'])
+        p=client.post('/products',headers=farmer,json={'name':name,'stock':30,'price_grosze':599,'delivery_grosze':0});assert p.status_code==201;ids.append(p.json()['id'])
     url='/account/navigation-counts'
     assert client.get(url).status_code==401 and client.get(url,headers=courier).status_code==403
     for _ in range(2):assert client.put('/favorites/'+str(ids[0]),headers=buyer).status_code==200

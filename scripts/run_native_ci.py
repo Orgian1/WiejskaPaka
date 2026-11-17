@@ -137,6 +137,16 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                                  text=True, encoding='utf-8', timeout=2100 if kind=='full' else 180 if name=='photo_browser' else 900)
                 task['returncode'] = process.returncode
                 if kind == 'full':
+                    task['child_returncode'] = process.returncode
+                    if not raw.is_file():
+                        # The child failed before its first checkpoint. Only report
+                        # the exception type and repository-local source locations.
+                        task['error'] = 'MISSING_REGRESSION_CHECKPOINT'
+                        classes = re.findall(r'(?m)^(?:[\w.]+\.)?([A-Za-z]+(?:Error|Exception)):', process.stderr or '')
+                        if classes:
+                            task['child_exception'] = classes[-1]
+                        task['failure_locations'] = failure_locations_from_text(process.stderr or '', root)
+                        raise ValueError('Missing regression checkpoint')
                     data = json.loads(raw.read_text(encoding='utf-8'))
                     if not isinstance(data, dict) or not isinstance(data.get('results', []), list):
                         raise ValueError('Invalid isolated report')

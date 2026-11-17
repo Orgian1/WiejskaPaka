@@ -170,6 +170,14 @@ def install(app, db, write_db, current_user, database_url):
                     raise HTTPException(404, 'Nie znaleziono reklamy')
                 image = image or row['image']
             values = (payload.advertiser, payload.url, image, int(payload.starts_at.timestamp()), int(payload.ends_at.timestamp()), int(payload.enabled), payload.sort_order, payload.audience)
+            if creating and payload.enabled and payload.url != 'https://example.invalid/wiejskapaka-demo-placeholder-' + payload.audience:
+                # Retire temporary demo artwork when a real campaign is activated
+                # for the same audience. Never touch other campaigns.
+                con.execute("""UPDATE wallet_ads SET enabled=0,deleted=1
+                    WHERE audience=? AND url=? AND advertiser=?""",
+                    (payload.audience,
+                     'https://example.invalid/wiejskapaka-demo-placeholder-' + payload.audience,
+                     'WiejskaPaka - miejsce na reklamę'))
             if creating:
                 con.execute('INSERT INTO wallet_ads(advertiser,url,image,starts_at,ends_at,enabled,sort_order,audience,id) VALUES(?,?,?,?,?,?,?,?,?)', (*values, ad_id))
             else:

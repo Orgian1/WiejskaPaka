@@ -174,3 +174,20 @@ jobs:
           name: chromium-summary
           path: ${{ runner.temp }}/ci/browser.json
           retention-days: 7
+
+  demo-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Package versioned demo source without local secrets
+        shell: bash
+        run: |
+          git archive --format=zip --prefix=WiejskaPaka-DEMO/ HEAD -o WiejskaPaka-DEMO-zatwierdzony-wyglad-RLS.zip
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: WiejskaPaka-DEMO-zatwierdzony-wyglad-RLS
+          path: WiejskaPaka-DEMO-zatwierdzony-wyglad-RLS.zip
+          retention-days: 7

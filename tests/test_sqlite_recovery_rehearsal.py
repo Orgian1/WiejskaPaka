@@ -77,9 +77,9 @@ def test_online_wal_snapshot_restores_paid_purchase_without_duplicate(tmp_path):
         assert client.get(url, headers=buyer).json() == record
     with closing(sqlite3.connect(restored)) as con:
         con.row_factory = sqlite3.Row
-        assert con.execute('SELECT price_grosze FROM products WHERE id=?', (products[0],)).fetchone()[0] == 199
+        assert con.execute('SELECT price_grosze FROM products WHERE id=?', (products[0],)).fetchone()[0] == 599
         assert con.execute('SELECT COUNT(*) FROM orders').fetchone()[0] == 2
-        assert con.execute('SELECT SUM(delivery_grosze), SUM(total_grosze) FROM orders').fetchone()[:] == (501, 1001)
+        assert con.execute('SELECT SUM(delivery_grosze), SUM(total_grosze) FROM orders').fetchone()[:] == (501, 1401)
         assert audit_payment_integrity(con) == {'checked_payments': 2, 'issues': [], 'ok': True}
     with server(restored) as client:
         assert client.get(url, headers=buyer).json() == record

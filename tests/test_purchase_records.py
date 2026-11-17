@@ -15,7 +15,7 @@ def purchase(*,cart=False,fulfillment='odbior'):
         'latitude_e6':52_000_000,'longitude_e6':16_000_000}
     point=c.post('/pickup-points',headers=farmer,json=point_body).json()['id']
     products=[]
-    for name,price,fee in [('Pierwotne jabłka',199,501),('Pierwotne ziemniaki',301,399)][:2 if cart else 1]:
+    for name,price,fee in [('Pierwotne jabłka',299,501),('Pierwotne ziemniaki',301,399)][:2 if cart else 1]:
         r=c.post('/products',headers=farmer,json={'name':name,'price_grosze':price,'delivery_grosze':fee,'stock':10})
         assert r.status_code==201;products.append(r.json()['id'])
     body={'fulfillment':fulfillment}
@@ -59,7 +59,7 @@ def test_original_terms_are_atomic_and_integer(cart,fulfillment):
         r=c.get(f'/shipments/{result["shipment_id"]}/purchase-record',headers=b)
         assert r.status_code==200 and r.json()['original_available']
         assert r.json()['original']['delivery_grosze']==(501 if fulfillment=='dostawa' else 0)
-        assert r.json()['original']['total_grosze']==(1501 if fulfillment=='dostawa' else 1000)
+        assert r.json()['original']['total_grosze']==(1701 if fulfillment=='dostawa' else 1200)
 
 
 @pytest.mark.parametrize('cart',[False,True])

@@ -12,8 +12,11 @@
 - Kontakt prowadzi do formularza lub firmowej skrzynki, bez publicznych numerów użytkowników.
 - Reklamy w portfelu: 5 sekund, czerwony X z odliczaniem, automatyczne zamknięcie, maksymalnie jedna emisja na konto na 30 minut.
 
-## Ważna luka do naprawy przed publicznym demo
-Obecne testy `tests/test_wallet_ads_http.py` sprawdzają, że **ta sama kampania** może trafić zarówno do klienta, jak i sprzedawcy (`claim(client,seller)` i `claim(client,other)` zwracają ten sam `aid`). Aktualny formularz administratora opisuje kampanię bez pola grupy docelowej. Nie wolno twierdzić, że osobne reklamy dla klientów i rolników są już wdrożone tylko dlatego, że testy reklam przeszły. Należy dodać wybór odbiorcy kampanii (klient / rolnik), bezpieczną migrację bazy, filtrowanie po rzeczywistej roli konta i testy separacji, a potem ponownie wykonać RLS/Chromium/HTTP. Nie zmieniać zaakceptowanego układu strony.
+## Potwierdzony mechanizm kierowania reklam
+
+W aktualnym kodzie `backend/wallet_ads.py` istnieje pole `audience` o wartościach `klient`, `rolnik`, `both`, a serwer wybiera kampanie według rzeczywistej roli zalogowanego konta. Panel `web/wallet-ads.js` ma wybór odbiorców. Test `test_wallet_ads_target_client_and_seller_without_cross_display` weryfikuje osobne kampanie klienta i sprzedawcy; osobny test sprawdza migrację starej bazy SQLite. Poprzednia wersja tego dokumentu błędnie opisała tę funkcję jako brakującą, opierając się na scenariuszu starszych kampanii `both`.
+
+**Do potwierdzenia przed publicznym demo:** istniejące kampanie oznaczone `both` są celowo widoczne obu grupom; należy wybrać `klient` lub `rolnik` dla nowych dwóch własnych banerów. Na docelowej bazie PostgreSQL sprawdzić migrację i aktywne wartości pola `audience`, zanim reklamy zostaną opublikowane.
 
 ## Odbiór przed uruchomieniem publicznym
 - Sprawdzić w przeglądarce zatwierdzony wygląd, produkty, menu i panele.

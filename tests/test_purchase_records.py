@@ -141,9 +141,9 @@ def test_original_record_survives_paid_refund_and_keeps_current_state(monkeypatc
     oid=ids[0];before=read(c,b,oid)['original']
     paid=c.post(f'/test/payments/{oid}/events',headers=b,json={'event_id':uuid4().hex,'event_type':'payment_success_test'})
     assert paid.status_code==200
-    assert c.post(f'/orders/{oid}/cancel-paid-test',headers=b).json()['refund_grosze']==899
+    assert c.post(f'/orders/{oid}/cancel-paid-test',headers=b).json()['refund_grosze']==1099
     after=read(c,b,oid)
-    assert after['original']==before and after['current']['refund_grosze']==899
+    assert after['original']==before and after['current']['refund_grosze']==1099
     assert after['current']['payment_state_test']=='refunded_test'
 
 

@@ -67,7 +67,7 @@ def test_recovered_pin_real_delivery_full_refund_or_payout(tmp_path,cart,outcome
         cid=client.get('/auth/me',headers=courier).json()['id']
         _,ids,original=checkout(client,buyer,products,cart)
         target=f'/shipments/{original["shipment_id"]}' if cart else f'/orders/{ids[0]}'
-        total=1001 if cart else 700
+        total=1401 if cart else 1100
         assert (original['total_grosze'],original.get('delivery_grosze',501))==(total,501)
         def event(oid,who,kind,event_id=None):
             r=client.post(f'/test/payments/{oid}/events',headers=who,json={'event_id':event_id or uuid4().hex,'event_type':kind})

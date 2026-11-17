@@ -34,7 +34,7 @@ def main():
 
         farmer, buyer, courier = (account(role) for role in ('rolnik', 'klient', 'dostawca'))
         product = request('POST', '/products', 201, headers=farmer,
-                          json={'name': 'Marchew demo', 'price_grosze': 349,
+                          json={'name': 'Marchew demo', 'price_grosze': 549,
                                 'delivery_grosze': 501, 'stock': 3})
         point = request('POST', '/pickup-points', 201, headers=farmer,
                         json={'name': 'Punkt demo', 'city': 'Radom',
@@ -42,7 +42,7 @@ def main():
         pickup = request('POST', '/orders', 201, headers=buyer,
                          json={'product_id': product['id'], 'quantity': 1,
                                'fulfillment': 'odbior', 'pickup_point_id': point['id']})
-        assert pickup['total_grosze'] == 349
+        assert pickup['total_grosze'] == 549
         request('POST', f"/test/orders/{pickup['id']}/ready", 200, headers=farmer)
         assert request('POST', f"/orders/{pickup['id']}/confirm", 200, headers=farmer,
                        json={'pin': pickup['pin_test_only'], 'checked_goods': True})['confirmed']
@@ -52,7 +52,7 @@ def main():
                            json={'product_id': product['id'], 'quantity': 1,
                                  'fulfillment': 'dostawa', 'delivery_city': 'Radom',
                                  'delivery_street': 'Leśna 4', 'delivery_postal_code': '26-600'})
-        assert delivery['total_grosze'] == 850
+        assert delivery['total_grosze'] == 1050
         oid = delivery['id']
         courier_id = request('GET', '/auth/me', 200, headers=courier)['id']
         request('POST', f'/orders/{oid}/assign-courier-test', 200, headers=farmer,

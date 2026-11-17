@@ -43,8 +43,8 @@ def server(database, *, reset_outbox=None, queued_keys=None, verification_keys=N
             # Imports and SQLite startup compete with other isolated test
             # processes. Bound readiness by elapsed time, not a five-second
             # attempt budget. Windows CI cold starts have exceeded 20 seconds;
-            # keep a bounded 60-second budget and fail dead children immediately.
-            deadline=time.monotonic()+60
+            # keep a bounded 90-second budget and fail dead children immediately.
+            deadline=time.monotonic()+90
             while time.monotonic()<deadline:
                 assert process.poll() is None,'Disposable server exited'
                 try:

@@ -3,7 +3,7 @@
 const appRoutesReady=true;
 const appViewGroups={
  products:['products-section'],nearby:['nearby-section'],favorites:['favorites-section'],cart:['cart-section'],
- orders:['orders-section','address-delivery-panel','dashboard'],wallet:['wallet-section'],
+ orders:['orders-section','address-delivery-panel'],wallet:['wallet-section'],
  account:['account-section','password-reset-section','account-security','farmer-profile-section','seller-login-panel','seller-compliance','user-photo-panel'],
  listings:['farmer','seller-listings-section'],points:['farmer-details','point-location-panel'],
  dashboard:['dashboard','admin-seller-review','pickup-promotions-admin','wallet-admin-section','wallet-ads-admin'],

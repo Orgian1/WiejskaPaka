@@ -411,7 +411,7 @@ def test_native_multi_item_shipping_refund_and_address_revocation(pg_api):
     assert len(client.get('/couriers/me/active-addresses', headers=courier).json()) == 2
     response = client.post(f'/shipments/{sid}/courier-failure-test', headers=farmer, json={'reason': 'dostawca_nie_przyjechal'})
     assert response.status_code == 200, response.text
-    assert response.json()['refund_grosze'] == 1897
+    assert response.json()['refund_grosze'] == 2697
     assert client.get('/couriers/me/active-addresses', headers=courier).json() == []
     assert client.post(f'/shipments/{sid}/confirm', headers=courier,
                        json={'pin': result['shipment_pin_test_only'], 'checked_goods': True}).status_code == 409

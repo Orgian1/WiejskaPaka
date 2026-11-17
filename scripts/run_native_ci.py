@@ -206,6 +206,10 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
             result['tasks'].append(task)
             print(f"{gate}/{name}: {'PASS' if task['success'] else 'FAIL'}", flush=True)
             if not task['success']:
+                # CI logs expose only test identifiers and counts, never DSNs or credentials.
+                diagnostic = {key: task[key] for key in ('returncode', 'error', 'failed_modules', 'failure_locations', 'test_counts', 'last_test') if key in task}
+                print('CI_DIAGNOSTIC '+json.dumps(diagnostic, ensure_ascii=False), flush=True)
+            if not task['success']:
                 break
         result['complete'] = bool(tasks) and len(result['tasks']) == len(tasks)
     result['sources_unchanged'] = before == evidence(root)

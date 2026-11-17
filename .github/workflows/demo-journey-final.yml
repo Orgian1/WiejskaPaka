@@ -1,0 +1,43 @@
+name: WiejskaPaka end-to-end demo journey
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  journey:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      WP_ENV: test
+      DATABASE_URL: ''
+      NEON_DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: End-to-end purchase, PIN, wallet, refunds and demo readiness
+        run: >-
+          python scripts/run_tests_per_file.py
+          test_demo_purchase_pin_rating_wallet_ads.py
+          test_seller_ratings_http.py
+          test_wallet_integrity.py
+          test_b1801_concurrent_stock.py
+          test_crash_checkout_http.py
+          test_contact_demo_http.py
+          test_full_local_demo.py
+          test_demo_readiness.py
+          --timeout 180 --report work/demo-journey-results.json
+      - name: Upload test summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-journey-results
+          path: work/demo-journey-results.json
+          if-no-files-found: ignore

@@ -270,8 +270,8 @@ def test_native_sale_units_checkout_restart_and_insert_only_records(pg_units_api
     assert original['product']['sale_unit'] == unit
     assert original['product']['package_content'] == (
         {'amount_atoms': 750, 'unit': 'l'} if content else None)
-    assert original['quantity'] == 2 and original['subtotal_grosze'] == 402
-    assert original['delivery_grosze'] == 501 and original['total_grosze'] == 903
+    assert original['quantity'] == 2 and original['subtotal_grosze'] == 602
+    assert original['delivery_grosze'] == 501 and original['total_grosze'] == 1103
     import psycopg
     for table, key, identifier in [('product_sale_units', 'product_id', pid),
                                     ('order_sale_units', 'order_id', oid)]:
@@ -367,7 +367,7 @@ def test_native_concurrent_idempotency_and_full_refund(pg_api):
     for retry in range(2):
         response = client.post(f'/orders/{oid}/cancel-paid-test', headers=buyer)
         assert response.status_code == 200, response.text
-        assert response.json()['refund_grosze'] == 850
+        assert response.json()['refund_grosze'] == 1050
         assert response.json()['already_processed'] is bool(retry)
     import psycopg
     with psycopg.connect(**parameters) as con:
@@ -401,7 +401,7 @@ def test_native_multi_item_shipping_refund_and_address_revocation(pg_api):
     checkout = client.post('/cart/checkout-test', headers={**buyer, 'Idempotency-Key': uuid4().hex}, json=body)
     assert checkout.status_code == 201, checkout.text
     result = checkout.json()
-    assert result['delivery_grosze'] == 501 and result['total_grosze'] == 1897
+    assert result['delivery_grosze'] == 501 and result['total_grosze'] == 2697
     for order in result['orders']:
         assert client.post(f'/test/payments/{order["id"]}/events', headers=buyer,
                            json={'event_id': 'same-external-key', 'event_type': 'payment_success_test'}).status_code == 200
@@ -481,7 +481,7 @@ def test_native_purchase_record_is_private_and_insert_only(pg_api):
     oid=checkout.json()['id'];url=f'/orders/{oid}/purchase-record'
     original=client.get(url,headers=buyer)
     assert original.status_code==200,original.text
-    assert original.json()['original']['product']['unit_price_grosze']==349
+    assert original.json()['original']['product']['unit_price_grosze']==549
     assert original.headers['cache-control']=='no-store'
     assert client.get(url,headers=other).status_code==404
     assert client.patch(f'/products/mine/{pid}',headers=farmer,json={'name':'Późniejsza oferta','price_grosze':9999}).status_code==200
@@ -1222,7 +1222,7 @@ def test_native_order_mail_outbox_scoping_and_no_duplicate_submission(pg_api,sce
     def submit(recipient,purchase,**kwargs):
         assert scenario!='unverified' and kwargs=={'email_verified':True}
         assert purchase.pin==created.json()['pin_test_only']
-        assert purchase.total_grosze==850 and purchase.delivery_grosze==501
+        assert purchase.total_grosze==1050 and purchase.delivery_grosze==501
         calls.append(recipient)
         return outcome('ACCEPTED',accepted=True) if scenario=='accepted' else outcome('DELIVERY_UNCERTAIN')
     expected={'accepted':'ACCEPTED','uncertain':'DELIVERY_UNCERTAIN','unverified':'SKIPPED'}[scenario]
@@ -1356,7 +1356,7 @@ def test_native_checkout_atomically_captures_one_mail_for_verified_buyer(pg_emai
 def purchase_worker_accept(recipient,purchase,*,email_verified):
     from backend.smtp_reset_transport import outcome
     assert email_verified is True and len(purchase.pin)==6
-    assert purchase.total_grosze==850 and purchase.delivery_grosze==501
+    assert purchase.total_grosze==1050 and purchase.delivery_grosze==501
     print('synthetic-private-purchase-pin-and-recipient')
     return outcome('ACCEPTED',accepted=True)
 

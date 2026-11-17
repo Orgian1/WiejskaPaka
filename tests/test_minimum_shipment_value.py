@@ -29,3 +29,17 @@ def test_cart_checkout_minimum_checks_selected_seller_products():
                       json={'product_id': product, 'quantity': 2}).status_code == 200
     accepted = client.post('/cart/checkout-test', headers=buyer, json=payload)
     assert accepted.status_code == 201, accepted.text
+
+
+def test_exact_500_groszy_is_accepted_and_499_rejected():
+    client, farmer, buyer, _, product, point, _ = setup_market()
+    for price, expected in ((499, 422), (500, 201)):
+        changed = client.patch(f'/products/mine/{product}', headers=farmer,
+                               json={'price_grosze': price})
+        assert changed.status_code == 200, changed.text
+        response = client.post('/orders', headers=buyer, json={
+            'product_id': product, 'quantity': 1,
+            'fulfillment': 'odbior', 'pickup_point_id': point})
+        assert response.status_code == expected, response.text
+        if expected == 201:
+            assert response.json()['subtotal_grosze'] == 500

@@ -3361,6 +3361,10 @@ if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
 from backend.wallet_preview import install as install_wallet_preview
 install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)
 
+# Isolated wallet advertisements; no production payment hooks.
+from backend.wallet_ads import install as install_wallet_ads
+install_wallet_ads(app, db, order_write_db, current_user, DATABASE_URL)
+
 from backend.favorites import install as install_favorites
 install_favorites(app, db, order_write_db, current_user, DATABASE_URL)
 

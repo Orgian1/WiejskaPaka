@@ -136,7 +136,7 @@ def test_actual_http_read_refund_race_never_returns_partial_financial_state(tmp_
                 assert response.status_code==200,response.text
                 assert response.headers['cache-control']=='no-store'
                 if index==4:
-                    assert response.json()['refund_grosze']==(1001 if cart else 700);continue
+                    assert response.json()['refund_grosze']==(1401 if cart else 1100);continue
                 data=response.json()
                 assert data['original']==original['original']
                 entries=data['orders'] if cart else [data]

@@ -46,7 +46,7 @@ def exercise_catalog(client):
     assert client.patch(url,headers=farmers[0],json={'stock':99,'category_id':'fruit','subcategory_id':'vegetables-tomatoes'}).status_code==422
     assert client.get('/products/'+str(products[0])).json()['stock']==before['stock']
     cart=client.put('/cart/items',headers=buyer,json={'product_id':products[0],'quantity':1});assert cart.status_code==200
-    order=client.post('/orders',headers=buyer,json={'product_id':products[0],'quantity':1,'fulfillment':'odbior','pickup_point_id':points[0]});assert order.status_code==201,order.text
+    order=client.post('/orders',headers=buyer,json={'product_id':products[0],'quantity':2,'fulfillment':'odbior','pickup_point_id':points[0]});assert order.status_code==201,order.text
     old_order=client.get('/orders/me',headers=buyer).json()
     saved=client.patch(url,headers=farmers[0],json={'category_id':'fruit','subcategory_id':'fruit-apples','description':'Poprawiony opis'})
     assert saved.status_code==200 and saved.json()['description']=='Poprawiony opis'

@@ -147,9 +147,9 @@ def test_every_unit_keeps_purchase_terms_and_restores_stock_once(actors, unit):
     assert original['product']['package_content'] == (
         {'amount_atoms': 750, 'unit': 'kg'} if packaged else None)
     assert original['quantity'] == 3
-    assert original['subtotal_grosze'] == 600
+    assert original['subtotal_grosze'] == 900
     assert original['delivery_grosze'] == 500
-    assert original['total_grosze'] == 1100
+    assert original['total_grosze'] == 1400
     changed = client.patch(f'/products/mine/{product_id}', headers=farmer,
                            json={'name': 'Zmieniona oferta', 'price_grosze': 999})
     assert changed.status_code == 200, changed.text

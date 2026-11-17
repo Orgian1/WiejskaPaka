@@ -29,7 +29,7 @@ function walletAdInput(form,label,type,value=''){const holder=node('label',label
 async function refreshWalletAdsAdmin(offset=0){
  if(!token||role!=='admin')return;const epoch=sessionEpoch,bearer=token;let data;try{data=await api('/admin/wallet-ads?limit=10&offset='+offset);}catch(_e){return;}if(epoch!==sessionEpoch||bearer!==token||role!=='admin')return;
  let section=el('wallet-ads-admin');if(!section){section=node('section');section.id='wallet-ads-admin';section.className='wide-section';el('tresc').append(section);}section.replaceChildren(node('h2','Reklamy portfela'),node('p','Rotacja reklam według kolejności, osobno dla każdego konta. Maksymalnie jedna emisja na 30 minut. Statystyki nie zawierają danych użytkowników.'));
- if(!el('wallet-ads-admin-link')){const link=node('a','Reklamy portfela');link.id='wallet-ads-admin-link';link.href='#wallet-ads-admin';document.querySelector('.quick-nav').append(link);}
+ if(!el('wallet-ads-admin-link')){const link=node('a','Reklamy portfela');link.id='wallet-ads-admin-link';link.href='#dashboard';document.querySelector('.quick-nav').append(link);}
  const fresh=node('button','Dodaj reklamę');fresh.type='button';fresh.onclick=()=>edit({});section.append(fresh);
  function edit(ad){
  const existing=el('wallet-ad-editor');if(existing)existing.remove();const form=node('form');form.id='wallet-ad-editor';

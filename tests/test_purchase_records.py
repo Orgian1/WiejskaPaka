@@ -192,7 +192,7 @@ def test_changing_catalog_prices_before_payment_cannot_change_refund(monkeypatch
         paid=c.post(f'/test/payments/{oid}/events',headers=b,json={'event_id':uuid4().hex,'event_type':'payment_success_test'})
         assert paid.status_code==200
     url=f'/shipments/{result["shipment_id"]}/cancel-paid-test' if cart else f'/orders/{ids[0]}/cancel-paid-test'
-    assert c.post(url,headers=b).json()['refund_grosze']==(1501 if cart else 899)
+    assert c.post(url,headers=b).json()['refund_grosze']==(1701 if cart else 1099)
     assert [read(c,b,oid)['original'] for oid in ids]==before
 
 

@@ -81,3 +81,52 @@ header{position:relative;padding-right:250px;padding-left:250px}
 .wallet-ad-heading button{color:#c00000;border:3px solid #c00000;background:#fff;font-size:2.7rem;font-weight:800;min-width:64px;min-height:64px;opacity:1}
 .wallet-ad-heading button:disabled{color:#c00000;border-color:#c00000;opacity:1;cursor:not-allowed}
 .wallet-ad-heading [role=timer]{color:#c00000;font-weight:800}
+
+
+/* Przywrocone style zaakceptowanego katalogu i nawigacji; reklamy portfela zachowane. */
+/* Catalog rows keep each offer and its inline disclosure in the same grid cell. */
+#products{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;align-items:start}
+.catalog-product{min-width:0;border:1px solid #dce6dc;border-radius:10px;padding:12px}
+.catalog-product summary{cursor:pointer;min-height:44px;overflow-wrap:anywhere}
+.catalog-product summary:focus-visible{outline:3px solid #c98b00;outline-offset:3px}
+.catalog-product summary img{display:block;max-width:100%;height:180px;object-fit:contain}
+.catalog-product[open]{background:#f5faf4}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.favorite-media{position:relative;min-height:52px}.favorite-button{position:absolute;right:4px;bottom:4px;min-width:44px;min-height:44px;background:white;color:#bd1635;border:2px solid #bd1635;font-size:28px;line-height:1}.favorite-button:hover{background:#ffe8ed;color:#9d0b28}.favorite-button[aria-pressed="true"]{color:#bd1635}#favorites-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+
+#seller-point-nav{max-width:900px;margin:12px auto;text-align:left;background:#fff;color:#20392a;border-radius:8px;padding:10px}#seller-point-nav summary{cursor:pointer;min-height:44px;font-weight:600}#seller-point-menu a{display:block;padding:10px;color:#164a2a;min-height:44px}#seller-point-menu li{overflow-wrap:anywhere;margin-bottom:10px}
+
+[data-seller-panel]>summary{cursor:pointer;min-height:44px}[data-seller-panel]>summary h2{display:inline;font-size:1.25rem}[data-seller-panel]>summary:focus-visible{outline:3px solid #c98b00}
+
+.card .favorite-button{width:44px;margin:0}
+
+.pickup-map{height:320px;width:100%;max-width:100%;margin:12px 0;background:#c9e2ec}.pickup-map-widget{min-width:0;margin:14px 0}.pickup-map-widget .leaflet-control a{min-width:30px}.pickup-map-widget p{overflow-wrap:anywhere}
+
+#pickup-promotions-admin input[type=checkbox]{display:inline;width:auto;margin-right:8px}
+
+.catalog-row-details{grid-column:1/-1;min-width:0;padding:20px;border:2px solid #39714a;border-radius:10px;background:#f2f8ee}.catalog-row-details input,.catalog-row-details select{max-width:100%}.seller-pickup-group ul{padding-left:18px}.seller-pickup-group summary{overflow-wrap:anywhere}
+
+.catalog-category-bar{display:flex;gap:.5rem;overflow-x:auto;flex-wrap:nowrap;max-width:100%;min-width:0;padding:.5rem 0 .75rem;overscroll-behavior-x:contain;touch-action:pan-x pan-y}.catalog-category-bar button{flex:0 0 auto;width:auto;white-space:nowrap;background:#fff;color:#214f2b;border:2px solid #75947a}.catalog-category-bar button.active{background:#245d32;color:#fff;border-color:#163c20}.catalog-category-bar button:focus-visible{outline:3px solid #b11635;outline-offset:2px}.catalog-filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}.catalog-filters label{max-width:100%}.catalog-filters input[type=checkbox]{width:auto}#product-description,[data-product-editor] textarea{width:100%;box-sizing:border-box;min-height:5rem}
+
+.nav-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.5em;height:1.5em;padding:0 .25em;border-radius:999px;background:#bb1532;color:#fff;font-weight:700;font-size:.85em;vertical-align:middle}.nav-count[hidden]{display:none}#contact-disclosure>summary{cursor:pointer;font-weight:700;padding:1rem}#contact-disclosure[open]{text-align:left}#contact-disclosure #contact-section{margin-top:0}#contact-disclosure #support-section{background:#fff}
+/* Each route owns one work area; business-feature hidden flags remain independent. */
+[data-route-hidden]{display:none!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.quick-nav a[aria-current=page]{background:#275c39;color:white;text-decoration:underline;text-underline-offset:.25em}
+#catalog-pages{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0}
+#catalog-pages button[aria-current=page]{background:#275c39;color:#fff;font-weight:bold}
+#seller-listings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+#seller-listings img{width:100%;height:180px;object-fit:cover}
+.listing-quick-edit{display:flex;flex-wrap:wrap;gap:.5rem}.listing-quick-edit label{flex:1;min-width:120px}.listing-quick-edit input{width:100%;box-sizing:border-box}
+/* Listings now own the stock editor; avoid the previous duplicate offer list. */
+#seller-stock-summary{display:none}
+
+
+/* Recovery: one full-width application view; only product cards form columns. */
+main#tresc{display:block;width:min(100% - 28px,1440px);max-width:1440px;margin:24px auto;padding:0}
+main#tresc > section,main#tresc > details{box-sizing:border-box;width:100%;max-width:100%;margin:0 0 16px}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:16px;align-items:start}
+#products > .catalog-product{box-sizing:border-box;width:100%;margin:0}
+#products > .catalog-row-details{grid-column:1/-1}
+@media(max-width:520px){main#tresc{width:calc(100% - 20px)}#products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.catalog-product{padding:8px}.catalog-product summary img{height:120px}}

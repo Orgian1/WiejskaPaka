@@ -15,7 +15,7 @@ def purchase(*, cart=False):
     farmer, _ = actor('rolnik')
     buyer, _ = actor('klient')
     products = [client.post('/products', headers=farmer, json={
-        'name': 'Ziemniaki', 'price_grosze': 199, 'delivery_grosze': 500, 'stock': 10}).json()['id']
+        'name': 'Ziemniaki', 'price_grosze': 299, 'delivery_grosze': 500, 'stock': 10}).json()['id']
         for _ in range(2 if cart else 1)]
     body = {'fulfillment': 'dostawa', 'delivery_city': 'Opole',
             'delivery_street': 'Polna 2', 'delivery_postal_code': '45-001'}

@@ -69,7 +69,7 @@ def test_categories_create_edit_filters_favorites_rows_cart_and_location(sample_
             assert page.locator('#catalog-sort').input_value()=='newest'
             assert page.locator('#catalog-subcategory-field').is_hidden()
             page.fill('#catalog-query','');page.locator('#catalog-search-submit').click()
-            page.get_by_role('button',name='Owoce',exact=True).click();page.uncheck('#catalog-available')
+            page.select_option('#catalog-fulfillment','all');page.get_by_role('button',name='Owoce',exact=True).click();page.uncheck('#catalog-available')
             page.wait_for_function('()=>document.querySelector("#products")?.textContent.includes("Jabłka niedostępne")')
             empty=page.locator('#products > .catalog-product').filter(has_text='Jabłka niedostępne');empty.locator('summary > b').click()
             empty_details=page.locator('#catalog-details-'+str(unavailable.json()['id']))

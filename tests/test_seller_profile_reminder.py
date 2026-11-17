@@ -91,7 +91,7 @@ def exercise_completed_shipment(client):
     assert response.status_code==201,response.text
     point=response.json()['id']
     for name in ('Marchew testowa','Ziemniaki testowe'):
-        response=client.post('/products',headers=farmer,json={'name':name,'price_grosze':199,'delivery_grosze':501,'stock':10})
+        response=client.post('/products',headers=farmer,json={'name':name,'price_grosze':599,'delivery_grosze':501,'stock':10})
         assert response.status_code==201,response.text
         assert client.put('/cart/items',headers=buyer,json={'product_id':response.json()['id'],'quantity':1}).status_code==200
     response=client.post('/cart/checkout-test',headers={**buyer,'Idempotency-Key':uuid4().hex},json={'fulfillment':'odbior','pickup_point_id':point})

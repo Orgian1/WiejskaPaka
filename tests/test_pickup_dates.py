@@ -30,8 +30,8 @@ def test_attendance_persists_and_other_seller_cannot_change_it(tmp_path,monkeypa
         invalid={**body,'attendance_dates':['2020-01-01']}
         assert client.put(f'/pickup-points/{point}',headers=seller,json={**invalid,'active':True}).status_code==422
         # Sellers cannot purchase, even by calling API directly.
-        product=client.post('/products',headers=other,json={'name':'Pomidory','price_grosze':200,'delivery_grosze':0,'stock':10}).json()
-        own=client.post('/products',headers=seller,json={'name':'Ogórki','price_grosze':200,'delivery_grosze':0,'stock':10}).json()
+        product=client.post('/products',headers=other,json={'name':'Pomidory','price_grosze':500,'delivery_grosze':0,'stock':10}).json()
+        own=client.post('/products',headers=seller,json={'name':'Ogórki','price_grosze':500,'delivery_grosze':0,'stock':10}).json()
         order=client.post('/orders',headers=buyer,json={'product_id':own['id'],'quantity':1,'fulfillment':'odbior','pickup_point_id':point})
         assert order.status_code==201,order.text
         changed={**body,'active':True,'attendance_dates':[(pickup_dates.today()+timedelta(days=4)).isoformat()]}

@@ -25,7 +25,7 @@ function appViewAllowed(view){
  return !!role;
 }
 function navigateApp(view){
- if(view==='wallet'&&typeof walletAdAccessGranted!=='undefined'&&!walletAdAccessGranted){void enterWalletWithAd();return;}
+ if(view==='wallet'&&['klient','rolnik'].includes(role)&&typeof walletAdAccessGranted!=='undefined'&&!walletAdAccessGranted){void enterWalletWithAd();return;}
  if(appRouteName()===view){applyAppRoute(true);return}
  location.hash=view;applyAppRoute(false);
 }

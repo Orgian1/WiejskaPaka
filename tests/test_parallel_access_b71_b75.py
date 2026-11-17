@@ -16,7 +16,7 @@ def setup_case(stock=1):
         assert response.status_code == 200
         return {'Authorization': 'Bearer ' + response.json()['access_token']}
     farmer, buyer1, buyer2, courier = user('rolnik'), user('klient'), user('klient'), user('dostawca')
-    product = client.post('/products', headers=farmer, json={'name': 'Partia '+suffix, 'price_grosze': 349, 'delivery_grosze': 501, 'stock': stock})
+    product = client.post('/products', headers=farmer, json={'name': 'Partia '+suffix, 'price_grosze': 549, 'delivery_grosze': 501, 'stock': stock})
     assert product.status_code == 201, product.text
     point = client.post('/pickup-points', headers=farmer, json={'name':'Punkt', 'city':'Radom', 'street':'Polna 1', 'opening_hours':'8-16'})
     assert point.status_code == 201, point.text

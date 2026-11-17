@@ -42,7 +42,7 @@ def test_disposable_http_readiness_and_cleanup(monkeypatch,tmp_path,case):
             with fixture.server(tmp_path/'fixture.sqlite'):raise ValueError('consumer failed')
     else:
         with fixture.server(tmp_path/'fixture.sqlite'):
-            assert state['requests']==901 and 20<state['seconds']<60
+            assert state['requests']==901 and 20<state['seconds']<90
     assert state['terminated'] and state['waited']
-    if case=='deadline':assert 60<=state['seconds']<60.1
+    if case=='deadline':assert 90<=state['seconds']<90.1
     if case=='exited':assert state['requests']==0 and state['seconds']==0

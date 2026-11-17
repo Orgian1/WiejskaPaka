@@ -20,7 +20,7 @@ async function enterWalletWithAd(event){
  count.setAttribute('role','timer');count.setAttribute('aria-live','polite');close.type='button';close.disabled=true;close.setAttribute('aria-label','Zamknij reklamę');heading.append(badge,count,close);
  const link=node('a');link.href=ad.url;link.target='_blank';link.rel='noopener noreferrer sponsored';link.referrerPolicy='no-referrer';link.setAttribute('aria-label','Strona reklamodawcy: '+ad.advertiser);
  const image=node('img');image.alt=ad.advertiser;image.src=ad.image;link.append(image);dialog.append(heading,link,node('p',ad.advertiser));
- image.onerror=openWallet;link.addEventListener('click',()=>{if(!current())return;fetch('/wallet/ads/impressions/'+encodeURIComponent(ad.impression_id)+'/click',{method:'POST',headers:{Authorization:'Bearer '+bearer},keepalive:true}).catch(()=>{});});
+ image.onerror=()=>{image.remove();const notice=node('p','Materiał reklamowy jest chwilowo niedostępny.');notice.setAttribute('role','status');dialog.append(notice);};link.addEventListener('click',()=>{if(!current())return;fetch('/wallet/ads/impressions/'+encodeURIComponent(ad.impression_id)+'/click',{method:'POST',headers:{Authorization:'Bearer '+bearer},keepalive:true}).catch(()=>{});});
  const started=performance.now();close.onclick=()=>{if(performance.now()-started>=5000)openWallet();};
  clearInterval(walletAdTimer);walletAdTimer=setInterval(()=>{if(!current()){clearInterval(walletAdTimer);return;}const remaining=Math.max(0,Math.ceil((5000-(performance.now()-started))/1000));count.textContent=String(remaining);if(remaining===0){clearInterval(walletAdTimer);close.disabled=false;openWallet();}},50);
 }

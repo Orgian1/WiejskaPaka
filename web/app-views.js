@@ -63,7 +63,7 @@ function applyAppRoute(focus=false){
  document.title=({'products':'Produkty','listings':'Moje ogłoszenia','points':'Punkty odbioru'}[view]||'Moje konto')+' — WiejskaPaka';
 }
 const appLogged=logged;
-logged=function(user){if(typeof resetWalletAds==='function')resetWalletAds();const savedCatalog=catalogRouteSnapshot;appLogged(user);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
+logged=function(user){if(typeof resetWalletAds==='function')resetWalletAds();const savedCatalog=catalogRouteSnapshot;appLogged(user);if(user&&role==='admin'&&typeof refreshWalletAdsAdmin==='function')act(refreshWalletAdsAdmin);if(!user)history.replaceState(null,'','#account');if(user&&appRouteName()==='account')history.replaceState(null,'','#products');appCurrentView=null;applyAppRoute(false);if(user&&appRouteName()==='products'&&savedCatalog){catalogRouteSnapshot=savedCatalog;act(restoreCatalogRoute)}};
 globalThis.addEventListener('hashchange',()=>applyAppRoute(document.activeElement?.id!=='point-name'));
 document.addEventListener('click',event=>{
  const link=event.target.closest('a[href^="#"]');if(!link||event.defaultPrevented)return;

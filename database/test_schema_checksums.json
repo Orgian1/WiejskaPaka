@@ -228,5 +228,10 @@
     "file": "optional_product_listing_states.sql",
     "sha256": "109128364f2acc73bd9e2d4633b8d0da3bb13332560b11eec0712a09398bc20c",
     "bytes": 250
+  },
+  {
+    "file": "optional_wallet_ads.sql",
+    "sha256": "1014733e9042f8e65b52a4908d79c5418fea82bf6edeecb1343b3c6f29ec71b5",
+    "bytes": 1080
   }
 ]

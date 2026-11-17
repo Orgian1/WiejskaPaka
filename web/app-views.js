@@ -36,6 +36,7 @@ function applyAppRoute(focus=false){
   return;
  }
  const wanted=(el('reset-token').value||(typeof emailProofToken!=='undefined'&&emailProofToken))?'account':appRouteName(),view=appViewAllowed(wanted)?wanted:'account';
+ if(view!=='wallet'&&typeof walletAdAccessGranted!=='undefined')walletAdAccessGranted=false;
  const visible=new Set(appViewGroups[view]);
  for(const id of new Set(Object.values(appViewGroups).flat())){
   const target=el(id);if(target)target.toggleAttribute('data-route-hidden',!visible.has(id));

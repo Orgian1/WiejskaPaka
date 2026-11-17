@@ -1025,6 +1025,8 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                 raise HTTPException(422, 'Przekroczono limit kwoty')
             grand_total += total
             totals.append((r, subtotal, delivery, total))
+        if sum(item[1] for item in totals) < 500:
+            raise HTTPException(422, 'Minimalna wartość paczki to 5,00 zł. Dodaj produkty, aby kontynuować zakup')
         shipment_id = 'WPS-' + secrets.token_hex(12).upper()
         con.execute('''INSERT INTO shipment_groups(id,buyer_id,farmer_id,fulfillment,delivery_grosze,created_at)
             VALUES(?,?,?,?,?,?)''', (shipment_id,user['id'],farmer_id,payload.fulfillment,
@@ -1141,6 +1143,8 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
             subtotal, total = checked_order_total(p['price_grosze'], payload.quantity, delivery)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+        if subtotal < 500:
+            raise HTTPException(422, 'Minimalna wartość paczki to 5,00 zł. Dodaj produkty, aby kontynuować zakup')
         code='WP-'+secrets.token_hex(5).upper()
         pin=f'{secrets.randbelow(1_000_000):06d}'
         cur=con.execute('INSERT INTO orders(buyer_id,farmer_id,product_id,quantity,subtotal_grosze,delivery_grosze,total_grosze,fulfillment,status,pickup_code,pin_hash,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', (user['id'],p['farmer_id'],p['id'],payload.quantity,subtotal,delivery,total,payload.fulfillment,'oczekuje_na_platnosc_testowa',code,ph.hash(pin),datetime.now(timezone.utc).isoformat()))

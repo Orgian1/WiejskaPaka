@@ -6,10 +6,10 @@ const appViewGroups={
  orders:['orders-section','address-delivery-panel','dashboard'],wallet:['wallet-section'],
  account:['account-section','password-reset-section','account-security','farmer-profile-section','seller-login-panel','seller-compliance','user-photo-panel'],
  listings:['farmer','seller-listings-section'],points:['farmer-details','point-location-panel'],
- dashboard:['dashboard','admin-seller-review','pickup-promotions-admin','wallet-admin-section'],
+ dashboard:['dashboard','admin-seller-review','pickup-promotions-admin','wallet-admin-section','wallet-ads-admin'],
  notifications:['notifications-section'],contact:['contact-disclosure']
 };
-const appRouteAliases={'products-section':'products','nearby-section':'nearby','favorites-section':'favorites','cart-section':'cart','orders-section':'orders','address-delivery-panel':'orders','wallet-section':'wallet','account-section':'account','auth':'account','role':'account','account-security':'account','farmer':'listings','farmer-details':'points','point-form':'points','point-location-panel':'points','support-section':'contact','contact-section':'contact','contact-disclosure':'contact','seller-compliance':'account','user-photo-panel':'account','wallet-admin-section':'dashboard','pickup-promotions-admin':'dashboard','admin-seller-review':'dashboard','notifications-section':'notifications'};
+const appRouteAliases={'products-section':'products','nearby-section':'nearby','favorites-section':'favorites','cart-section':'cart','orders-section':'orders','address-delivery-panel':'orders','wallet-section':'wallet','account-section':'account','auth':'account','role':'account','account-security':'account','farmer':'listings','farmer-details':'points','point-form':'points','point-location-panel':'points','support-section':'contact','contact-section':'contact','contact-disclosure':'contact','seller-compliance':'account','user-photo-panel':'account','wallet-admin-section':'dashboard','wallet-ads-admin':'dashboard','pickup-promotions-admin':'dashboard','admin-seller-review':'dashboard','notifications-section':'notifications'};
 let appCurrentView=null;
 function appRouteName(){
  const raw=location.hash.slice(1).split('?')[0];

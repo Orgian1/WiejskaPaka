@@ -1,0 +1,42 @@
+name: Windows demo launcher acceptance
+on:
+  push:
+    branches:
+      - WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-demo:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      WP_ENV: test
+      DATABASE_URL: ''
+      NEON_DATABASE_URL: ''
+      PYTHONUTF8: '1'
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-lock.txt
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m pip check
+      - name: Validate Windows CMD launcher
+        run: python -m pytest -q tests/test_windows_cmd_launcher.py --tb=short --junitxml=work/windows-launcher.xml
+      - name: Validate Windows recovery and local startup
+        run: python -m scripts.run_native_ci windows-recovery --report work/windows-recovery.json
+      - name: Upload Windows acceptance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-demo-launcher-results
+          path: |
+            work/windows-launcher.xml
+            work/windows-recovery.json
+          if-no-files-found: ignore

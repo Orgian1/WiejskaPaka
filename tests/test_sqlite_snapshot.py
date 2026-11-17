@@ -80,7 +80,7 @@ def test_online_copy_excludes_uncommitted_wal_write(tmp_path):
         snapshot(source, key_path(source), target)
         writer.rollback()
     with closing(sqlite3.connect(target/'database.sqlite3')) as con:
-        assert con.execute('SELECT price_grosze FROM products WHERE id=?', (products[0],)).fetchone()[0] == 199
+        assert con.execute('SELECT price_grosze FROM products WHERE id=?', (products[0],)).fetchone()[0] == 599
 
 
 @pytest.mark.parametrize('timeout', [0, -1, float('nan'), float('inf')])

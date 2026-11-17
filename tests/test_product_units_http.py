@@ -25,7 +25,7 @@ def actors(monkeypatch):
 
 
 def listing(**changes):
-    return {'name': 'Ziemniaki testowe', 'stock': 10, 'price_grosze': 200,
+    return {'name': 'Ziemniaki testowe', 'stock': 10, 'price_grosze': 300,
             'delivery_grosze': 500, 'sale_unit': 'kg', **changes}
 
 
@@ -45,7 +45,7 @@ def test_units_survive_catalog_cart_quote_and_order_record(actors):
     quote = client.post('/cart/quote', headers=buyer, json={
         'items':[{'product_id':product_id,'quantity':2}], 'fulfillment':'dostawa'}).json()
     assert quote['items'][0]['sale_unit'] == 'kg'
-    assert quote['subtotal_grosze'] == 400 and quote['delivery_grosze'] == 500
+    assert quote['subtotal_grosze'] == 600 and quote['delivery_grosze'] == 500
     order = client.post('/orders', headers=buyer, json={
         'product_id':product_id,'quantity':2,'fulfillment':'dostawa',
         'delivery_city':'Testowo','delivery_street':'Polna 1','delivery_postal_code':'00-001'})

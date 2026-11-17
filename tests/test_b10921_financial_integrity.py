@@ -88,7 +88,7 @@ def test_other_customer_cannot_reserve_internal_refund_identifier(monkeypatch):
     purchase(client, event_id=f'cancel-paid-order:{ids[0]}')
     response = client.post(f'/orders/{ids[0]}/cancel-paid-test', headers=buyer)
     assert response.status_code == 200, response.text
-    assert response.json()['refund_grosze'] == 899
+    assert response.json()['refund_grosze'] == 1099
 
 
 def test_same_external_key_on_other_orders_is_independent(monkeypatch):

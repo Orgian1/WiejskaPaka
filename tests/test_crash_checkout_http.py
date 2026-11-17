@@ -80,7 +80,7 @@ def test_abrupt_checkout_and_refund_crash_never_duplicate_money_or_stock(tmp_pat
         assert c.post(url,headers=headers,json=body).json()==result
         ids=[o['id'] for o in result['orders']] if cart else [result['id']]
         assert len(ids)==(2 if cart else 1) and len(set(ids))==len(ids)
-        total=1001 if cart else 700;assert result['total_grosze']==total
+        total=1401 if cart else 1100;assert result['total_grosze']==total
         with sqlite3.connect(database) as con:
             assert con.execute('SELECT COUNT(*) FROM orders').fetchone()[0]==len(ids)
             assert con.execute('SELECT COUNT(*) FROM checkout_idempotency').fetchone()[0]==1

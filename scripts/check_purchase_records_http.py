@@ -58,7 +58,7 @@ def run():
                         return {'Authorization':'Bearer '+token},uid
                     farmer,fid=account('rolnik');buyer,_=account('klient');other,_=account('rolnik');courier,cid=account('dostawca')
                     products=[]
-                    for price,fee in [(199,501),(301,399)]:
+                    for price,fee in [(599,501),(301,399)]:
                         products.append(request('POST','/products',farmer,{'name':'ŁĄKOWE ziemniaki','price_grosze':price,'delivery_grosze':fee,'stock':10},201)['id'])
                     body={'name':'Punkt lokalnego testu','city':'Opole','street':'Polna 1','opening_hours':'9:00–17:00','latitude_e6':52_000_000,'longitude_e6':16_000_000}
                     point=request('POST','/pickup-points',farmer,body,201)['id']
@@ -74,7 +74,7 @@ def run():
                     order=request('POST','/orders',buyer,{'product_id':products[0],'quantity':1,'fulfillment':'odbior','pickup_point_id':point},201)
                     oid=order['id'];record_url=f'/orders/{oid}/purchase-record'
                     original=request('GET',record_url,buyer)['original']
-                    check(original['product']['unit_price_grosze']==199 and original['pickup_point']['street']=='Polna 1','captured original product and point')
+                    check(original['product']['unit_price_grosze']==599 and original['pickup_point']['street']=='Polna 1','captured original product and point')
                     check(original['delivery_grosze']==0,'pickup has no delivery fee')
                     request('GET',record_url,expected=401)
                     request('GET',record_url,other,expected=404)
@@ -95,10 +95,10 @@ def run():
                     # A discovered two-product cart still has one delivery fee and full courier-fault refund.
                     for pid in products:request('PUT','/cart/items',buyer,{'product_id':pid,'quantity':1})
                     shipment=request('POST','/cart/checkout-test',buyer,{'fulfillment':'dostawa','delivery_city':'Opole','delivery_street':'Testowa 2','delivery_postal_code':'45-001'},201)
-                    check(shipment['delivery_grosze']==501 and shipment['total_grosze']==1001,'one fee for both cart lines: 199+301+501 grosze')
+                    check(shipment['delivery_grosze']==501 and shipment['total_grosze']==1401,'one fee for both cart lines: 599+301+501 grosze')
                     group_url=f'/shipments/{shipment["shipment_id"]}/purchase-record'
                     group=request('GET',group_url,buyer)
-                    check(group['original']=={'products_grosze':500,'delivery_grosze':501,'total_grosze':1001},'group original totals charge one fee')
+                    check(group['original']=={'products_grosze':900,'delivery_grosze':501,'total_grosze':1401},'group original totals charge one fee')
                     check(all(k not in json.dumps(group) for k in ('pin_test_only','pin_hash','phone','Testowa 2','password_hash','token_hash')),'private record excludes PIN/address/credentials/phone')
                     request('GET',group_url,expected=401)
                     request('GET',group_url,other,expected=404)
@@ -109,12 +109,12 @@ def run():
                     request('POST',f'/shipments/{sid}/assign-courier-test',farmer,{'courier_id':cid})
                     request('POST',f'/shipments/{sid}/dispatch-test',farmer)
                     refund=request('POST',f'/shipments/{sid}/courier-failure-test',farmer,{'reason':'dostawca_nie_przyjechal'})
-                    check(refund['refund_grosze']==1001,'100 percent of payment including single delivery fee refunded')
+                    check(refund['refund_grosze']==1401,'100 percent of payment including single delivery fee refunded')
                     check(request('GET','/couriers/me/active-addresses',courier)==[],'delivery address access revoked after refund')
                     after=request('GET',group_url,buyer)
                     check(after['original']==group['original'],'full refund preserves original group totals')
                     check([o['original'] for o in after['orders']]==[o['original'] for o in group['orders']],'later catalog price changes do not rewrite order originals')
-                    check(sum(o['current']['refund_grosze'] for o in after['orders'])==1001,'current refund includes original full delivery fee')
+                    check(sum(o['current']['refund_grosze'] for o in after['orders'])==1401,'current refund includes original full delivery fee')
                     check(all(o['current']['payment_state_test']=='refunded_test' for o in after['orders']),'all lines show refunded state')
 
                     with closing(sqlite3.connect(database)) as con, con:

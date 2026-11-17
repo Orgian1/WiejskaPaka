@@ -102,7 +102,7 @@ def test_paid_pickup_is_ready_without_seller_approval_and_pin_is_single_use(tmp_
         product=client.get('/products').json()[0]
         point=client.get('/farmers/me/pickup-points',headers=farmer).json()[0]
         for cancel in (False,True):
-            response=client.post('/orders',headers=buyer,json={'product_id':product['id'],'quantity':1,'fulfillment':'odbior','pickup_point_id':point['id']})
+            response=client.post('/orders',headers=buyer,json={'product_id':product['id'],'quantity':2,'fulfillment':'odbior','pickup_point_id':point['id']})
             assert response.status_code==201
             order=response.json();oid=order['id'];payment_url=f'/test/payments/{oid}/events'
             payload={'event_id':'owner-paid','event_type':'payment_success_test'}

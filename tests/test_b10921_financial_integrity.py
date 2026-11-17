@@ -16,7 +16,7 @@ def purchase(client, *, cart=False, event_id=None):
     courier, cid = actor('dostawca')
     products = [client.post('/products', headers=farmer, json={
         'name': 'Jabłka', 'price_grosze': price, 'delivery_grosze': fee, 'stock': 10}).json()['id']
-        for price, fee in [(199, 501), (301, 399)]]
+        for price, fee in [(299, 501), (301, 399)]]
     body = {'fulfillment': 'dostawa', 'delivery_city': 'Legnica',
             'delivery_street': 'Polna 1', 'delivery_postal_code': '59-220'}
     if cart:
@@ -64,7 +64,7 @@ def test_one_line_refund_cannot_break_a_paid_shipment(monkeypatch):
     response = client.post(f'/shipments/{shipment}/courier-failure-test', headers=farmer,
                            json={'reason': 'dostawca_nie_przyjechal'})
     assert response.status_code == 200, response.text
-    assert response.json()['refund_grosze'] == result['total_grosze'] == 1501
+    assert response.json()['refund_grosze'] == result['total_grosze'] == 1701
     assert client.get('/couriers/me/active-addresses', headers=courier).json() == []
     with api.db() as con:
         assert audit_payment_integrity(con)['ok']

@@ -199,8 +199,20 @@ def run(gate, report, *, root=ROOT, source=None, runner=subprocess.run):
                     if path.is_file() and re.search(r'(?m)^def '+re.escape(function)+r'\(', path.read_text(encoding='utf-8')):
                         task['last_test'] = {'file': filename, 'function': function}
                         break
-            except OSError:
+            except OSError as exc:
                 task['error'] = 'PROCESS_OR_RESULT_UNAVAILABLE'
+                # Report a numeric OS error and bounded progress, never private paths.
+                if isinstance(exc.errno, int):
+                    task['os_errno'] = exc.errno
+                if kind == 'full' and raw.is_file():
+                    try:
+                        partial = json.loads(raw.read_text(encoding='utf-8'))
+                        executed, planned = partial.get('executed'), partial.get('planned')
+                        if (type(executed) is int and type(planned) is int
+                                and 0 <= executed <= planned <= len(list((root/'tests').glob('test_*.py')))):
+                            task['progress'] = {'executed': executed, 'planned': planned}
+                    except (OSError, ValueError, AttributeError):
+                        pass
             except (ValueError, KeyError, ET.ParseError):
                 task['error'] = 'INVALID_TEST_RESULT'
             result['tasks'].append(task)

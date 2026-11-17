@@ -17,7 +17,7 @@ def actor(c, role):
 def fixture(stock=3):
     c = TestClient(app)
     farmer, buyer, stranger = actor(c, 'rolnik'), actor(c, 'klient'), actor(c, 'klient')
-    product = c.post('/products', headers=farmer, json={'name': 'Test atomowosci', 'price_grosze': 349, 'delivery_grosze': 501, 'stock': stock})
+    product = c.post('/products', headers=farmer, json={'name': 'Test atomowosci', 'price_grosze': 549, 'delivery_grosze': 501, 'stock': stock})
     assert product.status_code == 201, product.text
     point = c.post('/pickup-points', headers=farmer, json={'name': 'Odbior', 'city': 'Radom', 'street': 'Polna 1', 'opening_hours': '8-16'})
     assert point.status_code == 201, point.text

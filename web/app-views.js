@@ -466,7 +466,8 @@ loadFarmer=async function(...args){
    const host=document.querySelector('[data-ad-slot="'+config.id+'"]');
    if(!host)continue;
    const allowed=config.roles.includes(current) &&
-     (config.id==='login'?route==='account':config.id==='buyer'?route==='nearby':route==='listings');
+     (config.id==='login'?route==='account':config.id==='buyer'?route==='nearby':route==='listings') &&
+     !host.closest('[data-route-hidden]');
    host.hidden=!allowed;
   }
  }

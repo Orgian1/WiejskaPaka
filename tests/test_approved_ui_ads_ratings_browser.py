@@ -57,3 +57,39 @@ def _check_browser(browser, url, accounts, role):
         assert not errors
     finally:
         page.close()
+
+
+def test_same_package_button_opens_cart_and_badge_counts_units(full_demo_server):
+    """A real browser should navigate to cart and count quantities, not lines."""
+    url, accounts = full_demo_server
+    with sync_playwright() as driver:
+        browser = driver.chromium.launch(headless=True, args=['--no-sandbox'])
+        page = browser.new_page(viewport={"width": 1280, "height": 844})
+        try:
+            page.goto(url)
+            page.click("#account-nav-link")
+            page.fill("#email", accounts["klient"]["email"])
+            page.fill("#password", accounts["klient"]["password"])
+            with page.expect_response("**/auth/login") as login_response:
+                page.locator("#auth button[type=submit]").click()
+            assert login_response.value.status == 200
+            page.wait_for_function(
+                "(email) => document.querySelector('#identity').textContent.includes(email)",
+                arg=accounts["klient"]["email"],
+            )
+            page.click("#products-nav-link")
+            card = page.locator(".catalog-product[data-product-id]").first
+            card.wait_for(timeout=10000)
+            card.locator("summary").click()
+            card.locator('input[aria-label^="Ilość w jednostce"]').fill("3")
+            card.get_by_role("button", name="Dodaj do koszyka").click()
+            dialog = page.locator(".same-package-dialog")
+            dialog.wait_for(state="visible", timeout=10000)
+            page.locator("#same-package-done").click()
+            page.wait_for_url("**/#cart")
+            page.locator("#cart-section").wait_for(state="visible")
+            page.wait_for_function(
+                "() => document.querySelector('#cart-count')?.textContent.trim()==='3'"
+            )
+        finally:
+            browser.close()

@@ -52,6 +52,16 @@ class LegacyMigrationTests(unittest.TestCase):
             import_verified_legacy_period(self.con,point_id=8,farmer_id=1,
                 starts_at=self.start,wallet_entry_id='paid',dry_run=False)
         self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],1)
+    def test_rejects_malformed_inputs_without_writing(self):
+        for kwargs in (
+            dict(point_id=True,farmer_id=1,starts_at=self.start,wallet_entry_id='paid'),
+            dict(point_id=7,farmer_id=0,starts_at=self.start,wallet_entry_id='paid'),
+            dict(point_id=7,farmer_id=1,starts_at='2026-11-18',wallet_entry_id='paid'),
+            dict(point_id=7,farmer_id=1,starts_at=self.start,wallet_entry_id=''),
+        ):
+            with self.assertRaises(ValueError):
+                import_verified_legacy_period(self.con,**kwargs,dry_run=False)
+        self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],0)
     def test_cannot_import_for_other_farmer(self):
         self.con.execute("INSERT INTO wallet_preview_entries VALUES('paid',2,'point_fee','charged',1000)")
         with self.assertRaises(ValueError):

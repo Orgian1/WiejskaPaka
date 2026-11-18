@@ -70,6 +70,14 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertIn("root.querySelectorAll('.catalog-product[data-product-id]')", self.extension)
         self.assertIn("if(summary)summary.append(stars)", self.extension)
 
+    def test_subminimum_direct_order_goes_to_cart_without_checkout(self):
+        self.assertIn("const checkoutProductPrices=new Map()", self.extension)
+        self.assertIn("if(price*quantity>=500)return", self.extension)
+        self.assertIn("event.stopImmediatePropagation()", self.extension)
+        self.assertIn("add.click()", self.extension)
+        self.assertIn("Kwota poniżej 5,00 zł", self.extension)
+        self.assertIn("const addCart=node('button','Dodaj do koszyka')", self.app)
+
     def test_public_stars_use_actual_product_and_seller_ids(self):
         self.assertIn("box.dataset.productId=String(p.id)", self.app)
         self.assertIn("sellerRatingsByProduct.set(productId,sellerId)", self.extension)

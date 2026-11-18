@@ -1,0 +1,22 @@
+name: Approved UI guard
+on:
+  push:
+    branches:
+      - 'feat/zatwierdzony-widok-gwiazdki-reklamy-rls-20261118'
+  pull_request:
+    paths:
+      - 'web/index.html'
+      - 'web/style.css'
+      - 'web/app.js'
+      - 'scripts/check_approved_ui.py'
+      - '.github/workflows/approved-ui-guard.yml'
+  workflow_dispatch:
+jobs:
+  preserve-approved-layout:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify owner-approved layout
+        run: python3 scripts/check_approved_ui.py

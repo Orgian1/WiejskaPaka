@@ -1712,6 +1712,17 @@ def my_pickup_points(user=Depends(current_user)):
                 point['promotion_active']=False
         return points
 
+@app.get('/farmers/me/pickup-points/{point_id}/renewal-quote')
+def pickup_point_renewal_quote(point_id:int,user=Depends(current_user)):
+    require(user,'rolnik')
+    with db() as con:
+        point=con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=?',(point_id,user['id'])).fetchone()
+        if point is None:
+            raise HTTPException(404,'Nie znaleziono punktu')
+        from backend.pickup_point_periods import point_status
+        return point_status(con,point_id)
+
+
 @app.get('/farmers/{farmer_id}/pickup-points')
 def list_pickup_points(farmer_id:int):
     with db() as con:

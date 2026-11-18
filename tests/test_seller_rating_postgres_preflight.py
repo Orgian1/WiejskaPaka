@@ -72,6 +72,15 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "actor_id"):
             check(self.connection)
 
+    def test_postgres_deparsed_unqualified_column_names_are_accepted(self):
+        self.policies[1]["with_check"] = (
+            "((buyer_id = NULLIF(current_setting('wiejskapaka.actor_id'::text, true), ''::text)::bigint) "
+            "AND (EXISTS (SELECT 1 FROM orders o WHERE "
+            "((o.id = order_id) AND (o.buyer_id = buyer_id) "
+            "AND (o.farmer_id = seller_id) AND (o.status = 'odebrane'::text)))))"
+        )
+        check(self.connection)
+
     def test_restrictive_read_policy_fails_closed(self):
         self.policies[0]["qual"] = "buyer_id = 1"
         with self.assertRaisesRegex(RuntimeError, "podsumowania"):

@@ -6,7 +6,7 @@ imported. The default dry-run makes no writes.
 """
 from datetime import datetime, timezone
 from uuid import uuid4
-from backend.pickup_point_periods import active_period, period_end
+from backend.pickup_point_periods import period_end
 
 def import_verified_legacy_period(con, *, point_id, farmer_id, starts_at,
                                   wallet_entry_id, dry_run=True):
@@ -21,8 +21,13 @@ def import_verified_legacy_period(con, *, point_id, farmer_id, starts_at,
                          (wallet_entry_id,)).fetchone()
     if existing:
         return {'status':'already_imported','point_id':point_id}
-    if active_period(con,point_id,now=starts_at):
-        raise ValueError('Existing entitlement overlaps payment date')
+    proposed_start=starts_at.astimezone(timezone.utc)
+    proposed_end=period_end(starts_at).astimezone(timezone.utc)
+    for period in con.execute('SELECT starts_at,ends_at FROM pickup_point_periods WHERE point_id=?',(point_id,)).fetchall():
+        existing_start=datetime.fromisoformat(period['starts_at']).astimezone(timezone.utc)
+        existing_end=datetime.fromisoformat(period['ends_at']).astimezone(timezone.utc)
+        if proposed_start<existing_end and existing_start<proposed_end:
+            raise ValueError('Existing entitlement overlaps imported payment period')
     # A reference is not proof of payment. Verify against a recorded debit.
     entry=con.execute('''SELECT user_id,kind,amount_grosze,state
         FROM wallet_preview_entries WHERE id=?''',(wallet_entry_id,)).fetchone()

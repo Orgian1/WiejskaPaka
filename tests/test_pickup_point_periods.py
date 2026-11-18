@@ -5,6 +5,12 @@ from zoneinfo import ZoneInfo
 from backend.pickup_point_periods import SCHEMA, active_period, period_end, quote, point_status, entitled_point_ids
 
 class PickupPointPeriodTests(unittest.TestCase):
+    def test_public_listing_and_checkout_enforce_entitlement(self):
+        from pathlib import Path
+        source=Path('backend/app.py').read_text(encoding='utf-8')
+        self.assertIn('eligible=entitled_point_ids(con',source)
+        self.assertIn('active_period(con,payload.pickup_point_id) is None',source)
+
     def test_period_is_exactly_30_days(self):
         start=datetime(2026,11,18,12,0,tzinfo=ZoneInfo('Europe/Warsaw'))
         self.assertEqual(period_end(start)-start,timedelta(days=30))

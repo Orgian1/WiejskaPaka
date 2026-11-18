@@ -29,6 +29,10 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertIn("api('/seller-ratings/orders/'+orderId)", self.extension)
         self.assertIn("currentEpoch!==sessionEpoch", self.extension)
 
+    def test_only_verified_empty_rating_enables_submit(self):
+        self.assertIn("existing.order_id===orderId&&existing.stars===null", self.extension)
+        self.assertIn("Nie udało się potwierdzić stanu oceny", self.extension)
+
     def test_failed_previous_rating_lookup_does_not_enable_submit(self):
         self.assertIn("Nie udało się sprawdzić poprzedniej oceny", self.extension)
         self.assertRegex(self.extension, r"\.catch\(\(\)=>\{[\s\S]*?submit\.disabled=true;")

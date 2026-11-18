@@ -68,6 +68,25 @@ def install(app, db, write_db, current_user, database_url):
         with db() as con:
             return seller_rating_summary(con, seller_id)
 
+    @app.get("/seller-ratings/orders/{order_id}")
+    def rating_for_order(order_id: int,
+                         authorization: str = Header(default=""),
+                         user=Depends(current_user)):
+        if user["role"] != "klient":
+            raise HTTPException(403, "Tylko klient może sprawdzić swoją ocenę")
+        with write_db(user, authorization, ("klient",)) as con:
+            order = con.execute(
+                "SELECT id FROM orders WHERE id=? AND buyer_id=?",
+                (order_id, user["id"]),
+            ).fetchone()
+            if order is None:
+                raise HTTPException(404, "Nie znaleziono Twojego zamówienia")
+            rating = con.execute(
+                "SELECT stars FROM seller_ratings WHERE order_id=? AND buyer_id=?",
+                (order_id, user["id"]),
+            ).fetchone()
+            return {"order_id": order_id, "stars": rating["stars"] if rating else None}
+
     @app.post("/seller-ratings", status_code=201)
     def submit_rating(payload: RatingInput,
                       authorization: str = Header(default=""),

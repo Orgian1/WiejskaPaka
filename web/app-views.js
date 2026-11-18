@@ -491,7 +491,7 @@ loadFarmer=async function(...args){
  void reloadCampaigns();
  // Session and panel routing are dynamic; reflect them without polling.
  const identity=document.getElementById('identity');
- if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
+ if(identity)new MutationObserver(()=>{refresh();void reloadCampaigns();}).observe(identity,{childList:true,subtree:true,characterData:true});
  document.addEventListener('click',()=>queueMicrotask(refresh),true);
  window.addEventListener('hashchange',refresh);
  document.addEventListener('wiejskapaka:route-changed',refresh);

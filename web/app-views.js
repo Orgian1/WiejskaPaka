@@ -432,9 +432,9 @@ loadFarmer=async function(...args){
   seller:{title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.'}
  };
  const slots=[
-  {id:'login',after:'#auth',roles:['guest']},
+  {id:'login',after:'#account-section',roles:['guest']},
   {id:'buyer',after:'#nearby-section',roles:['klient']},
-  {id:'seller',after:'#farmer',roles:['rolnik']}
+  {id:'seller',after:'#seller-listings-section',roles:['rolnik']}
  ];
  // Future admin-managed campaigns can replace these safe text defaults.
  // Campaign content is always inserted with textContent, never innerHTML.
@@ -459,7 +459,7 @@ loadFarmer=async function(...args){
   const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
-  // Keep each ad inside its own routed section, never between unrelated panels.
+  // Ads belong to routed sections; never nest them inside login/product forms.
   target.append(host);
  }
  function refresh(){

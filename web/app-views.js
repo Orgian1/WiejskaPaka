@@ -193,7 +193,7 @@ loadOrders=async function(...args){
     if(currentEpoch!==sessionEpoch||!section.isConnected)return;
     section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(selectedStars)+'☆'.repeat(5-selectedStars)));
    }catch(error){
-    if(String(error).includes('409'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
+    if(String(error).includes('To zamówienie zostało już ocenione'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
     else{submit.disabled=false;throw error;}
    }
   });

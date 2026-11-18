@@ -49,5 +49,7 @@ jobs:
         run: python -m unittest discover -s tests -p test_seller_rating_frontend_contract.py -v
       - name: Check PostgreSQL seller-rating RLS contract
         run: python -m unittest discover -s tests -p test_seller_rating_rls_contract.py -v
+      - name: Test read-only PostgreSQL RLS preflight
+        run: python -m unittest discover -s tests -p test_seller_rating_postgres_preflight.py -v
       - name: Smoke-test disposable full demo and targeted ads
         run: python -m unittest discover -s tests -p test_full_demo_seed.py -v

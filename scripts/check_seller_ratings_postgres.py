@@ -4,6 +4,7 @@ Usage: DATABASE_URL=... python -m scripts.check_seller_ratings_postgres
 Never creates tables, grants privileges or modifies production data.
 """
 import os
+import re
 import sys
 
 
@@ -43,8 +44,10 @@ def check(connection):
     if insert is None or insert['cmd'] != 'INSERT' or insert['permissive'] != 'PERMISSIVE':
         raise RuntimeError("Brak polityki INSERT")
     condition = insert['with_check'] or ''
-    for required in ("wiejskapaka.actor_id", "seller_ratings.buyer_id", "seller_ratings.order_id", "seller_ratings.seller_id", "odebrane"):
-        if required not in condition:
+    # pg_policies returns a deparsed expression; PostgreSQL may strip
+    # redundant table qualifiers, so match column identifiers either way.
+    for required in ("wiejskapaka.actor_id", "buyer_id", "order_id", "seller_id", "odebrane"):
+        if not re.search(r"(?<![a-z_])" + re.escape(required) + r"(?![a-z_])", condition, re.I):
             raise RuntimeError("Polityka INSERT nie sprawdza: " + required)
     print("OK: uprawnienia i polityki ocen RLS sprawdzone dla roli aplikacji (bez zapisu).")
 

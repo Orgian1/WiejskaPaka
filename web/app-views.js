@@ -534,9 +534,9 @@ loadFarmer=async function(...args){
  appViewGroups.dashboard.push(section.id);
  let editing=null;
  function reset(){editing=null;form.reset();save.textContent='Dodaj kampanię';const start=new Date();const end=new Date(start.getTime()+30*86400000);controls.starts_at.value=dateLocal(Math.floor(start.getTime()/1000));controls.ends_at.value=dateLocal(Math.floor(end.getTime()/1000));}
+ const dateLocal=value=>{const d=new Date(value*1000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
  reset();
  cancel.addEventListener('click',reset);
- const dateLocal=value=>{const d=new Date(value*1000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
  function payload(){
   return {slot:controls.slot.value,title:controls.title.value.trim(),body:controls.body.value.trim(),
    enabled:controls.enabled.checked,

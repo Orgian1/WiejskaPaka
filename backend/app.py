@@ -1726,7 +1726,10 @@ def pickup_point_renewal_quote(point_id:int,user=Depends(current_user)):
 @app.get('/farmers/{farmer_id}/pickup-points')
 def list_pickup_points(farmer_id:int):
     with db() as con:
-        return [pickup_dates.enrich(con,r) for r in con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,))]
+        rows=con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,)).fetchall()
+        from backend.pickup_point_periods import entitled_point_ids
+        eligible=entitled_point_ids(con,[r['id'] for r in rows])
+        return [pickup_dates.enrich(con,r) for r in rows if r['id'] in eligible]
 
 @app.get('/orders/{order_id}/location')
 def order_location(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):

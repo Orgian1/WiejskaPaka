@@ -1007,8 +1007,9 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                 raise HTTPException(422, 'Wybierz punkt odbioru bez adresu dostawy')
             point = con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=? AND active=1' + (' FOR UPDATE' if DATABASE_URL else ''),
                                 (payload.pickup_point_id,farmer_id)).fetchone()
-            if not point:
-                raise HTTPException(422, 'Punkt odbioru jest niedostępny')
+            from backend.pickup_point_periods import active_period
+            if not point or active_period(con,payload.pickup_point_id) is None:
+                raise HTTPException(422, 'Punkt odbioru jest niedostępny lub wygasł')
         else:
             if payload.pickup_point_id is not None or not all((payload.delivery_city,payload.delivery_street,payload.delivery_postal_code)):
                 raise HTTPException(422, 'Podaj pełny adres dostawy')

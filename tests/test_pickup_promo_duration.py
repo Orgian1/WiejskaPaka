@@ -4,6 +4,7 @@ import unittest
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from backend.pickup_promotions import SCHEMA, consume_for_point, point_terms
+from backend.pickup_point_periods import SCHEMA as PERIOD_SCHEMA, active_period
 
 
 class PromoPointDurationTests(unittest.TestCase):
@@ -13,6 +14,7 @@ class PromoPointDurationTests(unittest.TestCase):
         self.con.execute('CREATE TABLE users(id INTEGER PRIMARY KEY)')
         self.con.execute('CREATE TABLE pickup_points(id INTEGER PRIMARY KEY)')
         self.con.executescript(SCHEMA)
+        self.con.executescript(PERIOD_SCHEMA)
         self.con.execute('INSERT INTO users VALUES (1)')
         self.con.execute('INSERT INTO pickup_points VALUES (11),(12)')
         self.con.execute("INSERT INTO pickup_promo_codes VALUES ('TEST','2027-12-31',10,1,1)")
@@ -29,6 +31,7 @@ class PromoPointDurationTests(unittest.TestCase):
         self.assertEqual(point_terms(self.con,11)['free_until'],first['free_until'])
         self.assertNotEqual(first['free_until'],'2027-12-31')
         self.assertFalse(first['charges_executed'])
+        self.assertEqual(active_period(self.con,11,now=datetime(2026,11,19,tzinfo=ZoneInfo('Europe/Warsaw')))['kind'],'promotion')
 
 
 if __name__=='__main__':

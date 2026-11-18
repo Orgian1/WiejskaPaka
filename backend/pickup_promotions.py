@@ -87,7 +87,8 @@ def consume_for_point(con, user_id, point_id, *, postgres=False, today=None):
         raise HTTPException(409,'Uprawnienie promocyjne zmieniło się; odśwież punkty')
     # Each point receives its own 30-day free period starting at activation.
     start = datetime.now(ZoneInfo('Europe/Warsaw')) if today is None else datetime.combine(today, datetime.min.time(), tzinfo=ZoneInfo('Europe/Warsaw'))
-    free_until = (start + timedelta(days=30)).isoformat()
+    from backend.pickup_point_periods import period_end
+    free_until = period_end(start).isoformat()
     con.execute('INSERT INTO pickup_promo_points(point_id,grant_id,free_until) VALUES(?,?,?)',(point_id,row['id'],free_until))
     # Record the free entitlement in the same transaction as the point.
     from backend.pickup_point_periods import period_end

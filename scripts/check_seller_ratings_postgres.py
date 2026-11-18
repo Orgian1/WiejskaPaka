@@ -19,6 +19,11 @@ def check(connection):
     """).fetchone()
     if row is None:
         raise RuntimeError("Tabela seller_ratings nie istnieje")
+    role = connection.execute("""
+        SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user
+    """).fetchone()
+    if role is None or role["rolsuper"] or role["rolbypassrls"]:
+        raise RuntimeError("Rola aplikacji omija RLS (SUPERUSER lub BYPASSRLS)")
     policies = connection.execute("""
         SELECT policyname, cmd, qual, with_check
         FROM pg_policies WHERE schemaname='public' AND tablename='seller_ratings'

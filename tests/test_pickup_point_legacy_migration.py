@@ -43,6 +43,15 @@ class LegacyMigrationTests(unittest.TestCase):
             import_verified_legacy_period(self.con,point_id=7,farmer_id=1,
                 starts_at=self.start,wallet_entry_id='paid',dry_run=False)
         self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],1)
+    def test_same_wallet_debit_cannot_pay_for_two_points(self):
+        self.con.execute("INSERT INTO pickup_points VALUES(8,1,1)")
+        self.con.execute("INSERT INTO wallet_preview_entries VALUES('paid',1,'point_fee','charged',1000)")
+        import_verified_legacy_period(self.con,point_id=7,farmer_id=1,
+            starts_at=self.start,wallet_entry_id='paid',dry_run=False)
+        with self.assertRaisesRegex(ValueError,'another pickup point'):
+            import_verified_legacy_period(self.con,point_id=8,farmer_id=1,
+                starts_at=self.start,wallet_entry_id='paid',dry_run=False)
+        self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],1)
     def test_cannot_import_for_other_farmer(self):
         self.con.execute("INSERT INTO wallet_preview_entries VALUES('paid',2,'point_fee','charged',1000)")
         with self.assertRaises(ValueError):

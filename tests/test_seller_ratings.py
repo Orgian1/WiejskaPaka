@@ -60,6 +60,22 @@ class SellerRatingsTests(unittest.TestCase):
         self.assertEqual(seller_rating_summary(self.con, 2),
                          {"seller_id": 2, "count": 2, "average": 4.0})
 
+    def test_second_buyer_can_rate_only_their_own_order(self):
+        rate_completed_order(self.con, 1, 10, 5)
+        rate_completed_order(self.con, 3, 12, 1)
+        self.assertEqual(seller_rating_summary(self.con, 2),
+                         {"seller_id": 2, "count": 2, "average": 3.0})
+
+    def test_database_prevents_duplicate_even_without_precheck(self):
+        rate_completed_order(self.con, 1, 10, 5)
+        cursor = self.con.execute(
+            "INSERT INTO seller_ratings(order_id,buyer_id,seller_id,stars) "
+            "VALUES(?,?,?,?) ON CONFLICT(order_id) DO NOTHING",
+            (10, 1, 2, 1),
+        )
+        self.assertEqual(cursor.rowcount, 0)
+        self.assertEqual(seller_rating_summary(self.con, 2)["average"], 5.0)
+
     def test_no_ratings_yet(self):
         self.assertEqual(seller_rating_summary(self.con, 2),
                          {"seller_id": 2, "count": 0, "average": None})

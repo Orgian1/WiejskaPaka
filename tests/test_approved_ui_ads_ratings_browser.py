@@ -48,9 +48,12 @@ def _check_browser(browser, url, accounts, role):
         page.click("#wallet-nav-link")
         page.locator("#wallet-section").wait_for(state="visible", timeout=10000)
         assert ad.count() == 0, "Second wallet entry within 30 minutes must not show an ad"
-        page.click("#products-nav-link")
-        page.locator(".catalog-product[data-product-id]").first.wait_for(timeout=10000)
-        page.locator(".catalog-product [data-seller-stars]").first.wait_for(timeout=10000)
+        # Seller account has a different product-management view; catalog
+        # stars belong to the customer-facing product catalog only.
+        if role == "klient":
+            page.click("#products-nav-link")
+            page.locator(".catalog-product[data-product-id]").first.wait_for(timeout=10000)
+            page.locator(".catalog-product [data-seller-stars]").first.wait_for(timeout=10000)
         assert not errors
     finally:
         page.close()

@@ -147,3 +147,48 @@ const appRouteRoots=new Set(Object.values(appViewGroups).flat());
 new MutationObserver(records=>{
  if(records.some(record=>[...record.addedNodes].some(n=>n.nodeType===1&&appRouteRoots.has(n.id))))applyAppRoute(false);
 }).observe(document.body,{childList:true,subtree:true});
+
+
+// Seller ratings: attach compact controls only to completed client orders.
+// Keep the owner-approved HTML, CSS and product layout untouched.
+const loadOrdersBeforeSellerRatings=loadOrders;
+loadOrders=async function(...args){
+ const result=await loadOrdersBeforeSellerRatings.apply(this,args);
+ if(role!=='klient')return result;
+ const root=el('orders');
+ if(!root)return result;
+ const completed=[...root.querySelectorAll('[data-order-id]')].filter(card=>
+   card.textContent.includes('odebrane')&&!card.querySelector('[data-seller-rating]'));
+ for(const card of completed){
+  const orderId=Number(card.dataset.orderId);
+  if(!Number.isSafeInteger(orderId)||orderId<=0)continue;
+  const section=node('div','','seller-rating-control');
+  section.dataset.sellerRating=String(orderId);
+  const label=node('label','Oceń sprzedawcę: ');
+  const select=node('select');
+  select.setAttribute('aria-label','Ocena sprzedawcy w gwiazdkach');
+  for(let stars=5;stars>=1;stars--){
+   const option=node('option', '★'.repeat(stars)+'☆'.repeat(5-stars));
+   option.value=String(stars);
+   select.append(option);
+  }
+  const submit=node('button','Wystaw ocenę');
+  submit.type='button';
+  submit.onclick=()=>act(async()=>{
+   if(submit.disabled)return;
+   submit.disabled=true;
+   try{
+    await api('/seller-ratings','POST',{order_id:orderId,stars:Number(select.value)});
+    section.replaceChildren(node('p','Dziękujemy za ocenę sprzedawcy.'));
+   }catch(error){
+    submit.disabled=false;
+    if(String(error).includes('409'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
+    else throw error;
+   }
+  });
+  label.append(select);
+  section.append(label,submit);
+  card.append(section);
+ }
+ return result;
+};

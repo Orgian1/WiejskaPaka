@@ -202,7 +202,14 @@ loadOrders=async function(...args){
    if(existing&&Number.isInteger(existing.stars)&&existing.stars>=1&&existing.stars<=5){
     section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(existing.stars)+'☆'.repeat(5-existing.stars)));
    }else submit.disabled=false;
-  }).catch(()=>{if(currentEpoch===sessionEpoch&&section.isConnected&&!submitted)submit.disabled=false;});
+  }).catch(()=>{
+   // Fail closed: a failed lookup must not offer a duplicate rating.
+   if(currentEpoch!==sessionEpoch||!section.isConnected||submitted)return;
+   submit.disabled=true;
+   const notice=node('p','Nie udało się sprawdzić poprzedniej oceny. Odśwież zamówienia i spróbuj ponownie.');
+   notice.setAttribute('role','status');
+   section.append(notice);
+  });
  }
  return result;
 };

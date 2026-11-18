@@ -54,3 +54,25 @@ def seller_rating_summary(con, seller_id: int):
     count = row["count"]
     return {"seller_id": seller_id, "count": count,
             "average": round(row["total"] / count, 2) if count else None}
+
+def install(app, db, write_db, current_user, database_url):
+    """Expose public aggregates and authenticated, completed-order ratings."""
+    if not database_url:
+        with db() as con:
+            con.executescript(SCHEMA_SQLITE)
+
+    @app.get("/sellers/{seller_id}/rating")
+    def rating_summary(seller_id: int):
+        if seller_id <= 0:
+            raise HTTPException(422, "Nieprawidłowy sprzedawca")
+        with db() as con:
+            return seller_rating_summary(con, seller_id)
+
+    @app.post("/seller-ratings", status_code=201)
+    def submit_rating(payload: RatingInput,
+                      authorization: str = Header(default=""),
+                      user=Depends(current_user)):
+        if user["role"] != "klient":
+            raise HTTPException(403, "Tylko klient może wystawić ocenę")
+        with write_db(user, authorization, ("klient",)) as con:
+            return rate_completed_order(con, user["id"], payload.order_id, payload.stars)

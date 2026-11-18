@@ -2,7 +2,7 @@ import sqlite3
 import unittest
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from backend.pickup_point_periods import SCHEMA, active_period, period_end, quote
+from backend.pickup_point_periods import SCHEMA, active_period, period_end, quote, point_status
 
 class PickupPointPeriodTests(unittest.TestCase):
     def test_period_is_exactly_30_days(self):
@@ -20,7 +20,9 @@ class PickupPointPeriodTests(unittest.TestCase):
         con.execute('INSERT INTO pickup_point_periods VALUES(?,?,?,?,?,?,?,?)',
                     ('p',1,1,start.isoformat(),end.isoformat(),0,'promotion',None))
         self.assertEqual(active_period(con,1,now=start+timedelta(days=29))['kind'],'promotion')
+        self.assertTrue(point_status(con,1,now=start+timedelta(days=29))['entitled'])
         self.assertIsNone(active_period(con,1,now=end))
+        self.assertFalse(point_status(con,1,now=end)['entitled'])
         with self.assertRaises(sqlite3.IntegrityError):
             con.execute('INSERT INTO pickup_point_periods VALUES(?,?,?,?,?,?,?,?)',
                         ('fake',2,1,start.isoformat(),end.isoformat(),1000,'wallet_test',None))

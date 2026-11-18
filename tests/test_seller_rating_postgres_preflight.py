@@ -92,6 +92,15 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Nieoczekiwane"):
             check(self.connection)
 
+    def test_missing_order_buyer_match_fails_closed(self):
+        self.policies[1]["with_check"] = (
+            "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
+            "AND EXISTS (SELECT 1 FROM orders o WHERE o.id = seller_ratings.order_id "
+            "AND o.farmer_id = seller_ratings.seller_id AND o.status = 'odebrane')"
+        )
+        with self.assertRaisesRegex(RuntimeError, "o.buyer_id"):
+            check(self.connection)
+
     def test_no_order_existence_check_fails_closed(self):
         self.policies[1]["with_check"] = (
             "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "

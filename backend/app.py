@@ -790,6 +790,17 @@ def migrate_shipment_links():
 
 migrate_shipment_links()
 
+# New local installations and existing demo databases both receive the table.
+if not DATABASE_URL:
+    with db() as _public_refs_con:
+        _public_refs_con.execute("""CREATE TABLE IF NOT EXISTS shipment_public_refs (
+            shipment_id TEXT PRIMARY KEY REFERENCES shipment_groups(id),
+            farmer_id INTEGER NOT NULL REFERENCES users(id),
+            public_number TEXT NOT NULL,
+            UNIQUE(farmer_id, public_number)
+        )""")
+
+
 def migrate_checkout_idempotency():
     """SQLite-only migration; PostgreSQL uses the checked-in SQL migration."""
     if DATABASE_URL:
@@ -1071,6 +1082,11 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         display_number = display_shipment_number(
             con, farmer_id, payload.pickup_point_id if payload.fulfillment == 'odbior' else None,
             shipment_id, shipment_pin,
+        )
+        # Persist the public reference once. Repeated reads never re-number a shipment.
+        con.execute(
+            'INSERT INTO shipment_public_refs(shipment_id,farmer_id,public_number) VALUES(?,?,?)',
+            (shipment_id, farmer_id, display_number),
         )
         response = {'orders':created,'shipment_id':shipment_id,
                     'display_shipment_number':display_number,'shipment_pin_test_only':shipment_pin,

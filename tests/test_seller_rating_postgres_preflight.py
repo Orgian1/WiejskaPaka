@@ -19,7 +19,8 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
             policy("seller_ratings_read", "SELECT"),
             policy("seller_ratings_buyer_insert", "INSERT",
                    "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
-                   "AND seller_ratings.order_id > 0 AND seller_ratings.seller_id > 0 AND status = 'odebrane'"),
+                   "AND EXISTS (SELECT 1 FROM orders o WHERE o.id = seller_ratings.order_id "
+                   "AND o.farmer_id = seller_ratings.seller_id AND o.status = 'odebrane')"),
         ]
         self.policies[0]["qual"] = "true"
         self.role = {"rolsuper": False, "rolbypassrls": False}
@@ -89,6 +90,15 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
     def test_extra_policy_fails_closed(self):
         self.policies.append(policy("unsafe_insert", "INSERT", "true"))
         with self.assertRaisesRegex(RuntimeError, "Nieoczekiwane"):
+            check(self.connection)
+
+    def test_no_order_existence_check_fails_closed(self):
+        self.policies[1]["with_check"] = (
+            "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
+            "AND seller_ratings.order_id > 0 AND seller_ratings.seller_id > 0 "
+            "AND o.status = 'odebrane'"
+        )
+        with self.assertRaisesRegex(RuntimeError, "EXISTS"):
             check(self.connection)
 
     def test_missing_order_binding_fails_closed(self):

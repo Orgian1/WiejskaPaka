@@ -39,6 +39,17 @@ class ShipmentDisplayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             display_shipment_number(self.db,7,10,'WPS-one','123')
 
+    def test_persisted_reference_contract(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        backend = (root/'backend'/'app.py').read_text(encoding='utf-8')
+        frontend = (root/'web'/'app-views.js').read_text(encoding='utf-8')
+        migration = (root/'database'/'upgrade_shipment_public_refs.sql').read_text(encoding='utf-8')
+        self.assertIn('INSERT INTO shipment_public_refs(shipment_id,farmer_id,public_number)', backend)
+        self.assertIn('AS display_shipment_number', backend)
+        self.assertIn("orderShipmentPublicRefs.set(String(order.id),order.display_shipment_number)", frontend)
+        self.assertIn('CREATE TABLE IF NOT EXISTS shipment_public_refs', migration)
+
     def test_frontend_keeps_internal_id(self):
         from pathlib import Path
         source=(Path(__file__).resolve().parents[1]/'web'/'app-views.js').read_text(encoding='utf-8')

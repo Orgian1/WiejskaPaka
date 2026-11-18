@@ -70,6 +70,15 @@ def prepare(directory, *, full_demo=False):
                 'opening_hours': '7–10 i 16–20',
                 **({'attendance_dates':[day.isoformat()]} if full_demo else {}),
                 'latitude_e6': 51_210_000, 'longitude_e6': 16_160_000})['id']
+            # Only synthetic disposable demo data: a free 30-day fixture period.
+            # This is not a public promotion, paid renewal, or wallet transaction.
+            from backend.pickup_point_periods import now_warsaw, period_end
+            activation=now_warsaw()
+            with db() as con:
+                con.execute('''INSERT INTO pickup_point_periods
+                    (id,point_id,farmer_id,starts_at,ends_at,price_grosze,kind,wallet_entry_id)
+                    VALUES(?,?,?,?,?,0,'promotion',NULL)''',
+                    (secrets.token_hex(16),point,users['rolnik'],activation.isoformat(),period_end(activation).isoformat()))
             if full_demo:
                 request('PUT','/sellers/me/login',actor='rolnik',body={'login':'gospodarstwo_demo'})
                 window=request('POST','/address-delivery/windows',actor='rolnik',body={

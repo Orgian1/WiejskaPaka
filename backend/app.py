@@ -1067,7 +1067,13 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         else:
             for r in lines:
                 con.execute('DELETE FROM saved_cart_items WHERE buyer_id=? AND product_id=?', (user['id'],r['product_id']))
-        response = {'orders':created,'shipment_id':shipment_id,'shipment_pin_test_only':shipment_pin,
+        from backend.shipment_display import display_shipment_number
+        display_number = display_shipment_number(
+            con, farmer_id, payload.pickup_point_id if payload.fulfillment == 'odbior' else None,
+            shipment_id, shipment_pin,
+        )
+        response = {'orders':created,'shipment_id':shipment_id,
+                    'display_shipment_number':display_number,'shipment_pin_test_only':shipment_pin,
                     'total_grosze':grand_total,'payment_mode':'test',
                     'delivery_grosze':shared_delivery,
                     'reservation_expires_at':reservation_expires_at,

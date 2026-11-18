@@ -33,7 +33,7 @@ def _check_browser(browser, url, accounts, role):
         )
         page.wait_for_function(
             "(email) => document.querySelector('#identity').textContent.includes(email)",
-            arg=accounts["klient"]["email"],
+            arg=accounts[role]["email"],
         )
         page.click("#wallet-nav-link")
         ad = page.locator("#wallet-ad-dialog")

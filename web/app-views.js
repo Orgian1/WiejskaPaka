@@ -174,18 +174,6 @@ loadOrders=async function(...args){
   }
   const submit=node('button','Wystaw ocenę');
   submit.type='button';
-  submit.onclick=()=>act(async()=>{
-   if(submit.disabled)return;
-   submit.disabled=true;
-   try{
-    await api('/seller-ratings','POST',{order_id:orderId,stars:Number(select.value)});
-    section.replaceChildren(node('p','Dziękujemy za ocenę sprzedawcy.'));
-   }catch(error){
-    submit.disabled=false;
-    if(String(error).includes('409'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
-    else throw error;
-   }
-  });
   label.append(select);
   section.append(label,submit);
   card.append(section);
@@ -199,9 +187,11 @@ loadOrders=async function(...args){
    if(submit.disabled)return;
    submit.disabled=true;
    try{
-    await api('/seller-ratings','POST',{order_id:orderId,stars:Number(select.value)});
+    const selectedStars=Number(select.value);
+    await api('/seller-ratings','POST',{order_id:orderId,stars:selectedStars});
     submitted=true;
-    section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(Number(select.value))+'☆'.repeat(5-Number(select.value))));
+    if(currentEpoch!==sessionEpoch||!section.isConnected)return;
+    section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(selectedStars)+'☆'.repeat(5-selectedStars)));
    }catch(error){
     if(String(error).includes('409'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
     else{submit.disabled=false;throw error;}

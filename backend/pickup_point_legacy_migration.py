@@ -20,6 +20,10 @@ def import_verified_legacy_period(con, *, point_id, farmer_id, starts_at,
     existing=con.execute('SELECT id FROM pickup_point_periods WHERE wallet_entry_id=?',
                          (wallet_entry_id,)).fetchone()
     if existing:
+        owner=con.execute('SELECT point_id,farmer_id FROM pickup_point_periods WHERE id=?',
+                          (existing['id'],)).fetchone()
+        if owner['point_id']!=point_id or owner['farmer_id']!=farmer_id:
+            raise ValueError('Wallet debit already belongs to another pickup point')
         return {'status':'already_imported','point_id':point_id}
     proposed_start=starts_at.astimezone(timezone.utc)
     proposed_end=period_end(starts_at).astimezone(timezone.utc)

@@ -55,7 +55,12 @@ def check(connection):
             raise RuntimeError("Polityka INSERT nie sprawdza: " + required)
     # Checking mere identifier presence is insufficient: an unsafe policy
     # could mention all columns without tying them to the order.
-    for required in ("EXISTS", "FROM orders", "farmer_id", "o.buyer_id", "o.status"):
+    # PostgreSQL may render a schema-qualified table or extra whitespace.
+    if not re.search(r"\\bEXISTS\\s*\\(", condition, re.I):
+        raise RuntimeError("Polityka INSERT nie weryfikuje zamówienia: EXISTS")
+    if not re.search(r"\\bFROM\\s+(?:(?:public|\\\"public\\\")\\s*\\.\\s*)?\\\"?orders\\\"?\\s+(?:AS\\s+)?o\\b", condition, re.I):
+        raise RuntimeError("Polityka INSERT nie weryfikuje zamówienia: FROM orders")
+    for required in ("farmer_id", "o.buyer_id", "o.status"):
         if required.lower() not in condition.lower():
             raise RuntimeError("Polityka INSERT nie weryfikuje zamówienia: " + required)
     print("OK: uprawnienia i polityki ocen RLS sprawdzone dla roli aplikacji (bez zapisu).")

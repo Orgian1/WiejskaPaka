@@ -460,10 +460,14 @@ loadFarmer=async function(...args){
   host.append(label,title,body);target.after(host);
  }
  function refresh(){
-  const current=typeof role==='string'?role:'guest';
+  const current=typeof role==='string'&&role?role:'guest';
+  const route=typeof appRouteName==='function'?appRouteName():'account';
   for(const config of slots){
    const host=document.querySelector('[data-ad-slot="'+config.id+'"]');
-   if(host)host.hidden=!config.roles.includes(current);
+   if(!host)continue;
+   const allowed=config.roles.includes(current) &&
+     (config.id==='login'?route==='account':config.id==='buyer'?route==='nearby':route==='listings');
+   host.hidden=!allowed;
   }
  }
  refresh();
@@ -479,6 +483,7 @@ loadFarmer=async function(...args){
  const identity=document.getElementById('identity');
  if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
  document.addEventListener('click',()=>queueMicrotask(refresh),true);
+ window.addEventListener('hashchange',refresh);
 })();
 
 

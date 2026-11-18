@@ -43,7 +43,7 @@ function createPickupMap(prefix,editing){
   const gps=node('button','Użyj GPS dla punktu');gps.type='button';gps.id=prefix+'-map-gps';
   const center=node('button','Wybierz środek mapy');center.type='button';center.hidden=true;
   const tiles=node('button','Włącz szczegółową mapę ulic (OpenStreetMap)');tiles.type='button';tiles.hidden=true;
-  fieldset.append(node('p','Lokalizacja punktu jest publiczna. Mapa poglądowa nie wymaga usług zewnętrznych. Szczegółowa mapa przekaże wyświetlany obszar do OpenStreetMap dopiero po jej włączeniu.'),search,open,gps,results,canvas,center,tiles,status);
+  fieldset.append(node('p','Lokalizacja punktu jest publiczna. Mapa poglądowa nie wymaga usług zewnętrznych. Szczegółowa mapa przekaże wyświetlany obszar do OpenStreetMap dopiero po jej włączeniu.'),search,open,gps,results,tiles,canvas,center,status);
   form.querySelector('button[type=submit]').before(fieldset);
   const widget={serial:0,map:null,marker:null,status,results,lat,lon,search,gps};pickupMaps.set(prefix,widget);
   const current=(serial,epoch)=>serial===widget.serial&&epoch===sessionEpoch&&role==='rolnik';
@@ -69,7 +69,7 @@ function createPickupMap(prefix,editing){
     if(lat.value&&lon.value){select(coordinateE6(lat.value,90)/1e6,coordinateE6(lon.value,180)/1e6);widget.map.setView(widget.marker.getLatLng(),15)}
     return true;
   }
-  open.onclick=()=>act(async()=>{if(await initialize())status.textContent='Kliknij miejsce na mapie albo przesuń mapę klawiszami strzałek i wybierz jej środek. Mapa poglądowa nie pokazuje ulic.'});
+  open.onclick=()=>act(async()=>{if(await initialize())status.textContent='To tylko mapa poglądowa. Kliknij przycisk „Włącz szczegółową mapę ulic (OpenStreetMap)” nad mapą, aby zobaczyć ulice i budynki.'});
   center.onclick=()=>{widget.serial++;results.replaceChildren();const p=widget.map.getCenter();select(p.lat,p.lng)};
   tiles.onclick=()=>act(async()=>{
     if(!widget.map||tiles.disabled)return;

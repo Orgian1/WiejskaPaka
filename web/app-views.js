@@ -475,14 +475,20 @@ loadFarmer=async function(...args){
   }
  }
  refresh();
- // Public, active campaign text overrides the default placeholder.
- // A failed request leaves the built-in, non-clickable fallback intact.
- for(const config of slots){
-  fetch('/ads/slots/'+config.id,{credentials:'same-origin'})
-   .then(response=>response.ok?response.json():null)
-   .then(data=>{if(data?.campaign)setCampaign(config.id,data.campaign);})
-   .catch(()=>{});
+ // Public campaigns are refreshed after administrator changes or login.
+ // Reset to safe fallback when a campaign has expired or was disabled.
+ async function reloadCampaigns(){
+  await Promise.all(slots.map(async config=>{
+   try{
+    const response=await fetch('/ads/slots/'+config.id,{credentials:'same-origin',cache:'no-store'});
+    if(!response.ok)return;
+    const data=await response.json();
+    setCampaign(config.id,data?.campaign||defaultCampaigns[config.id]);
+   }catch(_error){/* Keep last safe text when offline. */}
+  }));
  }
+ window.addEventListener('wiejskapaka:ads-updated',()=>{void reloadCampaigns();});
+ void reloadCampaigns();
  // Session and panel routing are dynamic; reflect them without polling.
  const identity=document.getElementById('identity');
  if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
@@ -563,7 +569,7 @@ loadFarmer=async function(...args){
       controls.enabled.checked=Boolean(item.enabled);save.textContent='Zapisz zmiany';form.scrollIntoView({block:'nearest'});};
     const disable=document.createElement('button');disable.type='button';disable.textContent='Wyłącz';
     disable.disabled=!item.enabled;
-    disable.onclick=()=>act(async()=>{disable.disabled=true;try{await api('/admin/ads/slots/'+encodeURIComponent(item.id),'DELETE');await refresh();}catch(e){status.textContent=String(e.message||e);disable.disabled=false;}});
+    disable.onclick=()=>act(async()=>{disable.disabled=true;try{await api('/admin/ads/slots/'+encodeURIComponent(item.id),'DELETE');await refresh();window.dispatchEvent(new Event('wiejskapaka:ads-updated'));}catch(e){status.textContent=String(e.message||e);disable.disabled=false;}});
     card.append(text,edit,disable);list.append(card);
    }
   }catch(e){status.textContent='Nie udało się pobrać reklam: '+String(e.message||e);}
@@ -578,7 +584,7 @@ loadFarmer=async function(...args){
    save.disabled=true;
    try{
     await api(editing?'/admin/ads/slots/'+encodeURIComponent(editing):'/admin/ads/slots',editing?'PUT':'POST',data);
-    status.textContent='Kampania zapisana.';reset();await refresh();
+    status.textContent='Kampania zapisana.';reset();await refresh();window.dispatchEvent(new Event('wiejskapaka:ads-updated'));
    }catch(e){status.textContent='Nie zapisano: '+String(e.message||e);}
    finally{save.disabled=false;}
   });

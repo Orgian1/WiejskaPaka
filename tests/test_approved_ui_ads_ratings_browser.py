@@ -4,25 +4,26 @@ from tests.test_full_local_demo_browser import full_demo_server
 from playwright.sync_api import sync_playwright
 
 
-def test_customer_wallet_ad_and_catalog_stars(full_demo_server):
+@pytest.mark.parametrize('role', ['klient', 'rolnik'])
+def test_wallet_ad_by_role_and_catalog_stars(full_demo_server, role):
     url, accounts = full_demo_server
     with sync_playwright() as driver:
         browser = driver.chromium.launch(headless=True, args=['--no-sandbox'])
         try:
-            _check_browser(browser, url, accounts)
+            _check_browser(browser, url, accounts, role)
         finally:
             browser.close()
 
 
-def _check_browser(browser, url, accounts):
+def _check_browser(browser, url, accounts, role):
     page = browser.new_page(viewport={"width": 1280, "height": 844})
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     try:
         page.goto(url)
         page.click("#account-nav-link")
-        page.fill("#email", accounts["klient"]["email"])
-        page.fill("#password", accounts["klient"]["password"])
+        page.fill("#email", accounts[role]["email"])
+        page.fill("#password", accounts[role]["password"])
         page.locator("#auth button[type=submit]").click()
         page.wait_for_function(
             "(email) => document.querySelector('#identity').textContent.includes(email)",
@@ -32,6 +33,8 @@ def _check_browser(browser, url, accounts):
         ad = page.locator("#wallet-ad-dialog")
         ad.wait_for(state="visible", timeout=10000)
         assert ad.locator("button[aria-label='Zamknij reklamę']").is_disabled()
+        assert ad.locator("img").count() == 1
+        assert ad.locator("img").get_attribute("alt")
         assert ad.locator("[role=timer]").text_content() in ("5", "4")
         page.locator("#wallet-section").wait_for(state="visible", timeout=12000)
         assert ad.count() == 0

@@ -38,6 +38,11 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertNotIn("String(error).includes('409')", self.extension)
         self.assertIn("String(error).includes('To zamówienie zostało już ocenione')", self.extension)
 
+    def test_unrated_sellers_show_empty_stars(self):
+        self.assertIn("☆☆☆☆☆ (0 ocen)", self.extension)
+        self.assertIn("rating.count===0", self.extension)
+        self.assertIn("Sprzedawca nie ma jeszcze ocen", self.extension)
+
     def test_public_stars_use_actual_product_and_seller_ids(self):
         self.assertIn("box.dataset.productId=String(p.id)", self.app)
         self.assertIn("sellerRatingsByProduct.set(productId,sellerId)", self.extension)

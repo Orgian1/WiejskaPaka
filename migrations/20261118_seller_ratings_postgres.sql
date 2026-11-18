@@ -23,11 +23,13 @@ CREATE POLICY seller_ratings_read ON seller_ratings
 DROP POLICY IF EXISTS seller_ratings_buyer_insert ON seller_ratings;
 CREATE POLICY seller_ratings_buyer_insert ON seller_ratings
   FOR INSERT WITH CHECK (
-    buyer_id = NULLIF(current_setting('wiejskapaka.actor_id', true), '')::BIGINT
+    seller_ratings.buyer_id = NULLIF(current_setting('wiejskapaka.actor_id', true), '')::BIGINT
     AND EXISTS (
       SELECT 1 FROM orders o
-      WHERE o.id = order_id AND o.buyer_id = buyer_id
-        AND o.farmer_id = seller_id AND o.status = 'odebrane'
+      WHERE o.id = seller_ratings.order_id
+        AND o.buyer_id = seller_ratings.buyer_id
+        AND o.farmer_id = seller_ratings.seller_id
+        AND o.status = 'odebrane'
     )
   );
 -- No UPDATE or DELETE policies: submitted reviews are immutable.

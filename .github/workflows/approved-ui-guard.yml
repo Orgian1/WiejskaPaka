@@ -55,3 +55,7 @@ jobs:
         run: python -m unittest discover -s tests -p test_full_demo_seed.py -v
       - name: Start disposable demo and verify actual HTTP endpoints
         run: python -m unittest discover -s tests -p test_live_demo_http.py -v
+      - name: Install Chromium for real browser smoke test
+        run: python -m playwright install --with-deps chromium
+      - name: Verify wallet ad timing and seller stars in Chromium
+        run: python -m pytest tests/test_approved_ui_ads_ratings_browser.py -v

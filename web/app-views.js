@@ -240,8 +240,11 @@ catalogPage=async function(...args){
  return result;
 };
 const loadProductsBeforeSellerRatings=loadProducts;
+let sellerRatingRenderGeneration=0;
 loadProducts=async function(...args){
+ const generation=++sellerRatingRenderGeneration;
  const result=await loadProductsBeforeSellerRatings.apply(this,args);
+ if(generation!==sellerRatingRenderGeneration)return result;
  const root=el('products');
  if(!root||!sellerRatingsByProduct.size)return result;
  const currentEpoch=sessionEpoch;
@@ -254,7 +257,7 @@ loadProducts=async function(...args){
  }
  for(const [sellerId,cards] of bySeller){
   void api('/sellers/'+sellerId+'/rating').then(rating=>{
-   if(currentEpoch!==sessionEpoch||!rating||!Number.isSafeInteger(rating.count)||rating.count<0)return;
+   if(generation!==sellerRatingRenderGeneration||currentEpoch!==sessionEpoch||!rating||!Number.isSafeInteger(rating.count)||rating.count<0)return;
    const average=rating.count>0?Number(rating.average):null;
    if(rating.count>0&&(!Number.isFinite(average)||average<1||average>5))return;
    for(const card of cards){

@@ -43,6 +43,21 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertIn("rating.count===0", self.extension)
         self.assertIn("Sprzedawca nie ma jeszcze ocen", self.extension)
 
+    def test_catalog_returns_product_items_to_rating_extension(self):
+        # The extension depends on catalogPage returning the same items
+        # subsequently rendered by loadProducts, not just a status flag.
+        self.assertIn("return data.items;", self.app)
+        self.assertIn("const products=await catalogPage(request,epoch)", self.app)
+        self.assertIn("const result=await catalogPageBeforeSellerRatings.apply(this,args)", self.extension)
+        self.assertIn("if(Array.isArray(result))", self.extension)
+        self.assertIn("sellerRatingsByProduct.clear()", self.extension)
+
+    def test_rating_badges_attach_to_existing_product_summary(self):
+        self.assertIn("card catalog-product", self.app)
+        self.assertIn("const summary=node('summary')", self.app)
+        self.assertIn("root.querySelectorAll('.catalog-product[data-product-id]')", self.extension)
+        self.assertIn("if(summary)summary.append(stars)", self.extension)
+
     def test_public_stars_use_actual_product_and_seller_ids(self):
         self.assertIn("box.dataset.productId=String(p.id)", self.app)
         self.assertIn("sellerRatingsByProduct.set(productId,sellerId)", self.extension)

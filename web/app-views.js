@@ -64,6 +64,7 @@ function applyAppRoute(focus=false){
  el('farmer-profile-section').hidden=role!=='rolnik';
  if(view==='contact')el('contact-disclosure').hidden=false;
  const changed=appCurrentView!==view;appCurrentView=view;
+ document.dispatchEvent(new Event('wiejskapaka:route-changed'));
  if(view==='listings'&&changed)act(loadSellerListings);
  if(view==='points'&&changed&&role==='rolnik')act(loadFarmer);
  if(focus){const heading=el('view-heading');heading.textContent=({products:'Produkty',nearby:'Blisko mnie',favorites:'Ulubione',cart:'Koszyk',orders:'Zamówienia',wallet:'Portfel',account:'Konto',listings:'Moje ogłoszenia',points:'Punkty odbioru',dashboard:'Panel',notifications:'Powiadomienia',contact:'Kontakt'})[view];heading.focus();}
@@ -457,7 +458,9 @@ loadFarmer=async function(...args){
   const label=document.createElement('span');label.className='wp-ad-label';label.textContent='Reklama';
   const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
-  host.append(label,title,body);target.after(host);
+  host.append(label,title,body);
+  // Keep each ad inside its own routed section, never between unrelated panels.
+  target.append(host);
  }
  function refresh(){
   const current=typeof role==='string'&&role?role:'guest';
@@ -485,6 +488,7 @@ loadFarmer=async function(...args){
  if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
  document.addEventListener('click',()=>queueMicrotask(refresh),true);
  window.addEventListener('hashchange',refresh);
+ document.addEventListener('wiejskapaka:route-changed',refresh);
 })();
 
 

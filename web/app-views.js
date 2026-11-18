@@ -467,6 +467,14 @@ loadFarmer=async function(...args){
   }
  }
  refresh();
+ // Public, active campaign text overrides the default placeholder.
+ // A failed request leaves the built-in, non-clickable fallback intact.
+ for(const config of slots){
+  fetch('/ads/slots/'+config.id,{credentials:'same-origin'})
+   .then(response=>response.ok?response.json():null)
+   .then(data=>{if(data?.campaign)setCampaign(config.id,data.campaign);})
+   .catch(()=>{});
+ }
  // Session and panel routing are dynamic; reflect them without polling.
  const identity=document.getElementById('identity');
  if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});

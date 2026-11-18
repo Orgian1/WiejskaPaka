@@ -273,3 +273,38 @@ loadProducts=async function(...args){
  }
  return result;
 };
+
+
+// Minimum 5 PLN applies to checkout, not to adding a low-priced item to cart.
+// Intercept only direct-order clicks below the threshold; keep approved app.js untouched.
+const checkoutProductPrices=new Map();
+const catalogPageBeforeMinimumCart=catalogPage;
+catalogPage=async function(...args){
+ const result=await catalogPageBeforeMinimumCart.apply(this,args);
+ if(Array.isArray(result)){
+  checkoutProductPrices.clear();
+  for(const product of result){
+   if(Number.isSafeInteger(product.id)&&Number.isSafeInteger(product.price_grosze))
+    checkoutProductPrices.set(product.id,product.price_grosze);
+  }
+ }
+ return result;
+};
+document.addEventListener('click',event=>{
+ const button=event.target.closest?.('button');
+ if(!button||button.textContent.trim()!=='Zamów testowo'||role!=='klient')return;
+ const card=button.closest('.catalog-product[data-product-id]');
+ if(!card)return;
+ const price=checkoutProductPrices.get(Number(card.dataset.productId));
+ const quantity=Number(card.querySelector('input[aria-label^="Ilość w jednostce"]')?.value);
+ if(!Number.isSafeInteger(price)||!Number.isSafeInteger(quantity)||quantity<1)return;
+ if(price*quantity>=500)return;
+ // The direct order would deterministically fail the minimum-value validation.
+ // Reuse the existing cart handler instead, without issuing any order request.
+ event.preventDefault();
+ event.stopImmediatePropagation();
+ const add=Array.from(card.querySelectorAll('button')).find(b=>b.textContent.trim()==='Dodaj do koszyka');
+ if(!add||add.disabled)return;
+ add.click();
+ msg('Kwota poniżej 5,00 zł — produkt dodajemy do koszyka. Możesz dołożyć kolejne produkty.');
+},true);

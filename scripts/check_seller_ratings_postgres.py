@@ -40,9 +40,13 @@ def check(connection):
         raise RuntimeError("Rola aplikacji ma niepotrzebne UPDATE lub DELETE")
     if 'seller_ratings_read' not in by_name or by_name['seller_ratings_read']['cmd'] != 'SELECT' or by_name['seller_ratings_read']['permissive'] != 'PERMISSIVE':
         raise RuntimeError("Brak polityki SELECT")
+    if (by_name['seller_ratings_read']['qual'] or '').strip().lower() not in ('true', '(true)'):
+        raise RuntimeError("Polityka SELECT nie pozwala na publiczne podsumowania ocen")
     insert = by_name.get('seller_ratings_buyer_insert')
     if insert is None or insert['cmd'] != 'INSERT' or insert['permissive'] != 'PERMISSIVE':
         raise RuntimeError("Brak polityki INSERT")
+    if insert['qual'] is not None:
+        raise RuntimeError("Nieoczekiwany warunek USING w polityce INSERT")
     condition = insert['with_check'] or ''
     # pg_policies returns a deparsed expression; PostgreSQL may strip
     # redundant table qualifiers, so match column identifiers either way.

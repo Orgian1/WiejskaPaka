@@ -324,3 +324,31 @@ loadCart=async function(...args){
  }
  return result;
 };
+
+
+// Show the human-readable reference without changing immutable shipment IDs.
+// Keep the mapping local to this page; never store the PIN or mapping in storage.
+const displayShipmentRefs=new Map();
+const apiBeforeDisplayShipment=api;
+api=async function(path,...args){
+ const result=await apiBeforeDisplayShipment.call(this,path,...args);
+ if(path==='/cart/checkout-test'&&result&&typeof result.shipment_id==='string'&&
+    /^[A-Z][0-9]{3,}-[0-9]{3}$/.test(result.display_shipment_number||'')){
+  displayShipmentRefs.set(result.shipment_id,result.display_shipment_number);
+ }
+ return result;
+};
+const cartResultForShipment=el('cart-result');
+if(cartResultForShipment){
+ const updateShipmentLabel=()=>{
+  const current=cartResultForShipment.textContent||'';
+  if(!current.includes('WPS-'))return;
+  for(const [technical,visible] of displayShipmentRefs){
+   if(current.includes(technical)){
+    cartResultForShipment.textContent=current.replace(technical,visible);
+    break;
+   }
+  }
+ };
+ new MutationObserver(updateShipmentLabel).observe(cartResultForShipment,{childList:true,characterData:true,subtree:true});
+}

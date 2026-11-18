@@ -45,6 +45,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_wallet_ads_claim.py -v
       - name: Check seller rating permissions and averages
         run: python -m unittest discover -s tests -p test_seller_ratings.py -v
+      - name: Check seller rating frontend integration
+        run: python -m unittest discover -s tests -p test_seller_rating_frontend_contract.py -v
       - name: Check PostgreSQL seller-rating RLS contract
         run: python -m unittest discover -s tests -p test_seller_rating_rls_contract.py -v
       - name: Smoke-test disposable full demo and targeted ads

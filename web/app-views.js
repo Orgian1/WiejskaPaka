@@ -440,6 +440,7 @@ loadFarmer=async function(...args){
  function setCampaign(slotId,campaign){
   if(!Object.prototype.hasOwnProperty.call(defaultCampaigns,slotId))return false;
   if(!campaign||typeof campaign.title!=='string'||typeof campaign.body!=='string'
+    ||!campaign.title.trim()||!campaign.body.trim()
     ||campaign.title.length>100||campaign.body.length>500)return false;
   const host=document.querySelector('[data-ad-slot="'+slotId+'"]');
   if(!host)return false;

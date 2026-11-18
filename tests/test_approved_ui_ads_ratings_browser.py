@@ -24,7 +24,13 @@ def _check_browser(browser, url, accounts, role):
         page.click("#account-nav-link")
         page.fill("#email", accounts[role]["email"])
         page.fill("#password", accounts[role]["password"])
-        page.locator("#auth button[type=submit]").click()
+        with page.expect_response("**/auth/login") as login_response:
+            page.locator("#auth button[type=submit]").click()
+        login = login_response.value
+        assert login.status == 200, (
+            f"{role} login rejected with HTTP {login.status}; "
+            f"body={login.text()[:400]}"
+        )
         page.wait_for_function(
             "(email) => document.querySelector('#identity').textContent.includes(email)",
             arg=accounts["klient"]["email"],

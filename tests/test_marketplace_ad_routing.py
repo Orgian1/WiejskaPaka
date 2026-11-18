@@ -15,6 +15,12 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
         self.assertIn("document.addEventListener('wiejskapaka:route-changed',refresh);",script)
         self.assertIn("document.dispatchEvent(new Event('wiejskapaka:route-changed'));",script)
 
+    def test_admin_changes_refresh_active_campaigns(self):
+        script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
+        self.assertIn("new Event('wiejskapaka:ads-updated')",script)
+        self.assertIn("data?.campaign||defaultCampaigns[config.id]",script)
+        self.assertIn("cache:'no-store'",script)
+
     def test_approved_ui_assets_are_not_modified_by_ad_system(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
         self.assertIn("config.id==='login'?route==='account'",script)

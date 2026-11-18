@@ -24,7 +24,7 @@ async function offerSamePackage(product,quantity,direct=false){
     const finish=result=>{if(dialog.open)dialog.close();dialog.remove();if(packageOffer?.dialog===dialog)packageOffer=null;resolve(result)};
     packageOffer={dialog,finish};
     const show=()=>{if(!dialog.open){document.body.append(dialog);dialog.showModal();}};
-    const cart=()=>{finish(false);el('cart-farmer-select').value=String(product.farmer_id);act(loadCart);el('cart-section').scrollIntoView({block:'start'});};
+    const cart=()=>{finish(false);navigateApp('cart');act(async()=>{await loadCart();const farmer=el('cart-farmer-select');if(farmer&&Array.from(farmer.options).some(o=>o.value===String(product.farmer_id))){farmer.value=String(product.farmer_id);farmer.dispatchEvent(new Event('change'));}});};
     done.onclick=()=>{if(busy)return;if(direct&&!baseQueued)finish(true);else cart()};
     cancel.onclick=()=>{if(!busy)finish(false)};
     dialog.addEventListener('cancel',event=>{event.preventDefault();if(!busy)finish(false)});

@@ -84,6 +84,25 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         )
         check(self.connection)
 
+    def test_schema_qualified_orders_policy_is_accepted(self):
+        self.policies[1]["with_check"] = (
+            "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
+            "AND EXISTS (SELECT 1 FROM public.orders o WHERE "
+            "o.id = seller_ratings.order_id AND o.buyer_id = seller_ratings.buyer_id "
+            "AND o.farmer_id = seller_ratings.seller_id AND o.status = 'odebrane')"
+        )
+        check(self.connection)
+
+    def test_missing_orders_table_reference_fails_closed(self):
+        self.policies[1]["with_check"] = (
+            "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
+            "AND EXISTS (SELECT 1 FROM other_table o WHERE "
+            "o.id = seller_ratings.order_id AND o.buyer_id = seller_ratings.buyer_id "
+            "AND o.farmer_id = seller_ratings.seller_id AND o.status = 'odebrane')"
+        )
+        with self.assertRaisesRegex(RuntimeError, "FROM orders"):
+            check(self.connection)
+
     def test_restrictive_read_policy_fails_closed(self):
         self.policies[0]["qual"] = "buyer_id = 1"
         with self.assertRaisesRegex(RuntimeError, "podsumowania"):

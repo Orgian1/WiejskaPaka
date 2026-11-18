@@ -47,6 +47,9 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertIn("if(generation!==sellerRatingRenderGeneration)return result", self.extension)
         self.assertIn("if(generation!==sellerRatingRenderGeneration||currentEpoch!==sessionEpoch", self.extension)
 
+    def test_public_rating_response_matches_requested_seller(self):
+        self.assertIn("rating.seller_id!==sellerId", self.extension)
+
     def test_unrated_sellers_show_empty_stars(self):
         self.assertIn("☆☆☆☆☆ (0 ocen)", self.extension)
         self.assertIn("rating.count===0", self.extension)

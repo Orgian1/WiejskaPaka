@@ -89,6 +89,12 @@ def consume_for_point(con, user_id, point_id, *, postgres=False, today=None):
     start = datetime.now(ZoneInfo('Europe/Warsaw')) if today is None else datetime.combine(today, datetime.min.time(), tzinfo=ZoneInfo('Europe/Warsaw'))
     free_until = (start + timedelta(days=30)).isoformat()
     con.execute('INSERT INTO pickup_promo_points(point_id,grant_id,free_until) VALUES(?,?,?)',(point_id,row['id'],free_until))
+    # Record the free entitlement in the same transaction as the point.
+    from backend.pickup_point_periods import period_end
+    from uuid import uuid4 as new_id
+    con.execute('''INSERT INTO pickup_point_periods(id,point_id,farmer_id,starts_at,ends_at,price_grosze,kind,wallet_entry_id)
+        VALUES(?,?,?,?,?,0,'promotion',NULL)''',
+        (new_id().hex,point_id,user_id,start.isoformat(),period_end(start).isoformat()))
     return {'free_until':free_until,'charges_executed':False}
 
 
@@ -102,6 +108,8 @@ def install(app, db, write_db, current_user, database_url):
     if not database_url:
         with db() as con:
             con.executescript(SCHEMA)
+            from backend.pickup_point_periods import SCHEMA as PERIOD_SCHEMA
+            con.executescript(PERIOD_SCHEMA)
             columns=[r['name'] for r in con.execute('PRAGMA table_info(pickup_promo_points)')]
             if 'free_until' not in columns:
                 con.execute('ALTER TABLE pickup_promo_points ADD COLUMN free_until TEXT')

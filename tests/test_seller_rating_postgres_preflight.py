@@ -5,7 +5,7 @@ from scripts.check_seller_ratings_postgres import check
 
 
 def policy(name, command, condition=None):
-    return {"policyname": name, "cmd": command, "with_check": condition, "qual": None}
+    return {"policyname": name, "cmd": command, "with_check": condition, "qual": None, "permissive": "PERMISSIVE"}
 
 
 class SellerRatingPostgresPreflightTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
             policy("seller_ratings_read", "SELECT"),
             policy("seller_ratings_buyer_insert", "INSERT",
                    "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
-                   "AND status = 'odebrane'"),
+                   "AND seller_ratings.order_id > 0 AND seller_ratings.seller_id > 0 AND status = 'odebrane'"),
         ]
         self.role = {"rolsuper": False, "rolbypassrls": False}
         table_cursor = Mock()
@@ -71,9 +71,19 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "actor_id"):
             check(self.connection)
 
+    def test_extra_policy_fails_closed(self):
+        self.policies.append(policy("unsafe_insert", "INSERT", "true"))
+        with self.assertRaisesRegex(RuntimeError, "Nieoczekiwane"):
+            check(self.connection)
+
+    def test_missing_order_binding_fails_closed(self):
+        self.policies[1]["with_check"] = "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') AND status = 'odebrane'"
+        with self.assertRaisesRegex(RuntimeError, "order_id"):
+            check(self.connection)
+
     def test_missing_insert_policy_fails_closed(self):
         self.policies.pop()
-        with self.assertRaisesRegex(RuntimeError, "INSERT"):
+        with self.assertRaisesRegex(RuntimeError, "Nieoczekiwane"):
             check(self.connection)
 
 

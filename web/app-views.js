@@ -425,19 +425,37 @@ loadFarmer=async function(...args){
  @media(max-width:600px){.wp-ad-slot{padding:12px;min-height:0}}
  `;
  document.head.append(style);
+ const defaultCampaigns={
+  login:{title:'Promocja dla sprzedawców',body:'3 punkty odbioru bez opłaty przez 30 dni każdy. Kod promocyjny podasz po zalogowaniu na konto sprzedawcy.'},
+  buyer:{title:'Miejsce na reklamę',body:'Tutaj pojawią się oferty i reklamy dla kupujących.'},
+  seller:{title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.'}
+ };
  const slots=[
-  {id:'login',after:'#auth',title:'Promocja dla sprzedawców',body:'3 punkty odbioru bez opłaty przez 30 dni każdy. Kod promocyjny podasz po zalogowaniu na konto sprzedawcy.',roles:['guest']},
-  {id:'buyer',after:'#nearby-section',title:'Miejsce na reklamę',body:'Tutaj pojawią się oferty i reklamy dla kupujących.',roles:['klient']},
-  {id:'seller',after:'#farmer',title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.',roles:['rolnik']}
+  {id:'login',after:'#auth',roles:['guest']},
+  {id:'buyer',after:'#nearby-section',roles:['klient']},
+  {id:'seller',after:'#farmer',roles:['rolnik']}
  ];
+ // Future admin-managed campaigns can replace these safe text defaults.
+ // Campaign content is always inserted with textContent, never innerHTML.
+ function setCampaign(slotId,campaign){
+  if(!Object.prototype.hasOwnProperty.call(defaultCampaigns,slotId))return false;
+  if(!campaign||typeof campaign.title!=='string'||typeof campaign.body!=='string'
+    ||campaign.title.length>100||campaign.body.length>500)return false;
+  const host=document.querySelector('[data-ad-slot="'+slotId+'"]');
+  if(!host)return false;
+  host.querySelector('strong').textContent=campaign.title;
+  host.querySelector('p').textContent=campaign.body;
+  return true;
+ }
+ window.WiejskaPakaAdSlots=Object.freeze({setCampaign});
  for(const config of slots){
   const target=document.querySelector(config.after);if(!target)continue;
   const host=document.createElement('aside');
   host.className='wp-ad-slot';host.dataset.adSlot=config.id;
   host.setAttribute('aria-label','Reklama');host.hidden=true;
   const label=document.createElement('span');label.className='wp-ad-label';label.textContent='Reklama';
-  const title=document.createElement('strong');title.textContent=config.title;
-  const body=document.createElement('p');body.textContent=config.body;
+  const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
+  const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);target.after(host);
  }
  function refresh(){

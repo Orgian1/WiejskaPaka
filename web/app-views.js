@@ -293,17 +293,20 @@ catalogPage=async function(...args){
 document.addEventListener('click',event=>{
  const button=event.target.closest?.('button');
  if(!button||button.textContent.trim()!=='Zamów testowo'||role!=='klient')return;
+ // Approved catalog layout moves expanded controls into a spanning sibling panel.
+ const panel=button.closest('.catalog-row-details[data-product-id]');
  const card=button.closest('.catalog-product[data-product-id]');
- if(!card)return;
- const price=checkoutProductPrices.get(Number(card.dataset.productId));
- const quantity=Number(card.querySelector('input[aria-label^="Ilość w jednostce"]')?.value);
+ const container=panel||card;
+ if(!container)return;
+ const price=checkoutProductPrices.get(Number(container.dataset.productId));
+ const quantity=Number(container.querySelector('input[aria-label^="Ilość w jednostce"]')?.value);
  if(!Number.isSafeInteger(price)||!Number.isSafeInteger(quantity)||quantity<1)return;
  if(price*quantity>=500)return;
  // The direct order would deterministically fail the minimum-value validation.
  // Reuse the existing cart handler instead, without issuing any order request.
  event.preventDefault();
  event.stopImmediatePropagation();
- const add=Array.from(card.querySelectorAll('button')).find(b=>b.textContent.trim()==='Dodaj do koszyka');
+ const add=Array.from(container.querySelectorAll('button')).find(b=>b.textContent.trim()==='Dodaj do koszyka');
  if(!add||add.disabled)return;
  add.click();
  msg('Kwota poniżej 5,00 zł — produkt dodajemy do koszyka. Możesz dołożyć kolejne produkty.');

@@ -389,9 +389,9 @@ loadOrders=async function(...args){
 };
 
 // Inform sellers of the renewal price without initiating an unimplemented charge.
-const loadPointsBeforeRenewalInfo=loadPoints;
-loadPoints=async function(...args){
-  const result=await loadPointsBeforeRenewalInfo.apply(this,args);
+const loadFarmerBeforeRenewalInfo=loadFarmer;
+loadFarmer=async function(...args){
+  const result=await loadFarmerBeforeRenewalInfo.apply(this,args);
   if(role!=='rolnik')return result;
   const host=el('my-points');if(!host)return result;
   try{

@@ -33,6 +33,11 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertIn("Nie udało się sprawdzić poprzedniej oceny", self.extension)
         self.assertRegex(self.extension, r"\.catch\(\(\)=>\{[\s\S]*?submit\.disabled=true;")
 
+    def test_duplicate_rating_uses_actual_api_error_message(self):
+        self.assertIn("To zamówienie zostało już ocenione", self.extension)
+        self.assertNotIn("String(error).includes('409')", self.extension)
+        self.assertIn("String(error).includes('To zamówienie zostało już ocenione')", self.extension)
+
     def test_public_stars_use_actual_product_and_seller_ids(self):
         self.assertIn("box.dataset.productId=String(p.id)", self.app)
         self.assertIn("sellerRatingsByProduct.set(productId,sellerId)", self.extension)

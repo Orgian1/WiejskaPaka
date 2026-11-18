@@ -191,12 +191,28 @@ loadOrders=async function(...args){
   card.append(section);
   // A previous rating is private to the buyer; do not offer a second one.
   const currentEpoch=sessionEpoch;
+  // Wait for the server's prior-rating check before allowing a new submission.
+  // A slow response must never overwrite a successful new rating.
+  submit.disabled=true;
+  let submitted=false;
+  submit.onclick=()=>act(async()=>{
+   if(submit.disabled)return;
+   submit.disabled=true;
+   try{
+    await api('/seller-ratings','POST',{order_id:orderId,stars:Number(select.value)});
+    submitted=true;
+    section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(Number(select.value))+'☆'.repeat(5-Number(select.value))));
+   }catch(error){
+    if(String(error).includes('409'))section.replaceChildren(node('p','To zamówienie zostało już ocenione.'));
+    else{submit.disabled=false;throw error;}
+   }
+  });
   void api('/seller-ratings/orders/'+orderId).then(existing=>{
-   if(currentEpoch!==sessionEpoch||!section.isConnected)return;
+   if(currentEpoch!==sessionEpoch||!section.isConnected||submitted)return;
    if(existing&&Number.isInteger(existing.stars)&&existing.stars>=1&&existing.stars<=5){
     section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(existing.stars)+'☆'.repeat(5-existing.stars)));
-   }
-  }).catch(()=>{ /* Keep action available; backend enforces uniqueness. */ });
+   }else submit.disabled=false;
+  }).catch(()=>{if(currentEpoch===sessionEpoch&&section.isConnected&&!submitted)submit.disabled=false;});
  }
  return result;
 };

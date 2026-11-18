@@ -20,6 +20,7 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
         self.assertIn("config.id==='login'?route==='account'",script)
         self.assertIn("config.id==='buyer'?route==='nearby':route==='listings'",script)
         self.assertIn("!host.closest('[data-route-hidden]')",script)
+        self.assertIn("!host.closest('[hidden]')",script)
 
 if __name__=='__main__':
     unittest.main()

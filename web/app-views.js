@@ -200,3 +200,51 @@ loadOrders=async function(...args){
  }
  return result;
 };
+
+
+// Show public seller rating averages next to product offers without changing
+// the owner-approved product card markup or layout styles.
+const sellerRatingsByProduct=new Map();
+const catalogPageBeforeSellerRatings=catalogPage;
+catalogPage=async function(...args){
+ const result=await catalogPageBeforeSellerRatings.apply(this,args);
+ if(Array.isArray(result)){
+  sellerRatingsByProduct.clear();
+  for(const item of result){
+   const productId=Number(item.id),sellerId=Number(item.farmer_id);
+   if(Number.isSafeInteger(productId)&&Number.isSafeInteger(sellerId)&&sellerId>0)
+    sellerRatingsByProduct.set(productId,sellerId);
+  }
+ }
+ return result;
+};
+const loadProductsBeforeSellerRatings=loadProducts;
+loadProducts=async function(...args){
+ const result=await loadProductsBeforeSellerRatings.apply(this,args);
+ const root=el('products');
+ if(!root||!sellerRatingsByProduct.size)return result;
+ const currentEpoch=sessionEpoch;
+ const bySeller=new Map();
+ for(const card of root.querySelectorAll('.catalog-product[data-product-id]')){
+  const sellerId=sellerRatingsByProduct.get(Number(card.dataset.productId));
+  if(!sellerId||card.querySelector('[data-seller-stars]'))continue;
+  if(!bySeller.has(sellerId))bySeller.set(sellerId,[]);
+  bySeller.get(sellerId).push(card);
+ }
+ for(const [sellerId,cards] of bySeller){
+  void api('/sellers/'+sellerId+'/rating').then(rating=>{
+   if(currentEpoch!==sessionEpoch||!rating||!Number.isInteger(rating.count)||rating.count<=0)return;
+   const average=Number(rating.average);
+   if(!Number.isFinite(average)||average<1||average>5)return;
+   for(const card of cards){
+    if(!card.isConnected||card.querySelector('[data-seller-stars]'))continue;
+    const stars=node('span',' ★ '+average.toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:2})+'/5 ('+rating.count+' ocen)');
+    stars.dataset.sellerStars=String(sellerId);
+    stars.setAttribute('aria-label','Ocena sprzedawcy '+average+' na 5, liczba ocen: '+rating.count);
+    const summary=card.querySelector('summary');
+    if(summary)summary.append(stars);
+   }
+  }).catch(()=>{/* Ratings are optional; never block product browsing. */});
+ }
+ return result;
+};

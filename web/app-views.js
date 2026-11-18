@@ -407,3 +407,49 @@ loadFarmer=async function(...args){
   }catch(_e){}
   return result;
 };
+
+
+// Optional advertisement slots in unused space. Never alter the approved
+// forms, their widths, or the five-second wallet advertisement overlay.
+// A missing campaign is a compact placeholder, not a fabricated coupon.
+(function installMarketplaceAdSlots(){
+ const style=document.createElement('style');
+ style.textContent=`
+ .wp-ad-slot{box-sizing:border-box;min-width:0;margin:14px 0;padding:14px 18px;border:1px solid #d9e3d9;border-radius:12px;background:#f8faf7;color:#263c2b;display:grid;gap:7px;align-content:center}
+ .wp-ad-slot .wp-ad-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#637369}
+ .wp-ad-slot strong{font-size:17px}
+ .wp-ad-slot p{margin:0;line-height:1.5}
+ .wp-ad-slot a{color:#236a38;text-decoration:underline}
+ .wp-ad-slot[hidden]{display:none!important}
+ @media(min-width:950px){.wp-ad-slot[data-layout="side"]{min-height:175px}}
+ @media(max-width:600px){.wp-ad-slot{padding:12px;min-height:0}}
+ `;
+ document.head.append(style);
+ const slots=[
+  {id:'login',after:'#auth',title:'Promocja dla sprzedawców',body:'3 punkty odbioru bez opłaty przez 30 dni każdy. Kod promocyjny podasz po zalogowaniu na konto sprzedawcy.',roles:['guest']},
+  {id:'buyer',after:'#nearby-section',title:'Miejsce na reklamę',body:'Tutaj pojawią się oferty i reklamy dla kupujących.',roles:['klient']},
+  {id:'seller',after:'#farmer',title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.',roles:['rolnik']}
+ ];
+ for(const config of slots){
+  const target=document.querySelector(config.after);if(!target)continue;
+  const host=document.createElement('aside');
+  host.className='wp-ad-slot';host.dataset.adSlot=config.id;
+  host.setAttribute('aria-label','Reklama');host.hidden=true;
+  const label=document.createElement('span');label.className='wp-ad-label';label.textContent='Reklama';
+  const title=document.createElement('strong');title.textContent=config.title;
+  const body=document.createElement('p');body.textContent=config.body;
+  host.append(label,title,body);target.after(host);
+ }
+ function refresh(){
+  const current=typeof role==='string'?role:'guest';
+  for(const config of slots){
+   const host=document.querySelector('[data-ad-slot="'+config.id+'"]');
+   if(host)host.hidden=!config.roles.includes(current);
+  }
+ }
+ refresh();
+ // Session and panel routing are dynamic; reflect them without polling.
+ const identity=document.getElementById('identity');
+ if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
+ document.addEventListener('click',()=>queueMicrotask(refresh),true);
+})();

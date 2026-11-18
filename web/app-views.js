@@ -387,3 +387,23 @@ loadOrders=async function(...args){
  }
  return result;
 };
+
+// Inform sellers of the renewal price without initiating an unimplemented charge.
+const loadPointsBeforeRenewalInfo=loadPoints;
+loadPoints=async function(...args){
+  const result=await loadPointsBeforeRenewalInfo.apply(this,args);
+  if(role!=='rolnik')return result;
+  const host=el('my-points');if(!host)return result;
+  try{
+    const points=await api('/farmers/me/pickup-points');
+    if(role!=='rolnik')return result;
+    const note=node('p',`Odnowienie: 10,00 zł za każdy punkt na 30 dni. Płatności za punkty nie są jeszcze uruchomione w demo.`);
+    note.dataset.pointRenewalInfo='true';
+    if(!host.querySelector('[data-point-renewal-info]'))host.prepend(note);
+    for(const pt of points){
+      const p=node('p',`${pt.name}: ${pt.promotion_active?'promocja aktywna do '+pt.promotion.free_until:pt.promotion?'promocja wygasła':'bez aktywnej promocji'} · odnowienie 10,00 zł / 30 dni`);
+      p.dataset.pointRenewalInfo='true';host.append(p);
+    }
+  }catch(_e){}
+  return result;
+};

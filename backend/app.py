@@ -1210,14 +1210,23 @@ def my_orders(user=Depends(current_user), authorization: str | None = Header(def
                     raise HTTPException(403, 'Brak uprawnień')
                 rows = (buyer_orders(con, actor_id) if role == 'klient'
                         else farmer_orders(con, actor_id))
-                return [dict(row) for row in rows]
+                result = [dict(row) for row in rows]
+                for order in result:
+                    shipment_id = order.get('shipment_id')
+                    if shipment_id:
+                        ref_row = con.execute(
+                            'SELECT public_number FROM shipment_public_refs WHERE shipment_id=?',
+                            (shipment_id,),
+                        ).fetchone()
+                        order['display_shipment_number'] = ref_row['public_number'] if ref_row else None
+                return result
         except AuthenticationFailed:
             raise HTTPException(401, 'Sesja nieważna')
     with db() as con:
         if user['role']=='klient':
-            rows=con.execute('SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
+            rows=con.execute('SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,(SELECT public_number FROM shipment_public_refs WHERE shipment_id=(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id)) AS display_shipment_number,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
         elif user['role']=='rolnik':
-            rows=con.execute('''SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,product_id,quantity,total_grosze,fulfillment,status,created_at,
+            rows=con.execute('''SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,(SELECT public_number FROM shipment_public_refs WHERE shipment_id=(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id)) AS display_shipment_number,product_id,quantity,total_grosze,fulfillment,status,created_at,
                 (SELECT name FROM products WHERE id=orders.product_id) AS product_name,
                 (SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id,
                 (SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name,

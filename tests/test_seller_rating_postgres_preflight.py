@@ -20,6 +20,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
             policy("seller_ratings_buyer_insert", "INSERT",
                    "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
                    "AND EXISTS (SELECT 1 FROM orders o WHERE o.id = seller_ratings.order_id "
+                   "AND o.buyer_id = seller_ratings.buyer_id "
                    "AND o.farmer_id = seller_ratings.seller_id AND o.status = 'odebrane')"),
         ]
         self.policies[0]["qual"] = "true"

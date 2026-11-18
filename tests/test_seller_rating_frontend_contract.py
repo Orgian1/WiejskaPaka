@@ -31,7 +31,7 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
 
     def test_failed_previous_rating_lookup_does_not_enable_submit(self):
         self.assertIn("Nie udało się sprawdzić poprzedniej oceny", self.extension)
-        self.assertRegex(self.extension, r"\\.catch\\(\\(\\)=>\\{[\\s\\S]*?submit\\.disabled=true;")
+        self.assertRegex(self.extension, r"\.catch\(\(\)=>\{[\s\S]*?submit\.disabled=true;")
 
     def test_public_stars_use_actual_product_and_seller_ids(self):
         self.assertIn("box.dataset.productId=String(p.id)", self.app)

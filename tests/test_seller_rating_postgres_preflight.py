@@ -126,7 +126,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         self.policies[1]["with_check"] = (
             "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
             "AND seller_ratings.order_id > 0 AND seller_ratings.seller_id > 0 "
-            "AND o.status = 'odebrane'"
+            "AND o.buyer_id = seller_ratings.buyer_id AND o.status = 'odebrane'"
         )
         with self.assertRaisesRegex(RuntimeError, "EXISTS"):
             check(self.connection)

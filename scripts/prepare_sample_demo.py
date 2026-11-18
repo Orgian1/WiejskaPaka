@@ -107,6 +107,34 @@ def prepare(directory, *, full_demo=False):
                     request('POST', f'/shipments/{sid}/dispatch-test', actor='rolnik')
                 if receipt['delivery_grosze'] != (501 if fulfillment == 'dostawa' else 0):
                     raise ValueError('Nieprawidłowa opłata demonstracyjna')
+            if full_demo:
+                # Local-only fictitious campaigns, no external ad tracking or payments.
+                import base64
+                from io import BytesIO
+                from PIL import Image, ImageDraw
+                from datetime import timezone
+                from backend.wallet_ads import SCHEMA_SQLITE
+                now = int(datetime.now(timezone.utc).timestamp())
+                with db() as con:
+                    con.executescript(SCHEMA_SQLITE)
+                    for audience, title, background in (
+                        ('klient', 'DEMO - oferta dla klienta', (43, 108, 72)),
+                        ('rolnik', 'DEMO - oferta dla sprzedawcy', (43, 77, 118)),
+                    ):
+                        banner = Image.new('RGB', (720, 360), background)
+                        draw = ImageDraw.Draw(banner)
+                        draw.text((50, 155), title, fill='white')
+                        image_bytes = BytesIO()
+                        banner.save(image_bytes, format='JPEG', quality=82)
+                        image = 'data:image/jpeg;base64,' + base64.b64encode(image_bytes.getvalue()).decode('ascii')
+                        con.execute(
+                            """INSERT INTO wallet_ads
+                            (id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,audience,deleted)
+                            VALUES(?,?,?,?,?,?,?,?,?,0)""",
+                            ('local-demo-'+audience, 'WiejskaPaka - demonstracja',
+                             'https://example.invalid/demo', image,
+                             now-3600, now+86400, 1, 0, audience),
+                        )
             with db() as con:
                 audit = audit_payment_integrity(con)
                 if not audit['ok'] or audit['checked_payments'] != 4:

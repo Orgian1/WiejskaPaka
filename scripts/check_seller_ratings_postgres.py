@@ -25,23 +25,25 @@ def check(connection):
     if role is None or role["rolsuper"] or role["rolbypassrls"]:
         raise RuntimeError("Rola aplikacji omija RLS (SUPERUSER lub BYPASSRLS)")
     policies = connection.execute("""
-        SELECT policyname, cmd, qual, with_check
+        SELECT policyname, cmd, qual, with_check, permissive
         FROM pg_policies WHERE schemaname='public' AND tablename='seller_ratings'
     """).fetchall()
     by_name = {p['policyname']: p for p in policies}
+    if len(by_name) != len(policies) or set(by_name) != {'seller_ratings_read', 'seller_ratings_buyer_insert'}:
+        raise RuntimeError('Nieoczekiwane polityki RLS dla seller_ratings')
     if not row['enabled'] or not row['forced']:
         raise RuntimeError("Brak wymuszonego RLS na seller_ratings")
     if not row['can_read'] or not row['can_insert']:
         raise RuntimeError("Rola aplikacji nie ma SELECT i INSERT do seller_ratings")
     if row['can_update'] or row['can_delete']:
         raise RuntimeError("Rola aplikacji ma niepotrzebne UPDATE lub DELETE")
-    if 'seller_ratings_read' not in by_name or by_name['seller_ratings_read']['cmd'] != 'SELECT':
+    if 'seller_ratings_read' not in by_name or by_name['seller_ratings_read']['cmd'] != 'SELECT' or by_name['seller_ratings_read']['permissive'] != 'PERMISSIVE':
         raise RuntimeError("Brak polityki SELECT")
     insert = by_name.get('seller_ratings_buyer_insert')
-    if insert is None or insert['cmd'] != 'INSERT':
+    if insert is None or insert['cmd'] != 'INSERT' or insert['permissive'] != 'PERMISSIVE':
         raise RuntimeError("Brak polityki INSERT")
     condition = insert['with_check'] or ''
-    for required in ("wiejskapaka.actor_id", "seller_ratings.buyer_id", "odebrane"):
+    for required in ("wiejskapaka.actor_id", "seller_ratings.buyer_id", "seller_ratings.order_id", "seller_ratings.seller_id", "odebrane"):
         if required not in condition:
             raise RuntimeError("Polityka INSERT nie sprawdza: " + required)
     print("OK: uprawnienia i polityki ocen RLS sprawdzone dla roli aplikacji (bez zapisu).")

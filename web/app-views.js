@@ -189,6 +189,14 @@ loadOrders=async function(...args){
   label.append(select);
   section.append(label,submit);
   card.append(section);
+  // A previous rating is private to the buyer; do not offer a second one.
+  const currentEpoch=sessionEpoch;
+  void api('/seller-ratings/orders/'+orderId).then(existing=>{
+   if(currentEpoch!==sessionEpoch||!section.isConnected)return;
+   if(existing&&Number.isInteger(existing.stars)&&existing.stars>=1&&existing.stars<=5){
+    section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(existing.stars)+'☆'.repeat(5-existing.stars)));
+   }
+  }).catch(()=>{ /* Keep action available; backend enforces uniqueness. */ });
  }
  return result;
 };

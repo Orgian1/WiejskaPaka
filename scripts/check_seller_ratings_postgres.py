@@ -55,7 +55,7 @@ def check(connection):
             raise RuntimeError("Polityka INSERT nie sprawdza: " + required)
     # Checking mere identifier presence is insufficient: an unsafe policy
     # could mention all columns without tying them to the order.
-    for required in ("EXISTS", "FROM orders", "farmer_id", "o.status"):
+    for required in ("EXISTS", "FROM orders", "farmer_id", "o.buyer_id", "o.status"):
         if required.lower() not in condition.lower():
             raise RuntimeError("Polityka INSERT nie weryfikuje zamówienia: " + required)
     print("OK: uprawnienia i polityki ocen RLS sprawdzone dla roli aplikacji (bez zapisu).")

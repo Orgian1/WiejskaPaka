@@ -42,6 +42,11 @@ class SellerRatingFrontendContractTests(unittest.TestCase):
         self.assertNotIn("String(error).includes('409')", self.extension)
         self.assertIn("String(error).includes('To zamówienie zostało już ocenione')", self.extension)
 
+    def test_old_catalog_rating_responses_cannot_touch_new_page(self):
+        self.assertIn("const generation=++sellerRatingRenderGeneration", self.extension)
+        self.assertIn("if(generation!==sellerRatingRenderGeneration)return result", self.extension)
+        self.assertIn("if(generation!==sellerRatingRenderGeneration||currentEpoch!==sessionEpoch", self.extension)
+
     def test_unrated_sellers_show_empty_stars(self):
         self.assertIn("☆☆☆☆☆ (0 ocen)", self.extension)
         self.assertIn("rating.count===0", self.extension)

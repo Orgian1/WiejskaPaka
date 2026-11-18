@@ -10,6 +10,10 @@ from backend.pickup_point_periods import period_end
 
 def import_verified_legacy_period(con, *, point_id, farmer_id, starts_at,
                                   wallet_entry_id, dry_run=True):
+    if type(point_id) is not int or type(farmer_id) is not int or point_id<=0 or farmer_id<=0:
+        raise ValueError('Positive integer point and farmer identifiers required')
+    if not isinstance(starts_at,datetime):
+        raise ValueError('Payment timestamp required')
     if not wallet_entry_id or not isinstance(wallet_entry_id,str):
         raise ValueError('Verified wallet entry identifier is required')
     if starts_at.tzinfo is None:

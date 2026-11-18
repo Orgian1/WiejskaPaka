@@ -54,3 +54,9 @@ def point_status(con, point_id, *, now=None):
     period=active_period(con,point_id,now=now)
     return {'point_id':point_id,'entitled':period is not None,
             'period':period,'renewal':quote()}
+
+
+def entitled_point_ids(con, point_ids, *, now=None):
+    """Read-only entitlement filter; empty input never issues a broad query."""
+    ids=tuple(dict.fromkeys(point_ids))
+    return {point_id for point_id in ids if active_period(con,point_id,now=now) is not None}

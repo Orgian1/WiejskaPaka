@@ -21,18 +21,34 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
                    "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
                    "AND status = 'odebrane'"),
         ]
-        self.connection.execute.return_value.fetchone.return_value = self.row
-        self.connection.execute.return_value.fetchall.return_value = self.policies
+        self.role = {"rolsuper": False, "rolbypassrls": False}
+        table_cursor = Mock()
+        table_cursor.fetchone.return_value = self.row
+        role_cursor = Mock()
+        role_cursor.fetchone.return_value = self.role
+        policies_cursor = Mock()
+        policies_cursor.fetchall.return_value = self.policies
+        self.connection.execute.side_effect = [table_cursor, role_cursor, policies_cursor]
 
     def test_valid_configuration_is_read_only(self):
         check(self.connection)
-        self.assertEqual(self.connection.execute.call_count, 2)
+        self.assertEqual(self.connection.execute.call_count, 3)
         for call in self.connection.execute.call_args_list:
             self.assertTrue(call.args[0].lstrip().upper().startswith("SELECT "))
 
     def test_missing_table_fails_closed(self):
-        self.connection.execute.return_value.fetchone.return_value = None
+        self.connection.execute.side_effect[0].fetchone.return_value = None
         with self.assertRaisesRegex(RuntimeError, "nie istnieje"):
+            check(self.connection)
+
+    def test_superuser_fails_closed(self):
+        self.role["rolsuper"] = True
+        with self.assertRaisesRegex(RuntimeError, "SUPERUSER"):
+            check(self.connection)
+
+    def test_bypassrls_fails_closed(self):
+        self.role["rolbypassrls"] = True
+        with self.assertRaisesRegex(RuntimeError, "BYPASSRLS"):
             check(self.connection)
 
     def test_missing_force_rls_fails_closed(self):

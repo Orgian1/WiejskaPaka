@@ -32,6 +32,17 @@ class LegacyMigrationTests(unittest.TestCase):
         self.assertEqual(import_verified_legacy_period(self.con,**args,dry_run=False)['status'],'imported')
         self.assertEqual(import_verified_legacy_period(self.con,**args,dry_run=False)['status'],'already_imported')
         self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],1)
+    def test_rejects_overlapping_future_period(self):
+        from datetime import timedelta
+        from backend.pickup_point_periods import period_end
+        future=self.start+timedelta(days=10)
+        self.con.execute("INSERT INTO pickup_point_periods VALUES(?,?,?,?,?,0,'promotion',NULL)",
+            ('future',7,1,future.isoformat(),period_end(future).isoformat()))
+        self.con.execute("INSERT INTO wallet_preview_entries VALUES('paid',1,'point_fee','charged',1000)")
+        with self.assertRaises(ValueError):
+            import_verified_legacy_period(self.con,point_id=7,farmer_id=1,
+                starts_at=self.start,wallet_entry_id='paid',dry_run=False)
+        self.assertEqual(self.con.execute('SELECT COUNT(*) FROM pickup_point_periods').fetchone()[0],1)
     def test_cannot_import_for_other_farmer(self):
         self.con.execute("INSERT INTO wallet_preview_entries VALUES('paid',2,'point_fee','charged',1000)")
         with self.assertRaises(ValueError):

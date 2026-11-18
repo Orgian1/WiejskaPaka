@@ -10,6 +10,7 @@ import time
 import unittest
 from urllib.error import URLError
 from urllib.request import urlopen
+from scripts.run_phone_demo import full_demo_environment
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -19,11 +20,9 @@ class LiveDemoHTTPTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="wp_http_demo_") as directory:
             root = Path(directory)
             sample = root / "sample"
-            env = {k: v for k, v in os.environ.items()
-                   if k not in ("DATABASE_URL", "WP_AUTO_INIT_POSTGRES")}
-            env.update(WIEJSKAPAKA_ENV="development", WP_ENV="development",
-                       WIEJSKAPAKA_DB=str(sample / "demo.sqlite3"),
-                       WP_ENABLE_TEST_PAYMENTS="1")
+            # Mirror the real --full-demo launcher. Seeded deliveries require
+            # WP_ENABLE_ADDRESS_DELIVERY during application startup.
+            env = full_demo_environment(os.environ, sample / "demo.sqlite3")
             seed = subprocess.run(
                 [sys.executable, "-m", "scripts.prepare_sample_demo",
                  "--full-demo", "--directory", str(sample)],

@@ -35,7 +35,7 @@ def rate_completed_order(con, buyer_id: int, order_id: int, stars: int):
     if order is None or order["buyer_id"] != buyer_id:
         raise HTTPException(404, "Nie znaleziono Twojego zamówienia")
     # Fail closed: only the final, confirmed states are eligible.
-    if order["status"] not in ("odebrane", "dostarczone", "zakonczone"):
+    if order["status"] not in ("odebrane",):
         raise HTTPException(409, "Możesz ocenić sprzedawcę dopiero po zakończeniu zamówienia")
     if con.execute("SELECT 1 FROM seller_ratings WHERE order_id=?", (order_id,)).fetchone():
         raise HTTPException(409, "To zamówienie zostało już ocenione")

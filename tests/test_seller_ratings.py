@@ -31,6 +31,19 @@ class SellerRatingsTests(unittest.TestCase):
         self.assertEqual(seller_rating_summary(self.con, 2),
                          {"seller_id": 2, "count": 1, "average": 5.0})
 
+    def test_nonexistent_order_cannot_be_rated(self):
+        with self.assertRaises(HTTPException) as caught:
+            rate_completed_order(self.con, 1, 999999, 5)
+        self.assertEqual(caught.exception.status_code, 404)
+        self.assertEqual(seller_rating_summary(self.con, 2)["count"], 0)
+
+    def test_failed_attempt_does_not_consume_valid_review(self):
+        with self.assertRaises(HTTPException):
+            rate_completed_order(self.con, 3, 10, 1)
+        result = rate_completed_order(self.con, 1, 10, 5)
+        self.assertEqual(result["stars"], 5)
+        self.assertEqual(seller_rating_summary(self.con, 2)["count"], 1)
+
     def test_other_buyer_cannot_rate_order(self):
         with self.assertRaises(HTTPException) as caught:
             rate_completed_order(self.con, 3, 10, 5)

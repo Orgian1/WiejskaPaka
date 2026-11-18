@@ -158,7 +158,7 @@ loadOrders=async function(...args){
  const root=el('orders');
  if(!root)return result;
  const completed=[...root.querySelectorAll('[data-order-id]')].filter(card=>
-   [...card.querySelectorAll('p')].some(p=>/•\\s*odebrane(?:\\s|$)/.test(p.textContent))&&!card.querySelector('[data-seller-rating]'));
+   [...card.querySelectorAll('p')].some(p=>/•\s*odebrane(?:\s|$)/.test(p.textContent))&&!card.querySelector('[data-seller-rating]'));
  for(const card of completed){
   const orderId=Number(card.dataset.orderId);
   if(!Number.isSafeInteger(orderId)||orderId<=0)continue;

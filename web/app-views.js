@@ -533,7 +533,8 @@ loadFarmer=async function(...args){
  section.append(heading,intro,form,status,list);dashboard.after(section);
  appViewGroups.dashboard.push(section.id);
  let editing=null;
- function reset(){editing=null;form.reset();save.textContent='Dodaj kampanię';}
+ function reset(){editing=null;form.reset();save.textContent='Dodaj kampanię';const start=new Date();const end=new Date(start.getTime()+30*86400000);controls.starts_at.value=dateLocal(Math.floor(start.getTime()/1000));controls.ends_at.value=dateLocal(Math.floor(end.getTime()/1000));}
+ reset();
  cancel.addEventListener('click',reset);
  const dateLocal=value=>{const d=new Date(value*1000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
  function payload(){
@@ -545,6 +546,7 @@ loadFarmer=async function(...args){
  async function refresh(){
   if(role!=='admin'){section.hidden=true;return;}
   section.hidden=false;
+  section.toggleAttribute('data-route-hidden',appRouteName()!=='dashboard');
   try{
    const data=await api('/admin/ads/slots');
    if(role!=='admin')return;
@@ -581,5 +583,8 @@ loadFarmer=async function(...args){
  });
  const previousLogged=logged;
  logged=function(...args){const result=previousLogged.apply(this,args);if(role==='admin')act(refresh);else section.hidden=true;return result;};
+ document.addEventListener('wiejskapaka:route-changed',()=>{
+  if(role==='admin')section.toggleAttribute('data-route-hidden',appRouteName()!=='dashboard');
+ });
  if(role==='admin')act(refresh);
 })();

@@ -246,14 +246,15 @@ loadProducts=async function(...args){
  }
  for(const [sellerId,cards] of bySeller){
   void api('/sellers/'+sellerId+'/rating').then(rating=>{
-   if(currentEpoch!==sessionEpoch||!rating||!Number.isInteger(rating.count)||rating.count<=0)return;
-   const average=Number(rating.average);
-   if(!Number.isFinite(average)||average<1||average>5)return;
+   if(currentEpoch!==sessionEpoch||!rating||!Number.isSafeInteger(rating.count)||rating.count<0)return;
+   const average=rating.count>0?Number(rating.average):null;
+   if(rating.count>0&&(!Number.isFinite(average)||average<1||average>5))return;
    for(const card of cards){
     if(!card.isConnected||card.querySelector('[data-seller-stars]'))continue;
-    const stars=node('span',' ★ '+average.toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:2})+'/5 ('+rating.count+' ocen)');
+    const description=rating.count===0?' ☆☆☆☆☆ (0 ocen)':' ★ '+average.toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:2})+'/5 ('+rating.count+' ocen)';
+    const stars=node('span',description);
     stars.dataset.sellerStars=String(sellerId);
-    stars.setAttribute('aria-label','Ocena sprzedawcy '+average+' na 5, liczba ocen: '+rating.count);
+    stars.setAttribute('aria-label',rating.count===0?'Sprzedawca nie ma jeszcze ocen':'Ocena sprzedawcy '+average+' na 5, liczba ocen: '+rating.count);
     const summary=card.querySelector('summary');
     if(summary)summary.append(stars);
    }

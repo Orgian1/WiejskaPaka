@@ -352,3 +352,38 @@ if(cartResultForShipment){
  };
  new MutationObserver(updateShipmentLabel).observe(cartResultForShipment,{childList:true,characterData:true,subtree:true});
 }
+
+
+// Show the same persisted public shipment reference in buyer and seller orders.
+// The technical shipment_id stays available for PIN recovery and API calls.
+const orderShipmentPublicRefs=new Map();
+const apiBeforeOrderPublicRefs=api;
+api=async function(path,...args){
+ const result=await apiBeforeOrderPublicRefs.call(this,path,...args);
+ if(path==='/orders/me'&&Array.isArray(result)){
+  orderShipmentPublicRefs.clear();
+  for(const order of result){
+   if(order?.id&&/^[A-Z][0-9]{3,}-[0-9]{3}$/.test(order.display_shipment_number||'')){
+    orderShipmentPublicRefs.set(String(order.id),order.display_shipment_number);
+   }
+  }
+ }
+ return result;
+};
+const loadOrdersBeforePublicRefs=loadOrders;
+loadOrders=async function(...args){
+ const result=await loadOrdersBeforePublicRefs.apply(this,args);
+ const host=el('orders');
+ if(host){
+  for(const card of host.querySelectorAll('[data-order-id]')){
+   const publicNumber=orderShipmentPublicRefs.get(card.dataset.orderId);
+   if(!publicNumber||card.querySelector('[data-shipment-public-ref]'))continue;
+   const label=node('p','Przesyłka '+publicNumber);
+   label.dataset.shipmentPublicRef='true';
+   const summary=card.querySelector(':scope > summary');
+   if(summary)summary.after(label);
+   else card.prepend(label);
+  }
+ }
+ return result;
+};

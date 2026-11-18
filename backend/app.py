@@ -1689,8 +1689,25 @@ def my_pickup_points(user=Depends(current_user)):
     with db() as con:
         from backend.pickup_promotions import point_terms
         points=[pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        from backend.pickup_point_pricing import POINT_MONTHLY_PRICE_GROSZE, POINT_BILLING_PERIOD_DAYS
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        now=datetime.now(ZoneInfo('Europe/Warsaw'))
         for point in points:
             point['promotion']=point_terms(con,point['id'])
+            point['renewal_price_grosze']=POINT_MONTHLY_PRICE_GROSZE
+            point['renewal_period_days']=POINT_BILLING_PERIOD_DAYS
+            free_until=(point['promotion'] or {}).get('free_until')
+            if free_until:
+                try:
+                    expiry=datetime.fromisoformat(free_until)
+                    if expiry.tzinfo is None:
+                        expiry=expiry.replace(hour=23,minute=59,second=59,tzinfo=ZoneInfo('Europe/Warsaw'))
+                    point['promotion_active']=now<expiry
+                except ValueError:
+                    point['promotion_active']=False
+            else:
+                point['promotion_active']=False
         return points
 
 @app.get('/farmers/{farmer_id}/pickup-points')

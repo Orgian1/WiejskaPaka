@@ -8,6 +8,9 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
     def test_ad_slots_remain_inside_their_own_sections(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
         self.assertIn('target.append(host);',script)
+        self.assertIn("{id:'login',after:'#account-section',roles:['guest']}",script)
+        self.assertIn("{id:'seller',after:'#seller-listings-section',roles:['rolnik']}",script)
+        self.assertNotIn("{id:'login',after:'#auth'",script)
         self.assertNotIn('target.after(host);',script)
         self.assertIn("document.addEventListener('wiejskapaka:route-changed',refresh);",script)
         self.assertIn("document.dispatchEvent(new Event('wiejskapaka:route-changed'));",script)

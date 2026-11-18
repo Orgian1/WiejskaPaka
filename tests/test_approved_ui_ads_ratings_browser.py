@@ -1,12 +1,21 @@
 """Real Chromium smoke test for wallet ad timing and seller stars on approved UI."""
 import pytest
 from tests.test_full_local_demo_browser import full_demo_server
-from tests.test_address_delivery_browser import delivery_browser
+from playwright.sync_api import sync_playwright
 
 
-def test_customer_wallet_ad_and_catalog_stars(full_demo_server, delivery_browser):
+def test_customer_wallet_ad_and_catalog_stars(full_demo_server):
     url, accounts = full_demo_server
-    page = delivery_browser.new_page(viewport={"width": 1280, "height": 844})
+    with sync_playwright() as driver:
+        browser = driver.chromium.launch(headless=True, args=['--no-sandbox'])
+        try:
+            _check_browser(browser, url, accounts)
+        finally:
+            browser.close()
+
+
+def _check_browser(browser, url, accounts):
+    page = browser.new_page(viewport={"width": 1280, "height": 844})
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     try:

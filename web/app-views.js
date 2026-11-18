@@ -257,7 +257,7 @@ loadProducts=async function(...args){
  }
  for(const [sellerId,cards] of bySeller){
   void api('/sellers/'+sellerId+'/rating').then(rating=>{
-   if(generation!==sellerRatingRenderGeneration||currentEpoch!==sessionEpoch||!rating||!Number.isSafeInteger(rating.count)||rating.count<0)return;
+   if(generation!==sellerRatingRenderGeneration||currentEpoch!==sessionEpoch||!rating||rating.seller_id!==sellerId||!Number.isSafeInteger(rating.count)||rating.count<0)return;
    const average=rating.count>0?Number(rating.average):null;
    if(rating.count>0&&(!Number.isFinite(average)||average<1||average>5))return;
    for(const card of cards){

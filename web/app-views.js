@@ -201,7 +201,15 @@ loadOrders=async function(...args){
    if(currentEpoch!==sessionEpoch||!section.isConnected||submitted)return;
    if(existing&&Number.isInteger(existing.stars)&&existing.stars>=1&&existing.stars<=5){
     section.replaceChildren(node('p','Twoja ocena: '+'★'.repeat(existing.stars)+'☆'.repeat(5-existing.stars)));
-   }else submit.disabled=false;
+   }else if(existing&&existing.order_id===orderId&&existing.stars===null){
+    submit.disabled=false;
+   }else{
+    // An unexpected response is not proof that this order has no rating.
+    submit.disabled=true;
+    const notice=node('p','Nie udało się potwierdzić stanu oceny. Odśwież zamówienia.');
+    notice.setAttribute('role','status');
+    section.append(notice);
+   }
   }).catch(()=>{
    // Fail closed: a failed lookup must not offer a duplicate rating.
    if(currentEpoch!==sessionEpoch||!section.isConnected||submitted)return;

@@ -480,3 +480,96 @@ loadFarmer=async function(...args){
  if(identity)new MutationObserver(refresh).observe(identity,{childList:true,subtree:true,characterData:true});
  document.addEventListener('click',()=>queueMicrotask(refresh),true);
 })();
+
+
+// Admin editor for marketplace text campaigns. Kept separate from the
+// existing wallet interstitial editor and from the approved HTML layout.
+(function installMarketplaceAdAdmin(){
+ const dashboard=document.getElementById('dashboard');if(!dashboard)return;
+ const section=document.createElement('section');section.id='marketplace-ads-admin';
+ section.className='wide-section';section.hidden=true;
+ const heading=document.createElement('h2');heading.textContent='Reklamy w panelach i przy logowaniu';
+ const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Włączona kampania pojawi się tylko w wyznaczonym terminie. Reklamy portfela są zarządzane osobno.';
+ const form=document.createElement('form');form.className='card';
+ const fields=[
+  ['slot','Miejsce reklamy','select'],
+  ['title','Nagłówek','text'],
+  ['body','Treść','textarea'],
+  ['starts_at','Początek','datetime-local'],
+  ['ends_at','Koniec','datetime-local'],
+  ['enabled','Aktywna','checkbox']
+ ];
+ const controls={};
+ for(const [name,labelText,type] of fields){
+  const label=document.createElement('label');label.textContent=labelText+' ';
+  let input;
+  if(type==='select'){
+   input=document.createElement('select');
+   for(const [value,caption] of [['login','Logowanie'],['buyer','Klient'],['seller','Sprzedawca']]){
+    const option=document.createElement('option');option.value=value;option.textContent=caption;input.append(option);
+   }
+  }else input=document.createElement(type==='textarea'?'textarea':'input');
+  if(type!=='textarea'&&type!=='select')input.type=type;
+  input.name=name;if(type!=='checkbox')input.required=true;
+  if(name==='title')input.maxLength=100;
+  if(name==='body')input.maxLength=500;
+  label.append(input);form.append(label);controls[name]=input;
+ }
+ const save=document.createElement('button');save.type='submit';save.textContent='Zapisz kampanię';
+ const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Nowa kampania';
+ form.append(save,cancel);
+ const status=document.createElement('p');status.setAttribute('role','status');
+ const list=document.createElement('div');list.setAttribute('aria-label','Zapisane kampanie');
+ section.append(heading,intro,form,status,list);dashboard.after(section);
+ appViewGroups.dashboard.push(section.id);
+ let editing=null;
+ function reset(){editing=null;form.reset();save.textContent='Dodaj kampanię';}
+ cancel.addEventListener('click',reset);
+ const dateLocal=value=>{const d=new Date(value*1000);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
+ function payload(){
+  return {slot:controls.slot.value,title:controls.title.value.trim(),body:controls.body.value.trim(),
+   enabled:controls.enabled.checked,
+   starts_at:Math.floor(new Date(controls.starts_at.value).getTime()/1000),
+   ends_at:Math.floor(new Date(controls.ends_at.value).getTime()/1000)};
+ }
+ async function refresh(){
+  if(role!=='admin'){section.hidden=true;return;}
+  section.hidden=false;
+  try{
+   const data=await api('/admin/ads/slots');
+   if(role!=='admin')return;
+   list.replaceChildren();
+   for(const item of data.items){
+    const card=document.createElement('div');card.className='card';
+    const text=document.createElement('p');
+    text.textContent=(item.enabled?'Aktywna':'Wyłączona')+' · '+item.slot+' · '+item.title+' · '+new Date(item.starts_at*1000).toLocaleDateString('pl-PL')+' – '+new Date(item.ends_at*1000).toLocaleDateString('pl-PL');
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Edytuj';
+    edit.onclick=()=>{editing=item.id;controls.slot.value=item.slot;controls.title.value=item.title;controls.body.value=item.body;
+      controls.starts_at.value=dateLocal(item.starts_at);controls.ends_at.value=dateLocal(item.ends_at);
+      controls.enabled.checked=Boolean(item.enabled);save.textContent='Zapisz zmiany';form.scrollIntoView({block:'nearest'});};
+    const disable=document.createElement('button');disable.type='button';disable.textContent='Wyłącz';
+    disable.disabled=!item.enabled;
+    disable.onclick=()=>act(async()=>{disable.disabled=true;try{await api('/admin/ads/slots/'+encodeURIComponent(item.id),'DELETE');await refresh();}catch(e){status.textContent=String(e.message||e);disable.disabled=false;}});
+    card.append(text,edit,disable);list.append(card);
+   }
+  }catch(e){status.textContent='Nie udało się pobrać reklam: '+String(e.message||e);}
+ }
+ form.addEventListener('submit',event=>{
+  event.preventDefault();
+  act(async()=>{
+   const data=payload();
+   if(!Number.isSafeInteger(data.starts_at)||!Number.isSafeInteger(data.ends_at)||data.ends_at<=data.starts_at){
+    status.textContent='Wprowadź poprawny termin rozpoczęcia i zakończenia.';return;
+   }
+   save.disabled=true;
+   try{
+    await api(editing?'/admin/ads/slots/'+encodeURIComponent(editing):'/admin/ads/slots',editing?'PUT':'POST',data);
+    status.textContent='Kampania zapisana.';reset();await refresh();
+   }catch(e){status.textContent='Nie zapisano: '+String(e.message||e);}
+   finally{save.disabled=false;}
+  });
+ });
+ const previousLogged=logged;
+ logged=function(...args){const result=previousLogged.apply(this,args);if(role==='admin')act(refresh);else section.hidden=true;return result;};
+ if(role==='admin')act(refresh);
+})();

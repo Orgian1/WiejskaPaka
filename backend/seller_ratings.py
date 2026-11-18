@@ -39,10 +39,13 @@ def rate_completed_order(con, buyer_id: int, order_id: int, stars: int):
         raise HTTPException(409, "Możesz ocenić sprzedawcę dopiero po zakończeniu zamówienia")
     if con.execute("SELECT 1 FROM seller_ratings WHERE order_id=?", (order_id,)).fetchone():
         raise HTTPException(409, "To zamówienie zostało już ocenione")
-    con.execute(
-        "INSERT INTO seller_ratings(order_id,buyer_id,seller_id,stars) VALUES(?,?,?,?)",
+    inserted = con.execute(
+        "INSERT INTO seller_ratings(order_id,buyer_id,seller_id,stars) VALUES(?,?,?,?) "
+        "ON CONFLICT(order_id) DO NOTHING",
         (order_id,buyer_id,order["farmer_id"],stars),
     )
+    if inserted.rowcount != 1:
+        raise HTTPException(409, "To zamówienie zostało już ocenione")
     return {"order_id": order_id, "seller_id": order["farmer_id"], "stars": stars}
 
 

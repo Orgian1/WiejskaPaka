@@ -550,7 +550,9 @@ loadFarmer=async function(...args){
   try{
    const data=await api('/admin/ads/slots');
    if(role!=='admin')return;
+   if(!data||!Array.isArray(data.items))throw new Error('Niepoprawna odpowiedź serwera');
    list.replaceChildren();
+   if(!data.items.length){const empty=document.createElement('p');empty.textContent='Brak kampanii. Dodaj pierwszą reklamę.';list.append(empty);}
    for(const item of data.items){
     const card=document.createElement('div');card.className='card';
     const text=document.createElement('p');

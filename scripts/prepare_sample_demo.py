@@ -135,6 +135,23 @@ def prepare(directory, *, full_demo=False):
                              'https://example.invalid/demo', image,
                              now-3600, now+86400, 1, 0, audience),
                         )
+            if full_demo:
+                # Verify both ads are eligible, role-separated and five seconds,
+                # without consuming the first real wallet impression in the demo.
+                from backend.wallet_ads import claim_ad
+                with db() as con:
+                    con.execute('SAVEPOINT verify_demo_ads')
+                    try:
+                        for actor_role in ('klient', 'rolnik'):
+                            claimed = claim_ad(con, users[actor_role],
+                                               'demo-verify-'+secrets.token_hex(12), actor_role)
+                            ad = claimed.get('ad')
+                            if (not ad or ad['id'] != 'local-demo-'+actor_role
+                                    or ad['duration_seconds'] != 5):
+                                raise ValueError('Nieprawidłowe reklamy demonstracyjne')
+                    finally:
+                        con.execute('ROLLBACK TO SAVEPOINT verify_demo_ads')
+                        con.execute('RELEASE SAVEPOINT verify_demo_ads')
             with db() as con:
                 audit = audit_payment_integrity(con)
                 if not audit['ok'] or audit['checked_payments'] != 4:

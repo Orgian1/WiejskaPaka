@@ -308,3 +308,16 @@ document.addEventListener('click',event=>{
  add.click();
  msg('Kwota poniżej 5,00 zł — produkt dodajemy do koszyka. Możesz dołożyć kolejne produkty.');
 },true);
+
+
+// Badge represents the total number of product units, not distinct cart lines.
+// Keep the server-side navigation-count endpoint in sync with this calculation.
+const loadCartBeforeUnitBadge=loadCart;
+loadCart=async function(...args){
+ const result=await loadCartBeforeUnitBadge.apply(this,args);
+ if(role==='klient'&&Array.isArray(cartQuoteItems)){
+  const count=cartQuoteItems.reduce((total,item)=>total+item.quantity,0);
+  if(Number.isSafeInteger(count)&&count>=0)setNavigationCount('cart-count',count,'Sztuki produktów w koszyku');
+ }
+ return result;
+};

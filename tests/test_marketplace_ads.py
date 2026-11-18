@@ -33,7 +33,7 @@ class MarketplaceAdsTests(unittest.TestCase):
 
     def test_invalid_content_and_date_rejected(self):
         for title,body,start,end in [('  ','Treść',100,200),('Tytuł','  ',100,200),
-                                      ('A\\x00B','Treść',100,200),('Tytuł','Treść',200,100)]:
+                                      ('A'+chr(0)+'B','Treść',100,200),('Tytuł','Treść',200,100)]:
             payload=CampaignIn(slot='login',title=title,body=body,starts_at=start,ends_at=end)
             with self.assertRaises(HTTPException):validate(payload)
 

@@ -50,6 +50,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_seller_rating_frontend_contract.py -v
       - name: Check cart navigation and total quantity badge
         run: python -m unittest discover -s tests -p test_cart_navigation_unit_badge.py -v
+      - name: Check readable shipment numbers and PIN prefix
+        run: python -m unittest discover -s tests -p test_shipment_display.py -v
       - name: Check PostgreSQL seller-rating RLS contract
         run: python -m unittest discover -s tests -p test_seller_rating_rls_contract.py -v
       - name: Test read-only PostgreSQL RLS preflight

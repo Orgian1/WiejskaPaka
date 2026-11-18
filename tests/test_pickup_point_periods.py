@@ -11,6 +11,12 @@ class PickupPointPeriodTests(unittest.TestCase):
         self.assertEqual(quote()['price_grosze'],1000)
         self.assertFalse(quote()['wallet_charge_available'])
 
+    def test_daylight_saving_does_not_shorten_or_extend_paid_window(self):
+        from datetime import timezone
+        start=datetime(2027,3,20,12,0,tzinfo=ZoneInfo('Europe/Warsaw'))
+        end=period_end(start)
+        self.assertEqual(end.astimezone(timezone.utc)-start.astimezone(timezone.utc),timedelta(days=30))
+
     def test_promotion_does_not_create_wallet_charge(self):
         con=sqlite3.connect(':memory:');con.row_factory=sqlite3.Row
         con.executescript('CREATE TABLE users(id INTEGER PRIMARY KEY);CREATE TABLE pickup_points(id INTEGER PRIMARY KEY);')

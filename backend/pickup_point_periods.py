@@ -44,3 +44,10 @@ def active_period(con, point_id, *, now=None):
 def quote():
     return {'price_grosze':POINT_MONTHLY_PRICE_GROSZE,'period_days':30,
             'wallet_charge_available':False}
+
+
+def point_status(con, point_id, *, now=None):
+    """Single read-only source of truth for the point's paid/free access window."""
+    period=active_period(con,point_id,now=now)
+    return {'point_id':point_id,'entitled':period is not None,
+            'period':period,'renewal':quote()}

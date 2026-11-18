@@ -21,6 +21,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
                    "seller_ratings.buyer_id = current_setting('wiejskapaka.actor_id') "
                    "AND seller_ratings.order_id > 0 AND seller_ratings.seller_id > 0 AND status = 'odebrane'"),
         ]
+        self.policies[0]["qual"] = "true"
         self.role = {"rolsuper": False, "rolbypassrls": False}
         table_cursor = Mock()
         table_cursor.fetchone.return_value = self.row
@@ -69,6 +70,11 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
     def test_missing_actor_binding_fails_closed(self):
         self.policies[1]["with_check"] = "seller_ratings.buyer_id > 0 AND status = 'odebrane'"
         with self.assertRaisesRegex(RuntimeError, "actor_id"):
+            check(self.connection)
+
+    def test_restrictive_read_policy_fails_closed(self):
+        self.policies[0]["qual"] = "buyer_id = 1"
+        with self.assertRaisesRegex(RuntimeError, "podsumowania"):
             check(self.connection)
 
     def test_extra_policy_fails_closed(self):

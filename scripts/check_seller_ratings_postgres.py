@@ -53,6 +53,11 @@ def check(connection):
     for required in ("wiejskapaka.actor_id", "buyer_id", "order_id", "seller_id", "odebrane"):
         if not re.search(r"(?<![a-z_])" + re.escape(required) + r"(?![a-z_])", condition, re.I):
             raise RuntimeError("Polityka INSERT nie sprawdza: " + required)
+    # Checking mere identifier presence is insufficient: an unsafe policy
+    # could mention all columns without tying them to the order.
+    for required in ("EXISTS", "FROM orders", "farmer_id", "o.status"):
+        if required.lower() not in condition.lower():
+            raise RuntimeError("Polityka INSERT nie weryfikuje zamówienia: " + required)
     print("OK: uprawnienia i polityki ocen RLS sprawdzone dla roli aplikacji (bez zapisu).")
 
 

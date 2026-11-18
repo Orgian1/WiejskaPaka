@@ -31,6 +31,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
         role_cursor.fetchone.return_value = self.role
         policies_cursor = Mock()
         policies_cursor.fetchall.return_value = self.policies
+        self.table_cursor = table_cursor
         self.connection.execute.side_effect = [table_cursor, role_cursor, policies_cursor]
 
     def test_valid_configuration_is_read_only(self):
@@ -40,7 +41,7 @@ class SellerRatingPostgresPreflightTests(unittest.TestCase):
             self.assertTrue(call.args[0].lstrip().upper().startswith("SELECT "))
 
     def test_missing_table_fails_closed(self):
-        self.connection.execute.side_effect[0].fetchone.return_value = None
+        self.table_cursor.fetchone.return_value = None
         with self.assertRaisesRegex(RuntimeError, "nie istnieje"):
             check(self.connection)
 

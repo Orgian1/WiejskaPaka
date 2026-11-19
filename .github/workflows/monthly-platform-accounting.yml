@@ -5,6 +5,7 @@ on:
     paths:
       - 'backend/monthly_platform_fees.py'
       - 'backend/platform_fee_ledger.py'
+      - 'backend/export_platform_fee_csv.py'
       - 'backend/monthly_fee_simulation_adapter.py'
       - 'tests/test_monthly_platform_fees.py'
       - 'tests/test_platform_fee_ledger.py'
@@ -14,7 +15,10 @@ on:
     paths:
       - 'backend/monthly_platform_fees.py'
       - 'backend/platform_fee_ledger.py'
+      - 'backend/export_platform_fee_csv.py'
+      - 'backend/monthly_fee_simulation_adapter.py'
       - 'tests/test_monthly_platform_fees.py'
+      - 'tests/test_monthly_fee_simulation_adapter.py'
       - 'tests/test_platform_fee_ledger.py'
       - '.github/workflows/monthly-platform-accounting.yml'
   workflow_dispatch:

@@ -34,9 +34,10 @@ class GatewayMigrationContract(unittest.TestCase):
         self.assertIn("REVOKE ALL ON SCHEMA wp_rls FROM PUBLIC", sql)
         self.assertIn("REVOKE ALL ON SCHEMA wp_rls_keys FROM PUBLIC", sql)
 
-    def test_no_automatic_migration_in_test(self):
-        self.assertNotIn('subprocess', Path(__file__).read_text(encoding='utf-8'))
-        self.assertNotIn('psycopg.connect', Path(__file__).read_text(encoding='utf-8'))
+    def test_no_automatic_migration_in_application_startup(self):
+        app = (ROOT / 'backend/app.py').read_text(encoding='utf-8')
+        self.assertNotIn('security_rls/001_gateway.up.sql', app)
+        self.assertNotIn('wp_rls.api_compatibility_verified', app)
 
 
 if __name__ == '__main__':

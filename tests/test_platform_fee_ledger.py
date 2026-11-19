@@ -5,7 +5,7 @@ from backend.platform_fee_ledger import (
     add_platform_fee_entry, initialize_platform_fee_ledger, monthly_platform_fee_entries,
     monthly_platform_fee_draft,
 )
-from backend.monthly_platform_fees import monthly_fee_audit
+from backend.monthly_platform_fees import monthly_fee_audit, invoice_export_guard
 
 
 class PlatformFeeLedgerTests(unittest.TestCase):
@@ -131,6 +131,12 @@ class PlatformFeeLedgerTests(unittest.TestCase):
                      dict(source_id="  "), dict(kind="delivery")):
             with self.assertRaises(ValueError):
                 self.add(**data)
+
+    def test_monthly_ledger_draft_cannot_be_exported_as_invoice(self):
+        self.add()
+        draft = monthly_platform_fee_draft(self.con, 2026, 11)
+        with self.assertRaises((ValueError, NotImplementedError)):
+            invoice_export_guard(draft)
 
     def test_monthly_draft_separates_sellers_and_fee_kinds(self):
         self.add()

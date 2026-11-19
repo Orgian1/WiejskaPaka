@@ -2,7 +2,7 @@
 
 Never use this adapter for tax invoices, PSP reconciliation or production money.
 """
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 
 def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
@@ -12,8 +12,10 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
     """
     if type(year) is not int or type(month) is not int:
         raise ValueError("Invalid reporting period")
-    from datetime import date
-    date(year, month, 1)
+    start = date(year, month, 1)
+    end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    start_epoch = int(datetime(start.year, start.month, start.day, tzinfo=timezone.utc).timestamp())
+    end_epoch = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp())
     rows = con.execute("""
         SELECT r.id AS resolution_id, r.user_id AS seller_id,
                r.created_at AS resolved_at, r.withdrawal_id AS withdrawal_id,
@@ -25,8 +27,9 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         LEFT JOIN wallet_preview_terms t ON t.withdrawal_id = r.withdrawal_id
         LEFT JOIN wallet_preview_entries e ON e.id = r.withdrawal_id
         WHERE r.state = 'completed_test'
+          AND r.created_at >= ? AND r.created_at < ?
         ORDER BY r.created_at, r.id
-    """).fetchall()
+    """, (start_epoch, end_epoch)).fetchall()
     result = []
     seen_resolutions = set()
     seen_withdrawals = set()

@@ -31,7 +31,7 @@ class CampaignIn(BaseModel):
 
 def validate(payload):
     if (not payload.title.strip() or not payload.body.strip()
-            or any(ord(char)<32 and char not in '\\n\\t' for char in payload.title+payload.body)
+            or any(ord(char)<32 and char not in (chr(10), chr(9)) for char in payload.title+payload.body)
             or payload.ends_at<=payload.starts_at):
         raise HTTPException(422,'Nieprawidłowa treść lub okres kampanii')
 

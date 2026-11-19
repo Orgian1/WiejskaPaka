@@ -37,6 +37,8 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         amount = row["amount_grosze"]
         if type(amount) is not int or amount < 0:
             raise ValueError("Invalid simulated withdrawal fee")
+        if amount == 0:
+            continue
         result.append({
             "seller_id": row["seller_id"],
             "posted_on": posted_on.isoformat(),

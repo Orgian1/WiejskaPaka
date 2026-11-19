@@ -5,6 +5,12 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_maximum_year_december_reports_invalid_period(self):
+        con = sqlite3.connect(":memory:")
+        with self.assertRaisesRegex(ValueError, "Invalid reporting period"):
+            simulated_withdrawal_fee_entries(con, 9999, 12)
+        con.close()
+
     def test_simulated_report_cannot_pass_invoice_export_guard(self):
         from backend.monthly_platform_fees import invoice_export_guard
         con = sqlite3.connect(":memory:")

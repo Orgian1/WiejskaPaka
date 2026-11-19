@@ -5,6 +5,28 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_utc_month_boundary_uses_completion_timestamp(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal');
+            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,100);
+        """)
+        from datetime import datetime, timezone
+        timestamp = int(datetime(2026, 12, 1, 0, 0, tzinfo=timezone.utc).timestamp())
+        con.execute("INSERT INTO wallet_preview_resolutions VALUES (?,?,?,?,?)",
+                    ("r1", "w1", 3, timestamp, "completed_test"))
+        self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11), [])
+        december = simulated_withdrawal_fee_entries(con, 2026, 12)
+        self.assertEqual(len(december), 1)
+        self.assertEqual(december[0]["posted_on"], "2026-12-01")
+        con.close()
+
     def test_only_completed_seller_withdrawals_are_included(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

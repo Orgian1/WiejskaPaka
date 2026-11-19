@@ -47,6 +47,15 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_multiple_refunds_cannot_exceed_original_fee(self):
+        self.add()
+        self.add(source_id="refund:1", amount_grosze=-700, correction_of="pickup:1")
+        with self.assertRaisesRegex(ValueError, "exceed original"):
+            self.add(source_id="refund:2", amount_grosze=-400, correction_of="pickup:1")
+        self.add(source_id="refund:3", amount_grosze=-300, correction_of="pickup:1")
+        report = monthly_fee_audit(monthly_platform_fee_entries(self.con, 2026, 11), 2026, 11)
+        self.assertEqual(report["totals"]["PLN"]["amount_grosze"], 0)
+
     def test_negative_without_correction_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "Negative fees"):
             self.add(amount_grosze=-100)

@@ -17,12 +17,19 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
     Rows for other months are ignored. Does not aggregate sales proceeds,
     wallet top-ups, or third-party delivery charges.
     """
-    if type(year) is not int or type(month) is not int:\n        raise ValueError("Year and month must be integers")\n    date(year, month, 1)
+    if type(year) is not int or type(month) is not int:
+        raise ValueError("Year and month must be integers")
+    date(year, month, 1)
     totals = defaultdict(lambda: {"amount_grosze": 0, "transactions": 0})
     seen_sources = set()
     allowed = {"pickup_point", "seller_withdrawal_fee", "advertising"}
     for entry in entries:
-        posted_value = entry["posted_on"]\n        if type(posted_value) is not str or len(posted_value) != 10:\n            raise ValueError("Invalid posting date")\n        posted = date.fromisoformat(posted_value)\n        if posted.isoformat() != posted_value:\n            raise ValueError("Posting date must be ISO YYYY-MM-DD")
+        posted_value = entry["posted_on"]
+        if type(posted_value) is not str or len(posted_value) != 10:
+            raise ValueError("Invalid posting date")
+        posted = date.fromisoformat(posted_value)
+        if posted.isoformat() != posted_value:
+            raise ValueError("Posting date must be ISO YYYY-MM-DD")
         amount = entry["amount_grosze"]
         seller_id = entry["seller_id"]
         kind = entry["kind"]
@@ -65,7 +72,8 @@ def monthly_fee_csv(entries: Iterable[Mapping], year: int, month: int) -> str:
     from io import StringIO
 
     buffer = StringIO(newline="")
-    writer = csv.writer(buffer, lineterminator="\n")
+    writer = csv.writer(buffer, lineterminator="
+")
     writer.writerow(("year", "month", "seller_id", "currency", "fee_type",
                      "transactions", "amount_grosze"))
     for item in monthly_fee_summary(entries, year, month):

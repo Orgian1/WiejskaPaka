@@ -31,6 +31,15 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
     seen_resolutions = set()
     seen_withdrawals = set()
     for row in rows:
+        stamp = row["resolved_at"]
+        if type(stamp) is not int or stamp < 0:
+            raise ValueError("Invalid simulation timestamp")
+        try:
+            posted_on = datetime.fromtimestamp(stamp, tz=timezone.utc).date()
+        except (OverflowError, OSError, ValueError) as exc:
+            raise ValueError("Invalid simulation timestamp") from exc
+        if (posted_on.year, posted_on.month) != (year, month):
+            continue
         resolution_id = row["resolution_id"]
         if type(resolution_id) is not str or not resolution_id.strip():
             raise ValueError("Missing simulated resolution ID")
@@ -43,15 +52,6 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         if withdrawal_id in seen_withdrawals:
             raise ValueError("Duplicate simulated withdrawal ID")
         seen_withdrawals.add(withdrawal_id)
-        stamp = row["resolved_at"]
-        if type(stamp) is not int or stamp < 0:
-            raise ValueError("Invalid simulation timestamp")
-        try:
-            posted_on = datetime.fromtimestamp(stamp, tz=timezone.utc).date()
-        except (OverflowError, OSError, ValueError) as exc:
-            raise ValueError("Invalid simulation timestamp") from exc
-        if (posted_on.year, posted_on.month) != (year, month):
-            continue
         if type(row["seller_id"]) is not int or row["seller_id"] < 1:
             raise ValueError("Invalid simulated withdrawal owner")
         if row["owner_role"] is None or row["entry_kind"] is None:

@@ -16,6 +16,25 @@ except ImportError:
 @unittest.skipUnless(psycopg is not None and pgserver is not None,
                      'Optional disposable PostgreSQL dependencies unavailable')
 class LivePostgresRlsIsolation(unittest.TestCase):
+    def test_gateway_migration_refuses_unapproved_activation(self):
+        import tempfile
+        from pathlib import Path
+        from tests.local_postgres import LocalPostgres
+
+        sql = (Path(__file__).resolve().parents[1] /
+               'database/security_rls/001_gateway.up.sql').read_text(encoding='utf-8')
+        with tempfile.TemporaryDirectory(prefix='wp-rls-activation-') as folder:
+            server = LocalPostgres(Path(folder) / 'cluster')
+            try:
+                with psycopg.connect(server.get_uri(), autocommit=True) as admin:
+                    with self.assertRaises(psycopg.Error) as failure:
+                        admin.execute(sql)
+                    self.assertIn('API compatibility approval required', str(failure.exception))
+                    self.assertIsNone(admin.execute(
+                        "SELECT to_regnamespace('wp_rls')").fetchone()[0])
+            finally:
+                server.cleanup()
+
     def test_two_accounts_cannot_read_or_modify_each_others_orders(self):
         import tempfile
         from pathlib import Path

@@ -5,6 +5,25 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_customer_withdrawal_invalid_owner_id_is_rejected(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',0);
+            INSERT INTO wallet_preview_terms VALUES ('w1','klient',0,0,2000,2000);
+            INSERT INTO wallet_preview_resolutions VALUES
+              ('r1','w1',0,1793577600,'completed_test');
+        """)
+        with self.assertRaisesRegex(ValueError, "Invalid simulated withdrawal owner"):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+        con.close()
+
     def test_seller_fee_rounds_half_grosz_up(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row
@@ -23,7 +42,7 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11)[0]["amount_grosze"], 1)
         con.close()
 
-    def test_boolean_seller_fee_is_rejected(self):
+    def test_exact_one_grosz_seller_fee(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row
         con.executescript("""

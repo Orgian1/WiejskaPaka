@@ -132,6 +132,12 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_invalid_report_periods_fail_closed(self):
+        for year, month in ((2026, 0), (2026, 13), (9999, 12), (True, 11), (2026, False)):
+            with self.subTest(year=year, month=month):
+                with self.assertRaises(ValueError):
+                    monthly_platform_fee_entries(self.con, year, month)
+
     def test_december_and_january_reports_do_not_overlap(self):
         self.add(posted_on="2026-12-31")
         self.add(source_id="pickup:jan", posted_on="2027-01-01", amount_grosze=2500)

@@ -75,10 +75,10 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         amount = row["amount_grosze"]
         if type(gross) is not int or type(net) is not int or gross < 1 or net < 0:
             raise ValueError("Invalid simulated withdrawal terms")
-        if (gross * 500 + 5000) // 10000 != amount or net + amount != gross:
-            raise ValueError("Simulated withdrawal fee mismatch")
         if type(amount) is not int or amount < 0:
             raise ValueError("Invalid simulated withdrawal fee")
+        if (gross * 500 + 5000) // 10000 != amount or net + amount != gross:
+            raise ValueError("Simulated withdrawal fee mismatch")
         if amount == 0:
             continue
         result.append({

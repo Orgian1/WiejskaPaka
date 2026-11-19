@@ -148,6 +148,21 @@ class PlatformFeeLedgerTests(unittest.TestCase):
         self.assertEqual(november[0]["month"], "11")
         self.assertEqual(december[0]["month"], "12")
 
+    def test_malformed_fee_kind_is_rejected_with_value_error(self):
+        from backend.monthly_platform_fees import monthly_fee_summary
+
+        for invalid_kind in ([], {}, 12, None, True):
+            with self.subTest(kind=invalid_kind):
+                with self.assertRaises(ValueError):
+                    self.add(kind=invalid_kind)
+                with self.assertRaises(ValueError):
+                    monthly_fee_summary([{
+                        "seller_id": 7, "posted_on": "2026-11-19",
+                        "kind": invalid_kind, "amount_grosze": 1000,
+                        "currency": "PLN", "source_id": "invalid:kind",
+                    }], 2026, 11)
+        self.assertEqual(monthly_platform_fee_entries(self.con, 2026, 11), [])
+
     def test_read_only_export_from_existing_database(self):
         import tempfile
         from pathlib import Path

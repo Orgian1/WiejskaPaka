@@ -131,6 +131,17 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_refund_in_later_month_is_reported_in_refund_month(self):
+        self.add(posted_on="2026-11-30")
+        self.add(source_id="refund:december", posted_on="2026-12-01",
+                 amount_grosze=-1000, correction_of="pickup:1")
+        november = monthly_fee_audit(monthly_platform_fee_entries(self.con, 2026, 11), 2026, 11)
+        december = monthly_fee_audit(monthly_platform_fee_entries(self.con, 2026, 12), 2026, 12)
+        self.assertEqual(november["totals"]["PLN"]["amount_grosze"], 1000)
+        self.assertEqual(december["totals"]["PLN"]["amount_grosze"], -1000)
+        self.assertEqual(november["source_count"], 1)
+        self.assertEqual(december["source_count"], 1)
+
     def test_initialization_is_idempotent_and_keeps_existing_fees(self):
         self.add()
         initialize_platform_fee_ledger(self.con)

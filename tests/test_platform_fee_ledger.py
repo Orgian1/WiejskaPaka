@@ -132,6 +132,15 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_same_source_id_cannot_be_reused_for_different_seller_or_amount(self):
+        self.add()
+        for overrides in (dict(seller_id=8), dict(amount_grosze=5000),
+                          dict(kind="advertising")):
+            with self.subTest(overrides=overrides):
+                with self.assertRaises(sqlite3.IntegrityError):
+                    self.add(**overrides)
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+
     def test_source_id_is_unique_across_reporting_months(self):
         self.add(posted_on="2026-11-30")
         with self.assertRaises(sqlite3.IntegrityError):

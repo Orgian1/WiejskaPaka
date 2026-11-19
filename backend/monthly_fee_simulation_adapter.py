@@ -38,9 +38,12 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
             raise ValueError("Duplicate simulated resolution ID")
         seen_resolutions.add(resolution_id)
         stamp = row["resolved_at"]
-        if type(stamp) is not int:
+        if type(stamp) is not int or stamp < 0:
             raise ValueError("Invalid simulation timestamp")
-        posted_on = datetime.fromtimestamp(stamp, tz=timezone.utc).date()
+        try:
+            posted_on = datetime.fromtimestamp(stamp, tz=timezone.utc).date()
+        except (OverflowError, OSError, ValueError) as exc:
+            raise ValueError("Invalid simulation timestamp") from exc
         if (posted_on.year, posted_on.month) != (year, month):
             continue
         if type(row["seller_id"]) is not int or row["seller_id"] < 1:

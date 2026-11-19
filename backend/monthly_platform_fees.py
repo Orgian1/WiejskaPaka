@@ -72,8 +72,7 @@ def monthly_fee_csv(entries: Iterable[Mapping], year: int, month: int) -> str:
     from io import StringIO
 
     buffer = StringIO(newline="")
-    writer = csv.writer(buffer, lineterminator="
-")
+    writer = csv.writer(buffer, lineterminator=chr(10))
     writer.writerow(("year", "month", "seller_id", "currency", "fee_type",
                      "transactions", "amount_grosze"))
     for item in monthly_fee_summary(entries, year, month):

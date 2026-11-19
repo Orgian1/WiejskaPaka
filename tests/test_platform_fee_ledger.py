@@ -47,6 +47,21 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_direct_sql_correction_cannot_cross_seller_or_fee_kind(self):
+        self.add()
+        for source, seller, kind in (
+            ("refund:wrong-seller", 8, "pickup_point"),
+            ("refund:wrong-kind", 7, "advertising"),
+        ):
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(sqlite3.IntegrityError, "match original"):
+                    self.con.execute("""
+                        INSERT INTO platform_fee_ledger
+                            (source_id, seller_id, posted_on, kind, amount_grosze, correction_of)
+                        VALUES (?, ?, '2026-11-19', ?, -100, 'pickup:1')
+                    """, (source, seller, kind))
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+
     def test_direct_sql_cannot_bypass_refund_limit(self):
         self.add()
         self.add(source_id="refund:1", amount_grosze=-700, correction_of="pickup:1")

@@ -22,7 +22,8 @@ class LivePostgresRlsIsolation(unittest.TestCase):
         from tests.local_postgres import LocalPostgres
 
         with tempfile.TemporaryDirectory(prefix='wp-rls-native-') as folder:
-            with LocalPostgres(Path(folder) / 'cluster') as server:
+            server = LocalPostgres(Path(folder) / 'cluster')
+            try:
                 with psycopg.connect(server.get_uri(), autocommit=True) as admin:
                     admin.execute('CREATE ROLE wp_test_buyer LOGIN NOSUPERUSER NOBYPASSRLS')
                     admin.execute('CREATE TABLE wp_test_orders (id integer PRIMARY KEY, buyer_id integer NOT NULL, amount integer NOT NULL)')
@@ -46,6 +47,9 @@ class LivePostgresRlsIsolation(unittest.TestCase):
                     self.assertEqual(buyer.execute('SELECT id FROM wp_test_orders').fetchall(), [(2,)])
                 with psycopg.connect(server.get_uri(), autocommit=True) as admin:
                     self.assertEqual(admin.execute('SELECT amount FROM wp_test_orders WHERE id=2').fetchone()[0], 200)
+
+            finally:
+                server.cleanup()
 
 
 if __name__ == '__main__':

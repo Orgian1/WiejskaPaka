@@ -23,8 +23,10 @@ class LivePostgresRlsIsolation(unittest.TestCase):
 
         sql = (Path(__file__).resolve().parents[1] /
                'database/security_rls/001_gateway.up.sql').read_text(encoding='utf-8')
-        schema = (Path(__file__).resolve().parents[1] /
-                  'database/postgres_schema.sql').read_text(encoding='utf-8')
+        from database.verify_test_migrations import verify
+        database_dir = Path(__file__).resolve().parents[1] / 'database'
+        migrations = verify(database_dir)
+        self.assertTrue(migrations['ok'])
         with tempfile.TemporaryDirectory(prefix='wp-rls-migration-') as folder:
             server = LocalPostgres(Path(folder) / 'cluster')
             try:
@@ -32,7 +34,8 @@ class LivePostgresRlsIsolation(unittest.TestCase):
                     admin.execute('CREATE DATABASE wp_test_migration')
                 uri = server.get_uri().replace('/postgres', '/wp_test_migration')
                 with psycopg.connect(uri, autocommit=True) as admin:
-                    admin.execute(schema)
+                    for migration in migrations['files']:
+                        admin.execute((database_dir / migration['file']).read_text(encoding='utf-8'))
                     admin.execute("SET wp_rls.disposable_test = 'yes'")
                     admin.execute(sql)
                     self.assertIsNotNone(admin.execute(
@@ -61,6 +64,7 @@ class LivePostgresRlsIsolation(unittest.TestCase):
                     with self.assertRaises(psycopg.Error) as failure:
                         admin.execute(sql)
                     self.assertIn('API compatibility approval required', str(failure.exception))
+                    admin.execute('ROLLBACK')
                     self.assertIsNone(admin.execute(
                         "SELECT to_regnamespace('wp_rls')").fetchone()[0])
             finally:

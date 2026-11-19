@@ -101,7 +101,11 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
             "fee_basis_points": 500,
         }
         con = Mock()
-        con.execute.return_value.fetchall.return_value = [row]
+        invalid_timestamp_query = Mock()
+        invalid_timestamp_query.fetchone.return_value = None
+        monthly_rows_query = Mock()
+        monthly_rows_query.fetchall.return_value = [row]
+        con.execute.side_effect = [invalid_timestamp_query, monthly_rows_query]
         with self.assertRaisesRegex(ValueError, "Invalid simulated withdrawal fee"):
             simulated_withdrawal_fee_entries(con, 2026, 11)
 

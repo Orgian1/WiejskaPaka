@@ -7,6 +7,7 @@ import secrets
 import sqlite3
 from contextlib import contextmanager, asynccontextmanager
 from backend.pg_adapter import postgres_db, init_postgres, PgUniqueViolation
+from backend.rls_gateway import DatabaseContextMiddleware
 from backend.delivery_access import courier_may_see_address
 from backend.order_lifecycle import require_transition
 from backend.time_safety import is_future
@@ -163,6 +164,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 from backend.http_limits import RequestBodyLimitMiddleware
 app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+# Populate transaction-scoped actor context for the opt-in PostgreSQL RLS gateway.
+# SQLite demo behavior is unchanged; no migration or RLS activation occurs here.
+app.add_middleware(DatabaseContextMiddleware)
 
 @contextmanager
 def db():
@@ -790,6 +794,17 @@ def migrate_shipment_links():
 
 migrate_shipment_links()
 
+# New local installations and existing demo databases both receive the table.
+if not DATABASE_URL:
+    with db() as _public_refs_con:
+        _public_refs_con.execute("""CREATE TABLE IF NOT EXISTS shipment_public_refs (
+            shipment_id TEXT PRIMARY KEY REFERENCES shipment_groups(id),
+            farmer_id INTEGER NOT NULL REFERENCES users(id),
+            public_number TEXT NOT NULL,
+            UNIQUE(farmer_id, public_number)
+        )""")
+
+
 def migrate_checkout_idempotency():
     """SQLite-only migration; PostgreSQL uses the checked-in SQL migration."""
     if DATABASE_URL:
@@ -996,8 +1011,9 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                 raise HTTPException(422, 'Wybierz punkt odbioru bez adresu dostawy')
             point = con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=? AND active=1' + (' FOR UPDATE' if DATABASE_URL else ''),
                                 (payload.pickup_point_id,farmer_id)).fetchone()
-            if not point:
-                raise HTTPException(422, 'Punkt odbioru jest niedostępny')
+            from backend.pickup_point_periods import active_period
+            if not point or active_period(con,payload.pickup_point_id) is None:
+                raise HTTPException(422, 'Punkt odbioru jest niedostępny lub wygasł')
         else:
             if payload.pickup_point_id is not None or not all((payload.delivery_city,payload.delivery_street,payload.delivery_postal_code)):
                 raise HTTPException(422, 'Podaj pełny adres dostawy')
@@ -1067,7 +1083,18 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
         else:
             for r in lines:
                 con.execute('DELETE FROM saved_cart_items WHERE buyer_id=? AND product_id=?', (user['id'],r['product_id']))
-        response = {'orders':created,'shipment_id':shipment_id,'shipment_pin_test_only':shipment_pin,
+        from backend.shipment_display import display_shipment_number
+        display_number = display_shipment_number(
+            con, farmer_id, payload.pickup_point_id if payload.fulfillment == 'odbior' else None,
+            shipment_id, shipment_pin,
+        )
+        # Persist the public reference once. Repeated reads never re-number a shipment.
+        con.execute(
+            'INSERT INTO shipment_public_refs(shipment_id,farmer_id,public_number) VALUES(?,?,?)',
+            (shipment_id, farmer_id, display_number),
+        )
+        response = {'orders':created,'shipment_id':shipment_id,
+                    'display_shipment_number':display_number,'shipment_pin_test_only':shipment_pin,
                     'total_grosze':grand_total,'payment_mode':'test',
                     'delivery_grosze':shared_delivery,
                     'reservation_expires_at':reservation_expires_at,
@@ -1188,14 +1215,23 @@ def my_orders(user=Depends(current_user), authorization: str | None = Header(def
                     raise HTTPException(403, 'Brak uprawnień')
                 rows = (buyer_orders(con, actor_id) if role == 'klient'
                         else farmer_orders(con, actor_id))
-                return [dict(row) for row in rows]
+                result = [dict(row) for row in rows]
+                for order in result:
+                    shipment_id = order.get('shipment_id')
+                    if shipment_id:
+                        ref_row = con.execute(
+                            'SELECT public_number FROM shipment_public_refs WHERE shipment_id=?',
+                            (shipment_id,),
+                        ).fetchone()
+                        order['display_shipment_number'] = ref_row['public_number'] if ref_row else None
+                return result
         except AuthenticationFailed:
             raise HTTPException(401, 'Sesja nieważna')
     with db() as con:
         if user['role']=='klient':
-            rows=con.execute('SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
+            rows=con.execute('SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,(SELECT public_number FROM shipment_public_refs WHERE shipment_id=(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id)) AS display_shipment_number,total_grosze,fulfillment,status,created_at,(SELECT expires_at FROM inventory_reservations WHERE order_id=orders.id) AS reservation_expires_at FROM orders WHERE buyer_id=? ORDER BY id DESC',(user['id'],))
         elif user['role']=='rolnik':
-            rows=con.execute('''SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,product_id,quantity,total_grosze,fulfillment,status,created_at,
+            rows=con.execute('''SELECT id,pickup_code,(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id) AS shipment_id,(SELECT public_number FROM shipment_public_refs WHERE shipment_id=(SELECT shipment_id FROM shipment_order_links WHERE order_id=orders.id)) AS display_shipment_number,product_id,quantity,total_grosze,fulfillment,status,created_at,
                 (SELECT name FROM products WHERE id=orders.product_id) AS product_name,
                 (SELECT pickup_point_id FROM order_locations WHERE order_id=orders.id) AS pickup_point_id,
                 (SELECT p.name FROM pickup_points p JOIN order_locations l ON l.pickup_point_id=p.id WHERE l.order_id=orders.id) AS pickup_point_name,
@@ -1658,14 +1694,47 @@ def my_pickup_points(user=Depends(current_user)):
     with db() as con:
         from backend.pickup_promotions import point_terms
         points=[pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        from backend.pickup_point_periods import point_status
+        from backend.pickup_point_pricing import POINT_MONTHLY_PRICE_GROSZE, POINT_BILLING_PERIOD_DAYS
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        now=datetime.now(ZoneInfo('Europe/Warsaw'))
         for point in points:
             point['promotion']=point_terms(con,point['id'])
+            point['entitlement']=point_status(con,point['id'])
+            point['renewal_price_grosze']=POINT_MONTHLY_PRICE_GROSZE
+            point['renewal_period_days']=POINT_BILLING_PERIOD_DAYS
+            free_until=(point['promotion'] or {}).get('free_until')
+            if free_until:
+                try:
+                    expiry=datetime.fromisoformat(free_until)
+                    if expiry.tzinfo is None:
+                        expiry=expiry.replace(hour=23,minute=59,second=59,tzinfo=ZoneInfo('Europe/Warsaw'))
+                    point['promotion_active']=now<expiry
+                except ValueError:
+                    point['promotion_active']=False
+            else:
+                point['promotion_active']=False
         return points
+
+@app.get('/farmers/me/pickup-points/{point_id}/renewal-quote')
+def pickup_point_renewal_quote(point_id:int,user=Depends(current_user)):
+    require(user,'rolnik')
+    with db() as con:
+        point=con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=?',(point_id,user['id'])).fetchone()
+        if point is None:
+            raise HTTPException(404,'Nie znaleziono punktu')
+        from backend.pickup_point_periods import point_status
+        return point_status(con,point_id)
+
 
 @app.get('/farmers/{farmer_id}/pickup-points')
 def list_pickup_points(farmer_id:int):
     with db() as con:
-        return [pickup_dates.enrich(con,r) for r in con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,))]
+        rows=con.execute('SELECT id,name,city,street,opening_hours FROM pickup_points WHERE farmer_id=? AND active=1 ORDER BY id',(farmer_id,)).fetchall()
+        from backend.pickup_point_periods import entitled_point_ids
+        eligible=entitled_point_ids(con,[r['id'] for r in rows])
+        return [pickup_dates.enrich(con,r) for r in rows if r['id'] in eligible]
 
 @app.get('/orders/{order_id}/location')
 def order_location(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):
@@ -3371,6 +3440,12 @@ if os.environ.get('WP_ENABLE_ORDER_MAIL_QUEUE')=='1':
 # Isolated persistent wallet preview: never a real payment authorization path.
 from backend.wallet_preview import install as install_wallet_preview
 install_wallet_preview(app,db,order_write_db,current_user,os.environ,DATABASE_URL)
+
+from backend.seller_ratings import install as install_seller_ratings
+install_seller_ratings(app, db, order_write_db, current_user, DATABASE_URL)
+
+from backend.marketplace_ads import install as install_marketplace_ads
+install_marketplace_ads(app, db, order_write_db, current_user, DATABASE_URL)
 
 from backend.wallet_ads import install as install_wallet_ads
 install_wallet_ads(app, db, order_write_db, current_user, DATABASE_URL)

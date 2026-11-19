@@ -70,6 +70,15 @@ def prepare(directory, *, full_demo=False):
                 'opening_hours': '7–10 i 16–20',
                 **({'attendance_dates':[day.isoformat()]} if full_demo else {}),
                 'latitude_e6': 51_210_000, 'longitude_e6': 16_160_000})['id']
+            # Only synthetic disposable demo data: a free 30-day fixture period.
+            # This is not a public promotion, paid renewal, or wallet transaction.
+            from backend.pickup_point_periods import now_warsaw, period_end
+            activation=now_warsaw()
+            with db() as con:
+                con.execute('''INSERT INTO pickup_point_periods
+                    (id,point_id,farmer_id,starts_at,ends_at,price_grosze,kind,wallet_entry_id)
+                    VALUES(?,?,?,?,?,0,'promotion',NULL)''',
+                    (secrets.token_hex(16),point,users['rolnik'],activation.isoformat(),period_end(activation).isoformat()))
             if full_demo:
                 request('PUT','/sellers/me/login',actor='rolnik',body={'login':'gospodarstwo_demo'})
                 window=request('POST','/address-delivery/windows',actor='rolnik',body={
@@ -107,6 +116,51 @@ def prepare(directory, *, full_demo=False):
                     request('POST', f'/shipments/{sid}/dispatch-test', actor='rolnik')
                 if receipt['delivery_grosze'] != (501 if fulfillment == 'dostawa' else 0):
                     raise ValueError('Nieprawidłowa opłata demonstracyjna')
+            if full_demo:
+                # Local-only fictitious campaigns, no external ad tracking or payments.
+                import base64
+                from io import BytesIO
+                from PIL import Image, ImageDraw
+                from datetime import timezone
+                from backend.wallet_ads import SCHEMA_SQLITE
+                now = int(datetime.now(timezone.utc).timestamp())
+                with db() as con:
+                    con.executescript(SCHEMA_SQLITE)
+                    for audience, title, background in (
+                        ('klient', 'DEMO - oferta dla klienta', (43, 108, 72)),
+                        ('rolnik', 'DEMO - oferta dla sprzedawcy', (43, 77, 118)),
+                    ):
+                        banner = Image.new('RGB', (720, 360), background)
+                        draw = ImageDraw.Draw(banner)
+                        draw.text((50, 155), title, fill='white')
+                        image_bytes = BytesIO()
+                        banner.save(image_bytes, format='JPEG', quality=82)
+                        image = 'data:image/jpeg;base64,' + base64.b64encode(image_bytes.getvalue()).decode('ascii')
+                        con.execute(
+                            """INSERT INTO wallet_ads
+                            (id,advertiser,url,image,starts_at,ends_at,enabled,sort_order,audience,deleted)
+                            VALUES(?,?,?,?,?,?,?,?,?,0)""",
+                            ('local-demo-'+audience, 'WiejskaPaka - demonstracja',
+                             'https://example.invalid/demo', image,
+                             now-3600, now+86400, 1, 0, audience),
+                        )
+            if full_demo:
+                # Verify both ads are eligible, role-separated and five seconds,
+                # without consuming the first real wallet impression in the demo.
+                from backend.wallet_ads import claim_ad
+                with db() as con:
+                    con.execute('SAVEPOINT verify_demo_ads')
+                    try:
+                        for actor_role in ('klient', 'rolnik'):
+                            claimed = claim_ad(con, users[actor_role],
+                                               'demo-verify-'+secrets.token_hex(12), actor_role)
+                            ad = claimed.get('ad')
+                            if (not ad or ad['id'] != 'local-demo-'+actor_role
+                                    or ad['duration_seconds'] != 5):
+                                raise ValueError('Nieprawidłowe reklamy demonstracyjne')
+                    finally:
+                        con.execute('ROLLBACK TO SAVEPOINT verify_demo_ads')
+                        con.execute('RELEASE SAVEPOINT verify_demo_ads')
             with db() as con:
                 audit = audit_payment_integrity(con)
                 if not audit['ok'] or audit['checked_payments'] != 4:

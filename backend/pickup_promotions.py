@@ -1,5 +1,5 @@
 """Three-point promotional entitlements, never a payment or automatic future charge."""
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 from fastapi import Depends, Header, HTTPException
@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS pickup_promo_grants (
 );
 CREATE TABLE IF NOT EXISTS pickup_promo_points (
  point_id INTEGER PRIMARY KEY REFERENCES pickup_points(id),
- grant_id TEXT NOT NULL REFERENCES pickup_promo_grants(id)
+ grant_id TEXT NOT NULL REFERENCES pickup_promo_grants(id),
+ free_until TEXT
 );
 CREATE INDEX IF NOT EXISTS pickup_promo_grants_user_idx ON pickup_promo_grants(user_id,expires_on);
 '''
@@ -84,20 +85,35 @@ def consume_for_point(con, user_id, point_id, *, postgres=False, today=None):
     changed=con.execute('UPDATE pickup_promo_grants SET remaining=remaining-1 WHERE id=? AND remaining>0',(row['id'],))
     if changed.rowcount!=1:
         raise HTTPException(409,'Uprawnienie promocyjne zmieniło się; odśwież punkty')
-    con.execute('INSERT INTO pickup_promo_points(point_id,grant_id) VALUES(?,?)',(point_id,row['id']))
-    return {'free_until':row['expires_on'],'charges_executed':False}
+    # Each point receives its own 30-day free period starting at activation.
+    start = datetime.now(ZoneInfo('Europe/Warsaw')) if today is None else datetime.combine(today, datetime.min.time(), tzinfo=ZoneInfo('Europe/Warsaw'))
+    from backend.pickup_point_periods import period_end
+    free_until = period_end(start).isoformat()
+    con.execute('INSERT INTO pickup_promo_points(point_id,grant_id,free_until) VALUES(?,?,?)',(point_id,row['id'],free_until))
+    # Record the free entitlement in the same transaction as the point.
+    from backend.pickup_point_periods import period_end
+    from uuid import uuid4 as new_id
+    con.execute('''INSERT INTO pickup_point_periods(id,point_id,farmer_id,starts_at,ends_at,price_grosze,kind,wallet_entry_id)
+        VALUES(?,?,?,?,?,0,'promotion',NULL)''',
+        (new_id().hex,point_id,user_id,start.isoformat(),period_end(start).isoformat()))
+    return {'free_until':free_until,'charges_executed':False}
 
 
 def point_terms(con, point_id):
-    row=con.execute('''SELECT g.expires_on FROM pickup_promo_points p
+    row=con.execute('''SELECT p.free_until,g.expires_on FROM pickup_promo_points p
         JOIN pickup_promo_grants g ON g.id=p.grant_id WHERE p.point_id=?''',(point_id,)).fetchone()
-    return {'free_until':row['expires_on']} if row else None
+    return {'free_until':row['free_until'] or row['expires_on']} if row else None
 
 
 def install(app, db, write_db, current_user, database_url):
     if not database_url:
         with db() as con:
             con.executescript(SCHEMA)
+            from backend.pickup_point_periods import SCHEMA as PERIOD_SCHEMA
+            con.executescript(PERIOD_SCHEMA)
+            columns=[r['name'] for r in con.execute('PRAGMA table_info(pickup_promo_points)')]
+            if 'free_until' not in columns:
+                con.execute('ALTER TABLE pickup_promo_points ADD COLUMN free_until TEXT')
 
     @app.get('/admin/pickup-promotions')
     def list_codes(user=Depends(current_user), authorization: str | None=Header(default=None)):

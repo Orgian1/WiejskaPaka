@@ -1,0 +1,103 @@
+name: Approved UI and wallet ads regression
+on:
+  push:
+    branches:
+      - 'feat/zatwierdzony-widok-gwiazdki-reklamy-rls-20261118'
+  pull_request:
+  workflow_dispatch:
+jobs:
+  preserve-approved-layout:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify owner-approved layout
+        run: python3 scripts/check_approved_ui.py
+  javascript-syntax:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check approved app and extension syntax
+        run: |
+          node --check web/app.js
+          node --check web/app-views.js
+          node --check web/wallet-ads.js
+          node --check web/same-package.js
+  wallet-ad-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-lock.txt
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Check marketplace campaign selection and validation
+        run: python -m unittest discover -s tests -p test_marketplace_ads.py -v
+      - name: Check advertisement route placement
+        run: python -m unittest discover -s tests -p test_marketplace_ad_routing.py -v
+      - name: Check role separation and 30-minute ad cap
+        run: python -m unittest discover -s tests -p test_wallet_ads_claim.py -v
+      - name: Check seller rating permissions and averages
+        run: python -m unittest discover -s tests -p test_seller_ratings.py -v
+      - name: Check seller rating frontend integration
+        run: python -m unittest discover -s tests -p test_seller_rating_frontend_contract.py -v
+      - name: Check cart navigation and total quantity badge
+        run: python -m unittest discover -s tests -p test_cart_navigation_unit_badge.py -v
+      - name: Check verified-only legacy migration
+        run: python -m unittest discover -s tests -p test_pickup_point_legacy_migration.py -v
+      - name: Audit legacy pickup points without changes
+        run: python -m unittest discover -s tests -p test_pickup_point_legacy_audit.py -v
+      - name: Check pickup point period ledger
+        run: python -m unittest discover -s tests -p test_pickup_point_periods.py -v
+      - name: Check 30-day promotional point expiry
+        run: python -m unittest discover -s tests -p test_pickup_promo_duration.py -v
+      - name: Check pickup map street toggle and demo billing
+        run: python -m unittest discover -s tests -p test_pickup_map_usability.py -v
+      - name: Check readable shipment numbers and PIN prefix
+        run: python -m unittest discover -s tests -p test_shipment_display.py -v
+      - name: Check PostgreSQL seller-rating RLS contract
+        run: python -m unittest discover -s tests -p test_seller_rating_rls_contract.py -v
+      - name: Test read-only PostgreSQL RLS preflight
+        run: python -m unittest discover -s tests -p test_seller_rating_postgres_preflight.py -v
+      - name: Verify RLS context and PostgreSQL gateway adapter
+        run: |
+          python -m unittest discover -s tests -p test_rls_gateway_context.py -v
+          python -m unittest discover -s tests -p test_postgres_runtime_role.py -v
+          python -m unittest discover -s tests -p test_pg_adapter_rls_gateway.py -v
+          python -m unittest discover -s tests -p test_rls_gateway_migration_contract.py -v
+          python -m unittest discover -s tests -p test_postgres_gateway_connection.py -v
+          python -m unittest discover -s tests -p test_local_postgres_fixture_contract.py -v
+          python -m unittest discover -s tests -p test_rls_gateway_app_integration.py -v
+      - name: Smoke-test disposable full demo and targeted ads
+        run: python -m unittest discover -s tests -p test_full_demo_seed.py -v
+      - name: Start disposable demo and verify actual HTTP endpoints
+        run: python -m unittest discover -s tests -p test_live_demo_http.py -v
+      - name: Install Chromium for real browser smoke test
+        run: python -m playwright install --with-deps chromium
+      - name: Verify wallet ad timing and seller stars in Chromium
+        run: python -m pytest tests/test_approved_ui_ads_ratings_browser.py -v
+
+  disposable-postgres-rls:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated PostgreSQL test dependencies
+        run: python -m pip install 'psycopg[binary]>=3,<4' pgserver==0.1.4
+      - name: Verify native FORCE RLS account isolation in disposable PostgreSQL
+        run: python -m unittest tests.test_postgres_rls_isolation_live -v

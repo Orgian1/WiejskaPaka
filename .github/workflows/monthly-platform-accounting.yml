@@ -1,0 +1,42 @@
+name: Monthly platform accounting regression
+
+on:
+  push:
+    paths:
+      - 'backend/monthly_platform_fees.py'
+      - 'backend/platform_fee_ledger.py'
+      - 'backend/export_platform_fee_csv.py'
+      - 'backend/monthly_fee_simulation_adapter.py'
+      - 'tests/test_monthly_platform_fees.py'
+      - 'tests/test_platform_fee_ledger.py'
+      - 'tests/test_monthly_fee_simulation_adapter.py'
+      - '.github/workflows/monthly-platform-accounting.yml'
+  pull_request:
+    paths:
+      - 'backend/monthly_platform_fees.py'
+      - 'backend/platform_fee_ledger.py'
+      - 'backend/export_platform_fee_csv.py'
+      - 'backend/monthly_fee_simulation_adapter.py'
+      - 'tests/test_monthly_platform_fees.py'
+      - 'tests/test_monthly_fee_simulation_adapter.py'
+      - 'tests/test_platform_fee_ledger.py'
+      - '.github/workflows/monthly-platform-accounting.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  accounting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test monthly fee summaries and CSV export
+        run: |
+          python -m unittest discover -s tests -p 'test_monthly_platform_fees.py' -v
+          python -m unittest discover -s tests -p 'test_monthly_fee_simulation_adapter.py' -v
+          python -m unittest discover -s tests -p 'test_platform_fee_ledger.py' -v

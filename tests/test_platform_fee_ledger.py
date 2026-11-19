@@ -132,6 +132,28 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_other_connection_sees_only_committed_fee_entries(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / "ledger.sqlite")
+            writer = sqlite3.connect(path, timeout=1)
+            reader = sqlite3.connect(path, timeout=1)
+            try:
+                initialize_platform_fee_ledger(writer)
+                writer.commit()
+                add_platform_fee_entry(
+                    writer, source_id="pickup:committed", seller_id=7,
+                    posted_on="2026-11-19", kind="pickup_point", amount_grosze=1000,
+                )
+                self.assertEqual(monthly_platform_fee_entries(reader, 2026, 11), [])
+                writer.commit()
+                self.assertEqual(len(monthly_platform_fee_entries(reader, 2026, 11)), 1)
+            finally:
+                reader.close()
+                writer.close()
+
     def test_transaction_rollback_removes_uncommitted_fee(self):
         self.con.commit()
         self.con.execute("BEGIN")

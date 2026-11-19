@@ -148,6 +148,25 @@ class PlatformFeeLedgerTests(unittest.TestCase):
         self.assertEqual(november[0]["month"], "11")
         self.assertEqual(december[0]["month"], "12")
 
+    def test_read_only_export_from_existing_database(self):
+        import tempfile
+        from pathlib import Path
+        from backend.export_platform_fee_csv import export_csv
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fees.sqlite"
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                add_platform_fee_entry(
+                    writer, source_id="pickup:export", seller_id=7,
+                    posted_on="2026-11-19", kind="pickup_point", amount_grosze=1001,
+                )
+            exported = export_csv(str(path), 2026, 11)
+            self.assertIn("1001", exported)
+            self.assertIn("pickup_point", exported)
+            with self.assertRaises(FileNotFoundError):
+                export_csv(str(Path(directory) / "missing.sqlite"), 2026, 11)
+
     def test_cross_month_refund_csv_is_reported_only_in_refund_month(self):
         import csv
         from io import StringIO

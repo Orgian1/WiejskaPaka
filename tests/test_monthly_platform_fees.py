@@ -1,6 +1,6 @@
 """Unit tests for accounting summaries; no invoice is issued."""
 import unittest
-from backend.monthly_platform_fees import monthly_fee_summary
+from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv
 
 
 class MonthlyPlatformFeesTests(unittest.TestCase):
@@ -23,6 +23,18 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
             dict(seller_id=1, posted_on="2026-11-02", kind="advertising", amount_grosze=-500, currency="PLN"),
         ]
         self.assertEqual(monthly_fee_summary(entries, 2026, 11)[0]["amount_grosze"], 1500)
+
+    def test_csv_keeps_exact_grosze_and_separates_sellers(self):
+        entries = [
+            dict(seller_id=3, posted_on="2026-11-04", kind="pickup_point", amount_grosze=1001, currency="PLN"),
+            dict(seller_id=2, posted_on="2026-11-04", kind="seller_withdrawal_fee", amount_grosze=1, currency="PLN"),
+        ]
+        csv_data = monthly_fee_csv(entries, 2026, 11)
+        self.assertEqual(csv_data.splitlines(), [
+            "year,month,seller_id,currency,fee_type,transactions,amount_grosze",
+            "2026,11,2,PLN,seller_withdrawal_fee,1,1",
+            "2026,11,3,PLN,pickup_point,1,1001",
+        ])
 
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")

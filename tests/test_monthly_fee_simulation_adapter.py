@@ -5,6 +5,23 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_zero_fee_is_not_a_charge(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal');
+            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,0);
+            INSERT INTO wallet_preview_resolutions VALUES
+              ('r1','w1',3,1793577600,'completed_test');
+        """)
+        self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11), [])
+        con.close()
+
     def test_utc_month_boundary_uses_completion_timestamp(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

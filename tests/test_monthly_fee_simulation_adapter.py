@@ -5,6 +5,35 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_report_filters_multiple_months_without_double_counting(self):
+        from datetime import datetime, timezone
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3),('w2','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES
+              ('w1','rolnik',500,100,2000,1900),('w2','rolnik',500,200,4000,3800);
+        """)
+        november = int(datetime(2026, 11, 30, 23, 59, tzinfo=timezone.utc).timestamp())
+        december = int(datetime(2026, 12, 1, 0, 0, tzinfo=timezone.utc).timestamp())
+        con.executemany("INSERT INTO wallet_preview_resolutions VALUES (?,?,?,?,?)", [
+            ("r1", "w1", 3, november, "completed_test"),
+            ("r2", "w2", 3, december, "completed_test"),
+        ])
+        november_rows = simulated_withdrawal_fee_entries(con, 2026, 11)
+        december_rows = simulated_withdrawal_fee_entries(con, 2026, 12)
+        self.assertEqual([row["amount_grosze"] for row in november_rows], [100])
+        self.assertEqual([row["amount_grosze"] for row in december_rows], [200])
+        self.assertTrue(set(row["source_id"] for row in november_rows).isdisjoint(
+            row["source_id"] for row in december_rows))
+        con.close()
+
     def test_invalid_completion_timestamp_is_rejected(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

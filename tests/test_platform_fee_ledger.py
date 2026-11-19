@@ -148,6 +148,27 @@ class PlatformFeeLedgerTests(unittest.TestCase):
         self.assertEqual(november[0]["month"], "11")
         self.assertEqual(december[0]["month"], "12")
 
+    def test_csv_cli_rejects_invalid_reporting_period(self):
+        import tempfile
+        from contextlib import redirect_stdout, redirect_stderr
+        from io import StringIO
+        from pathlib import Path
+        from backend.export_platform_fee_csv import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fees.sqlite"
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+            for year, month in (("2026", "0"), ("2026", "13"), ("0", "11"),
+                                ("9999", "12")):
+                with self.subTest(year=year, month=month):
+                    stdout, stderr = StringIO(), StringIO()
+                    with redirect_stdout(stdout), redirect_stderr(stderr):
+                        result = main([str(path), year, month])
+                    self.assertEqual(result, 1)
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertIn("Export failed:", stderr.getvalue())
+
     def test_csv_cli_success_and_missing_database_error(self):
         import tempfile
         from contextlib import redirect_stdout, redirect_stderr

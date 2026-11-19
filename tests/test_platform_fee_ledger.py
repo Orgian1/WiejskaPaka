@@ -47,6 +47,12 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_positive_correction_is_rejected(self):
+        self.add()
+        with self.assertRaisesRegex(ValueError, "Positive adjustments"):
+            self.add(source_id="correction:plus", amount_grosze=500, correction_of="pickup:1")
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+
     def test_multiple_refunds_cannot_exceed_original_fee(self):
         self.add()
         self.add(source_id="refund:1", amount_grosze=-700, correction_of="pickup:1")

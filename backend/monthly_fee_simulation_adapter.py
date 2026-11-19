@@ -60,3 +60,14 @@ def simulated_monthly_withdrawal_report(con, year: int, month: int) -> dict:
         "bank_transfer_executed": False,
         "report": report,
     }
+
+
+def simulated_monthly_fee_report(con, year: int, month: int) -> dict:
+    """Non-fiscal report with an explicit simulation marker, never a tax invoice."""
+    from backend.monthly_platform_fees import monthly_fee_audit
+    entries = simulated_withdrawal_fee_entries(con, year, month)
+    report = monthly_fee_audit(entries, year, month)
+    report["environment"] = "simulation_only"
+    report["fiscal_document"] = False
+    report["payment_provider_confirmed"] = False
+    return report

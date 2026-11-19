@@ -162,3 +162,11 @@ def monthly_platform_fee_draft(con: sqlite3.Connection, year: int, month: int) -
     draft["payment_provider_confirmed"] = False
     draft["fiscal_document"] = False
     return draft
+
+
+def monthly_platform_fee_csv(con: sqlite3.Connection, year: int, month: int) -> str:
+    """Read-only CSV of ledger fee summaries; never an invoice or PSP receipt."""
+    from backend.monthly_platform_fees import monthly_fee_csv
+
+    entries = monthly_platform_fee_entries(con, year, month)
+    return monthly_fee_csv(entries, year, month)

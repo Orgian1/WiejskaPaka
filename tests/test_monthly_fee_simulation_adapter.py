@@ -26,7 +26,7 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(con.total_changes, before)
         self.assertEqual(first["source_count"], 1)
-        self.assertEqual(first["control_totals"][0]["amount_grosze"], 100)
+        self.assertEqual(first["totals"]["PLN"]["amount_grosze"], 100)
         con.close()
 
     def test_customer_withdrawal_invalid_owner_id_is_rejected(self):

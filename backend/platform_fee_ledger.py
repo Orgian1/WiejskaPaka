@@ -60,6 +60,8 @@ def add_platform_fee_entry(con: sqlite3.Connection, *, source_id: str,
             raise ValueError("Correction must refer to matching fee")
     elif amount_grosze < 0:
         raise ValueError("Negative fees require correction reference")
+    if correction_of is not None and amount_grosze > 0:
+        raise ValueError("Positive adjustments must be recorded as separate fee events")
     if correction_of is not None and amount_grosze < 0:
         original_amount = con.execute(
             "SELECT amount_grosze FROM platform_fee_ledger WHERE source_id = ?",

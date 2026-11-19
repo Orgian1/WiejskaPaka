@@ -1,6 +1,6 @@
 """Unit tests for accounting summaries; no invoice is issued."""
 import unittest
-from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv
+from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation
 
 
 class MonthlyPlatformFeesTests(unittest.TestCase):
@@ -58,6 +58,20 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
         row["posted_on"] = "2026-11-01"
         with self.assertRaises(ValueError):
             monthly_fee_summary([row], 2026, True)
+
+    def test_reconciliation_uses_single_snapshot_and_exact_control_total(self):
+        entries = iter([
+            dict(seller_id=1, posted_on="2026-11-02", kind="pickup_point",
+                 amount_grosze=1000, currency="PLN", source_id="a"),
+            dict(seller_id=2, posted_on="2026-11-03", kind="advertising",
+                 amount_grosze=300, currency="PLN", source_id="b"),
+            dict(seller_id=1, posted_on="2026-11-04", kind="pickup_point",
+                 amount_grosze=-200, currency="PLN", source_id="c"),
+        ])
+        result = monthly_fee_reconciliation(entries, 2026, 11)
+        self.assertEqual(result["totals"]["PLN"], {"amount_grosze": 1100, "transactions": 3})
+        self.assertEqual(result["status"], "draft_unverified")
+        self.assertEqual(len(result["rows"]), 2)
 
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")

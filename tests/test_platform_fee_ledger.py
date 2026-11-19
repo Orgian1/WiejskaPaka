@@ -132,6 +132,22 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_csv_keeps_cross_month_refund_in_refund_month(self):
+        import csv
+        from io import StringIO
+
+        self.add(posted_on="2026-11-30", amount_grosze=1001)
+        self.add(source_id="refund:december", posted_on="2026-12-01",
+                 amount_grosze=-1001, correction_of="pickup:1")
+        november = list(csv.DictReader(StringIO(monthly_platform_fee_csv(self.con, 2026, 11))))
+        december = list(csv.DictReader(StringIO(monthly_platform_fee_csv(self.con, 2026, 12))))
+        self.assertEqual(len(november), 1)
+        self.assertEqual(len(december), 1)
+        self.assertEqual(november[0]["amount_grosze"], "1001")
+        self.assertEqual(december[0]["amount_grosze"], "-1001")
+        self.assertEqual(november[0]["month"], "11")
+        self.assertEqual(december[0]["month"], "12")
+
     def test_monthly_csv_exports_integer_grosze_without_personal_data(self):
         import csv
         from io import StringIO

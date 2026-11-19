@@ -23,3 +23,20 @@
 
 ## Zasada wdrożenia
 Brak aktywacji płatności rzeczywistych, automatycznego wystawiania faktur, zmian w saldach, wdrożenia na serwer lub scalania do `main` bez osobnego zatwierdzenia.
+
+## Eksport miesięcznego zestawienia CSV (lokalnie, tylko do odczytu)
+Uruchom z katalogu głównego projektu, podając **istniejącą** ścieżkę do bazy zawierającej tabelę `platform_fee_ledger`:
+
+```bash
+python -m backend.export_platform_fee_csv /sciezka/do/bazy.sqlite 2026 11 > oplaty-2026-11.csv
+```
+
+W PowerShell:
+
+```powershell
+python -m backend.export_platform_fee_csv "C:\\sciezka\\do\\bazy.sqlite" 2026 11 | Set-Content -Encoding utf8 "oplaty-2026-11.csv"
+```
+
+Plik zawiera kolumny `year,month,seller_id,currency,fee_type,transactions,amount_grosze`. Wartości są całkowitymi groszami (np. `1001` oznacza 10,01 zł). W zestawieniu występują tylko opłaty platformy i ich korekty; nie ma wartości sprzedanych produktów, numerów telefonów ani danych klientów.
+
+Eksport otwiera bazę w trybie SQLite `mode=ro`, nie zapisuje nic do bazy i nie tworzy brakującego pliku. Zapisany CSV jest **roboczym zestawieniem niefiskalnym**, a nie fakturą, potwierdzeniem wpłaty czy dowodem zgodności z PayU. Nie uruchamiaj go na bazie produkcyjnej bez wcześniejszego sprawdzenia praw dostępu i procedury kopii zapasowych.

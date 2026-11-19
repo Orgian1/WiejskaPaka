@@ -16,6 +16,37 @@ except ImportError:
 @unittest.skipUnless(psycopg is not None and pgserver is not None,
                      'Optional disposable PostgreSQL dependencies unavailable')
 class LivePostgresRlsIsolation(unittest.TestCase):
+    def test_gateway_migration_approved_only_in_disposable_database(self):
+        import tempfile
+        from pathlib import Path
+        from tests.local_postgres import LocalPostgres
+
+        sql = (Path(__file__).resolve().parents[1] /
+               'database/security_rls/001_gateway.up.sql').read_text(encoding='utf-8')
+        schema = (Path(__file__).resolve().parents[1] /
+                  'database/postgres_schema.sql').read_text(encoding='utf-8')
+        with tempfile.TemporaryDirectory(prefix='wp-rls-migration-') as folder:
+            server = LocalPostgres(Path(folder) / 'cluster')
+            try:
+                with psycopg.connect(server.get_uri(), autocommit=True) as admin:
+                    admin.execute('CREATE DATABASE wp_test_migration')
+                uri = server.get_uri().replace('/postgres', '/wp_test_migration')
+                with psycopg.connect(uri, autocommit=True) as admin:
+                    admin.execute(schema)
+                    admin.execute("SET wp_rls.disposable_test = 'yes'")
+                    admin.execute(sql)
+                    self.assertIsNotNone(admin.execute(
+                        "SELECT to_regprocedure('wp_rls.execute(text,text)')").fetchone()[0])
+                    rows = admin.execute("""
+                        SELECT relname, relrowsecurity, relforcerowsecurity
+                        FROM pg_class WHERE relname IN ('users', 'orders', 'sessions')
+                        ORDER BY relname
+                    """).fetchall()
+                    self.assertEqual(len(rows), 3)
+                    self.assertTrue(all(enabled and forced for _, enabled, forced in rows))
+            finally:
+                server.cleanup()
+
     def test_gateway_migration_refuses_unapproved_activation(self):
         import tempfile
         from pathlib import Path

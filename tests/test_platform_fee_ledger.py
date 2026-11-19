@@ -131,6 +131,16 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_initialization_is_idempotent_and_keeps_existing_fees(self):
+        self.add()
+        initialize_platform_fee_ledger(self.con)
+        initialize_platform_fee_ledger(self.con)
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "immutable"):
+            self.con.execute("DELETE FROM platform_fee_ledger WHERE source_id = 'pickup:1'")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.add()
+
     def test_monthly_read_is_read_only(self):
         self.add()
         before = self.con.total_changes

@@ -132,6 +132,23 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_duplicate_fee_after_database_reopen_is_rejected(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / "ledger.sqlite")
+            entry = dict(source_id="pickup:restart", seller_id=7,
+                         posted_on="2026-11-19", kind="pickup_point", amount_grosze=1000)
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                add_platform_fee_entry(writer, **entry)
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                with self.assertRaises(sqlite3.IntegrityError):
+                    add_platform_fee_entry(writer, **entry)
+                self.assertEqual(len(monthly_platform_fee_entries(writer, 2026, 11)), 1)
+
     def test_committed_fee_survives_database_reopen(self):
         import tempfile
         from pathlib import Path

@@ -135,7 +135,12 @@ def monthly_platform_fee_entries(con: sqlite3.Connection, year: int, month: int)
     """Read a month of ledger entries for the existing audit/reporting pipeline."""
     if type(year) is not int or type(month) is not int:
         raise ValueError("Invalid reporting period")
-    date(year, month, 1)
+    try:
+        date(year, month, 1)
+        if year == 9999 and month == 12:
+            raise ValueError("Invalid reporting period")
+    except ValueError as exc:
+        raise ValueError("Invalid reporting period") from exc
     start = f"{year:04d}-{month:02d}-01"
     end = f"{year + 1:04d}-01-01" if month == 12 else f"{year:04d}-{month + 1:02d}-01"
     rows = con.execute("""

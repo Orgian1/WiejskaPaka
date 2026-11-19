@@ -12,10 +12,10 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
             CREATE TABLE wallet_preview_resolutions
               (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
             CREATE TABLE wallet_preview_terms
-              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER);
-            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT);
-            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal');
-            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,0);
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,0,1,1);
             INSERT INTO wallet_preview_resolutions VALUES
               ('r1','w1',3,1793577600,'completed_test');
         """)
@@ -29,10 +29,10 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
             CREATE TABLE wallet_preview_resolutions
               (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
             CREATE TABLE wallet_preview_terms
-              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER);
-            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT);
-            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal');
-            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,100);
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,100,2000,1900);
         """)
         from datetime import datetime, timezone
         timestamp = int(datetime(2026, 12, 1, 0, 0, tzinfo=timezone.utc).timestamp())
@@ -51,13 +51,13 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
             CREATE TABLE wallet_preview_resolutions
               (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
             CREATE TABLE wallet_preview_terms
-              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER);
-            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT);
-            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal'),('w2','withdrawal'),
-              ('w3','withdrawal'),('w4','withdrawal');
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER, fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3),('w2','withdrawal',3),
+              ('w3','withdrawal',4),('w4','withdrawal',3);
             INSERT INTO wallet_preview_terms VALUES
-              ('w1','rolnik',500,125),('w2','rolnik',500,100),
-              ('w3','klient',0,0),('w4','rolnik',500,50);
+              ('w1','rolnik',500,125,2500,2375),('w2','rolnik',500,100,2000,1900),
+              ('w3','klient',0,0,2000,2000),('w4','rolnik',500,50,1000,950);
             INSERT INTO wallet_preview_resolutions VALUES
               ('r1','w1',3,1793577600,'completed_test'),
               ('r2','w2',3,1793577600,'cancelled_test'),

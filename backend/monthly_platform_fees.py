@@ -103,3 +103,17 @@ def monthly_fee_reconciliation(entries: Iterable[Mapping], year: int, month: int
         "totals": by_currency,
         "status": "draft_unverified",
     }
+
+
+def invoice_export_guard(reconciliation: Mapping) -> None:
+    """Fail closed: draft summaries must never be sent to invoice providers.
+
+    The actual invoicing integration must independently verify source ledger,
+    tax obligations, buyer identity and document requirements. This function
+    deliberately does not authorize production invoicing.
+    """
+    if reconciliation.get("status") != "verified_for_invoicing":
+        raise ValueError("Monthly report is not verified for invoicing")
+    raise NotImplementedError(
+        "Production invoicing is disabled until an approved tax and KSeF integration exists"
+    )

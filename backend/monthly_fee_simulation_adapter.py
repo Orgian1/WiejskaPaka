@@ -19,14 +19,12 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
                r.created_at AS resolved_at, r.withdrawal_id AS withdrawal_id,
                t.fee_grosze AS amount_grosze,
                t.gross_grosze AS gross_grosze, t.net_grosze AS net_grosze,
-               e.user_id AS entry_user_id
+               e.user_id AS entry_user_id, e.kind AS entry_kind,
+               t.owner_role AS owner_role, t.fee_basis_points AS fee_basis_points
         FROM wallet_preview_resolutions r
-        JOIN wallet_preview_terms t ON t.withdrawal_id = r.withdrawal_id
-        JOIN wallet_preview_entries e ON e.id = r.withdrawal_id
+        LEFT JOIN wallet_preview_terms t ON t.withdrawal_id = r.withdrawal_id
+        LEFT JOIN wallet_preview_entries e ON e.id = r.withdrawal_id
         WHERE r.state = 'completed_test'
-          AND t.owner_role = 'rolnik'
-          AND t.fee_basis_points = 500
-          AND e.kind = 'withdrawal'
         ORDER BY r.created_at, r.id
     """).fetchall()
     result = []
@@ -54,6 +52,12 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
             raise ValueError("Invalid simulation timestamp") from exc
         if (posted_on.year, posted_on.month) != (year, month):
             continue
+        if row["owner_role"] is None or row["entry_kind"] is None:
+            raise ValueError("Missing simulated withdrawal source")
+        if row["owner_role"] == "klient" and row["fee_basis_points"] == 0:
+            continue
+        if row["owner_role"] != "rolnik" or row["fee_basis_points"] != 500 or row["entry_kind"] != "withdrawal":
+            raise ValueError("Inconsistent simulated withdrawal source")
         if type(row["seller_id"]) is not int or row["seller_id"] < 1:
             raise ValueError("Invalid simulated seller")
         if row["entry_user_id"] != row["seller_id"]:

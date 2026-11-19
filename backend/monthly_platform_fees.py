@@ -17,12 +17,12 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
     Rows for other months are ignored. Does not aggregate sales proceeds,
     wallet top-ups, or third-party delivery charges.
     """
-    date(year, month, 1)
+    if type(year) is not int or type(month) is not int:\n        raise ValueError("Year and month must be integers")\n    date(year, month, 1)
     totals = defaultdict(lambda: {"amount_grosze": 0, "transactions": 0})
     seen_sources = set()
     allowed = {"pickup_point", "seller_withdrawal_fee", "advertising"}
     for entry in entries:
-        posted = date.fromisoformat(entry["posted_on"])
+        posted_value = entry["posted_on"]\n        if type(posted_value) is not str or len(posted_value) != 10:\n            raise ValueError("Invalid posting date")\n        posted = date.fromisoformat(posted_value)\n        if posted.isoformat() != posted_value:\n            raise ValueError("Posting date must be ISO YYYY-MM-DD")
         amount = entry["amount_grosze"]
         seller_id = entry["seller_id"]
         kind = entry["kind"]

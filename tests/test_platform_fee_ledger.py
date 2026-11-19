@@ -132,6 +132,20 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_monthly_draft_is_deterministic_and_read_only(self):
+        self.add()
+        before = self.con.total_changes
+        first = monthly_platform_fee_draft(self.con, 2026, 11)
+        second = monthly_platform_fee_draft(self.con, 2026, 11)
+        self.assertEqual(first, second)
+        self.assertEqual(self.con.total_changes, before)
+
+    def test_empty_month_draft_remains_non_fiscal(self):
+        draft = monthly_platform_fee_draft(self.con, 2026, 12)
+        self.assertEqual(draft["rows"], [])
+        self.assertFalse(draft["fiscal_document"])
+        self.assertFalse(draft["payment_provider_confirmed"])
+
     def test_monthly_draft_is_not_invoice_or_payment_confirmation(self):
         self.add()
         draft = monthly_platform_fee_draft(self.con, 2026, 11)

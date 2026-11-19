@@ -16,6 +16,14 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
     end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
     start_epoch = int(datetime(start.year, start.month, start.day, tzinfo=timezone.utc).timestamp())
     end_epoch = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp())
+    invalid_timestamp = con.execute("""
+        SELECT 1 FROM wallet_preview_resolutions
+        WHERE state = 'completed_test'
+          AND (created_at IS NULL OR typeof(created_at) != 'integer' OR created_at < 0)
+        LIMIT 1
+    """).fetchone()
+    if invalid_timestamp is not None:
+        raise ValueError("Invalid simulation timestamp")
     rows = con.execute("""
         SELECT r.id AS resolution_id, r.user_id AS seller_id,
                r.created_at AS resolved_at, r.withdrawal_id AS withdrawal_id,

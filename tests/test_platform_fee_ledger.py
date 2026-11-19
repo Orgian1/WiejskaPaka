@@ -132,6 +132,13 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_refund_of_refund_is_rejected(self):
+        self.add()
+        self.add(source_id="refund:1", amount_grosze=-300, correction_of="pickup:1")
+        with self.assertRaisesRegex(ValueError, "Correction must refer to matching fee"):
+            self.add(source_id="refund:2", amount_grosze=-100, correction_of="refund:1")
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 2)
+
     def test_invalid_report_periods_fail_closed(self):
         for year, month in ((2026, 0), (2026, 13), (9999, 12), (True, 11), (2026, False)):
             with self.subTest(year=year, month=month):

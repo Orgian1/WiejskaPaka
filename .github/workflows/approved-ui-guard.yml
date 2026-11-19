@@ -78,6 +78,7 @@ jobs:
           python -m unittest discover -s tests -p test_rls_gateway_migration_contract.py -v
           python -m unittest discover -s tests -p test_postgres_gateway_connection.py -v
           python -m unittest discover -s tests -p test_local_postgres_fixture_contract.py -v
+          python -m unittest discover -s tests -p test_rls_gateway_app_integration.py -v
       - name: Smoke-test disposable full demo and targeted ads
         run: python -m unittest discover -s tests -p test_full_demo_seed.py -v
       - name: Start disposable demo and verify actual HTTP endpoints

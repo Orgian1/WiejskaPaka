@@ -477,14 +477,21 @@ loadFarmer=async function(...args){
  refresh();
  // Public campaigns are refreshed after administrator changes or login.
  // Reset to safe fallback when a campaign has expired or was disabled.
+ let campaignReloadVersion=0;
  async function reloadCampaigns(){
+  const version=++campaignReloadVersion;
   await Promise.all(slots.map(async config=>{
+   let campaign=defaultCampaigns[config.id];
    try{
     const response=await fetch('/ads/slots/'+config.id,{credentials:'same-origin',cache:'no-store'});
-    if(!response.ok)return;
-    const data=await response.json();
-    setCampaign(config.id,data?.campaign||defaultCampaigns[config.id]);
-   }catch(_error){/* Keep last safe text when offline. */}
+    if(response.ok){
+     const data=await response.json();
+     if(data?.campaign)campaign=data.campaign;
+    }
+   }catch(_error){/* Offline: restore the safe default, not a stale campaign. */}
+   // A slower earlier request must never overwrite a newer campaign refresh.
+   if(version!==campaignReloadVersion)return;
+   if(!setCampaign(config.id,campaign))setCampaign(config.id,defaultCampaigns[config.id]);
   }));
  }
  window.addEventListener('wiejskapaka:ads-updated',()=>{void reloadCampaigns();});

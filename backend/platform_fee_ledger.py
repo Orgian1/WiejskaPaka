@@ -29,6 +29,31 @@ def initialize_platform_fee_ledger(con: sqlite3.Connection) -> None:
 
 
     con.execute("""
+        CREATE TRIGGER IF NOT EXISTS platform_fee_ledger_validate_insert
+        BEFORE INSERT ON platform_fee_ledger
+        BEGIN
+            SELECT CASE WHEN NEW.correction_of IS NULL AND NEW.amount_grosze <= 0
+                THEN RAISE(ABORT, 'New fee must be positive') END;
+            SELECT CASE WHEN NEW.correction_of IS NOT NULL AND NEW.amount_grosze >= 0
+                THEN RAISE(ABORT, 'Correction must be negative') END;
+            SELECT CASE WHEN NEW.correction_of IS NOT NULL AND NOT EXISTS (
+                SELECT 1 FROM platform_fee_ledger orig
+                WHERE orig.source_id = NEW.correction_of
+                  AND orig.correction_of IS NULL
+                  AND orig.seller_id = NEW.seller_id
+                  AND orig.kind = NEW.kind AND orig.currency = NEW.currency
+            ) THEN RAISE(ABORT, 'Correction must match original fee') END;
+            SELECT CASE WHEN NEW.correction_of IS NOT NULL AND (
+                SELECT COALESCE(SUM(amount_grosze), 0)
+                FROM platform_fee_ledger
+                WHERE correction_of = NEW.correction_of
+            ) + NEW.amount_grosze < -(
+                SELECT amount_grosze FROM platform_fee_ledger
+                WHERE source_id = NEW.correction_of
+            ) THEN RAISE(ABORT, 'Corrections exceed original fee') END;
+        END
+    """)
+    con.execute("""
         CREATE TRIGGER IF NOT EXISTS platform_fee_ledger_no_update
         BEFORE UPDATE ON platform_fee_ledger
         BEGIN

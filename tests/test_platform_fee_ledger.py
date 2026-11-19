@@ -148,6 +148,26 @@ class PlatformFeeLedgerTests(unittest.TestCase):
         self.assertEqual(november[0]["month"], "11")
         self.assertEqual(december[0]["month"], "12")
 
+    def test_csv_export_does_not_modify_database_file(self):
+        import hashlib
+        import tempfile
+        from pathlib import Path
+        from backend.export_platform_fee_csv import export_csv
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fees.sqlite"
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                add_platform_fee_entry(
+                    writer, source_id="pickup:immutable-export", seller_id=7,
+                    posted_on="2026-11-19", kind="pickup_point", amount_grosze=1001,
+                )
+            before = hashlib.sha256(path.read_bytes()).digest()
+            exported = export_csv(str(path), 2026, 11)
+            after = hashlib.sha256(path.read_bytes()).digest()
+            self.assertEqual(before, after)
+            self.assertIn("1001", exported)
+
     def test_csv_cli_rejects_invalid_reporting_period(self):
         import tempfile
         from contextlib import redirect_stdout, redirect_stderr

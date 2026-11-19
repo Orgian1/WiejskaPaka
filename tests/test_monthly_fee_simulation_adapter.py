@@ -5,6 +5,27 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_missing_source_tables_fail_instead_of_reporting_zero(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        with self.assertRaises(sqlite3.OperationalError):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+        con.close()
+
+    def test_empty_initialized_source_has_no_fees(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+        """)
+        self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11), [])
+        con.close()
+
     def test_duplicate_resolution_is_rejected(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

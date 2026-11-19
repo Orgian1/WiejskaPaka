@@ -42,6 +42,27 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11)[0]["amount_grosze"], 1)
         con.close()
 
+    def test_duplicate_frozen_terms_for_one_withdrawal_are_rejected(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES
+              ('w1','rolnik',500,100,2000,1900),
+              ('w1','rolnik',500,100,2000,1900);
+            INSERT INTO wallet_preview_resolutions VALUES
+              ('r1','w1',3,1793577600,'completed_test');
+        """)
+        with self.assertRaisesRegex(ValueError, "Duplicate simulated resolution ID"):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+        con.close()
+
     def test_boolean_fee_is_rejected_even_if_arithmetic_matches(self):
         from unittest.mock import Mock
         row = {

@@ -132,6 +132,17 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_transaction_rollback_removes_uncommitted_fee(self):
+        self.con.commit()
+        self.con.execute("BEGIN")
+        self.add()
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+        self.con.rollback()
+        self.assertEqual(monthly_platform_fee_entries(self.con, 2026, 11), [])
+        self.add()
+        self.con.commit()
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+
     def test_failed_insert_preserves_existing_monthly_draft(self):
         self.add()
         before = monthly_platform_fee_draft(self.con, 2026, 11)

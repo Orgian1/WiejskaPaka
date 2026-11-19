@@ -38,7 +38,7 @@ async function refreshWalletAdsAdmin(offset=0){
  const file=walletAdInput(form,'Zdjęcie JPEG, PNG lub WebP (maks. 1 MB)','file');file.accept='image/jpeg,image/png,image/webp';file.required=!ad.id;
  const local=value=>{const date=new Date(value*1000);return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);};
  const start=walletAdInput(form,'Początek emisji (czas lokalny)','datetime-local',local(ad.starts_at||Date.now()/1000));start.required=true;
- const end=walletAdInput(form,'Koniec emisji (czas lokalny)','datetime-local',local(ad.ends_at||Date.now()/1000+86400));end.required=true;
+ const end=walletAdInput(form,'Koniec emisji (czas lokalny)','datetime-local',local(ad.ends_at||Math.floor(Date.now()/1000)+30*86400));end.required=true;
  const audienceLabel=node('label','Reklama dla');const audience=node('select');for(const [value,label] of [['klient','Klienci'],['rolnik','Sprzedawcy'],['both','Obie grupy (starsze kampanie)']]){const option=node('option',label);option.value=value;audience.append(option);}audience.value=ad.audience||'klient';audienceLabel.append(audience);form.append(audienceLabel);
  const order=walletAdInput(form,'Kolejność rotacji','number',String(ad.sort_order||0));order.min=0;order.max=100000;order.required=true;
  const enabled=walletAdInput(form,'Włącz emisję','checkbox');enabled.checked=!!ad.enabled;

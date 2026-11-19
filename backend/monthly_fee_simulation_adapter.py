@@ -55,6 +55,14 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         if row["owner_role"] is None or row["entry_kind"] is None:
             raise ValueError("Missing simulated withdrawal source")
         if row["owner_role"] == "klient" and row["fee_basis_points"] == 0:
+            if row["entry_kind"] != "withdrawal" or row["entry_user_id"] != row["seller_id"]:
+                raise ValueError("Inconsistent simulated customer withdrawal source")
+            if (type(row["amount_grosze"]) is not int or row["amount_grosze"] != 0
+                    or type(row["gross_grosze"]) is not int
+                    or type(row["net_grosze"]) is not int
+                    or row["gross_grosze"] < 1
+                    or row["net_grosze"] != row["gross_grosze"]):
+                raise ValueError("Invalid zero-fee customer withdrawal terms")
             continue
         if row["owner_role"] != "rolnik" or row["fee_basis_points"] != 500 or row["entry_kind"] != "withdrawal":
             raise ValueError("Inconsistent simulated withdrawal source")

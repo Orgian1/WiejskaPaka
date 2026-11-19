@@ -29,7 +29,14 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         ORDER BY r.created_at, r.id
     """).fetchall()
     result = []
+    seen_resolutions = set()
     for row in rows:
+        resolution_id = row["resolution_id"]
+        if type(resolution_id) is not str or not resolution_id.strip():
+            raise ValueError("Missing simulated resolution ID")
+        if resolution_id in seen_resolutions:
+            raise ValueError("Duplicate simulated resolution ID")
+        seen_resolutions.add(resolution_id)
         stamp = row["resolved_at"]
         if type(stamp) is not int:
             raise ValueError("Invalid simulation timestamp")

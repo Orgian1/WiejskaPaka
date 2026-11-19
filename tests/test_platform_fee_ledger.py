@@ -3,6 +3,7 @@ import unittest
 
 from backend.platform_fee_ledger import (
     add_platform_fee_entry, initialize_platform_fee_ledger, monthly_platform_fee_entries,
+    monthly_platform_fee_draft,
 )
 from backend.monthly_platform_fees import monthly_fee_audit
 
@@ -130,6 +131,15 @@ class PlatformFeeLedgerTests(unittest.TestCase):
                      dict(source_id="  "), dict(kind="delivery")):
             with self.assertRaises(ValueError):
                 self.add(**data)
+
+    def test_monthly_draft_is_not_invoice_or_payment_confirmation(self):
+        self.add()
+        draft = monthly_platform_fee_draft(self.con, 2026, 11)
+        self.assertEqual(draft["document_type"], "internal_monthly_fee_draft")
+        self.assertEqual(draft["status"], "draft_unverified")
+        self.assertFalse(draft["fiscal_document"])
+        self.assertFalse(draft["payment_provider_confirmed"])
+        self.assertEqual(draft["source_system"], "platform_fee_ledger")
 
     def test_refund_in_later_month_is_reported_in_refund_month(self):
         self.add(posted_on="2026-11-30")

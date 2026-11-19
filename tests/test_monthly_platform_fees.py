@@ -36,6 +36,20 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
             "2026,11,3,PLN,pickup_point,1,1001",
         ])
 
+    def test_duplicate_source_id_cannot_be_counted_twice(self):
+        row = dict(seller_id=7, posted_on="2026-11-03", kind="pickup_point",
+                   amount_grosze=1000, currency="PLN", source_id="point-charge-123")
+        with self.assertRaisesRegex(ValueError, "Duplicate accounting source"):
+            monthly_fee_summary([row, dict(row)], 2026, 11)
+
+    def test_distinct_refund_entry_is_allowed(self):
+        original = dict(seller_id=7, posted_on="2026-11-03", kind="pickup_point",
+                        amount_grosze=1000, currency="PLN", source_id="charge-1")
+        refund = dict(original, amount_grosze=-1000, source_id="refund-1")
+        result = monthly_fee_summary([original, refund], 2026, 11)
+        self.assertEqual(result[0]["amount_grosze"], 0)
+        self.assertEqual(result[0]["transactions"], 2)
+
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")
         with self.assertRaises(ValueError):

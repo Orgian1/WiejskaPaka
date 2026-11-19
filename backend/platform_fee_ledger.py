@@ -93,7 +93,7 @@ def add_platform_fee_entry(con: sqlite3.Connection, *, source_id: str,
             raise ValueError("Invalid posting date")
     except ValueError as exc:
         raise ValueError("Invalid posting date") from exc
-    if kind not in ALLOWED_KINDS or type(amount_grosze) is not int or amount_grosze == 0:
+    if type(kind) is not str or kind not in ALLOWED_KINDS or type(amount_grosze) is not int or amount_grosze == 0:
         raise ValueError("Invalid fee event")
     if correction_of is not None:
         if type(correction_of) is not str or not correction_of.strip() or correction_of == source_id:

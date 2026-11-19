@@ -43,3 +43,23 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
          "transactions": value["transactions"], "year": year, "month": month}
         for (seller_id, currency, kind), value in sorted(totals.items())
     ]
+
+
+def monthly_fee_csv(entries: Iterable[Mapping], year: int, month: int) -> str:
+    """Export a UTF-8-compatible, accountant-friendly CSV; no personal data.
+
+    Amounts stay in grosze to avoid floating-point and locale ambiguity.
+    The output is a *summary*, never an invoice or KSeF submission.
+    """
+    import csv
+    from io import StringIO
+
+    buffer = StringIO(newline="")
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(("year", "month", "seller_id", "currency", "fee_type",
+                     "transactions", "amount_grosze"))
+    for item in monthly_fee_summary(entries, year, month):
+        writer.writerow((item["year"], item["month"], item["seller_id"],
+                         item["currency"], item["kind"], item["transactions"],
+                         item["amount_grosze"]))
+    return buffer.getvalue()

@@ -132,6 +132,14 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_full_refund_leaves_exactly_zero_grosze(self):
+        self.add(amount_grosze=1001)
+        self.add(source_id="refund:part1", amount_grosze=-333, correction_of="pickup:1")
+        self.add(source_id="refund:part2", amount_grosze=-668, correction_of="pickup:1")
+        draft = monthly_platform_fee_draft(self.con, 2026, 11)
+        self.assertEqual(draft["control_totals"]["PLN"]["amount_grosze"], 0)
+        self.assertEqual(draft["rows"][0]["amount_grosze"], 0)
+
     def test_same_source_id_cannot_be_reused_for_different_seller_or_amount(self):
         self.add()
         for overrides in (dict(seller_id=8), dict(amount_grosze=5000),

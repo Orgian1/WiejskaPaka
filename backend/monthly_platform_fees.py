@@ -80,3 +80,26 @@ def monthly_fee_csv(entries: Iterable[Mapping], year: int, month: int) -> str:
                          item["currency"], item["kind"], item["transactions"],
                          item["amount_grosze"]))
     return buffer.getvalue()
+
+
+def monthly_fee_reconciliation(entries: Iterable[Mapping], year: int, month: int) -> dict:
+    """Produce a read-only control total before any future invoicing.
+
+    All entries are materialized once so the report and control total use
+    exactly the same input snapshot. No payment or invoice is created.
+    """
+    snapshot = list(entries)
+    rows = monthly_fee_summary(snapshot, year, month)
+    by_currency = {}
+    for row in rows:
+        currency = row["currency"]
+        total = by_currency.setdefault(currency, {"amount_grosze": 0, "transactions": 0})
+        total["amount_grosze"] += row["amount_grosze"]
+        total["transactions"] += row["transactions"]
+    return {
+        "year": year,
+        "month": month,
+        "rows": rows,
+        "totals": by_currency,
+        "status": "draft_unverified",
+    }

@@ -16,7 +16,9 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
     date(year, month, 1)
     rows = con.execute("""
         SELECT r.id AS resolution_id, r.user_id AS seller_id,
-               r.created_at AS resolved_at, t.fee_grosze AS amount_grosze
+               r.created_at AS resolved_at, t.fee_grosze AS amount_grosze,
+               t.gross_grosze AS gross_grosze, t.net_grosze AS net_grosze,
+               e.user_id AS entry_user_id
         FROM wallet_preview_resolutions r
         JOIN wallet_preview_terms t ON t.withdrawal_id = r.withdrawal_id
         JOIN wallet_preview_entries e ON e.id = r.withdrawal_id
@@ -34,7 +36,17 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
         posted_on = datetime.fromtimestamp(stamp, tz=timezone.utc).date()
         if (posted_on.year, posted_on.month) != (year, month):
             continue
+        if type(row["seller_id"]) is not int or row["seller_id"] < 1:
+            raise ValueError("Invalid simulated seller")
+        if row["entry_user_id"] != row["seller_id"]:
+            raise ValueError("Simulated withdrawal owner mismatch")
+        gross = row["gross_grosze"]
+        net = row["net_grosze"]
         amount = row["amount_grosze"]
+        if type(gross) is not int or type(net) is not int or gross < 1 or net < 0:
+            raise ValueError("Invalid simulated withdrawal terms")
+        if (gross * 500 + 5000) // 10000 != amount or net + amount != gross:
+            raise ValueError("Simulated withdrawal fee mismatch")
         if type(amount) is not int or amount < 0:
             raise ValueError("Invalid simulated withdrawal fee")
         if amount == 0:

@@ -117,3 +117,21 @@ def invoice_export_guard(reconciliation: Mapping) -> None:
     raise NotImplementedError(
         "Production invoicing is disabled until an approved tax and KSeF integration exists"
     )
+
+
+def monthly_fee_draft_payload(entries: Iterable[Mapping], year: int, month: int) -> dict:
+    """Build a non-fiscal machine-readable report for later reconciliation.
+
+    Explicitly excludes buyer identity, VAT rate, invoice numbers, tax-point
+    decisions and all instructions to issue or deliver tax documents.
+    """
+    report = monthly_fee_reconciliation(entries, year, month)
+    return {
+        "schema_version": 1,
+        "document_type": "internal_monthly_fee_draft",
+        "status": report["status"],
+        "period": {"year": year, "month": month},
+        "rows": report["rows"],
+        "control_totals": report["totals"],
+        "fiscal_document": False,
+    }

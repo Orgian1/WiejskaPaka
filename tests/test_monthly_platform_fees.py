@@ -1,6 +1,6 @@
 """Unit tests for accounting summaries; no invoice is issued."""
 import unittest
-from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation, invoice_export_guard
+from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation, invoice_export_guard, monthly_fee_draft_payload
 
 
 class MonthlyPlatformFeesTests(unittest.TestCase):
@@ -78,6 +78,17 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
             invoice_export_guard({"status": "draft_unverified"})
         with self.assertRaises(NotImplementedError):
             invoice_export_guard({"status": "verified_for_invoicing"})
+
+    def test_draft_payload_is_explicitly_non_fiscal(self):
+        row = dict(seller_id=4, posted_on="2026-11-03", kind="advertising",
+                   amount_grosze=250, currency="PLN", source_id="ad-4")
+        payload = monthly_fee_draft_payload([row], 2026, 11)
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["document_type"], "internal_monthly_fee_draft")
+        self.assertFalse(payload["fiscal_document"])
+        self.assertEqual(payload["control_totals"]["PLN"]["amount_grosze"], 250)
+        self.assertNotIn("invoice_number", payload)
+        self.assertNotIn("vat_rate", payload)
 
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")

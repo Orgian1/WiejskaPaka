@@ -5,6 +5,14 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_invalid_reporting_period_is_rejected(self):
+        con = sqlite3.connect(":memory:")
+        for year, month in [(2026, 13), (2026, 0), ("2026", 11), (True, 11), (2026, 11.0)]:
+            with self.subTest(year=year, month=month):
+                with self.assertRaises(ValueError):
+                    simulated_withdrawal_fee_entries(con, year, month)
+        con.close()
+
     def test_report_filters_multiple_months_without_double_counting(self):
         from datetime import datetime, timezone
         con = sqlite3.connect(":memory:")

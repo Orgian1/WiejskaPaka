@@ -46,3 +46,17 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
             "source_id": "simulation:withdrawal_resolution:" + str(row["resolution_id"]),
         })
     return result
+
+
+def simulated_monthly_withdrawal_report(con, year: int, month: int) -> dict:
+    """Generate an explicitly test-only audit snapshot, never a fiscal record."""
+    from backend.monthly_platform_fees import monthly_fee_audit
+    entries = simulated_withdrawal_fee_entries(con, year, month)
+    report = monthly_fee_audit(entries, year, month)
+    return {
+        "schema_version": 1,
+        "environment": "simulation_only",
+        "fiscal_document": False,
+        "bank_transfer_executed": False,
+        "report": report,
+    }

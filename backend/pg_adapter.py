@@ -109,8 +109,9 @@ class PgCursor:
 
 
 class PgConnection:
-    def __init__(self, connection):
+    def __init__(self, connection, *, gateway=False):
         self.connection = connection
+        self.gateway = gateway
 
     def execute(self, sql, params=()):
         # Consume the row only when the compatibility layer added RETURNING id.
@@ -124,7 +125,11 @@ class PgConnection:
             and not re.search(r'\bRETURNING\b', sql, re.I)
             and re.search(r'\bRETURNING\s+id\s*;?\s*$', translated, re.I) is not None
         )
-        cursor = self.connection.execute(translated, params)
+        if self.gateway:
+            from .rls_gateway import execute as gateway_execute
+            cursor = gateway_execute(self.connection, translated, params)
+        else:
+            cursor = self.connection.execute(translated, params)
         identity = cursor.fetchone() if added_identity else None
         lastrowid = identity['id'] if identity is not None else None
         return PgCursor(cursor, lastrowid)
@@ -139,7 +144,19 @@ def postgres_db(url):
         raise RuntimeError('PostgreSQL wymaga pakietu psycopg[binary]') from exc
     with psycopg.connect(url, row_factory=dict_row, connect_timeout=5) as connection:
         with connection.transaction():
-            yield PgConnection(connection)
+            import os
+            installed = connection.execute(
+                "SELECT to_regprocedure('wp_rls.execute(text,text)') IS NOT NULL AS installed"
+            ).fetchone()['installed']
+            configured = os.environ.get('WP_RLS_GATEWAY') == '1' or bool(os.environ.get('WP_RLS_KEY_FILE'))
+            if installed:
+                from .rls_gateway import load_key
+                from .postgres_runtime_role import assert_runtime_role
+                assert_runtime_role(connection)
+                load_key()
+            elif configured:
+                raise RuntimeError('RLS schema required; legacy fallback forbidden')
+            yield PgConnection(connection, gateway=installed)
 
 
 def init_postgres(url):

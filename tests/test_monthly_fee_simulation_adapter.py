@@ -42,6 +42,20 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11)[0]["amount_grosze"], 1)
         con.close()
 
+    def test_boolean_fee_is_rejected_even_if_arithmetic_matches(self):
+        from unittest.mock import Mock
+        row = {
+            "resolution_id": "r1", "seller_id": 3, "resolved_at": 1793577600,
+            "withdrawal_id": "w1", "amount_grosze": True,
+            "gross_grosze": 20, "net_grosze": 19, "entry_user_id": 3,
+            "entry_kind": "withdrawal", "owner_role": "rolnik",
+            "fee_basis_points": 500,
+        }
+        con = Mock()
+        con.execute.return_value.fetchall.return_value = [row]
+        with self.assertRaisesRegex(ValueError, "Invalid simulated withdrawal fee"):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+
     def test_exact_one_grosz_seller_fee(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

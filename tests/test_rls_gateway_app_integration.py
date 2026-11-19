@@ -28,6 +28,45 @@ class AppGatewayIntegrationTests(unittest.TestCase):
         self.assertEqual(seen, [('request', 'Bearer account-1'), ('auth', '')])
         self.assertEqual(_context.get(), ('maintenance', None))
 
+    def test_websocket_and_lifespan_are_not_given_http_identity(self):
+        import asyncio
+        observed = []
+
+        async def inner(scope, receive, send):
+            observed.append((scope['type'], _context.get()))
+
+        wrapper = DatabaseContextMiddleware(inner)
+
+        async def invoke(kind):
+            await wrapper({'type': kind, 'path': '/orders',
+                           'headers': [(b'authorization', b'Bearer ignored')]},
+                          lambda: None, lambda message: None)
+
+        asyncio.run(invoke('websocket'))
+        asyncio.run(invoke('lifespan'))
+        self.assertEqual(observed, [
+            ('websocket', ('maintenance', None)),
+            ('lifespan', ('maintenance', None)),
+        ])
+
+    def test_context_cleanup_after_cancelled_request(self):
+        import asyncio
+
+        async def inner(scope, receive, send):
+            self.assertEqual(_context.get(), ('request', 'Bearer transient'))
+            raise asyncio.CancelledError()
+
+        wrapper = DatabaseContextMiddleware(inner)
+
+        async def invoke():
+            await wrapper({'type': 'http', 'path': '/orders',
+                           'headers': [(b'authorization', b'Bearer transient')]},
+                          lambda: None, lambda message: None)
+
+        with self.assertRaises(asyncio.CancelledError):
+            asyncio.run(invoke())
+        self.assertEqual(_context.get(), ('maintenance', None))
+
     def test_concurrent_requests_keep_distinct_bearer_context(self):
         import asyncio
         seen = {}

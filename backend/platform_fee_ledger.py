@@ -99,10 +99,10 @@ def add_platform_fee_entry(con: sqlite3.Connection, *, source_id: str,
         if type(correction_of) is not str or not correction_of.strip() or correction_of == source_id:
             raise ValueError("Invalid correction reference")
         original = con.execute(
-            "SELECT seller_id, kind, currency FROM platform_fee_ledger WHERE source_id = ?",
+            "SELECT seller_id, kind, currency, correction_of FROM platform_fee_ledger WHERE source_id = ?",
             (correction_of,),
         ).fetchone()
-        if original is None or (original[0], original[1], original[2]) != (seller_id, kind, "PLN"):
+        if original is None or original[3] is not None or (original[0], original[1], original[2]) != (seller_id, kind, "PLN"):
             raise ValueError("Correction must refer to matching fee")
     elif amount_grosze < 0:
         raise ValueError("Negative fees require correction reference")

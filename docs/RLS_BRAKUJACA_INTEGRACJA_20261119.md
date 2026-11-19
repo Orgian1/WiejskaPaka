@@ -22,3 +22,11 @@ Nie należy deklarować, że FORCE RLS działa w bieżącym demo. Nie wykonano t
 5. Dopiero po potwierdzeniu wszystkich bram i osobnej zgodzie rozważyć migracje na środowisku docelowym.
 
 **Nie wdrażano niczego na VPS, nie aktywowano PayU, nie zmieniano zatwierdzonego interfejsu.**
+
+
+## Kontrola gałęzi źródłowej (19.11)
+Potwierdzono istnienie gałęzi `WIEJSKAPAKA-FINAL-WYGLAD-RLS-REKLAMY-20261116` (commit `459a3ab28ee9f1125ed0574644addff736eb7231`). Zawiera ona `backend/rls_gateway.py`, `backend/rls_session_context.py`, `database/security_rls/001_gateway.up.sql`, `scripts/run_rls_api_gate.py` oraz testy PostgreSQL.
+
+W aktualnym `backend/app.py` nie występują odwołania do `rls_gateway`, `DatabaseContextMiddleware` ani `WP_RLS_GATEWAY`. Nie można uznać RLS za podłączone do bieżącego API.
+
+**Decyzja bezpieczeństwa:** nie kopiować samej migracji `001_gateway.up.sql` ani nie włączać FORCE RLS bez pełnej integracji middleware, adaptera SQL i testów tras. Mogłoby to zablokować legalne operacje lub stworzyć pozorne zabezpieczenie. Najpierw wymagany jest przegląd zależności `backend/app.py`, adaptera PostgreSQL i testów z gałęzi źródłowej.

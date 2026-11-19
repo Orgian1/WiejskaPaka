@@ -132,6 +132,20 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_monthly_draft_separates_sellers_and_fee_kinds(self):
+        self.add()
+        self.add(source_id="pickup:second", seller_id=8, amount_grosze=2000)
+        self.add(source_id="ad:first", seller_id=7, kind="advertising", amount_grosze=3500)
+        draft = monthly_platform_fee_draft(self.con, 2026, 11)
+        self.assertEqual(len(draft["rows"]), 3)
+        values = {(row["seller_id"], row["kind"]): row["amount_grosze"] for row in draft["rows"]}
+        self.assertEqual(values, {
+            (7, "pickup_point"): 1000,
+            (8, "pickup_point"): 2000,
+            (7, "advertising"): 3500,
+        })
+        self.assertEqual(draft["control_totals"]["PLN"]["amount_grosze"], 6500)
+
     def test_monthly_draft_is_deterministic_and_read_only(self):
         self.add()
         before = self.con.total_changes

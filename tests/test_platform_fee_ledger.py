@@ -132,6 +132,25 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_committed_fee_survives_database_reopen(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / "ledger.sqlite")
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                add_platform_fee_entry(
+                    writer, source_id="pickup:persistent", seller_id=7,
+                    posted_on="2026-11-19", kind="pickup_point", amount_grosze=1000,
+                )
+            with sqlite3.connect(path) as reader:
+                initialize_platform_fee_ledger(reader)
+                rows = monthly_platform_fee_entries(reader, 2026, 11)
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(rows[0]["source_id"], "pickup:persistent")
+                self.assertEqual(rows[0]["amount_grosze"], 1000)
+
     def test_other_connection_never_sees_rolled_back_fee(self):
         import tempfile
         from pathlib import Path

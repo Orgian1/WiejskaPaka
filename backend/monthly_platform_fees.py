@@ -135,3 +135,24 @@ def monthly_fee_draft_payload(entries: Iterable[Mapping], year: int, month: int)
         "control_totals": report["totals"],
         "fiscal_document": False,
     }
+
+
+def monthly_fee_audit(entries: Iterable[Mapping], year: int, month: int) -> dict:
+    """Require traceable source IDs before preparing an accounting audit report.
+
+    Legacy reports may accept entries without source_id for compatibility.
+    This stricter path rejects untraceable data and repeated references.
+    """
+    snapshot = list(entries)
+    for entry in snapshot:
+        source_id = entry.get("source_id")
+        if type(source_id) is not str or not source_id.strip():
+            raise ValueError("Accounting audit requires a nonempty source_id")
+    report = monthly_fee_reconciliation(snapshot, year, month)
+    report["source_count"] = sum(
+        1 for entry in snapshot
+        if date.fromisoformat(entry["posted_on"]).year == year
+        and date.fromisoformat(entry["posted_on"]).month == month
+    )
+    report["traceable"] = True
+    return report

@@ -1,6 +1,6 @@
 """Unit tests for accounting summaries; no invoice is issued."""
 import unittest
-from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation, invoice_export_guard, monthly_fee_draft_payload
+from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation, invoice_export_guard, monthly_fee_draft_payload, monthly_fee_audit
 
 
 class MonthlyPlatformFeesTests(unittest.TestCase):
@@ -89,6 +89,16 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
         self.assertEqual(payload["control_totals"]["PLN"]["amount_grosze"], 250)
         self.assertNotIn("invoice_number", payload)
         self.assertNotIn("vat_rate", payload)
+
+    def test_audit_requires_traceable_source_ids(self):
+        row = dict(seller_id=1, posted_on="2026-11-02", kind="pickup_point",
+                   amount_grosze=1000, currency="PLN")
+        with self.assertRaisesRegex(ValueError, "source_id"):
+            monthly_fee_audit([row], 2026, 11)
+        row["source_id"] = "point-1"
+        report = monthly_fee_audit([row], 2026, 11)
+        self.assertTrue(report["traceable"])
+        self.assertEqual(report["source_count"], 1)
 
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")

@@ -47,6 +47,26 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_direct_sql_cannot_bypass_refund_limit(self):
+        self.add()
+        self.add(source_id="refund:1", amount_grosze=-700, correction_of="pickup:1")
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "exceed original"):
+            self.con.execute("""
+                INSERT INTO platform_fee_ledger
+                    (source_id, seller_id, posted_on, kind, amount_grosze, correction_of)
+                VALUES ('refund:2', 7, '2026-11-19', 'pickup_point', -400, 'pickup:1')
+            """)
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 2)
+
+    def test_direct_sql_cannot_add_positive_correction(self):
+        self.add()
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "Correction must be negative"):
+            self.con.execute("""
+                INSERT INTO platform_fee_ledger
+                    (source_id, seller_id, posted_on, kind, amount_grosze, correction_of)
+                VALUES ('refund:positive', 7, '2026-11-19', 'pickup_point', 100, 'pickup:1')
+            """)
+
     def test_ledger_entries_cannot_be_modified_or_deleted(self):
         self.add()
         with self.assertRaisesRegex(sqlite3.IntegrityError, "immutable"):

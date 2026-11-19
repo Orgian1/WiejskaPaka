@@ -132,6 +132,13 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_source_id_is_unique_across_reporting_months(self):
+        self.add(posted_on="2026-11-30")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.add(posted_on="2026-12-01")
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 1)
+        self.assertEqual(monthly_platform_fee_entries(self.con, 2026, 12), [])
+
     def test_duplicate_fee_after_database_reopen_is_rejected(self):
         import tempfile
         from pathlib import Path

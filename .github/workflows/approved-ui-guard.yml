@@ -70,6 +70,11 @@ jobs:
         run: python -m unittest discover -s tests -p test_seller_rating_rls_contract.py -v
       - name: Test read-only PostgreSQL RLS preflight
         run: python -m unittest discover -s tests -p test_seller_rating_postgres_preflight.py -v
+      - name: Verify RLS context and PostgreSQL gateway adapter
+        run: |
+          python -m unittest discover -s tests -p test_rls_gateway_context.py -v
+          python -m unittest discover -s tests -p test_postgres_runtime_role.py -v
+          python -m unittest discover -s tests -p test_pg_adapter_rls_gateway.py -v
       - name: Smoke-test disposable full demo and targeted ads
         run: python -m unittest discover -s tests -p test_full_demo_seed.py -v
       - name: Start disposable demo and verify actual HTTP endpoints

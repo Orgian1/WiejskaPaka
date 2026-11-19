@@ -1,6 +1,6 @@
 """Unit tests for accounting summaries; no invoice is issued."""
 import unittest
-from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation
+from backend.monthly_platform_fees import monthly_fee_summary, monthly_fee_csv, monthly_fee_reconciliation, invoice_export_guard
 
 
 class MonthlyPlatformFeesTests(unittest.TestCase):
@@ -72,6 +72,12 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
         self.assertEqual(result["totals"]["PLN"], {"amount_grosze": 1100, "transactions": 3})
         self.assertEqual(result["status"], "draft_unverified")
         self.assertEqual(len(result["rows"]), 2)
+
+    def test_invoice_export_is_disabled_even_with_claimed_verification(self):
+        with self.assertRaisesRegex(ValueError, "not verified"):
+            invoice_export_guard({"status": "draft_unverified"})
+        with self.assertRaises(NotImplementedError):
+            invoice_export_guard({"status": "verified_for_invoicing"})
 
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")

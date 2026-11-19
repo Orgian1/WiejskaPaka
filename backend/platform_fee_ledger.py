@@ -28,6 +28,22 @@ def initialize_platform_fee_ledger(con: sqlite3.Connection) -> None:
     """)
 
 
+    con.execute("""
+        CREATE TRIGGER IF NOT EXISTS platform_fee_ledger_no_update
+        BEFORE UPDATE ON platform_fee_ledger
+        BEGIN
+            SELECT RAISE(ABORT, 'Platform fee ledger entries are immutable');
+        END
+    """)
+    con.execute("""
+        CREATE TRIGGER IF NOT EXISTS platform_fee_ledger_no_delete
+        BEFORE DELETE ON platform_fee_ledger
+        BEGIN
+            SELECT RAISE(ABORT, 'Platform fee ledger entries are immutable');
+        END
+    """)
+
+
 def add_platform_fee_entry(con: sqlite3.Connection, *, source_id: str,
                            seller_id: int, posted_on: str, kind: str,
                            amount_grosze: int, correction_of: str | None = None,

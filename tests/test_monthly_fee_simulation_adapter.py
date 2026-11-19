@@ -42,6 +42,31 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(simulated_withdrawal_fee_entries(con, 2026, 11)[0]["amount_grosze"], 1)
         con.close()
 
+    def test_december_to_january_year_boundary(self):
+        from datetime import datetime, timezone
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3),('w2','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES
+              ('w1','rolnik',500,100,2000,1900),('w2','rolnik',500,200,4000,3800);
+        """)
+        december = int(datetime(2026, 12, 31, 23, 59, 59, tzinfo=timezone.utc).timestamp())
+        january = int(datetime(2027, 1, 1, 0, 0, 0, tzinfo=timezone.utc).timestamp())
+        con.executemany("INSERT INTO wallet_preview_resolutions VALUES (?,?,?,?,?)", [
+            ("r1", "w1", 3, december, "completed_test"),
+            ("r2", "w2", 3, january, "completed_test"),
+        ])
+        self.assertEqual([r["amount_grosze"] for r in simulated_withdrawal_fee_entries(con, 2026, 12)], [100])
+        self.assertEqual([r["amount_grosze"] for r in simulated_withdrawal_fee_entries(con, 2027, 1)], [200])
+        con.close()
+
     def test_duplicate_resolution_in_other_month_does_not_block_report(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

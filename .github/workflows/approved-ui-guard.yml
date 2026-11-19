@@ -86,3 +86,17 @@ jobs:
         run: python -m playwright install --with-deps chromium
       - name: Verify wallet ad timing and seller stars in Chromium
         run: python -m pytest tests/test_approved_ui_ads_ratings_browser.py -v
+
+  disposable-postgres-rls:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated PostgreSQL test dependencies
+        run: python -m pip install 'psycopg[binary]>=3,<4' pgserver==0.1.4
+      - name: Verify native FORCE RLS account isolation in disposable PostgreSQL
+        run: python -m unittest tests.test_postgres_rls_isolation_live -v

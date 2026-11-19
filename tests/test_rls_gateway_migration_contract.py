@@ -20,6 +20,20 @@ class GatewayMigrationContract(unittest.TestCase):
         self.assertIn('execute', sql)
         self.assertIn('describe', sql)
 
+    def test_activation_requires_explicit_compatibility_approval(self):
+        sql = UP.read_text(encoding='utf-8')
+        self.assertIn("wp_rls.api_compatibility_verified", sql)
+        self.assertIn("RLS activation blocked", sql)
+        self.assertIn("wp_rls.disposable_test", sql)
+        self.assertIn("current_database()", sql)
+
+    def test_sensitive_role_permissions_are_restricted(self):
+        sql = UP.read_text(encoding='utf-8')
+        self.assertIn("NOBYPASSRLS", sql)
+        self.assertIn("NOSUPERUSER", sql)
+        self.assertIn("REVOKE ALL ON SCHEMA wp_rls FROM PUBLIC", sql)
+        self.assertIn("REVOKE ALL ON SCHEMA wp_rls_keys FROM PUBLIC", sql)
+
     def test_no_automatic_migration_in_test(self):
         self.assertNotIn('subprocess', Path(__file__).read_text(encoding='utf-8'))
         self.assertNotIn('psycopg.connect', Path(__file__).read_text(encoding='utf-8'))

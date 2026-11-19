@@ -7,6 +7,7 @@ import secrets
 import sqlite3
 from contextlib import contextmanager, asynccontextmanager
 from backend.pg_adapter import postgres_db, init_postgres, PgUniqueViolation
+from backend.rls_gateway import DatabaseContextMiddleware
 from backend.delivery_access import courier_may_see_address
 from backend.order_lifecycle import require_transition
 from backend.time_safety import is_future
@@ -163,6 +164,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 from backend.http_limits import RequestBodyLimitMiddleware
 app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+# Populate transaction-scoped actor context for the opt-in PostgreSQL RLS gateway.
+# SQLite demo behavior is unchanged; no migration or RLS activation occurs here.
+app.add_middleware(DatabaseContextMiddleware)
 
 @contextmanager
 def db():

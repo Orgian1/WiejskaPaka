@@ -50,6 +50,15 @@ class MonthlyPlatformFeesTests(unittest.TestCase):
         self.assertEqual(result[0]["amount_grosze"], 0)
         self.assertEqual(result[0]["transactions"], 2)
 
+    def test_rejects_ambiguous_dates_and_boolean_month(self):
+        row = dict(seller_id=1, posted_on="2026-11-1", kind="pickup_point",
+                   amount_grosze=1000, currency="PLN")
+        with self.assertRaises(ValueError):
+            monthly_fee_summary([row], 2026, 11)
+        row["posted_on"] = "2026-11-01"
+        with self.assertRaises(ValueError):
+            monthly_fee_summary([row], 2026, True)
+
     def test_rejects_floating_point_and_unrelated_wallet_movements(self):
         row = dict(seller_id=1, posted_on="2026-11-01", kind="pickup_point", amount_grosze=20.5, currency="PLN")
         with self.assertRaises(ValueError):

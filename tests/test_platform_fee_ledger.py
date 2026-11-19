@@ -132,6 +132,16 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_december_and_january_reports_do_not_overlap(self):
+        self.add(posted_on="2026-12-31")
+        self.add(source_id="pickup:jan", posted_on="2027-01-01", amount_grosze=2500)
+        december = monthly_platform_fee_draft(self.con, 2026, 12)
+        january = monthly_platform_fee_draft(self.con, 2027, 1)
+        self.assertEqual(december["control_totals"]["PLN"]["amount_grosze"], 1000)
+        self.assertEqual(january["control_totals"]["PLN"]["amount_grosze"], 2500)
+        self.assertEqual(len(december["rows"]), 1)
+        self.assertEqual(len(january["rows"]), 1)
+
     def test_monthly_ledger_draft_cannot_be_exported_as_invoice(self):
         self.add()
         draft = monthly_platform_fee_draft(self.con, 2026, 11)

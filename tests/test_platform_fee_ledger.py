@@ -132,6 +132,17 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_failed_insert_preserves_existing_monthly_draft(self):
+        self.add()
+        before = monthly_platform_fee_draft(self.con, 2026, 11)
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.con.execute("""
+                INSERT INTO platform_fee_ledger
+                    (source_id, seller_id, posted_on, kind, amount_grosze, correction_of)
+                VALUES ('bad:overrefund', 7, '2026-11-19', 'pickup_point', -1001, 'pickup:1')
+            """)
+        self.assertEqual(monthly_platform_fee_draft(self.con, 2026, 11), before)
+
     def test_failed_insert_does_not_poison_next_valid_entry(self):
         self.add()
         with self.assertRaisesRegex(sqlite3.IntegrityError, "exceed original"):

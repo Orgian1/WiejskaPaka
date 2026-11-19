@@ -60,6 +60,20 @@ def add_platform_fee_entry(con: sqlite3.Connection, *, source_id: str,
             raise ValueError("Correction must refer to matching fee")
     elif amount_grosze < 0:
         raise ValueError("Negative fees require correction reference")
+    if correction_of is not None and amount_grosze < 0:
+        original_amount = con.execute(
+            "SELECT amount_grosze FROM platform_fee_ledger WHERE source_id = ?",
+            (correction_of,),
+        ).fetchone()[0]
+        if original_amount <= 0:
+            raise ValueError("Refund must reference a positive original fee")
+        refunded = con.execute(
+            "SELECT COALESCE(SUM(amount_grosze), 0) FROM platform_fee_ledger "
+            "WHERE correction_of = ? AND amount_grosze < 0",
+            (correction_of,),
+        ).fetchone()[0]
+        if refunded + amount_grosze < -original_amount:
+            raise ValueError("Corrections exceed original fee")
     if provider_reference is not None and (type(provider_reference) is not str or not provider_reference.strip()):
         raise ValueError("Invalid provider reference")
     con.execute("""

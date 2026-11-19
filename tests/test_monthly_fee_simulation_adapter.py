@@ -1,6 +1,6 @@
 import sqlite3
 import unittest
-from backend.monthly_fee_simulation_adapter import simulated_withdrawal_fee_entries, simulated_monthly_withdrawal_report
+from backend.monthly_fee_simulation_adapter import simulated_withdrawal_fee_entries, simulated_monthly_fee_report, simulated_monthly_withdrawal_report
 from backend.monthly_platform_fees import monthly_fee_audit
 
 
@@ -35,6 +35,10 @@ class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
         self.assertEqual(wrapped["environment"], "simulation_only")
         self.assertFalse(wrapped["fiscal_document"])
         self.assertFalse(wrapped["bank_transfer_executed"])
+        draft = simulated_monthly_fee_report(con, 2026, 11)
+        self.assertEqual(draft["environment"], "simulation_only")
+        self.assertFalse(draft["fiscal_document"])
+        self.assertFalse(draft["payment_provider_confirmed"])
         con.close()
 
 

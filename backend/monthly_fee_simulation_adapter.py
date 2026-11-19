@@ -12,8 +12,11 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
     """
     if type(year) is not int or type(month) is not int:
         raise ValueError("Invalid reporting period")
-    start = date(year, month, 1)
-    end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    try:
+        start = date(year, month, 1)
+        end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    except ValueError as exc:
+        raise ValueError("Invalid reporting period") from exc
     start_epoch = int(datetime(start.year, start.month, start.day, tzinfo=timezone.utc).timestamp())
     end_epoch = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp())
     invalid_timestamp = con.execute("""

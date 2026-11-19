@@ -52,6 +52,8 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
             raise ValueError("Invalid simulation timestamp") from exc
         if (posted_on.year, posted_on.month) != (year, month):
             continue
+        if type(row["seller_id"]) is not int or row["seller_id"] < 1:
+            raise ValueError("Invalid simulated withdrawal owner")
         if row["owner_role"] is None or row["entry_kind"] is None:
             raise ValueError("Missing simulated withdrawal source")
         if row["owner_role"] == "klient" and row["fee_basis_points"] == 0:
@@ -66,8 +68,6 @@ def simulated_withdrawal_fee_entries(con, year: int, month: int) -> list[dict]:
             continue
         if row["owner_role"] != "rolnik" or row["fee_basis_points"] != 500 or row["entry_kind"] != "withdrawal":
             raise ValueError("Inconsistent simulated withdrawal source")
-        if type(row["seller_id"]) is not int or row["seller_id"] < 1:
-            raise ValueError("Invalid simulated seller")
         if row["entry_user_id"] != row["seller_id"]:
             raise ValueError("Simulated withdrawal owner mismatch")
         gross = row["gross_grosze"]

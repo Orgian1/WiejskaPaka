@@ -148,6 +148,36 @@ class PlatformFeeLedgerTests(unittest.TestCase):
         self.assertEqual(november[0]["month"], "11")
         self.assertEqual(december[0]["month"], "12")
 
+    def test_csv_cli_success_and_missing_database_error(self):
+        import tempfile
+        from contextlib import redirect_stdout, redirect_stderr
+        from io import StringIO
+        from pathlib import Path
+        from backend.export_platform_fee_csv import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fees.sqlite"
+            with sqlite3.connect(path) as writer:
+                initialize_platform_fee_ledger(writer)
+                add_platform_fee_entry(
+                    writer, source_id="pickup:cli", seller_id=7,
+                    posted_on="2026-11-19", kind="pickup_point", amount_grosze=1001,
+                )
+            stdout, stderr = StringIO(), StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                self.assertEqual(main([str(path), "2026", "11"]), 0)
+            self.assertIn("pickup_point", stdout.getvalue())
+            self.assertIn("1001", stdout.getvalue())
+            self.assertEqual(stderr.getvalue(), "")
+
+            stdout, stderr = StringIO(), StringIO()
+            missing = Path(directory) / "not-created.sqlite"
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                self.assertEqual(main([str(missing), "2026", "11"]), 1)
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertIn("Export failed:", stderr.getvalue())
+            self.assertFalse(missing.exists())
+
     def test_malformed_fee_kind_is_rejected_with_value_error(self):
         from backend.monthly_platform_fees import monthly_fee_summary
 

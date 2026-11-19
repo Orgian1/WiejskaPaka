@@ -32,6 +32,11 @@ def initialize_platform_fee_ledger(con: sqlite3.Connection) -> None:
         CREATE TRIGGER IF NOT EXISTS platform_fee_ledger_validate_insert
         BEFORE INSERT ON platform_fee_ledger
         BEGIN
+            SELECT CASE WHEN NEW.posted_on IS NULL OR length(NEW.posted_on) != 10
+                OR NEW.posted_on NOT GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+                OR date(NEW.posted_on, '+0 days') IS NULL
+                OR date(NEW.posted_on, '+0 days') != NEW.posted_on
+                THEN RAISE(ABORT, 'Invalid ledger posting date') END;
             SELECT CASE WHEN NEW.correction_of IS NULL AND NEW.amount_grosze <= 0
                 THEN RAISE(ABORT, 'New fee must be positive') END;
             SELECT CASE WHEN NEW.correction_of IS NOT NULL AND NEW.amount_grosze >= 0

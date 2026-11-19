@@ -31,6 +31,10 @@ class MarketplaceAdsTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as err:current(self.con,'admin',now=150)
         self.assertEqual(err.exception.status_code,404)
 
+    def test_multiline_campaign_description_is_accepted(self):
+        payload=CampaignIn(slot='login',title='Promocja',body='Linia pierwsza'+chr(10)+'Linia druga',starts_at=100,ends_at=200)
+        validate(payload)
+
     def test_invalid_content_and_date_rejected(self):
         for title,body,start,end in [('  ','Treść',100,200),('Tytuł','  ',100,200),
                                       ('A'+chr(0)+'B','Treść',100,200),('Tytuł','Treść',200,100)]:

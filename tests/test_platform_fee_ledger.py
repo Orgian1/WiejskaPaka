@@ -3,7 +3,7 @@ import unittest
 
 from backend.platform_fee_ledger import (
     add_platform_fee_entry, initialize_platform_fee_ledger, monthly_platform_fee_entries,
-    monthly_platform_fee_draft,
+    monthly_platform_fee_draft, monthly_platform_fee_csv,
 )
 from backend.monthly_platform_fees import monthly_fee_audit, invoice_export_guard
 
@@ -131,6 +131,27 @@ class PlatformFeeLedgerTests(unittest.TestCase):
                      dict(source_id="  "), dict(kind="delivery")):
             with self.assertRaises(ValueError):
                 self.add(**data)
+
+    def test_monthly_csv_exports_integer_grosze_without_personal_data(self):
+        import csv
+        from io import StringIO
+
+        self.add()
+        self.add(source_id="ad:2", kind="advertising", amount_grosze=3500)
+        before = self.con.total_changes
+        exported = monthly_platform_fee_csv(self.con, 2026, 11)
+        rows = list(csv.DictReader(StringIO(exported)))
+        self.assertEqual(len(rows), 2)
+        self.assertEqual({row["fee_type"]: int(row["amount_grosze"]) for row in rows},
+                         {"pickup_point": 1000, "advertising": 3500})
+        self.assertEqual(self.con.total_changes, before)
+        self.assertNotIn("email", exported.lower())
+        self.assertNotIn("invoice", exported.lower())
+
+    def test_empty_month_csv_has_only_headers(self):
+        exported = monthly_platform_fee_csv(self.con, 2026, 12)
+        self.assertEqual(len(exported.strip().splitlines()), 1)
+        self.assertIn("amount_grosze", exported)
 
     def test_full_refund_leaves_exactly_zero_grosze(self):
         self.add(amount_grosze=1001)

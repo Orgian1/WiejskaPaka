@@ -19,6 +19,7 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
     """
     date(year, month, 1)
     totals = defaultdict(lambda: {"amount_grosze": 0, "transactions": 0})
+    seen_sources = set()
     allowed = {"pickup_point", "seller_withdrawal_fee", "advertising"}
     for entry in entries:
         posted = date.fromisoformat(entry["posted_on"])
@@ -34,6 +35,15 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
             raise ValueError("Unsupported platform fee or currency")
         if (posted.year, posted.month) != (year, month):
             continue
+        # The source reference identifies one immutable ledger entry. Repeated
+        # exports or duplicate joins must not silently double-charge a seller.
+        source_id = entry.get("source_id")
+        if source_id is not None:
+            if not isinstance(source_id, str) or not source_id.strip():
+                raise ValueError("Invalid source identifier")
+            if source_id in seen_sources:
+                raise ValueError("Duplicate accounting source identifier")
+            seen_sources.add(source_id)
         item = totals[(seller_id, currency, kind)]
         item["amount_grosze"] += amount
         item["transactions"] += 1

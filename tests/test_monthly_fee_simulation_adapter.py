@@ -5,6 +5,29 @@ from backend.monthly_platform_fees import monthly_fee_audit
 
 
 class SimulatedWithdrawalFeeAdapterTests(unittest.TestCase):
+    def test_corrupt_fee_and_wrong_owner_fail_closed(self):
+        con = sqlite3.connect(":memory:")
+        con.row_factory = sqlite3.Row
+        con.executescript("""
+            CREATE TABLE wallet_preview_resolutions
+              (id TEXT, withdrawal_id TEXT, user_id INTEGER, created_at INTEGER, state TEXT);
+            CREATE TABLE wallet_preview_terms
+              (withdrawal_id TEXT, owner_role TEXT, fee_basis_points INTEGER,
+               fee_grosze INTEGER, gross_grosze INTEGER, net_grosze INTEGER);
+            CREATE TABLE wallet_preview_entries (id TEXT, kind TEXT, user_id INTEGER);
+            INSERT INTO wallet_preview_entries VALUES ('w1','withdrawal',3);
+            INSERT INTO wallet_preview_terms VALUES ('w1','rolnik',500,999,2000,1001);
+            INSERT INTO wallet_preview_resolutions VALUES
+              ('r1','w1',3,1793577600,'completed_test');
+        """)
+        with self.assertRaisesRegex(ValueError, "fee mismatch"):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+        con.execute("UPDATE wallet_preview_terms SET fee_grosze=100, net_grosze=1900")
+        con.execute("UPDATE wallet_preview_resolutions SET user_id=4")
+        with self.assertRaisesRegex(ValueError, "owner mismatch"):
+            simulated_withdrawal_fee_entries(con, 2026, 11)
+        con.close()
+
     def test_zero_fee_is_not_a_charge(self):
         con = sqlite3.connect(":memory:")
         con.row_factory = sqlite3.Row

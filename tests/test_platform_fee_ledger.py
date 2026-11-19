@@ -47,6 +47,17 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_direct_sql_rejects_invalid_posting_dates(self):
+        for i, value in enumerate(("2026-02-30", "2026-11-1", "not-a-date")):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(sqlite3.IntegrityError, "Invalid ledger posting date"):
+                    self.con.execute("""
+                        INSERT INTO platform_fee_ledger
+                            (source_id, seller_id, posted_on, kind, amount_grosze)
+                        VALUES (?, 7, ?, 'pickup_point', 1000)
+                    """, (f"bad-date:{i}", value))
+        self.assertEqual(monthly_platform_fee_entries(self.con, 2026, 11), [])
+
     def test_direct_sql_correction_cannot_cross_seller_or_fee_kind(self):
         self.add()
         for source, seller, kind in (

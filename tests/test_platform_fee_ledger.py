@@ -47,6 +47,14 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Correction"):
                 self.add(**data)
 
+    def test_ledger_entries_cannot_be_modified_or_deleted(self):
+        self.add()
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "immutable"):
+            self.con.execute("UPDATE platform_fee_ledger SET amount_grosze = 1 WHERE source_id = 'pickup:1'")
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "immutable"):
+            self.con.execute("DELETE FROM platform_fee_ledger WHERE source_id = 'pickup:1'")
+        self.assertEqual(monthly_platform_fee_entries(self.con, 2026, 11)[0]["amount_grosze"], 1000)
+
     def test_positive_correction_is_rejected(self):
         self.add()
         with self.assertRaisesRegex(ValueError, "Positive adjustments"):

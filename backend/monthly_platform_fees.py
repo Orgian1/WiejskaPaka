@@ -38,7 +38,7 @@ def monthly_fee_summary(entries: Iterable[Mapping], year: int, month: int) -> li
             raise ValueError("Amounts must be integer grosze")
         if not isinstance(seller_id, int) or isinstance(seller_id, bool) or seller_id <= 0:
             raise ValueError("Invalid seller identifier")
-        if kind not in allowed or currency != "PLN":
+        if type(kind) is not str or kind not in allowed or currency != "PLN":
             raise ValueError("Unsupported platform fee or currency")
         if (posted.year, posted.month) != (year, month):
             continue

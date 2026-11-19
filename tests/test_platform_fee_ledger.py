@@ -132,6 +132,17 @@ class PlatformFeeLedgerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.add(**data)
 
+    def test_direct_sql_cannot_correct_a_correction(self):
+        self.add()
+        self.add(source_id="refund:1", amount_grosze=-300, correction_of="pickup:1")
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "match original"):
+            self.con.execute("""
+                INSERT INTO platform_fee_ledger
+                    (source_id, seller_id, posted_on, kind, amount_grosze, correction_of)
+                VALUES ('refund:2', 7, '2026-11-19', 'pickup_point', -100, 'refund:1')
+            """)
+        self.assertEqual(len(monthly_platform_fee_entries(self.con, 2026, 11)), 2)
+
     def test_refund_of_refund_is_rejected(self):
         self.add()
         self.add(source_id="refund:1", amount_grosze=-300, correction_of="pickup:1")

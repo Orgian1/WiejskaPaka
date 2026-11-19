@@ -145,3 +145,15 @@ def monthly_platform_fee_entries(con: sqlite3.Connection, year: int, month: int)
     """, (start, end)).fetchall()
     return [dict(zip(("source_id", "seller_id", "posted_on", "kind", "amount_grosze", "currency"), row))
             for row in rows]
+
+
+def monthly_platform_fee_draft(con: sqlite3.Connection, year: int, month: int) -> dict:
+    """Internal draft only; ledger events are not evidence of PSP settlement."""
+    from backend.monthly_platform_fees import monthly_fee_draft_payload
+
+    entries = monthly_platform_fee_entries(con, year, month)
+    draft = monthly_fee_draft_payload(entries, year, month)
+    draft["source_system"] = "platform_fee_ledger"
+    draft["payment_provider_confirmed"] = False
+    draft["fiscal_document"] = False
+    return draft

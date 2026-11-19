@@ -23,6 +23,6 @@ def assert_runtime_role(connection, *, allow_backup=False):
           AND has_schema_privilege(current_user,n.oid,'CREATE')) AS can_create
     """.replace("ALLOW_BACKUP", "true" if allow_backup else "false")).fetchone()
     keys = ('elevated', 'owns_relations', 'can_create')
-    values = [row[key] for key in keys] if isinstance(row, dict) else list(row or ())
+    values = [row.get(key) for key in keys] if isinstance(row, dict) else list(row or ())
     if len(values) != 3 or any(value is not False for value in values):
         raise RuntimeError('PostgreSQL: wymagane oddzielne, nieuprzywilejowane konto aplikacyjne bez własności tabel i CREATE w public')

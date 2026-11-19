@@ -28,6 +28,30 @@ class AppGatewayIntegrationTests(unittest.TestCase):
         self.assertEqual(seen, [('request', 'Bearer account-1'), ('auth', '')])
         self.assertEqual(_context.get(), ('maintenance', None))
 
+    def test_concurrent_requests_keep_distinct_bearer_context(self):
+        import asyncio
+        seen = {}
+
+        async def inner(scope, receive, send):
+            await asyncio.sleep(0)
+            seen[scope['path']] = _context.get()
+
+        wrapper = DatabaseContextMiddleware(inner)
+
+        async def invoke(path, token):
+            await wrapper({'type': 'http', 'path': path,
+                           'headers': [(b'authorization', token.encode('ascii'))]},
+                          lambda: None, lambda message: None)
+
+        async def both():
+            await asyncio.gather(invoke('/buyer/1', 'Bearer buyer-1'),
+                                 invoke('/buyer/2', 'Bearer buyer-2'))
+
+        asyncio.run(both())
+        self.assertEqual(seen['/buyer/1'], ('request', 'Bearer buyer-1'))
+        self.assertEqual(seen['/buyer/2'], ('request', 'Bearer buyer-2'))
+        self.assertEqual(_context.get(), ('maintenance', None))
+
     def test_exception_cannot_leak_authorization_to_next_request(self):
         async def inner(scope, receive, send):
             self.assertEqual(_context.get(), ('request', 'Bearer secret'))

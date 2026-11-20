@@ -1,5 +1,7 @@
 from datetime import date, timedelta
+import sqlite3
 import pytest
+from tests.pickup_fixtures import grant_test_period
 from backend import pickup_dates
 from tests.test_purchase_record_http_restart import server, account
 
@@ -23,6 +25,8 @@ def test_attendance_persists_and_other_seller_cannot_change_it(tmp_path,monkeypa
         response=client.post('/pickup-points',headers=seller,json=body)
         assert response.status_code==201,response.text
         point=response.json()['id']
+        with sqlite3.connect(database) as connection:
+            grant_test_period(connection, point)
         assert client.get('/farmers/me/pickup-points',headers=seller).json()[0]['attendance_dates']==[day]
         assert client.put(f'/pickup-points/{point}',headers=other,json={**body,'active':True}).status_code==404
         seller_id=client.get('/auth/me',headers=seller).json()['id']
@@ -39,7 +43,6 @@ def test_attendance_persists_and_other_seller_cannot_change_it(tmp_path,monkeypa
         assert client.put('/cart/items',headers=seller,json={'product_id':product['id'],'quantity':1}).status_code==403
         assert client.post('/orders',headers=seller,json={'product_id':product['id'],'quantity':1,'fulfillment':'odbior','pickup_point_id':point}).status_code==403
     with server(database) as client:
-        import sqlite3
         con=sqlite3.connect(database)
         assert con.execute('SELECT attendance_date FROM pickup_point_dates WHERE point_id=?',(point,)).fetchall()==[(day,)]
         con.close()

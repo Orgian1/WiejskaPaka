@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS wallet_ads (
  audience TEXT NOT NULL DEFAULT 'both' CHECK(audience IN ('klient','rolnik','both')),
  deleted INTEGER NOT NULL DEFAULT 0 CHECK(deleted IN (0,1)), CHECK(ends_at>starts_at)
 );
+ALTER TABLE wallet_ads ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'both'
+ CHECK(audience IN ('klient','rolnik','both'));
 CREATE TABLE IF NOT EXISTS wallet_ad_accounts (
  user_id BIGINT NOT NULL PRIMARY KEY REFERENCES users(id), last_shown BIGINT NOT NULL DEFAULT 0,
  last_ad_id TEXT REFERENCES wallet_ads(id)

@@ -71,7 +71,7 @@ def main():
 
 
 def verify_test_database_connection(dsn, expected_name, connect=None, *, require_schema=False,
-                                    required_tables=()):
+                                    required_tables=(), allow_backup=False):
     """Verify the actual PostgreSQL target before starting the HTTP listener.
 
     This only performs a read-only probe; it never creates or migrates a database.
@@ -100,6 +100,10 @@ def verify_test_database_connection(dsn, expected_name, connect=None, *, require
                 raise RuntimeError('Test PostgreSQL role must be non-privileged and cannot bypass RLS')
             from backend.postgres_schema_preflight import CORE_TABLES
             tables = tuple(dict.fromkeys((*CORE_TABLES, *required_tables)))
+            from backend.pg_adapter import gateway_configured
+            if gateway_configured():
+                verify_gateway_schema(connection, tables, allow_backup=allow_backup)
+                return
             with connection.cursor() as cursor:
                 cursor.execute(
                     'SELECT table_name FROM information_schema.tables '
@@ -113,6 +117,32 @@ def verify_test_database_connection(dsn, expected_name, connect=None, *, require
                 raise RuntimeError('Test PostgreSQL schema incomplete; missing tables: ' + ', '.join(missing))
     finally:
         connection.close()
+
+
+def verify_gateway_schema(connection, tables, *, allow_backup=False):
+    from psycopg.rows import dict_row
+    from backend.postgres_runtime_role import assert_runtime_role
+    from backend.rls_gateway import load_key
+
+    with connection.cursor(row_factory=dict_row) as cursor:
+        class RoleMetadata:
+            def execute(self, query):
+                cursor.execute(query)
+                return cursor
+
+        assert_runtime_role(RoleMetadata(), allow_backup=allow_backup)
+        cursor.execute("""SELECT relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname='public' AND c.relkind='r' AND c.relrowsecurity
+              AND c.relforcerowsecurity AND c.relname=ANY(%s)""", (list(tables),))
+        if {row['relname'] for row in cursor.fetchall()} != set(tables):
+            raise RuntimeError('RLS schema incomplete')
+        if allow_backup:
+            cursor.execute("SELECT pg_has_role(current_user,'wp_rls_backup','USAGE') AS allowed")
+        else:
+            load_key()
+            cursor.execute("SELECT has_function_privilege(current_user,'wp_rls.execute(text,text)','EXECUTE') AS allowed")
+        if cursor.fetchone()['allowed'] is not True:
+            raise RuntimeError('PostgreSQL role is missing required privileges')
 
 
 if __name__ == '__main__':

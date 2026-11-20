@@ -231,7 +231,32 @@
   },
   {
     "file": "optional_wallet_ads.sql",
-    "sha256": "1014733e9042f8e65b52a4908d79c5418fea82bf6edeecb1343b3c6f29ec71b5",
-    "bytes": 1080
+    "sha256": "6cc614deb12c21fc69dbcad838a6e127c477128ec80c41fda3e995a5089d95ea",
+    "bytes": 1214
+  },
+  {
+    "file": "upgrade_marketplace_ads.sql",
+    "sha256": "fb788114d64741f5c9367e8b1314e8580d1e54d83eca896ae940b8a51c10e9c6",
+    "bytes": 526
+  },
+  {
+    "file": "upgrade_pickup_point_periods.sql",
+    "sha256": "5f30c1e554fa7cb98eb6b684e81a9263911982d290b4cb1a62ad15f939509bbd",
+    "bytes": 857
+  },
+  {
+    "file": "upgrade_pickup_promo_30_days.sql",
+    "sha256": "63a9f58e008654c7934ba753e7c7a237da339e946bbe4bfea0eb74f9fb9ce3ee",
+    "bytes": 174
+  },
+  {
+    "file": "upgrade_shipment_public_refs.sql",
+    "sha256": "34dbd166f1c0eb2ac396138f8b76bbaabc2875379cb7de3f018b21d87a44a6d1",
+    "bytes": 325
+  },
+  {
+    "file": "upgrade_seller_ratings.sql",
+    "sha256": "493a6aef8ec8934f471ff67d06ebd4edb59aefbdde017fa3ad8f316474d8cfdb",
+    "bytes": 526
   }
 ]

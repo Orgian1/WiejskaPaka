@@ -91,11 +91,9 @@ def consume_for_point(con, user_id, point_id, *, postgres=False, today=None):
     free_until = period_end(start).isoformat()
     con.execute('INSERT INTO pickup_promo_points(point_id,grant_id,free_until) VALUES(?,?,?)',(point_id,row['id'],free_until))
     # Record the free entitlement in the same transaction as the point.
-    from backend.pickup_point_periods import period_end
-    from uuid import uuid4 as new_id
     con.execute('''INSERT INTO pickup_point_periods(id,point_id,farmer_id,starts_at,ends_at,price_grosze,kind,wallet_entry_id)
         VALUES(?,?,?,?,?,0,'promotion',NULL)''',
-        (new_id().hex,point_id,user_id,start.isoformat(),period_end(start).isoformat()))
+        (uuid4().hex,point_id,user_id,start.isoformat(),free_until))
     return {'free_until':free_until,'charges_executed':False}
 
 

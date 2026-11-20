@@ -135,6 +135,26 @@ class PgConnection:
         return PgCursor(cursor, lastrowid)
 
 
+def gateway_configured():
+    import os
+    return os.environ.get('WP_RLS_GATEWAY') == '1' or bool(os.environ.get('WP_RLS_KEY_FILE'))
+
+
+def checked_gateway(connection):
+    """Check the installed gateway and runtime role on the connection it will use."""
+    installed = connection.execute(
+        "SELECT to_regprocedure('wp_rls.execute(text,text)') IS NOT NULL AS installed"
+    ).fetchone()['installed']
+    if installed:
+        from .rls_gateway import load_key
+        from .postgres_runtime_role import assert_runtime_role
+        assert_runtime_role(connection)
+        load_key()
+    elif gateway_configured():
+        raise RuntimeError('RLS schema required; legacy fallback forbidden')
+    return installed
+
+
 @contextmanager
 def postgres_db(url):
     try:
@@ -144,19 +164,7 @@ def postgres_db(url):
         raise RuntimeError('PostgreSQL wymaga pakietu psycopg[binary]') from exc
     with psycopg.connect(url, row_factory=dict_row, connect_timeout=5) as connection:
         with connection.transaction():
-            import os
-            installed = connection.execute(
-                "SELECT to_regprocedure('wp_rls.execute(text,text)') IS NOT NULL AS installed"
-            ).fetchone()['installed']
-            configured = os.environ.get('WP_RLS_GATEWAY') == '1' or bool(os.environ.get('WP_RLS_KEY_FILE'))
-            if installed:
-                from .rls_gateway import load_key
-                from .postgres_runtime_role import assert_runtime_role
-                assert_runtime_role(connection)
-                load_key()
-            elif configured:
-                raise RuntimeError('RLS schema required; legacy fallback forbidden')
-            yield PgConnection(connection, gateway=installed)
+            yield PgConnection(connection, gateway=checked_gateway(connection))
 
 
 def init_postgres(url):
@@ -181,8 +189,13 @@ def postgres_verified_db(url, authorization, *, now=None):
     use the SAME connection and transaction. The DB role must still be treated
     as privileged until independently reviewed RLS policies are deployed.
     """
-    from .neon_session_bridge import verified_actor
+    from .neon_session_bridge import authenticate_session, verified_actor
+    from .rls_gateway import database_context
 
     with postgres_db(url) as connection:
-        with verified_actor(connection, authorization, now=now) as actor_id:
-            yield connection, actor_id
+        if getattr(connection, 'gateway', False):
+            with database_context('request', authorization):
+                yield connection, authenticate_session(connection, authorization, now=now)
+        else:
+            with verified_actor(connection, authorization, now=now) as actor_id:
+                yield connection, actor_id

@@ -1011,8 +1011,8 @@ def checkout_saved_cart(payload: SavedCartCheckoutIn, user=Depends(current_user)
                 raise HTTPException(422, 'Wybierz punkt odbioru bez adresu dostawy')
             point = con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=? AND active=1' + (' FOR UPDATE' if DATABASE_URL else ''),
                                 (payload.pickup_point_id,farmer_id)).fetchone()
-            from backend.pickup_point_periods import active_period
-            if not point or active_period(con,payload.pickup_point_id) is None:
+            from backend.pickup_point_periods import point_is_entitled
+            if not point or not point_is_entitled(con,payload.pickup_point_id):
                 raise HTTPException(422, 'Punkt odbioru jest niedostępny lub wygasł')
         else:
             if payload.pickup_point_id is not None or not all((payload.delivery_city,payload.delivery_street,payload.delivery_postal_code)):
@@ -1156,8 +1156,9 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
                 raise HTTPException(422,'Wybierz punkt odbioru, bez adresu dostawy')
             point = con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=? AND active=1' + (' FOR UPDATE' if DATABASE_URL else ''),
                                 (payload.pickup_point_id,p['farmer_id'])).fetchone()
-            if not point:
-                raise HTTPException(422,'Punkt odbioru nie należy do sprzedawcy lub jest nieaktywny')
+            from backend.pickup_point_periods import point_is_entitled
+            if not point or not point_is_entitled(con, payload.pickup_point_id, allow_unrecorded=True):
+                raise HTTPException(422,'Punkt odbioru jest niedostępny lub wygasł')
         else:
             if payload.pickup_point_id is not None or not all([payload.delivery_city, payload.delivery_street, payload.delivery_postal_code]):
                 raise HTTPException(422,'Dostawa wymaga pełnego adresu, bez punktu odbioru')
@@ -1189,7 +1190,7 @@ def create_order(payload: OrderIn, user=Depends(current_user), authorization: st
         record_order_event(con,cur.lastrowid,user['id'],'order_created',None,'oczekuje_na_platnosc_testowa')
         address_delivery.capture(con, cur.lastrowid, user['id'], prepared_delivery, CHECKOUT_VAULT)
         # PIN is returned to buyer only at creation in test mode; in production use separate secure delivery flow.
-        response = {'id':cur.lastrowid,'pickup_code':code,'pin_test_only':pin,'total_grosze':total,'reservation_expires_at':reservation_expires_at,'status':'oczekuje_na_platnosc_testowa'}
+        response = {'id':cur.lastrowid,'pickup_code':code,'pin_test_only':pin,'subtotal_grosze':subtotal,'total_grosze':total,'reservation_expires_at':reservation_expires_at,'status':'oczekuje_na_platnosc_testowa'}
         request_key = request_key or ('internal_direct_' + secrets.token_hex(16))
         if request_key:
             con.execute('''INSERT INTO checkout_idempotency

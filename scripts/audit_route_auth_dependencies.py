@@ -25,6 +25,8 @@ def is_public(method, path):
     # Public taxonomy and bounded product discovery; no account data or writes.
     if (method,path) in {('GET','/product-categories'),('POST','/catalog/query')}:
         return True
+    if method == 'GET' and path in ('/ads/slots/{slot}', '/sellers/{seller_id}/rating'):
+        return True
     # Public feature availability only; account status/request/confirm require a session.
     if method == 'GET' and path == '/auth/email-verification/options':
         return True

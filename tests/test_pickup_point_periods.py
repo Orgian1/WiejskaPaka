@@ -9,7 +9,7 @@ class PickupPointPeriodTests(unittest.TestCase):
         from pathlib import Path
         source=Path('backend/app.py').read_text(encoding='utf-8')
         self.assertIn('eligible=entitled_point_ids(con',source)
-        self.assertIn('active_period(con,payload.pickup_point_id) is None',source)
+        self.assertIn('not point_is_entitled(con,payload.pickup_point_id)',source)
 
     def test_period_is_exactly_30_days(self):
         start=datetime(2026,11,18,12,0,tzinfo=ZoneInfo('Europe/Warsaw'))

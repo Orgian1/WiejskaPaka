@@ -81,6 +81,12 @@ BEGIN
  IF c.purpose='maintenance' THEN RETURN true; END IF;
  IF c.purpose='auth' AND t IN ('users','sessions','login_attempts','password_change_access','password_reset_tokens','password_reset_limits','reset_mail_queue','account_email_proofs','email_verification_queue','email_verification_limits','mail_send_budget','mail_send_attempts','mail_recipient_blocks') THEN RETURN true; END IF;
  IF op='select' AND t IN ('users','products','pickup_points','farmer_profiles','pickup_point_coordinates','pickup_point_dates','product_sale_units','product_search_names','seller_public_logins','seller_delivery_windows','user_photos','schema_migrations') THEN RETURN true; END IF;
+ IF op='select' AND t IN ('product_categories','product_subcategories','product_classifications','product_listing_states') THEN RETURN true; END IF;
+ IF t='marketplace_ad_campaigns' THEN
+  RETURN c.role='admin' OR (op='select' AND (r->>'enabled')::integer=1
+   AND (r->>'starts_at')::bigint<=extract(epoch FROM statement_timestamp())
+   AND (r->>'ends_at')::bigint>extract(epoch FROM statement_timestamp()));
+ END IF;
  IF c.actor IS NULL THEN RETURN false; END IF;
  IF t='orders' AND op='update' THEN
   SELECT * INTO o FROM public.orders WHERE id=(r->>'id')::bigint;
@@ -99,6 +105,31 @@ BEGIN
   END IF;
   RETURN o.fulfillment='dostawa' AND o.status='w_drodze_testowo' AND o.pin_used=0 AND o.confirmed_at IS NULL AND EXISTS(SELECT 1 FROM public.delivery_assignments a WHERE a.order_id=o.id AND a.courier_id=c.actor);
  END IF;
+ IF t='seller_ratings' THEN
+  IF op='select' THEN RETURN c.role='admin' OR (r->>'buyer_id')::bigint=c.actor; END IF;
+  RETURN op='insert' AND c.role='klient' AND (r->>'buyer_id')::bigint=c.actor
+   AND EXISTS (SELECT 1 FROM public.orders v WHERE v.id=(r->>'order_id')::bigint
+    AND v.buyer_id=c.actor AND v.farmer_id=(r->>'seller_id')::bigint
+    AND v.status='odebrane' AND v.pin_used=1 AND v.confirmed_at IS NOT NULL);
+ END IF;
+ IF t='wallet_ads' THEN
+  RETURN c.role='admin' OR (op='select' AND c.role IN ('klient','rolnik')
+   AND r->>'audience' IN (c.role,'both') AND (r->>'enabled')::integer=1 AND (r->>'deleted')::integer=0
+   AND (r->>'starts_at')::bigint<=extract(epoch FROM statement_timestamp())
+   AND (r->>'ends_at')::bigint>extract(epoch FROM statement_timestamp()));
+ END IF;
+ IF t='shipment_public_refs' AND op='select' THEN
+  RETURN c.role='admin' OR EXISTS (SELECT 1 FROM public.shipment_groups v
+   WHERE v.id=r->>'shipment_id' AND c.actor IN (v.buyer_id,v.farmer_id));
+ END IF;
+ IF t='shipment_public_refs' AND op='insert' THEN
+  RETURN EXISTS (SELECT 1 FROM public.shipment_groups v WHERE v.id=r->>'shipment_id'
+   AND v.buyer_id=c.actor AND v.farmer_id=(r->>'farmer_id')::bigint);
+ END IF;
+ IF t='pickup_promo_codes' AND c.role='rolnik' THEN
+  RETURN op IN ('select','update') AND (c.statement ~* '^SELECT .* FROM pickup_promo_codes WHERE code='
+   OR c.statement ~* '^UPDATE pickup_promo_codes SET redemption_count=redemption_count\+1 WHERE code=');
+ END IF;
  IF c.role='admin' THEN RETURN true; END IF;
  -- Role/ownership checks in handlers are retained. A statement capability is
  -- required even for the exceptions below; the SQL login cannot invoke DML.
@@ -108,6 +139,10 @@ BEGIN
  IF t IN ('login_attempts','password_reset_limits','email_verification_limits') THEN RETURN true; END IF;
  IF t='sessions' THEN RETURN (r->>'user_id')::bigint=c.actor; END IF;
  IF t='users' THEN RETURN (r->>'id')::bigint=c.actor; END IF;
+ IF t='delivery_schedule_proposals' THEN
+  RETURN EXISTS (SELECT 1 FROM public.orders v WHERE v.id=(r->>'anchor_order_id')::bigint
+   AND c.actor IN (v.buyer_id,v.farmer_id));
+ END IF;
  IF t='support_case_events' THEN RETURN EXISTS(SELECT 1 FROM public.support_cases v WHERE v.id=r->>'case_id' AND c.actor IN (v.buyer_id,v.farmer_id)); END IF;
  IF r ? 'user_id' THEN RETURN (r->>'user_id')::bigint=c.actor; END IF;
  IF r ? 'buyer_id' OR r ? 'farmer_id' OR r ? 'owner_id' THEN
@@ -173,7 +208,7 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO wp_rls_execu
 GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO wp_rls_executor;
 GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO wp_rls_backup;
 -- Preserve existing immutable financial snapshots.
-REVOKE UPDATE,DELETE ON public.wallet_preview_terms,public.wallet_preview_resolutions,public.wallet_preview_operation_fences FROM wp_rls_executor;
+REVOKE UPDATE,DELETE ON public.wallet_preview_terms,public.wallet_preview_resolutions,public.wallet_preview_operation_fences,public.seller_ratings FROM wp_rls_executor;
 -- Verifier uses direct SELECT of sessions/users before context exists.
 GRANT SELECT ON public.sessions,public.users TO wp_rls_executor;
 DO $$ DECLARE t record; BEGIN
@@ -196,13 +231,28 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
  SELECT u.id,u.role::text FROM public.sessions s JOIN public.users u ON u.id=s.user_id WHERE s.token_hash=encode(sha256(convert_to(token,'UTF8')),'hex') AND s.expires_at::timestamptz>statement_timestamp()
 $$;
 
+-- Public endpoints get these projections without access to private rows.
+CREATE FUNCTION wp_rls.seller_rating_summary(seller bigint) RETURNS TABLE(count bigint,total bigint)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
+ SELECT count(*),coalesce(sum(r.stars),0) FROM public.seller_ratings r WHERE r.seller_id=seller
+$$;
+CREATE FUNCTION wp_rls.pickup_point_entitled(point bigint,moment timestamptz,allow_unrecorded boolean) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
+ SELECT EXISTS (SELECT 1 FROM public.pickup_point_periods p
+  WHERE p.point_id=point AND p.starts_at::timestamptz<=moment AND p.ends_at::timestamptz>moment)
+ OR (allow_unrecorded AND NOT EXISTS (SELECT 1 FROM public.pickup_point_periods p WHERE p.point_id=point))
+$$;
+
 GRANT CREATE ON SCHEMA wp_rls TO wp_rls_guard,wp_rls_executor;
 ALTER FUNCTION wp_rls.verify(text,text) OWNER TO wp_rls_guard;
 ALTER FUNCTION wp_rls.allowed(text,jsonb,text) OWNER TO wp_rls_guard;
 ALTER FUNCTION wp_rls.resolve(text) OWNER TO wp_rls_guard;
+ALTER FUNCTION wp_rls.seller_rating_summary(bigint) OWNER TO wp_rls_guard;
+ALTER FUNCTION wp_rls.pickup_point_entitled(bigint,timestamptz,boolean) OWNER TO wp_rls_guard;
 ALTER FUNCTION wp_rls.execute(text,text) OWNER TO wp_rls_executor;
 REVOKE CREATE ON SCHEMA wp_rls FROM wp_rls_guard,wp_rls_executor;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA wp_rls FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION wp_rls.verify(text,text),wp_rls.allowed(text,jsonb,text),wp_rls.resolve(text) TO wp_rls_executor;
+GRANT EXECUTE ON FUNCTION wp_rls.verify(text,text),wp_rls.allowed(text,jsonb,text),wp_rls.resolve(text),
+ wp_rls.seller_rating_summary(bigint),wp_rls.pickup_point_entitled(bigint,timestamptz,boolean) TO wp_rls_executor;
 GRANT EXECUTE ON FUNCTION wp_rls.execute(text,text),wp_rls.describe(text,text) TO wp_rls_runtime;
 COMMIT;

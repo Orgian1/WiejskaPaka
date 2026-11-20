@@ -92,8 +92,13 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 \ir ../../database/optional_seller_navigation.sql
 \ir ../../database/optional_product_categories.sql
 \ir ../../database/optional_product_listing_states.sql
--- SHA256 1014733e9042f8e65b52a4908d79c5418fea82bf6edeecb1343b3c6f29ec71b5
+-- SHA256 6cc614deb12c21fc69dbcad838a6e127c477128ec80c41fda3e995a5089d95ea
 \ir ../../database/optional_wallet_ads.sql
+\ir ../../database/upgrade_marketplace_ads.sql
+\ir ../../database/upgrade_pickup_point_periods.sql
+\ir ../../database/upgrade_pickup_promo_30_days.sql
+\ir ../../database/upgrade_shipment_public_refs.sql
+\ir ../../database/upgrade_seller_ratings.sql
 GRANT CONNECT ON DATABASE wp_test_preview TO wp_preview_app;
 GRANT USAGE ON SCHEMA public TO wp_preview_app;
 GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO wp_preview_app;

@@ -9,6 +9,7 @@ os.environ['WP_ENABLE_TEST_PAYMENTS'] = '1'
 
 from fastapi.testclient import TestClient
 from backend.app import app, db, token_hash
+from tests.pickup_fixtures import grant_test_period
 
 
 def seed():
@@ -24,6 +25,7 @@ def seed():
                         (pid, 19811, 'Produkt', price, delivery, 10))
         con.execute('INSERT INTO pickup_points(id,farmer_id,name,city,street,opening_hours,active) VALUES(?,?,?,?,?,?,?)',
                     (19811, 19811, 'Punkt', 'Miasto', 'Ulica 1', '8-18', 1))
+        grant_test_period(con, 19811)
 
 
 def headers(uid):

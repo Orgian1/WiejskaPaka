@@ -50,10 +50,9 @@ def rate_completed_order(con, buyer_id: int, order_id: int, stars: int):
 
 
 def seller_rating_summary(con, seller_id: int):
-    row = con.execute(
-        "SELECT COUNT(*) AS count, SUM(stars) AS total FROM seller_ratings WHERE seller_id=?",
-        (seller_id,),
-    ).fetchone()
+    query = ("SELECT * FROM wp_rls.seller_rating_summary(?)" if getattr(con, 'gateway', False)
+             else "SELECT COUNT(*) AS count, SUM(stars) AS total FROM seller_ratings WHERE seller_id=?")
+    row = con.execute(query, (seller_id,)).fetchone()
     count = row["count"]
     return {"seller_id": seller_id, "count": count,
             "average": round(row["total"] / count, 2) if count else None}

@@ -31,7 +31,7 @@ class Target:
             _environment(os.environ)
             import psycopg
             from psycopg.rows import dict_row
-            from backend.pg_adapter import PgConnection
+            from backend.pg_adapter import PgConnection, checked_gateway
             params=dict(self.parameters)
             raw=psycopg.connect(**params,hostaddr=params['host'],connect_timeout=5,
                                 options=OPTIONS,row_factory=dict_row)
@@ -48,6 +48,10 @@ class Target:
                     raise ValueError('Schema access required')
                 if raw.execute("SELECT current_setting('default_transaction_read_only') AS value").fetchone()['value']!='off':
                     raise ValueError('Writable receiver sessions required')
+                if checked_gateway(raw):
+                    from backend.test_server_launcher import verify_gateway_schema
+                    verify_gateway_schema(raw, TABLES)
+                    return PgConnection(raw, gateway=True)
                 rows=raw.execute('SELECT table_name FROM information_schema.tables '
                     "WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name=ANY(%s)",
                     (list(TABLES),)).fetchall()

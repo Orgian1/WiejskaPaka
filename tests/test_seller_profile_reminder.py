@@ -83,13 +83,14 @@ def test_http_role_isolation_explicit_consent_and_idempotence(tmp_path):
         assert db.execute('SELECT COUNT(*) FROM seller_compliance_events').fetchone()[0]==1
 
 
-def exercise_completed_shipment(client):
+def exercise_completed_shipment(client, grant_period):
     """Shared real HTTP contract for SQLite and the restricted PostgreSQL role."""
     from uuid import uuid4
     farmer,buyer=account(client,'rolnik'),account(client,'klient')
     response=client.post('/pickup-points',headers=farmer,json={'name':'Punkt testowy','city':'Testowo','street':'Polna 1','opening_hours':'9:00–17:00'})
     assert response.status_code==201,response.text
     point=response.json()['id']
+    grant_period(point)
     for name in ('Marchew testowa','Ziemniaki testowe'):
         response=client.post('/products',headers=farmer,json={'name':name,'price_grosze':599,'delivery_grosze':501,'stock':10})
         assert response.status_code==201,response.text
@@ -115,5 +116,12 @@ def exercise_completed_shipment(client):
 
 
 def test_received_multi_item_shipment_http_contract(tmp_path):
-    with server(tmp_path/'complete.sqlite3') as client:
-        exercise_completed_shipment(client)
+    from tests.pickup_fixtures import grant_test_period
+    database = tmp_path/'complete.sqlite3'
+
+    def grant_period(point):
+        with sqlite3.connect(database) as connection:
+            grant_test_period(connection, point)
+
+    with server(database) as client:
+        exercise_completed_shipment(client, grant_period)

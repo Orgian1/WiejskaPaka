@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 """Actual browser map geometry and promotion UI on mobile and desktop."""
 from pathlib import Path
 import pytest
@@ -36,6 +37,7 @@ def test_offline_map_address_selection_save_and_edit(sample_browser_server,tmp_p
             assert page.locator('#point-map-lat').input_value()==''
             page.click('#point-map-search');page.get_by_role('button',name='Wybrany adres Warszawa',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#point-map-lat").value==="52,229676"')
+            started = datetime.now(timezone.utc)
             with page.expect_response('**/pickup-points') as response:page.click('#point-create-submit')
             assert response.value.status==201
             pid=response.value.json()['id']
@@ -77,8 +79,11 @@ def test_admin_config_and_seller_promo_redemption(sample_browser_server,tmp_path
             assert response.value.status==201 and response.value.json()['remaining']==3
             page.wait_for_function('()=>document.querySelector("#pickup-promo-status").textContent.includes(": 3.")')
             page.fill('#point-name','Promocyjny punkt');page.fill('#point-city','Legnica');page.fill('#point-street','Testowa 5');page.fill('#point-hours','9-16')
+            started = datetime.now(timezone.utc)
             with page.expect_response('**/pickup-points') as response:page.click('#point-create-submit')
-            assert response.value.status==201 and response.value.json()['promotion']['free_until']=='2099-12-31'
+            assert response.value.status == 201
+            end = datetime.fromisoformat(response.value.json()['promotion']['free_until'])
+            assert started <= end.astimezone(timezone.utc) - timedelta(days=30) <= datetime.now(timezone.utc)
             page.wait_for_function('()=>document.querySelector("#pickup-promo-status").textContent.includes(": 2.")')
             assert page.locator('#my-points').get_by_text('Promocja: darmowy do 2099-12-31',exact=False).count()==1
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth') and not errors

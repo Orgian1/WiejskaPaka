@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 """Real HTTP + durable SQLite: promotion limits and three atomic point credits."""
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -26,6 +27,13 @@ def seller(client):
     return login(client,{k:v for k,v in credentials.items() if k!='role'})
 
 
+def check_promotion_window(response, started):
+    promotion = response.json()['promotion']
+    assert promotion['charges_executed'] is False
+    end = datetime.fromisoformat(promotion['free_until']).astimezone(timezone.utc)
+    assert started <= end - timedelta(days=30) <= datetime.now(timezone.utc)
+
+
 def test_three_credits_are_idempotent_private_and_persistent(tmp_path):
     sample=prepare_sample(tmp_path/'promo');database=Path(sample['database'])
     with server(database) as client:
@@ -39,9 +47,13 @@ def test_three_credits_are_idempotent_private_and_persistent(tmp_path):
             response=client.post('/farmers/me/pickup-promotions/redeem',headers=h['rolnik'],json={'code':'trzypunkty'})
             assert response.status_code==status and response.json()['remaining']==3
         for i in range(4):
+            started = datetime.now(timezone.utc)
             response=client.post('/pickup-points',headers=h['rolnik'],json={**POINT,'name':f'Punkt {i}'})
             assert response.status_code==201
-            assert response.json()['promotion']==({'free_until':FUTURE,'charges_executed':False} if i<3 else None)
+            if i < 3:
+                check_promotion_window(response, started)
+            else:
+                assert response.json()['promotion'] is None
         own=client.get('/farmers/me/pickup-promotions',headers=h['rolnik'])
         assert own.headers['cache-control']=='no-store' and own.json()['available_points']==0
         other=seller(client)
@@ -94,7 +106,10 @@ def test_expiry_disable_and_admin_updates_preserve_already_granted_terms(tmp_pat
         settings={'expires_on':'2000-01-01','max_redemptions':1,'active':False}
         assert client.put('/admin/pickup-promotions/TRZYPUNKTY',headers=h['admin'],json=settings).status_code==200
         assert client.post('/farmers/me/pickup-promotions/redeem',headers=seller(client),json={'code':'TRZYPUNKTY'}).status_code==409
-        assert client.post('/pickup-points',headers=h['rolnik'],json=POINT).json()['promotion']['free_until']==FUTURE
+        started = datetime.now(timezone.utc)
+        point = client.post('/pickup-points',headers=h['rolnik'],json=POINT)
+        assert point.status_code == 201
+        check_promotion_window(point, started)
         assert client.put('/admin/pickup-promotions/TRZYPUNKTY',headers=h['admin'],json={**settings,'max_redemptions':0}).status_code==422
         assert client.put('/admin/pickup-promotions/!!!',headers=h['admin'],json=settings).status_code==422
 
@@ -123,11 +138,13 @@ def test_admin_payload_validation(tmp_path,changes):
 def test_expiry_is_inclusive_and_expired_grants_cannot_fund_a_new_point():
     from datetime import date
     from backend.pickup_promotions import SCHEMA,consume_for_point,grant_reply
+    from backend.pickup_point_periods import SCHEMA as PERIOD_SCHEMA
     con=sqlite3.connect(':memory:');con.row_factory=sqlite3.Row
     con.executescript('CREATE TABLE users(id INTEGER PRIMARY KEY); CREATE TABLE pickup_points(id INTEGER PRIMARY KEY); INSERT INTO users VALUES(1); INSERT INTO pickup_points VALUES(1); INSERT INTO pickup_points VALUES(2);'+SCHEMA)
+    con.executescript(PERIOD_SCHEMA)
     con.execute("INSERT INTO pickup_promo_codes VALUES('BOUNDARY','2026-12-31',1,1,1)")
     con.execute("INSERT INTO pickup_promo_grants VALUES('grant',1,'BOUNDARY','2026-12-31',3)")
-    assert consume_for_point(con,1,1,today=date(2026,12,31))['free_until']=='2026-12-31'
+    assert consume_for_point(con,1,1,today=date(2026,12,31))['free_until']=='2027-01-30T00:00:00+01:00'
     assert consume_for_point(con,1,2,today=date(2027,1,1)) is None
     row=con.execute('SELECT * FROM pickup_promo_grants').fetchone()
     assert row['remaining']==2 and grant_reply(row,today=date(2027,1,1))['remaining']==0

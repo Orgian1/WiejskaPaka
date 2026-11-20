@@ -18,14 +18,20 @@ class Connect:
 
     def __call__(self):
         from backend.test_server_launcher import verify_test_database_connection
-        from backend.pg_adapter import PgConnection
+        from backend.pg_adapter import PgConnection, checked_gateway
         from psycopg.rows import dict_row
         import psycopg
         # Read-only preflight runs inside the bounded child, including on every
         # fresh connection. No privileged application role or missing schema.
         verify_test_database_connection(self.dsn,self.database_name,require_schema=True,
             required_tables=self.required_tables)
-        return PgConnection(psycopg.connect(self.dsn,row_factory=dict_row,connect_timeout=5))
+        connection = psycopg.connect(self.dsn, row_factory=dict_row, connect_timeout=5)
+        try:
+            with connection.transaction():
+                return PgConnection(connection, gateway=checked_gateway(connection))
+        except BaseException:
+            connection.close()
+            raise
 
 
 @dataclass(frozen=True)

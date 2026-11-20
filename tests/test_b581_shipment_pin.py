@@ -19,6 +19,9 @@ def test_single_pin_confirms_entire_shipment_and_blocks_individual_confirmation(
         con.execute('INSERT INTO pickup_points(id,farmer_id,name,city,street,opening_hours,active) VALUES(?,?,?,?,?,?,?)',(581,581,'Punkt','Miasto','Ulica 1','9-17',1))
     buyer={'Authorization':'Bearer token-582'}
     seller={'Authorization':'Bearer token-581'}
+    with db() as con:
+        from tests.pickup_fixtures import grant_test_period
+        grant_test_period(con, 581)
     response=client.post('/cart/checkout-test',headers=buyer,json={'fulfillment':'odbior','pickup_point_id':581})
     assert response.status_code==201,response.text
     data=response.json()

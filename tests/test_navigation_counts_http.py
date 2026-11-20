@@ -1,4 +1,4 @@
-"""Account isolation and distinct position counts, including completed orders."""
+"""Account isolation and total cart quantity, including completed orders."""
 from fastapi.testclient import TestClient
 from backend import app as module
 from tests.test_product_categories_http import account
@@ -14,7 +14,7 @@ def exercise_navigation_counts(client):
     for _ in range(2):assert client.put('/favorites/'+str(ids[0]),headers=buyer).status_code==200
     assert client.put('/cart/items',headers=buyer,json={'product_id':ids[0],'quantity':7}).status_code==200
     assert client.put('/cart/items',headers=buyer,json={'product_id':ids[1],'quantity':2}).status_code==200
-    assert client.get(url,headers=buyer).json()=={'favorites_count':1,'cart_count':2,'current_orders_count':0}
+    assert client.get(url,headers=buyer).json()=={'favorites_count':1,'cart_count':9,'current_orders_count':0}
     assert client.get(url,headers=other_buyer).json()=={'favorites_count':0,'cart_count':0,'current_orders_count':0}
     point=client.post('/pickup-points',headers=farmer,json={'name':'Licznik','city':'Warszawa','street':'Testowa 1','opening_hours':'9-16'});assert point.status_code==201
     order=client.post('/orders',headers=buyer,json={'product_id':ids[0],'quantity':1,'fulfillment':'odbior','pickup_point_id':point.json()['id']});assert order.status_code==201
@@ -24,8 +24,8 @@ def exercise_navigation_counts(client):
     assert client.get(url,headers=farmer).json()['current_orders_count']==0
     assert client.delete('/favorites/'+str(ids[0]),headers=buyer).status_code==200
     assert client.delete('/cart/items/'+str(ids[0]),headers=buyer).status_code==200
-    assert client.get(url,headers=buyer).json()=={'favorites_count':0,'cart_count':1,'current_orders_count':0}
+    assert client.get(url,headers=buyer).json()=={'favorites_count':0,'cart_count':2,'current_orders_count':0}
 
 
-def test_counts_are_private_idempotent_and_count_positions_not_quantities():
+def test_counts_are_private_idempotent_and_sum_cart_quantities():
     exercise_navigation_counts(TestClient(module.app))

@@ -85,7 +85,7 @@ def bounded_dump(parameters, *, timeout=120, maximum=MAX_DUMP):
     if os.name != 'posix':
         raise ValueError('Native backup requires POSIX')
     require_supported_client('pg_dump')
-    process = subprocess.Popen(['pg_dump', '--format=custom', '--no-owner', '--no-acl', '--no-password'],
+    process = subprocess.Popen(['pg_dump', '--format=custom', '--no-owner', '--no-acl', '--no-password', '--enable-row-security', '--exclude-schema=wp_rls_keys', '--exclude-table-data=wp_rls.context', '--exclude-table-data=wp_rls.consumed'],
                                env=client_environment(parameters, readonly=True),
                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     data = bytearray()
@@ -133,7 +133,7 @@ def backup(dsn, checkout_key, backup_key, destination):
             connection.close()
             raise
         return connection
-    verify_test_database_connection(dsn, parameters['dbname'], connect=connect, require_schema=True)
+    verify_test_database_connection(dsn, parameters['dbname'], connect=connect, require_schema=True, allow_backup=True)
     active, keys = _separate_key(destination, backup_key)
     live_ring = read_ring(checkout_key)
     if set(keys.values()) & set(live_ring[1].values()):
@@ -195,7 +195,7 @@ def restore_dump(dump, parameters):
 def validate_restored(connection, keyring):
     from backend.pg_adapter import PgConnection
     from backend.payment_integrity import audit_payment_integrity
-    con = PgConnection(connection)
+    con = PgConnection(connection, gateway=False)
     vault = Vault(*keyring)
     count = 0
     for row in con.execute('SELECT buyer_id,request_key,payload_hash,response_json FROM checkout_idempotency'):
@@ -245,6 +245,12 @@ def rehearse(archive, backup_key, admin_dsn):
             restored = {**parameters, 'dbname': target}
             restore_dump(dump, restored)
             with psycopg.connect(**restored, row_factory=dict_row, connect_timeout=5) as connection:
+                # Restored SECURITY DEFINER functions have different owners under
+                # --no-owner. Quarantine them and rotate capabilities before any
+                # future application startup; this rehearsal never starts API.
+                connection.execute('DROP SCHEMA IF EXISTS wp_rls CASCADE')
+                connection.execute('DROP SCHEMA IF EXISTS wp_rls_keys CASCADE')
+                connection.execute('DROP SCHEMA IF EXISTS wp_security CASCADE')
                 result = validate_restored(connection, keyring)
         finally:
             if created:

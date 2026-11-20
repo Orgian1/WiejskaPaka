@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# This standalone prototype is initialized only by the SQLite accounting tools.
+SQLITE_ONLY_TABLES = {'platform_fee_ledger'}
 TABLE = re.compile(r'\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-z_][a-z_0-9]*)', re.I)
 
 
@@ -22,7 +24,7 @@ def audit_schema(root=ROOT):
     local = defined_tables(backend_files)
     postgres = defined_tables(pg_files)
     return {'sqlite_tables': sorted(local), 'postgres_tables': sorted(postgres),
-            'missing_in_postgres': sorted(local - postgres), 'extra_in_postgres': sorted(postgres - local)}
+            'missing_in_postgres': sorted(local - postgres - SQLITE_ONLY_TABLES), 'extra_in_postgres': sorted(postgres - local)}
 
 
 def verify_live_postgres(dsn, root=ROOT):
@@ -33,7 +35,7 @@ def verify_live_postgres(dsn, root=ROOT):
         with con.cursor() as cur:
             cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")
             actual = {row[0] for row in cur.fetchall()}
-    audit['live_missing'] = sorted(set(audit['sqlite_tables']) - actual)
+    audit['live_missing'] = sorted(set(audit['sqlite_tables']) - actual - SQLITE_ONLY_TABLES)
     audit['live_tables'] = sorted(actual)
     return audit
 

@@ -21,6 +21,27 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def rls_requested():
+    return os.environ.get('WP_TEST_ENABLE_RLS') == '1'
+
+
+def inspection_connect(**parameters):
+    """Inspect fixture state without giving the API login direct table privileges."""
+    import psycopg
+    from psycopg.conninfo import conninfo_to_dict
+
+    if rls_requested():
+        admin = conninfo_to_dict(os.environ['WP_TEST_POSTGRES_DSN'])
+        parameters = {**parameters, **admin, 'dbname': parameters['dbname']}
+    return psycopg.connect(**parameters)
+
+
+def backup_parameters(parameters):
+    if rls_requested():
+        return {**parameters, 'user': parameters['user'] + '_backup'}
+    return parameters
+
+
 def reviewed_test_schema(root):
     """Read a verified, ordered SQL snapshot before creating any test resource."""
     from database.verify_test_migrations import verify
@@ -126,7 +147,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
     admin_parameters = {**parameters, 'dbname': database}
     app_parameters = {**admin_parameters, 'user': role, 'password': password}
     app_dsn = make_conninfo(**app_parameters)
-    role_created = database_created = False
+    rls_enabled = rls_requested()
+    role_created = database_created = backup_created = False
     with psycopg.connect(dsn, autocommit=True, connect_timeout=5) as admin:
         process = None
         try:
@@ -145,6 +167,15 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 migration.execute(sql.SQL('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO {}').format(sql.Identifier(role)))
                 migration.execute(sql.SQL('REVOKE UPDATE,DELETE ON wallet_preview_terms,wallet_preview_resolutions,wallet_preview_operation_fences FROM {}').format(sql.Identifier(role)))
+                if rls_enabled:
+                    from database.rls_test_setup import provision
+                    from backend.rls_gateway import load_key
+                    provision(migration, load_key(), role)
+                    backup = sql.Identifier(role + '_backup')
+                    migration.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {} IN ROLE wp_rls_backup')
+                                      .format(backup, sql.Literal(password)))
+                    backup_created = True
+
 
             with socket.socket() as sock:
                 sock.bind(('127.0.0.1', 0))
@@ -166,6 +197,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 if delivery_options:
                     env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
+                if rls_enabled:
+                    env.update(WP_RLS_GATEWAY='1', WP_RLS_KEY_FILE=os.environ['WP_RLS_KEY_FILE'])
                 reset_outbox = Path(folder)/'reset-outbox' if reset else None
                 if reset:
                     env.update(WP_ENABLE_TEST_PASSWORD_RESET='1', WP_ENABLE_PG_TEST_PASSWORD_RESET='1',
@@ -191,7 +224,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                                 stdout=log, stderr=log)
                             for _ in range(150):
                                 if process.poll() is not None:
-                                    raise RuntimeError('Native PostgreSQL API server failed to start')
+                                    log.seek(0)
+                                    raise RuntimeError(log.read().decode('utf-8', errors='replace'))
                                 try:
                                     if client.get('/health').status_code == 200:
                                         return
@@ -209,7 +243,12 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                             start()
 
                         start()
-                        yield NativeAPI(client, app_parameters, restart, keyfile, reset_outbox, mail_keys)
+                        try:
+                            yield NativeAPI(client, app_parameters, restart, keyfile, reset_outbox, mail_keys)
+                        finally:
+                            if diagnostics := os.environ.get('WP_TEST_POSTGRES_LOG_DIR'):
+                                log.seek(0)
+                                (Path(diagnostics) / f'{database}.log').write_bytes(log.read())
         finally:
             if process is not None:
                 process.terminate()
@@ -220,6 +259,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                     process.wait(timeout=5)
             if database_created:
                 admin.execute(sql.SQL('DROP DATABASE {} WITH (FORCE)').format(sql.Identifier(database)))
+            if backup_created:
+                admin.execute(sql.SQL('DROP ROLE {}').format(sql.Identifier(role + '_backup')))
             if role_created:
                 admin.execute(sql.SQL('DROP ROLE {}').format(sql.Identifier(role)))
 
@@ -277,7 +318,7 @@ def test_native_sale_units_checkout_restart_and_insert_only_records(pg_units_api
                                     ('order_sale_units', 'order_id', oid)]:
         from psycopg import sql
         for operation in ('UPDATE', 'DELETE'):
-            with psycopg.connect(**parameters) as con:
+            with inspection_connect(**parameters) as con:
                 with pytest.raises(psycopg.errors.RaiseException):
                     with con.transaction():
                         statement = (sql.SQL('UPDATE {} SET unit=unit WHERE {}=%s')
@@ -330,7 +371,7 @@ def test_native_address_delivery_acceptance_and_private_contact(pg_address_deliv
     assert queue.status_code == 200
     assert all(r['state'] == decision for r in queue.json()['items'] if r['order_id'] in orders)
     import psycopg
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         encrypted = con.execute('SELECT phone_sealed FROM address_delivery_requests WHERE order_id=%s', (orders[0],)).fetchone()[0]
         assert '500100200' not in encrypted
     if decision == 'accepted':
@@ -345,7 +386,14 @@ def test_native_application_role_has_no_administrative_privileges(pg_api):
     with psycopg.connect(**parameters) as con:
         row = con.execute('SELECT rolsuper,rolcreatedb,rolcreaterole,rolbypassrls FROM pg_roles WHERE rolname=current_user').fetchone()
         assert row == (False, False, False, False)
-        assert con.execute("SELECT count(*) FROM information_schema.tables WHERE table_schema='public'").fetchone()[0] >= 28
+        assert con.execute("""SELECT count(*) FROM pg_class c
+            JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname='public' AND c.relkind='r'""").fetchone()[0] >= 28
+        if rls_requested():
+            with pytest.raises(psycopg.errors.InsufficientPrivilege), con.transaction():
+                con.execute('SELECT id FROM orders')
+            with pytest.raises(psycopg.errors.InsufficientPrivilege), con.transaction():
+                con.execute('SELECT available_grosze FROM wallet_preview_accounts')
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             con.execute('CREATE TABLE forbidden_application_ddl (id integer)')
 
@@ -370,7 +418,7 @@ def test_native_concurrent_idempotency_and_full_refund(pg_api):
         assert response.json()['refund_grosze'] == 1050
         assert response.json()['already_processed'] is bool(retry)
     import psycopg
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute('SELECT stock FROM products WHERE id=%s', (pid,)).fetchone()[0] == 10
         assert con.execute('SELECT count(*) FROM orders WHERE product_id=%s', (pid,)).fetchone()[0] == 1
 
@@ -384,7 +432,7 @@ def test_native_competing_buyers_do_not_oversell(pg_api):
         responses = list(pool.map(lambda h: client.post('/orders', headers=h, json=delivery(pid)), buyers))
     assert sorted(r.status_code for r in responses) == [201, 409]
     import psycopg
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute('SELECT stock FROM products WHERE id=%s', (pid,)).fetchone()[0] == 0
 
 
@@ -490,7 +538,7 @@ def test_native_purchase_record_is_private_and_insert_only(pg_api):
     for statement in ('UPDATE order_purchase_records SET product_name=%s WHERE order_id=%s',
                       'DELETE FROM order_purchase_records WHERE order_id=%s'):
         with pytest.raises(psycopg.IntegrityError):
-            with psycopg.connect(**parameters) as con:
+            with inspection_connect(**parameters) as con:
                 con.execute(statement,('Niedozwolona zmiana',oid) if statement.startswith('UPDATE') else (oid,))
     assert client.get(url,headers=buyer).json()==original.json()
 
@@ -504,7 +552,7 @@ def test_native_checkout_reply_is_sealed_and_bound_to_buyer(pg_api):
     second=client.post('/orders',headers={**other,'Idempotency-Key':key},json=body)
     assert second.status_code==201,second.text
     import json,psycopg
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         raw=con.execute('SELECT response_json FROM checkout_idempotency WHERE buyer_id=%s AND request_key=%s',(bid,'direct:'+key)).fetchone()[0]
         assert json.loads(raw)['format']=='wp-checkout-aesgcm-v1' and 'pin_test_only' not in raw
         con.execute('UPDATE checkout_idempotency SET response_json=%s WHERE buyer_id=%s AND request_key=%s',(raw,other_id,'direct:'+key))
@@ -519,7 +567,7 @@ def test_native_long_direct_key_and_password_protected_recovery(pg_api):
     password='Disposable-PG-PIN-recovery-123!'
     from argon2 import PasswordHasher
     import psycopg
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         con.execute('UPDATE users SET password_hash=%s WHERE id=%s',(PasswordHasher().hash(password),bid))
     pid=product(client,farmer);key='k'*100
     response=client.post('/orders',headers={**buyer,'Idempotency-Key':key},json=delivery(pid))
@@ -573,8 +621,13 @@ def test_native_session_revocation_serializes_two_devices(pg_api):
 
 def test_native_seller_reminder_counts_received_shipment_once(pg_api):
     from tests.test_seller_profile_reminder import exercise_completed_shipment
-    client,_=pg_api
-    exercise_completed_shipment(client)
+    from tests.pickup_fixtures import grant_test_period
+    client, parameters = pg_api
+    def grant_period(point):
+        with inspection_connect(**parameters) as connection:
+            grant_test_period(PgConnection(connection), point)
+    from backend.pg_adapter import PgConnection
+    exercise_completed_shipment(client, grant_period)
 
 
 def test_native_admin_seller_queue_and_concurrent_stale_decisions(pg_api):
@@ -582,11 +635,11 @@ def test_native_admin_seller_queue_and_concurrent_stale_decisions(pg_api):
     from tests.test_admin_seller_review import create_admin,exercise_admin_review
     client,parameters=pg_api
     def promote(uid):
-        with psycopg.connect(**parameters) as con:
+        with inspection_connect(**parameters) as con:
             con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     admin,_=create_admin(client,promote)
     fid=exercise_admin_review(client,admin)
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute("SELECT COUNT(*) FROM seller_compliance_events WHERE farmer_id=%s AND event_type LIKE 'review_%%'",(fid,)).fetchone()[0]==1
 
 
@@ -596,7 +649,7 @@ def test_native_private_support_cases(pg_api):
     import psycopg
     client,parameters=pg_api
     def promote(uid):
-        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+        with inspection_connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     admin,_=create_admin(client,promote)
     exercise_support(client,admin)
 
@@ -657,7 +710,7 @@ def test_native_purchase_survives_process_restart(pg_restart_api, kind):
                 json={'event_id': uuid4().hex, 'event_type': 'payment_success_test'}).status_code == 200
     import psycopg
     def snapshot():
-        with psycopg.connect(**parameters) as con:
+        with inspection_connect(**parameters) as con:
             return (
                 con.execute('SELECT id,status,total_grosze FROM orders WHERE buyer_id=%s ORDER BY id', (buyer_id,)).fetchall(),
                 con.execute('SELECT id,stock FROM products WHERE id=ANY(%s) ORDER BY id', (products,)).fetchall(),
@@ -692,16 +745,17 @@ def test_native_encrypted_postgres_backup_and_isolated_restore(pg_restart_api, t
     original = response.json()
     assert client.post(f"/test/payments/{original['id']}/events", headers=buyer,
         json={'event_id': uuid4().hex, 'event_type': 'payment_success_test'}).status_code == 200
-    host = parameters['host']
+    reader = backup_parameters(parameters)
+    host = reader['host']
     if host == '::1':host = '[::1]'
-    dsn = ('postgresql://' + quote(parameters['user'], safe='') + ':' +
+    dsn = ('postgresql://' + quote(reader['user'], safe='') + ':' +
            quote(parameters['password'], safe='') + '@' + host + ':' +
            str(parameters.get('port', '5432')) + '/' + parameters['dbname'])
     keys = tmp_path/'keys';keys.mkdir()
     archives = tmp_path/'archives';archives.mkdir()
     key = keys/'independent.backup-key';make_backup_key(key)
     archive = archives/'postgres.wpbackup'
-    with psycopg.connect(**parameters) as source:
+    with inspection_connect(**parameters) as source:
         before = source.execute('SELECT count(*) FROM sessions').fetchone()[0]
     assert backup(dsn, pg_restart_api.key_path, key, archive)['encrypted_backup']
     assert b'PGDMP' not in archive.read_bytes()[:64]
@@ -709,7 +763,7 @@ def test_native_encrypted_postgres_backup_and_isolated_restore(pg_restart_api, t
     assert result == {'orders_checked': 1, 'checkout_replies_checked': 1,
         'sessions_revoked': before, 'success': True, 'restore_verified': True,
         'rehearsal_database_removed': True, 'application_started': False}
-    with psycopg.connect(**parameters) as source:
+    with inspection_connect(**parameters) as source:
         assert source.execute('SELECT count(*) FROM sessions').fetchone()[0] == before
     assert client.get('/auth/me', headers=buyer).status_code == 200
     replay = client.post('/orders', headers=headers, json=delivery(pid))
@@ -733,11 +787,11 @@ def test_native_reset_replay_restart_and_purchase_integrity(pg_reset_api):
     unknown, unknown_notice = request(client, pg_reset_api.reset_outbox, 'unknown@example.invalid')
     assert notice == unknown_notice and confirm(client, unknown).status_code == 400
     expired,_ = request(client, pg_reset_api.reset_outbox)
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         con.execute('UPDATE password_reset_tokens SET expires_at=%s WHERE token_hash=%s',
                     ('2000-01-01T00:00:00+00:00',hashlib.sha256(expired.encode()).hexdigest()))
     assert confirm(client,expired).status_code == 400
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         stored = con.execute('SELECT token_hash FROM password_reset_tokens WHERE token_hash=%s',
                              (hashlib.sha256(token.encode()).hexdigest(),)).fetchone()[0]
         assert stored == hashlib.sha256(token.encode()).hexdigest() and stored != token
@@ -756,7 +810,7 @@ def test_native_reset_replay_restart_and_purchase_integrity(pg_reset_api):
     assert recovered.status_code == 200 and recovered.json()['pin_test_only'] == order.json()['pin_test_only']
     assert client.get(f'/orders/{oid}/purchase-record',headers={
         'Authorization':'Bearer '+login.json()['access_token']}).json() == record
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute('SELECT id,status,total_grosze,pin_hash FROM orders').fetchall() == before
         assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 0
 
@@ -771,7 +825,7 @@ def test_native_reset_concurrent_issuance_budget_survives_restart(pg_reset_api):
     assert all(r.status_code == 202 and r.json()==responses[0].json() for r in responses)
     files = list(pg_reset_api.reset_outbox.glob('*.json'))
     assert len(files) == 3
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 3
         assert con.execute('SELECT attempts FROM password_reset_limits WHERE bucket=%s',
                            ('issue:'+hashlib.sha256(EMAIL.encode()).hexdigest(),)).fetchone()[0] == 3
@@ -844,7 +898,7 @@ def queued_worker_connection(parameters):
     import psycopg
     from psycopg.rows import dict_row
     from backend.pg_adapter import PgConnection
-    return PgConnection(psycopg.connect(**parameters, row_factory=dict_row))
+    return PgConnection(psycopg.connect(**parameters, row_factory=dict_row), gateway=rls_requested())
 
 
 def queued_worker_accept(recipient, token):
@@ -868,11 +922,11 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path, monke
     keys = reset_mail_keys.load_keys(pg_queued_reset_api.mail_keys)
 
     def rows():
-        with psycopg.connect(**parameters, row_factory=dict_row) as con:
+        with inspection_connect(**parameters, row_factory=dict_row) as con:
             return con.execute('SELECT * FROM reset_mail_queue ORDER BY id').fetchall()
 
     def connect():
-        return PgConnection(psycopg.connect(**parameters, row_factory=dict_row))
+        return PgConnection(psycopg.connect(**parameters, row_factory=dict_row), gateway=rls_requested())
 
     assert client.get('/auth/password-reset-test/options').json()['enabled'] is False
     if scenario == 'budget':
@@ -881,7 +935,7 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path, monke
         assert all(body == bodies[0] for body in bodies) and len(rows()) == 3
         pg_queued_reset_api.restart()
         assert request(client) == bodies[0] and len(rows()) == 3
-        with psycopg.connect(**parameters) as con:
+        with inspection_connect(**parameters) as con:
             assert con.execute('SELECT count(*) FROM password_reset_tokens').fetchone()[0] == 3
         assert all(row['state'] == 'queued' and row['attempts'] == 0 for row in rows())
         return
@@ -936,9 +990,10 @@ def test_native_queued_reset_http(pg_queued_reset_api, scenario, tmp_path, monke
         if scenario=='database-keys-recovery':
             from urllib.parse import quote
             from scripts import postgres_test_backup as pg_backup
-            host=parameters['host']
+            reader = backup_parameters(parameters)
+            host=reader['host']
             if host=='::1':host='[::1]'
-            dsn=('postgresql://'+quote(parameters['user'],safe='')+':'+
+            dsn=('postgresql://'+quote(reader['user'],safe='')+':'+
                 quote(parameters['password'],safe='')+'@'+host+':'+
                 str(parameters.get('port','5432'))+'/'+parameters['dbname'])
             db_wrapper=tmp_path/'wrapping'/'database.backup-key'
@@ -994,7 +1049,7 @@ def test_native_reset_mail_queue_storage_constraints_only(pg_api):
     client,parameters=pg_api
     _,uid=register(client,'klient')
     job=uuid4().hex
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         con.execute('''INSERT INTO reset_mail_queue
             (id,user_id,token_hash,event,key_id,payload,created_at,expires_at,state,available_at)
             VALUES(%s,%s,%s,'password_reset','synthetic-key',%s,1000,1900,'queued',1000)''',
@@ -1029,7 +1084,7 @@ def test_native_reset_mail_queue_execution(pg_restart_api,scenario):
     now=1792396800
     keys=queue.KeyRing({'test-v1':b'a'*32},'test-v1')
     def connect():
-        return PgConnection(psycopg.connect(**{**parameters,'options':'-c lock_timeout=2000 -c statement_timeout=5000'},row_factory=dict_row))
+        return PgConnection(psycopg.connect(**{**parameters,'options':'-c lock_timeout=2000 -c statement_timeout=5000'},row_factory=dict_row), gateway=rls_requested())
     con=connect()
     try:
         with queue.transaction(con):
@@ -1159,7 +1214,7 @@ def test_native_photo_upload_restart_and_hard_limit(pg_photo_api):
     assert client.get(url).content==before
     assert client.put(url,headers=farmer,content=b'invalid').status_code==422
     assert client.get(url).content==before
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         with pytest.raises(psycopg.errors.CheckViolation):
             con.execute('UPDATE user_photos SET data=%s WHERE owner_id=%s',(b'x'*1_000_001,uid))
     assert client.delete(url,headers=farmer).status_code==200
@@ -1175,11 +1230,11 @@ def test_native_seller_directory_restart_and_profile_index(pg_seller_api):
     assert response.status_code==200 and response.json()['login']==alias
     data=client.get('/sellers/search',params={'q':'zolta laka'}).json()
     assert next(s for s in data['items'] if s['farmer_id']==uid)['login']==alias
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         with pytest.raises(psycopg.errors.CheckViolation):
             con.execute('UPDATE seller_public_logins SET login=%s WHERE user_id=%s',('UPPERCASE',uid))
     # Simulate a profile edited while discovery was disabled; startup rebuilds its key.
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         con.execute('UPDATE farmer_profiles SET farm_name=%s WHERE user_id=%s',('Nowy Sad '+alias,uid))
     pg_seller_api.restart()
     result=client.get('/sellers/search',params={'q':'nowy sad '+alias}).json()
@@ -1789,7 +1844,7 @@ def test_native_wallet_terminal_events_and_races(pg_wallet_api,role,action):
     client,parameters=pg_wallet_api
     owner,oid=setup(client,role)
     def promote(uid):
-        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+        with inspection_connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     operator,_=create_admin(client,promote)
     assert queue(client,operator).json()['items'][0]['id']==oid
     operation=(lambda:cancel(client,owner,oid)) if action=='cancel' else (lambda:complete(client,operator,oid))
@@ -1823,7 +1878,7 @@ def test_native_wallet_cancel_complete_race_has_one_terminal_event(pg_wallet_api
     client,parameters=pg_wallet_api
     owner,oid=setup(client)
     def promote(uid):
-        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+        with inspection_connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     operator,_=create_admin(client,promote)
     with ThreadPoolExecutor(max_workers=2) as pool:
         codes=list(pool.map(lambda kind:cancel(client,owner,oid).status_code if kind=='cancel' else complete(client,operator,oid).status_code,['cancel','complete']))
@@ -1932,7 +1987,7 @@ def test_native_pickup_promotion_limits_and_point_credits(pg_api):
     import psycopg
     client,parameters=pg_api
     def promote(uid):
-        with psycopg.connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
+        with inspection_connect(**parameters) as con:con.execute("UPDATE users SET role='admin' WHERE id=%s",(uid,))
     admin,_=create_admin(client,promote)
     farmer,_=register(client,'rolnik');other,_=register(client,'rolnik')
     code='PROMO-'+uuid4().hex.upper()
@@ -1948,7 +2003,7 @@ def test_native_pickup_promotion_limits_and_point_credits(pg_api):
     assert sum(r.json()['promotion'] is not None for r in points)==3
     assert client.get('/farmers/me/pickup-promotions',headers=farmer).json()['available_points']==0
     assert client.get('/farmers/me/pickup-promotions',headers=other).json()=={'items':[],'available_points':0}
-    with psycopg.connect(**parameters) as con:
+    with inspection_connect(**parameters) as con:
         assert con.execute('SELECT redemption_count FROM pickup_promo_codes WHERE code=%s',(code,)).fetchone()[0]==1
         grant=con.execute('SELECT id,remaining FROM pickup_promo_grants WHERE code=%s',(code,)).fetchone()
         assert grant[1]==0

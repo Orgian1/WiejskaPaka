@@ -45,6 +45,11 @@ UPGRADES = (
     'optional_product_categories.sql',
     'optional_product_listing_states.sql',
     'optional_wallet_ads.sql',
+    'upgrade_marketplace_ads.sql',
+    'upgrade_pickup_point_periods.sql',
+    'upgrade_pickup_promo_30_days.sql',
+    'upgrade_shipment_public_refs.sql',
+    'upgrade_seller_ratings.sql',
 )
 
 

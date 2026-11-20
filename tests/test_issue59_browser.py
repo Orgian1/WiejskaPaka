@@ -35,10 +35,10 @@ def test_session_reset_race_badges_photos_and_shared_contact(sample_browser_serv
             with page.expect_response('**/cart/items') as added:body.get_by_role('button',name='Dodaj do koszyka',exact=True).click()
             assert added.value.status==200
             page.locator('#same-package-cancel').wait_for();page.click('#same-package-cancel')
-            page.wait_for_function('()=>document.querySelector("#cart-count").textContent==="1"')
+            page.wait_for_function('()=>document.querySelector("#cart-count").textContent==="2"')
             page.click('#cart-nav-link');page.locator('#cart-items input').first.fill('4');page.locator('#cart-items').get_by_role('button',name='Zapisz ilość',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#cart-items input").value==="4"')
-            assert page.locator('#cart-count').inner_text()=='1'
+            page.wait_for_function('()=>document.querySelector("#cart-count").textContent==="4"')
             page.locator('#cart-items').get_by_role('button',name='Usuń',exact=True).click()
             page.wait_for_function('()=>document.querySelector("#cart-count").hidden')
             page.reload();sign_in(page,accounts,'klient')

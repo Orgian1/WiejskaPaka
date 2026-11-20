@@ -1,6 +1,7 @@
 """Home delivery requires a positive shipment fee; pickup remains free."""
 from fastapi.testclient import TestClient
 from backend import app as api
+from tests.pickup_fixtures import grant_test_period
 from tests.test_b10921_security_boundaries import actor
 
 
@@ -23,6 +24,8 @@ def test_zero_delivery_rate_cannot_create_free_home_delivery():
         assert con.execute('SELECT count(*) AS n FROM saved_cart_items WHERE buyer_id=?', (bid,)).fetchone()['n'] == 1
     point = client.post('/pickup-points', headers=farmer, json={
         'name': 'Punkt', 'city': 'Legnica', 'street': 'Polna 1', 'opening_hours': '9:00–17:00'}).json()['id']
+    with api.db() as con:
+        grant_test_period(con, point)
     response = client.post('/cart/checkout-test', headers=buyer,
                            json={'fulfillment': 'odbior', 'pickup_point_id': point})
     assert response.status_code == 201, response.text

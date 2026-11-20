@@ -116,7 +116,11 @@ def claim_ad(con, user_id, key, role):
         return {'ad': None}
     ids = [row['id'] for row in campaigns]
     index = (ids.index(account['last_ad_id'])+1)%len(ids) if account['last_ad_id'] in ids else 0
-    ad = con.execute('SELECT * FROM wallet_ads WHERE id=?', (campaigns[index]['id'],)).fetchone()
+    ad = con.execute("""SELECT * FROM wallet_ads WHERE id=? AND enabled=1 AND deleted=0
+        AND starts_at<=? AND ends_at>? AND audience IN (?, 'both')""",
+        (ids[index], now, now, role)).fetchone()
+    if ad is None:
+        return {'ad': None}
     impression = secrets.token_hex(16)
     con.execute('INSERT INTO wallet_ad_impressions(id,user_id,ad_id,request_key,created_at) VALUES(?,?,?,?,?)', (impression, user_id, ad['id'], key, now))
     con.execute('UPDATE wallet_ad_accounts SET last_shown=?,last_ad_id=? WHERE user_id=?', (now, ad['id'], user_id))

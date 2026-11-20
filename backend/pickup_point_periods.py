@@ -56,7 +56,20 @@ def point_status(con, point_id, *, now=None):
             'period':period,'renewal':quote()}
 
 
+def point_is_entitled(con, point_id, *, now=None, allow_unrecorded=False):
+    if getattr(con, 'gateway', False):
+        row = con.execute('SELECT wp_rls.pickup_point_entitled(?,?::timestamptz,?) AS entitled',
+                          (point_id, (now or now_warsaw()).isoformat(), allow_unrecorded)).fetchone()
+        return row['entitled']
+    if active_period(con, point_id, now=now) is not None:
+        return True
+    # Direct orders historically accepted points that had never had a ledger period.
+    return allow_unrecorded and con.execute(
+        'SELECT 1 FROM pickup_point_periods WHERE point_id=? LIMIT 1', (point_id,)
+    ).fetchone() is None
+
+
 def entitled_point_ids(con, point_ids, *, now=None):
     """Read-only entitlement filter; empty input never issues a broad query."""
     ids=tuple(dict.fromkeys(point_ids))
-    return {point_id for point_id in ids if active_period(con,point_id,now=now) is not None}
+    return {point_id for point_id in ids if point_is_entitled(con,point_id,now=now)}

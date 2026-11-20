@@ -11,7 +11,7 @@ def setup(client,verified,database,keys):
     if verified:
         assert client.post('/auth/email-verification/request',headers=buyer).status_code==202
         assert client.post('/auth/email-verification/confirm',headers=buyer,json={'token':queued(database,keys).token}).status_code==200
-    p=client.post('/products',headers=farmer,json={'name':'Pomidor','price_grosze':349,'delivery_grosze':501,'stock':5})
+    p=client.post('/products',headers=farmer,json={'name':'Pomidor','price_grosze':549,'delivery_grosze':501,'stock':5})
     assert p.status_code==201
     return buyer,p.json()['id']
 
@@ -37,7 +37,7 @@ def test_atomic_capture_one_job_and_repeated_checkout(enabled,cart,verified):
             assert con.execute('SELECT count(*) FROM orders').fetchone()[0]==1
             assert con.execute('SELECT count(*) FROM order_mail_outbox').fetchone()[0]==int(verified)
             assert con.execute('SELECT stock FROM products WHERE id=?',(pid,)).fetchone()[0]==4
-        assert first.json()['total_grosze']==850
+        assert first.json()['total_grosze']==1050
         if verified:
             from backend import order_mail_outbox as outbox, email_ownership as proof
             from backend.checkout_vault import Vault,read_ring
@@ -47,7 +47,7 @@ def test_atomic_capture_one_job_and_repeated_checkout(enabled,cart,verified):
             def connect():
                 con=sqlite3.connect(database);con.row_factory=sqlite3.Row;return con
             def submit(recipient,purchase,**kwargs):
-                assert purchase.total_grosze==850 and purchase.delivery_grosze==501
+                assert purchase.total_grosze==1050 and purchase.delivery_grosze==501
                 assert purchase.pin==first.json()['shipment_pin_test_only' if cart else 'pin_test_only']
                 assert kwargs=={'email_verified':True}
                 return outcome('ACCEPTED',accepted=True)

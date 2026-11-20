@@ -9,3 +9,6 @@ web/leaflet.js -text
 web/leaflet.js.map -text
 web/leaflet.css -text whitespace=cr-at-eol
 web/LEAFLET-LICENSE.txt -text whitespace=cr-at-eol
+
+# Preserve CRLF for the Windows launcher in source archives.
+START_DEMO_WINDOWS.cmd -text whitespace=cr-at-eol

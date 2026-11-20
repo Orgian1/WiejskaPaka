@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from backend import app as api
 from backend.purchase_records import audit_records
+from tests.pickup_fixtures import grant_test_period
 from tests.test_b10921_security_boundaries import actor
 
 
@@ -14,6 +15,8 @@ def purchase(*,cart=False,fulfillment='odbior'):
     point_body={'name':'Stary punkt','city':'Opole','street':'Pierwotna 1','opening_hours':'9–17',
         'latitude_e6':52_000_000,'longitude_e6':16_000_000}
     point=c.post('/pickup-points',headers=farmer,json=point_body).json()['id']
+    with api.db() as con:
+        grant_test_period(con, point)
     products=[]
     for name,price,fee in [('Pierwotne jabłka',299,501),('Pierwotne ziemniaki',301,399)][:2 if cart else 1]:
         r=c.post('/products',headers=farmer,json={'name':name,'price_grosze':price,'delivery_grosze':fee,'stock':10})

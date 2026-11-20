@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from backend import app as api
 from backend.local_marketplace import EARTH_RADIUS_M, nearby_offers, refresh_product_index, search_key, sphere
+from tests.pickup_fixtures import grant_test_period
 from tests.test_b10921_security_boundaries import actor
 
 
@@ -18,6 +19,8 @@ def setup_market(*, lat=52_000_000,lon=16_000_000,stock=10,name='Ziemniaki ŁĄK
           'latitude_e6':lat,'longitude_e6':lon}
     point=client.post('/pickup-points',headers=farmer,json=body)
     assert point.status_code==201,point.text
+    with api.db() as con:
+        grant_test_period(con, point.json()['id'])
     return client,farmer,buyer,fid,product.json()['id'],point.json()['id'],body
 
 

@@ -3,8 +3,8 @@
 BEGIN;
 CREATE TABLE IF NOT EXISTS pickup_point_periods (
  id TEXT PRIMARY KEY,
- point_id INTEGER NOT NULL REFERENCES pickup_points(id),
- farmer_id INTEGER NOT NULL REFERENCES users(id),
+ point_id BIGINT NOT NULL REFERENCES pickup_points(id),
+ farmer_id BIGINT NOT NULL REFERENCES users(id),
  starts_at TEXT NOT NULL,
  ends_at TEXT NOT NULL,
  price_grosze INTEGER NOT NULL CHECK(price_grosze IN (0,1000)),

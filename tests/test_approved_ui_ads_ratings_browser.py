@@ -68,10 +68,29 @@ def _check_browser(browser, url, accounts, role):
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.set_viewport_size({"width": 1280, "height": 844})
         page.click("#panel-nav-link")
-        expect(side).to_be_hidden()
+        expect(side).to_be_visible()
         page.click("#wallet-nav-link")
         page.locator("#wallet-section").wait_for(state="visible", timeout=10000)
         assert ad.count() == 0, "Second wallet entry within 30 minutes must not show an ad"
+        routes = ["products", "nearby", "favorites", "orders", "account", "dashboard", "notifications", "contact"]
+        routes += ["cart"] if role == "klient" else ["listings", "points"]
+        for panel in routes:
+            page.evaluate("""async (panel) => {
+                navigateApp(panel);
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            }""", panel)
+            expect(side).to_be_visible()
+            assert side.evaluate("""(ad) => {
+                const a = ad.getBoundingClientRect();
+                return [...document.querySelectorAll('#tresc > section')].every(section => {
+                    const b = section.getBoundingClientRect();
+                    return !b.width || !b.height || a.right <= b.left + 1 ||
+                           a.left >= b.right - 1 || a.bottom <= b.top + 1 || a.top >= b.bottom - 1;
+                });
+            }"""), panel
+            if panel == "dashboard":
+                assert side.bounding_box()["x"] > information.bounding_box()["x"], panel
+            assert page.locator('.wp-ad-slot:visible').count() == 1, panel
         # Seller account has a different product-management view; catalog
         # stars belong to the customer-facing product catalog only.
         if role == "klient":

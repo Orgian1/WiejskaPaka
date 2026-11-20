@@ -24,9 +24,10 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
         self.assertIn("if(!setCampaign(config.id,campaign))setCampaign(config.id,defaultCampaigns[config.id]);",script)
         self.assertIn("cache:'no-store'",script)
 
-    def test_wallet_slots_use_the_information_row_and_external_styles(self):
+    def test_side_slots_use_existing_grid_space_and_external_styles(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
-        self.assertIn("mount({...config,route:'wallet'},firstInfo,true)",script)
+        self.assertIn("mount(config,main,true)",script)
+        self.assertIn("routeStatus.getBoundingClientRect()",script)
         self.assertIn("style.href='/assets/marketplace-ads.css'",script)
         self.assertIn("config.route!==appCurrentView",script)
         self.assertIn("host.parentElement.closest('[data-route-hidden], [hidden]')",script)

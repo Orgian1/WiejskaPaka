@@ -440,6 +440,8 @@ loadFarmer=async function(...args){
    if(id!==slotId)continue;
    host.querySelector('strong').textContent=campaign.title;
    host.querySelector('p').textContent=campaign.body;
+   host.title=campaign.title+' — '+campaign.body;
+   host.setAttribute('aria-description',campaign.body);
   }
   return true;
  }
@@ -453,28 +455,83 @@ loadFarmer=async function(...args){
   const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
-  if(side){
-   host.dataset.layout='side';
-   target.before(host);
-  }else{
-   target.append(host);
-  }
+  if(side)host.dataset.layout='side';
+  target.append(host);
   mounted.push({...config,host});
  }
  for(const config of slots)mount(config,document.querySelector(config.target));
- // The empty first cell of the wallet information row can carry a role-specific campaign.
- const firstInfo=document.querySelector('#tresc > section:not([id])');
- for(const config of slots.filter(config=>config.role!=='guest')){
-  mount({...config,route:'wallet'},firstInfo,true);
+ const main=el('tresc'),routeStatus=el('route-status');
+ const information=[...main.querySelectorAll(':scope > section:not([id])')].at(-1);
+ for(const config of slots.filter(config=>config.role!=='guest'))mount(config,main,true);
+ const desktop=matchMedia('(min-width: 950px)');
+ function findSideSpace(){
+  if(!desktop.matches||routeStatus.textContent.trim())return null;
+  const status=routeStatus.getBoundingClientRect();
+  const statusStyle=getComputedStyle(routeStatus);
+  const marginTop=parseFloat(statusStyle.marginTop),marginBottom=parseFloat(statusStyle.marginBottom);
+  const statusCell={x:status.x,y:status.y-marginTop,width:status.width,
+   height:status.height+marginTop+marginBottom};
+  if(status.height>=120)return statusCell;
+  // Full-width panels can leave the status on a row by itself.
+  // Check the cells of the remaining rows without changing grid placement.
+  const bounds=main.getBoundingClientRect(),grid=getComputedStyle(main);
+  const gap=parseFloat(grid.columnGap);
+  let x=bounds.left+parseFloat(grid.paddingLeft);
+  const columns=grid.gridTemplateColumns.split(' ').map(value=>{
+   const width=parseFloat(value),column={x,width};
+   x+=width+gap;
+   return column;
+  });
+  const panels=[...main.children]
+   .filter(panel=>!panel.classList.contains('wp-ad-slot'))
+   .map(panel=>panel.getBoundingClientRect())
+   .filter(rect=>rect.width>1&&rect.height>1);
+  const rows=panels.filter(rect=>rect.height>=120);
+  const info=information?.getBoundingClientRect();
+  if(info?.height>=120)rows.unshift(info);
+  for(const row of rows){
+   for(const column of columns){
+    if(column.width<280)continue;
+    const free=panels.every(rect=>rect.right<=column.x+1||
+     rect.left>=column.x+column.width-1||rect.bottom<=row.top+1||rect.top>=row.bottom-1);
+    if(free)return {...column,y:row.y,height:row.height};
+   }
+  }
+  // A fully occupied grid can still show a compact ad in the empty status row.
+  return statusCell.width>=280&&statusCell.height>=30?statusCell:null;
+ }
+ let frame=0;
+ function placeSide(){
+  frame=0;
+  const current=typeof role==='string'?role:'';
+  const space=findSideSpace(),bounds=main.getBoundingClientRect();
+  let visible=false;
+  for(const {host,role:audience} of mounted){
+   if(host.dataset.layout!=='side')continue;
+   host.hidden=!space||audience!==current;
+   if(host.hidden)continue;
+   visible=true;
+   host.style.left=(space.x-bounds.x)+'px';
+   host.style.top=(space.y-bounds.y)+'px';
+   host.style.width=space.width+'px';
+   host.style.height=Math.min(space.height,340)+'px';
+   host.toggleAttribute('data-compact',space.height<120);
+  }
+  main.toggleAttribute('data-side-ad-visible',visible);
  }
  function refresh(){
   const current=typeof role==='string'&&role?role:'guest';
   for(const config of mounted){
    const {host}=config;
+   if(host.dataset.layout==='side')continue;
    host.hidden=config.role!==current || config.route!==appCurrentView ||
      Boolean(host.parentElement.closest('[data-route-hidden], [hidden]'));
   }
+  if(!frame)frame=requestAnimationFrame(placeSide);
  }
+ const sizeObserver=new ResizeObserver(refresh);
+ for(const part of [main,routeStatus,information])if(part)sizeObserver.observe(part);
+ desktop.addEventListener('change',refresh);
  refresh();
  // Public campaigns are refreshed after administrator changes or login.
  // Reset to safe fallback when a campaign has expired or was disabled.
@@ -513,7 +570,7 @@ loadFarmer=async function(...args){
  const section=document.createElement('section');section.id='marketplace-ads-admin';
  section.className='wide-section';section.hidden=true;
  const heading=document.createElement('h2');heading.textContent='Reklamy w panelach i przy logowaniu';
- const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Kampanie klienta i sprzedawcy są widoczne również w portfelu na szerokim ekranie. Pięciosekundowe reklamy przy wejściu do portfela są zarządzane osobno.';
+ const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Kampanie klienta i sprzedawcy pojawiają się w wolnych miejscach ich paneli na szerokim ekranie. Pięciosekundowe reklamy przy wejściu do portfela są zarządzane osobno.';
  const form=document.createElement('form');form.className='card';
  const fields=[
   ['slot','Miejsce reklamy','select'],

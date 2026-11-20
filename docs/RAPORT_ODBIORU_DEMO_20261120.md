@@ -8,7 +8,7 @@ Gałąź `release/wiejskapaka-demo-zatwierdzony-20261120` powstała z zapisu `52
 2. Otwórz `START_DEMO_WINDOWS.cmd`. Przy pierwszym starcie skrypt przygotuje środowisko Pythona i pobierze przypięte wersje pakietów. Wymagany jest Python 3.12.
 3. Otwórz [http://127.0.0.1:8766](http://127.0.0.1:8766). Konta demonstracyjne są wypisane w oknie uruchomienia. Dane przykładowe powstają w tymczasowej bazie dla tego uruchomienia.
 4. Sprawdź układ katalogu, menu, koszyka i panelu sprzedawcy na komputerze oraz w widoku mobilnym. Otwórz portfel każdym kontem. Oczekiwany wynik to dwie różne reklamy, czerwony X z odliczaniem pięciu sekund, automatyczne zamknięcie i brak powtórki po ponownym wejściu przed upływem 30 minut.
-5. Na szerokim ekranie sprawdź miejsce reklamowe po lewej od „Praw konsumenta” w portfelu klienta i sprzedawcy. Treść bierze się z kampanii „Klient” lub „Sprzedawca” w sekcji „Reklamy w panelach i przy logowaniu”.
+5. Na szerokim ekranie sprawdź miejsca reklamowe w wolnych kolumnach paneli klienta i sprzedawcy. W portfelu reklama jest po lewej od „Praw konsumenta”. Treść bierze się z kampanii „Klient” lub „Sprzedawca” w sekcji „Reklamy w panelach i przy logowaniu”.
 6. Złóż zamówienie testowe i potwierdź odbiór PIN-em. Po odbiorze sprawdź jedną ocenę od 1 do 5 gwiazdek. W panelu sprzedawcy sprawdź punkt promocyjny i termin jego ważności.
 
 ## Wyniki weryfikacji

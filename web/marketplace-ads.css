@@ -22,19 +22,30 @@
 .wp-ad-slot p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
 .wp-ad-slot[hidden] { display: none; }
 
-@media (min-width: 950px) {
-  #tresc:has(> .wp-ad-slot[data-layout="side"]:not([hidden])) > #route-status:empty {
-    display: none;
-  }
-  #tresc > .wp-ad-slot[data-layout="side"] {
-    margin: 0;
-    contain: size;
-    overflow: auto;
-    align-content: safe center;
-  }
+#tresc { position: relative; }
+#tresc > .wp-ad-slot[data-layout="side"] {
+  position: absolute;
+  margin: 0;
+  overflow: auto;
+  align-content: safe center;
+}
+#tresc > .wp-ad-slot[data-compact]:not([hidden]) {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+.wp-ad-slot[data-compact] strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wp-ad-slot[data-compact] p { display: none; }
+#tresc[data-side-ad-visible] .wp-ad-slot:not([data-layout="side"]):is([data-ad-slot="buyer"], [data-ad-slot="seller"]) {
+  display: none;
 }
 @media (width < 950px) {
-  #tresc > .wp-ad-slot[data-layout="side"] { display: none; }
+  #tresc > .wp-ad-slot[data-layout="side"] { display: none !important; }
 }
 @media (max-width: 600px) {
   .wp-ad-slot { padding: 12px; }

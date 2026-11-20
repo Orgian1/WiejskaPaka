@@ -414,17 +414,9 @@ loadFarmer=async function(...args){
 // forms, their widths, or the five-second wallet advertisement overlay.
 // A missing campaign is a compact placeholder, not a fabricated coupon.
 (function installMarketplaceAdSlots(){
- const style=document.createElement('style');
- style.textContent=`
- .wp-ad-slot{box-sizing:border-box;min-width:0;margin:14px 0;padding:14px 18px;border:1px solid #d9e3d9;border-radius:12px;background:#f8faf7;color:#263c2b;display:grid;gap:7px;align-content:center}
- .wp-ad-slot .wp-ad-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#637369}
- .wp-ad-slot strong{font-size:17px}
- .wp-ad-slot p{margin:0;line-height:1.5}
- .wp-ad-slot a{color:#236a38;text-decoration:underline}
- .wp-ad-slot[hidden]{display:none!important}
- @media(min-width:950px){.wp-ad-slot[data-layout="side"]{min-height:175px}}
- @media(max-width:600px){.wp-ad-slot{padding:12px;min-height:0}}
- `;
+ const style=document.createElement('link');
+ style.rel='stylesheet';
+ style.href='/assets/marketplace-ads.css';
  document.head.append(style);
  const defaultCampaigns={
   login:{title:'Promocja dla sprzedawców',body:'3 punkty odbioru bez opłaty przez 30 dni każdy. Kod promocyjny podasz po zalogowaniu na konto sprzedawcy.'},
@@ -432,10 +424,11 @@ loadFarmer=async function(...args){
   seller:{title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.'}
  };
  const slots=[
-  {id:'login',after:'#account-section',roles:['guest']},
-  {id:'buyer',after:'#nearby-section',roles:['klient']},
-  {id:'seller',after:'#seller-listings-section',roles:['rolnik']}
+  {id:'login',target:'#account-section',route:'account',role:'guest'},
+  {id:'buyer',target:'#nearby-section',route:'nearby',role:'klient'},
+  {id:'seller',target:'#seller-listings-section',route:'listings',role:'rolnik'}
  ];
+ const mounted=[];
  // Future admin-managed campaigns can replace these safe text defaults.
  // Campaign content is always inserted with textContent, never innerHTML.
  function setCampaign(slotId,campaign){
@@ -443,15 +436,16 @@ loadFarmer=async function(...args){
   if(!campaign||typeof campaign.title!=='string'||typeof campaign.body!=='string'
     ||!campaign.title.trim()||!campaign.body.trim()
     ||campaign.title.length>100||campaign.body.length>500)return false;
-  const host=document.querySelector('[data-ad-slot="'+slotId+'"]');
-  if(!host)return false;
-  host.querySelector('strong').textContent=campaign.title;
-  host.querySelector('p').textContent=campaign.body;
+  for(const {id,host} of mounted){
+   if(id!==slotId)continue;
+   host.querySelector('strong').textContent=campaign.title;
+   host.querySelector('p').textContent=campaign.body;
+  }
   return true;
  }
  window.WiejskaPakaAdSlots=Object.freeze({setCampaign});
- for(const config of slots){
-  const target=document.querySelector(config.after);if(!target)continue;
+ function mount(config,target,side=false){
+  if(!target)return;
   const host=document.createElement('aside');
   host.className='wp-ad-slot';host.dataset.adSlot=config.id;
   host.setAttribute('aria-label','Reklama');host.hidden=true;
@@ -459,19 +453,26 @@ loadFarmer=async function(...args){
   const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
-  // Ads belong to routed sections; never nest them inside login/product forms.
-  target.append(host);
+  if(side){
+   host.dataset.layout='side';
+   target.before(host);
+  }else{
+   target.append(host);
+  }
+  mounted.push({...config,host});
+ }
+ for(const config of slots)mount(config,document.querySelector(config.target));
+ // The empty first cell of the wallet information row can carry a role-specific campaign.
+ const firstInfo=document.querySelector('#tresc > section:not([id])');
+ for(const config of slots.filter(config=>config.role!=='guest')){
+  mount({...config,route:'wallet'},firstInfo,true);
  }
  function refresh(){
   const current=typeof role==='string'&&role?role:'guest';
-  const route=typeof appRouteName==='function'?appRouteName():'account';
-  for(const config of slots){
-   const host=document.querySelector('[data-ad-slot="'+config.id+'"]');
-   if(!host)continue;
-   const allowed=config.roles.includes(current) &&
-     (config.id==='login'?route==='account':config.id==='buyer'?route==='nearby':route==='listings') &&
-     !host.closest('[data-route-hidden]') && !host.closest('[hidden]');
-   host.hidden=!allowed;
+  for(const config of mounted){
+   const {host}=config;
+   host.hidden=config.role!==current || config.route!==appCurrentView ||
+     Boolean(host.parentElement.closest('[data-route-hidden], [hidden]'));
   }
  }
  refresh();
@@ -512,7 +513,7 @@ loadFarmer=async function(...args){
  const section=document.createElement('section');section.id='marketplace-ads-admin';
  section.className='wide-section';section.hidden=true;
  const heading=document.createElement('h2');heading.textContent='Reklamy w panelach i przy logowaniu';
- const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Włączona kampania pojawi się tylko w wyznaczonym terminie. Reklamy portfela są zarządzane osobno.';
+ const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Kampanie klienta i sprzedawcy są widoczne również w portfelu na szerokim ekranie. Pięciosekundowe reklamy przy wejściu do portfela są zarządzane osobno.';
  const form=document.createElement('form');form.className='card';
  const fields=[
   ['slot','Miejsce reklamy','select'],

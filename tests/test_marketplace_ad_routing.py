@@ -8,9 +8,9 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
     def test_ad_slots_remain_inside_their_own_sections(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
         self.assertIn('target.append(host);',script)
-        self.assertIn("{id:'login',after:'#account-section',roles:['guest']}",script)
-        self.assertIn("{id:'seller',after:'#seller-listings-section',roles:['rolnik']}",script)
-        self.assertNotIn("{id:'login',after:'#auth'",script)
+        self.assertIn("{id:'login',target:'#account-section',route:'account',role:'guest'}",script)
+        self.assertIn("{id:'seller',target:'#seller-listings-section',route:'listings',role:'rolnik'}",script)
+        self.assertNotIn("{id:'login',target:'#auth'",script)
         self.assertNotIn('target.after(host);',script)
         self.assertIn("document.addEventListener('wiejskapaka:route-changed',refresh);",script)
         self.assertIn("document.dispatchEvent(new Event('wiejskapaka:route-changed'));",script)
@@ -24,12 +24,12 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
         self.assertIn("if(!setCampaign(config.id,campaign))setCampaign(config.id,defaultCampaigns[config.id]);",script)
         self.assertIn("cache:'no-store'",script)
 
-    def test_approved_ui_assets_are_not_modified_by_ad_system(self):
+    def test_wallet_slots_use_the_information_row_and_external_styles(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
-        self.assertIn("config.id==='login'?route==='account'",script)
-        self.assertIn("config.id==='buyer'?route==='nearby':route==='listings'",script)
-        self.assertIn("!host.closest('[data-route-hidden]')",script)
-        self.assertIn("!host.closest('[hidden]')",script)
+        self.assertIn("mount({...config,route:'wallet'},firstInfo,true)",script)
+        self.assertIn("style.href='/assets/marketplace-ads.css'",script)
+        self.assertIn("config.route!==appCurrentView",script)
+        self.assertIn("host.parentElement.closest('[data-route-hidden], [hidden]')",script)
 
 if __name__=='__main__':
     unittest.main()

@@ -1,7 +1,7 @@
 """Real Chromium smoke test for wallet ad timing and seller stars on approved UI."""
 import pytest
 from tests.test_full_local_demo_browser import full_demo_server
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 
 @pytest.mark.parametrize('role', ['klient', 'rolnik'])
@@ -20,6 +20,10 @@ def _check_browser(browser, url, accounts, role):
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     try:
+        if role == "rolnik":
+            page.route("**/ads/slots/seller", lambda route: route.fulfill(
+                json={"campaign": {"title": "Kampania testowa sprzedawcy", "body": "Oferta sezonowa"}}
+            ))
         page.goto(url)
         page.click("#account-nav-link")
         page.fill("#email", accounts[role]["email"])
@@ -44,7 +48,27 @@ def _check_browser(browser, url, accounts, role):
         assert ad.locator("[role=timer]").text_content() in ("5", "4")
         page.locator("#wallet-section").wait_for(state="visible", timeout=12000)
         assert ad.count() == 0
+        slot_id = "buyer" if role == "klient" else "seller"
+        side = page.locator(f'[data-ad-slot="{slot_id}"][data-layout="side"]')
+        expect(side).to_be_visible()
+        title = "Miejsce na reklamę" if role == "klient" else "Kampania testowa sprzedawcy"
+        expect(side.locator("strong")).to_have_text(title)
+        consumer = page.locator("main > section").filter(has=page.get_by_role("heading", name="Prawa konsumenta"))
+        information = page.locator("main > section").filter(has=page.get_by_role("heading", name="Informacje", exact=True))
+        left, middle, right = (item.bounding_box() for item in (side, consumer, information))
+        assert left["x"] < middle["x"] < right["x"]
+        assert left["y"] == middle["y"] == right["y"]
+        side.evaluate("(element) => { element.hidden = true; }")
+        assert (consumer.bounding_box(), information.bounding_box()) == (middle, right)
+        side.evaluate("(element) => { element.hidden = false; }")
+        expect(side).to_have_css("background-color", "rgb(248, 250, 247)")
+        assert page.locator('[data-layout="side"]:visible').count() == 1
+        page.set_viewport_size({"width": 390, "height": 844})
+        expect(side).to_be_hidden()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        page.set_viewport_size({"width": 1280, "height": 844})
         page.click("#panel-nav-link")
+        expect(side).to_be_hidden()
         page.click("#wallet-nav-link")
         page.locator("#wallet-section").wait_for(state="visible", timeout=10000)
         assert ad.count() == 0, "Second wallet entry within 30 minutes must not show an ad"

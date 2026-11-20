@@ -18,10 +18,8 @@ class MarketplaceAdRoutingTests(unittest.TestCase):
     def test_admin_changes_refresh_active_campaigns(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
         self.assertIn("new Event('wiejskapaka:ads-updated')",script)
-        self.assertIn("let campaign=defaultCampaigns[config.id];",script)
-        self.assertIn("if(data?.campaign)campaign=data.campaign;",script)
         self.assertIn("if(version!==campaignReloadVersion)return;",script)
-        self.assertIn("if(!setCampaign(config.id,campaign))setCampaign(config.id,defaultCampaigns[config.id]);",script)
+        self.assertIn("if(!setCampaign('login',campaigns.login))setCampaign('login',campaigns.buyer);",script)
         self.assertIn("cache:'no-store'",script)
 
     def test_side_slots_use_existing_grid_space_and_external_styles(self):

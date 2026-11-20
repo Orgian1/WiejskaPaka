@@ -20,12 +20,32 @@ def _check_browser(browser, url, accounts, role):
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     try:
-        if role == "rolnik":
-            page.route("**/ads/slots/seller", lambda route: route.fulfill(
-                json={"campaign": {"title": "Kampania testowa sprzedawcy", "body": "Oferta sezonowa"}}
-            ))
+        titles = {
+            "buyer": "Kampania kupujących",
+            "seller": "Kampania sprzedawcy",
+            "login": "Oferta dla klientów przed logowaniem" if role == "rolnik" else None,
+        }
+
+        def show_campaign(route):
+            title = titles[route.request.url.rsplit("/", 1)[-1]]
+            route.fulfill(json={
+                "campaign": {"title": title, "body": "Oferta sezonowa"} if title else None
+            })
+
+        page.route("**/ads/slots/*", show_campaign)
         page.goto(url)
-        page.click("#account-nav-link")
+        page.click("#header-login-link")
+        login_ad = page.locator('#account-section [data-ad-slot="login"]')
+        expect(login_ad.locator("strong")).to_have_text(
+            "Oferta dla klientów przed logowaniem" if role == "rolnik" else "Kampania kupujących"
+        )
+        expect(login_ad).to_be_visible()
+        assert login_ad.bounding_box()["y"] < page.locator("#auth").bounding_box()["y"]
+        assert page.locator('.wp-ad-slot:visible').count() == 1
+        page.set_viewport_size({"width": 390, "height": 844})
+        expect(login_ad).to_be_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        page.set_viewport_size({"width": 1280, "height": 844})
         page.fill("#email", accounts[role]["email"])
         page.fill("#password", accounts[role]["password"])
         with page.expect_response("**/auth/login") as login_response:
@@ -39,6 +59,7 @@ def _check_browser(browser, url, accounts, role):
             "(email) => document.querySelector('#identity').textContent.includes(email)",
             arg=accounts[role]["email"],
         )
+        expect(login_ad).to_be_hidden()
         page.click("#wallet-nav-link")
         ad = page.locator("#wallet-ad-dialog")
         ad.wait_for(state="visible", timeout=10000)
@@ -51,7 +72,7 @@ def _check_browser(browser, url, accounts, role):
         slot_id = "buyer" if role == "klient" else "seller"
         side = page.locator(f'[data-ad-slot="{slot_id}"][data-layout="side"]')
         expect(side).to_be_visible()
-        title = "Miejsce na reklamę" if role == "klient" else "Kampania testowa sprzedawcy"
+        title = "Kampania kupujących" if role == "klient" else "Kampania sprzedawcy"
         expect(side.locator("strong")).to_have_text(title)
         consumer = page.locator("main > section").filter(has=page.get_by_role("heading", name="Prawa konsumenta"))
         information = page.locator("main > section").filter(has=page.get_by_role("heading", name="Informacje", exact=True))

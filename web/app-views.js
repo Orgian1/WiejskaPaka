@@ -419,10 +419,10 @@ loadFarmer=async function(...args){
  style.href='/assets/marketplace-ads.css';
  document.head.append(style);
  const defaultCampaigns={
-  login:{title:'Promocja dla sprzedawców',body:'3 punkty odbioru bez opłaty przez 30 dni każdy. Kod promocyjny podasz po zalogowaniu na konto sprzedawcy.'},
   buyer:{title:'Miejsce na reklamę',body:'Tutaj pojawią się oferty i reklamy dla kupujących.'},
   seller:{title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.'}
  };
+ defaultCampaigns.login=defaultCampaigns.buyer;
  const slots=[
   {id:'login',target:'#account-section',route:'account',role:'guest'},
   {id:'buyer',target:'#nearby-section',route:'nearby',role:'klient'},
@@ -456,7 +456,9 @@ loadFarmer=async function(...args){
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
   if(side)host.dataset.layout='side';
-  target.append(host);
+  const form=config.id==='login'?target.querySelector('#auth'):null;
+  if(form)form.before(host);
+  else target.append(host);
   mounted.push({...config,host});
  }
  for(const config of slots)mount(config,document.querySelector(config.target));
@@ -538,19 +540,22 @@ loadFarmer=async function(...args){
  let campaignReloadVersion=0;
  async function reloadCampaigns(){
   const version=++campaignReloadVersion;
-  await Promise.all(slots.map(async config=>{
-   let campaign=defaultCampaigns[config.id];
+  const entries=await Promise.all(slots.map(async ({id})=>{
    try{
-    const response=await fetch('/ads/slots/'+config.id,{credentials:'same-origin',cache:'no-store'});
-    if(response.ok){
-     const data=await response.json();
-     if(data?.campaign)campaign=data.campaign;
-    }
-   }catch(_error){/* Offline: restore the safe default, not a stale campaign. */}
-   // A slower earlier request must never overwrite a newer campaign refresh.
-   if(version!==campaignReloadVersion)return;
-   if(!setCampaign(config.id,campaign))setCampaign(config.id,defaultCampaigns[config.id]);
+    const response=await fetch('/ads/slots/'+id,{credentials:'same-origin',cache:'no-store'});
+    if(response.ok)return [id,(await response.json())?.campaign];
+   }catch(_error){/* Offline: restore the configured audience defaults. */}
+   return [id,null];
   }));
+  if(version!==campaignReloadVersion)return;
+  const campaigns=Object.fromEntries(entries);
+  for(const id of ['buyer','seller']){
+   if(!setCampaign(id,campaigns[id])){
+    campaigns[id]=defaultCampaigns[id];
+    setCampaign(id,campaigns[id]);
+   }
+  }
+  if(!setCampaign('login',campaigns.login))setCampaign('login',campaigns.buyer);
  }
  window.addEventListener('wiejskapaka:ads-updated',()=>{void reloadCampaigns();});
  void reloadCampaigns();
@@ -570,7 +575,7 @@ loadFarmer=async function(...args){
  const section=document.createElement('section');section.id='marketplace-ads-admin';
  section.className='wide-section';section.hidden=true;
  const heading=document.createElement('h2');heading.textContent='Reklamy w panelach i przy logowaniu';
- const intro=document.createElement('p');intro.textContent='Reklamy tekstowe dla klientów, sprzedawców i gości. Kampanie klienta i sprzedawcy pojawiają się w wolnych miejscach ich paneli na szerokim ekranie. Pięciosekundowe reklamy przy wejściu do portfela są zarządzane osobno.';
+ const intro=document.createElement('p');intro.textContent='Przy logowaniu wyświetla się kampania „Logowanie – klienci” lub bieżąca kampania „Klient”. Kampanie klienta i sprzedawcy pojawiają się w wolnych miejscach ich paneli na szerokim ekranie. Pięciosekundowe reklamy przy wejściu do portfela są zarządzane osobno.';
  const form=document.createElement('form');form.className='card';
  const fields=[
   ['slot','Miejsce reklamy','select'],
@@ -586,7 +591,7 @@ loadFarmer=async function(...args){
   let input;
   if(type==='select'){
    input=document.createElement('select');
-   for(const [value,caption] of [['login','Logowanie'],['buyer','Klient'],['seller','Sprzedawca']]){
+   for(const [value,caption] of [['login','Logowanie – klienci'],['buyer','Klient'],['seller','Sprzedawca']]){
     const option=document.createElement('option');option.value=value;option.textContent=caption;input.append(option);
    }
   }else input=document.createElement(type==='textarea'?'textarea':'input');

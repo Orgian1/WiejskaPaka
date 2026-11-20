@@ -487,18 +487,32 @@ function sellerPickupGroups(orders,renderOrder){
   const current=orders.filter(o=>['oczekuje_na_platnosc_testowa','gotowe_do_odbioru_testowo','w_drodze_testowo'].includes(o.status));
   const groups=new Map();
   for(const order of current.filter(o=>o.fulfillment==='odbior')){
-    if(!groups.has(order.pickup_point_id))groups.set(order.pickup_point_id,{name:order.pickup_point_name||'Punkt odbioru #'+order.pickup_point_id,orders:[]});
+    if(!groups.has(order.pickup_point_id))groups.set(order.pickup_point_id,{id:order.pickup_point_id,name:order.pickup_point_name||'Punkt odbioru #'+order.pickup_point_id,orders:[]});
     groups.get(order.pickup_point_id).orders.push(order);
   }
   function groupPanel(group,css){
     const details=node('details','', 'card '+css);details.append(node('summary',`${group.name} — ${sellerOrderCount(group.orders.length)}`));
     const host=node('div');details.append(host);let offset=0;const epoch=sessionEpoch;
+    if(css==='seller-pickup-group'&&group.id&&typeof pickupArrivalControl==='function'){
+      details.append(pickupArrivalControl(group.id,null,async()=>{
+        await loadOrders();
+        const control=el('orders').querySelector('[data-pickup-arrival="'+group.id+'"]');
+        if(control)control.closest('details').open=true;
+      }));
+    }
     const active=()=>epoch===sessionEpoch&&role==='rolnik'&&details.isConnected;
     function renderPage(){
       if(!active())return;
       for(const input of host.querySelectorAll('input'))input.value='';host.replaceChildren();
       const visible=group.orders.slice(offset,offset+20),list=node('ul');
-      for(const order of visible){const item=node('li');const card=renderOrder?renderOrder(order):node('p',`#${order.id} — ${order.product_name} — ilość: ${order.quantity} — ${sellerOrderStatus(order.status)}`);if(card)item.append(card);list.append(item)}
+      for(const order of visible){const item=node('li');const card=renderOrder?renderOrder(order):node('p',`#${order.id} — ${order.product_name} — ilość: ${order.quantity} — ${sellerOrderStatus(order.status)}`);if(card){
+        if(typeof pickupArrivalControl==='function'){
+          for(const button of card.querySelectorAll('button')){
+            if(button.textContent==='Gotowe do odbioru (test)')button.remove();
+          }
+        }
+        item.append(card);
+      }list.append(item)}
       if(css==='seller-address-orders'){const link=node('a','Terminy i zatwierdzanie dostaw');link.href='#address-delivery-panel';link.onclick=()=>{if(typeof revealSellerSection==='function')revealSellerSection('address-delivery-panel')};host.append(link)}
       host.append(list,node('p',`Zamówienia ${offset+1}–${Math.min(group.orders.length,offset+20)} z ${group.orders.length}`));
       const previous=node('button','Poprzednie zamówienia: '+group.name),next=node('button','Następne zamówienia: '+group.name);

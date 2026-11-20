@@ -389,21 +389,69 @@ loadOrders=async function(...args){
  return result;
 };
 
+function pickupArrivalControl(pointId,lastArrival,onConfirmed){
+ const host=node('div'),button=node('button','Jestem na miejscu'),status=node('p');
+ host.dataset.pickupArrival=String(pointId);
+ button.type='button';
+ status.setAttribute('role','status');
+ const showTime=stamp=>{status.textContent='Ostatnie potwierdzenie przybycia: '+
+  new Date(stamp).toLocaleString('pl-PL',{timeZone:'Europe/Warsaw'});};
+ if(lastArrival)showTime(lastArrival);
+ host.append(button,status);
+ button.onclick=async()=>{
+  if(button.disabled||role!=='rolnik')return;
+  const epoch=sessionEpoch;
+  if(!navigator.geolocation){
+   status.textContent='Lokalizacja GPS jest niedostępna w tej przeglądarce.';
+   return;
+  }
+  button.disabled=true;
+  status.textContent='Sprawdzamy lokalizację. Zezwól przeglądarce na jej użycie.';
+  try{
+   const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(
+    resolve,()=>reject(new Error('Nie udało się odczytać lokalizacji. Sprawdź uprawnienia GPS i spróbuj ponownie.')),
+    {enableHighAccuracy:true,maximumAge:0,timeout:15000}
+   ));
+   if(epoch!==sessionEpoch||role!=='rolnik'||!host.isConnected)return;
+   const coords=position.coords;
+   if(!Number.isFinite(coords.accuracy)||coords.accuracy<=0||coords.accuracy>100)
+    throw new Error('Sygnał GPS jest za mało dokładny. Spróbuj ponownie na otwartej przestrzeni.');
+   const result=await api('/pickup-points/'+pointId+'/arrival','POST',{
+    latitude_e6:Math.round(coords.latitude*1000000),
+    longitude_e6:Math.round(coords.longitude*1000000),
+    accuracy_m:coords.accuracy
+   });
+   if(epoch!==sessionEpoch||role!=='rolnik')return;
+   showTime(result.confirmed_at);
+   msg('Przybycie potwierdzone. Powiadomiono o zamówieniach: '+result.notified_orders+'.');
+   await onConfirmed(result);
+  }catch(error){
+   if(epoch===sessionEpoch)status.textContent=error.message;
+  }finally{button.disabled=false;}
+ };
+ return host;
+}
+
 // Inform sellers of the renewal price without initiating an unimplemented charge.
 const loadFarmerBeforeRenewalInfo=loadFarmer;
 loadFarmer=async function(...args){
+  const epoch=sessionEpoch;
   const result=await loadFarmerBeforeRenewalInfo.apply(this,args);
-  if(role!=='rolnik')return result;
+  if(epoch!==sessionEpoch||role!=='rolnik')return result;
   const host=el('my-points');if(!host)return result;
   try{
     const points=await api('/farmers/me/pickup-points');
-    if(role!=='rolnik')return result;
+    if(epoch!==sessionEpoch||role!=='rolnik')return result;
+    host.querySelectorAll('[data-point-renewal-info],[data-pickup-arrival]').forEach(element=>element.remove());
     const note=node('p',`Odnowienie: 10,00 zł za każdy punkt na 30 dni. Płatności za punkty nie są jeszcze uruchomione w demo.`);
     note.dataset.pointRenewalInfo='true';
     if(!host.querySelector('[data-point-renewal-info]'))host.prepend(note);
     for(const pt of points){
       const p=node('p',`${pt.name}: ${pt.promotion_active?'promocja aktywna do '+pt.promotion.free_until:pt.promotion?'promocja wygasła':'bez aktywnej promocji'} · odnowienie 10,00 zł / 30 dni`);
       p.dataset.pointRenewalInfo='true';host.append(p);
+      if(pt.active){
+       host.append(pickupArrivalControl(pt.id,pt.last_arrival_at,()=>loadOrders()));
+      }
     }
   }catch(_e){}
   return result;

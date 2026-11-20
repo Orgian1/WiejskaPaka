@@ -104,3 +104,10 @@ def test_native_promotion_period_visible_and_private(pg_api):
     assert client.post('/orders', headers=buyer, json={
         **pickup, 'product_id': item, 'quantity': 1,
     }).status_code == 422
+
+
+def test_native_pickup_arrival(pg_api):
+    from tests.test_pickup_arrival import exercise_arrival
+
+    client, _ = pg_api
+    exercise_arrival(client)

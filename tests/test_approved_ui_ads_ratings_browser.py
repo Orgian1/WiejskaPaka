@@ -159,3 +159,33 @@ def test_same_package_button_opens_cart_and_badge_counts_units(full_demo_server)
             )
         finally:
             browser.close()
+
+
+def test_seller_confirms_arrival_for_the_point(full_demo_server):
+    url, accounts = full_demo_server
+    with sync_playwright() as driver:
+        browser = driver.chromium.launch(headless=True, args=['--no-sandbox'])
+        page = browser.new_page(
+            geolocation={"latitude": 51.21, "longitude": 16.16, "accuracy": 10},
+            permissions=["geolocation"],
+        )
+        try:
+            page.goto(url)
+            page.click("#header-login-link")
+            page.fill("#email", accounts["rolnik"]["email"])
+            page.fill("#password", accounts["rolnik"]["password"])
+            page.locator("#auth button[type=submit]").click()
+            page.locator("#points-nav-link").click()
+            with page.expect_response("**/pickup-points/*/arrival") as response:
+                page.locator("#my-points").get_by_role("button", name="Jestem na miejscu").click()
+            assert response.value.status == 200
+            expect(page.locator("#my-points [data-pickup-arrival] [role=status]")).to_contain_text(
+                "Ostatnie potwierdzenie przybycia"
+            )
+            page.click("#orders-nav-link")
+            group = page.locator(".seller-pickup-group").first
+            group.locator("summary").first.click()
+            expect(group.get_by_role("button", name="Jestem na miejscu")).to_be_visible()
+            assert group.get_by_role("button", name="Gotowe do odbioru (test)", exact=True).count() == 0
+        finally:
+            browser.close()

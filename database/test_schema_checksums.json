@@ -258,5 +258,10 @@
     "file": "upgrade_seller_ratings.sql",
     "sha256": "493a6aef8ec8934f471ff67d06ebd4edb59aefbdde017fa3ad8f316474d8cfdb",
     "bytes": 526
+  },
+  {
+    "file": "upgrade_pickup_point_arrivals.sql",
+    "sha256": "9284d56b89ad0d7fdc6e679a4d18398361df4fcfd5fe00ac6c4509defa768015",
+    "bytes": 2018
   }
 ]

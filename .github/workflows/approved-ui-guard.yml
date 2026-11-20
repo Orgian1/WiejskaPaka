@@ -87,7 +87,7 @@ jobs:
       - name: Install Chromium for real browser smoke test
         run: python -m playwright install --with-deps chromium
       - name: Verify wallet ad timing and seller stars in Chromium
-        run: python -m pytest tests/test_approved_ui_ads_ratings_browser.py -v
+        run: python -m pytest tests/test_approved_ui_ads_ratings_browser.py tests/test_pickup_arrival.py -v
 
   disposable-postgres-rls:
     runs-on: ubuntu-latest

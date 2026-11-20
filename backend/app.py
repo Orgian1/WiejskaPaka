@@ -30,7 +30,7 @@ assert_safe_environment()
 DB_PATH = os.environ.get('WIEJSKAPAKA_DB', str(Path(__file__).with_name('wiejskapaka.sqlite3')))
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 from backend.inventory_reservations import add_hold, payment_deadline_passed, expire_due, has_hold_capacity
-from backend import product_unit_storage, pickup_dates
+from backend import product_unit_storage, pickup_dates, pickup_arrival
 from backend import address_delivery
 from backend import product_categories, product_listings
 from backend.address_delivery import DeliveryPreferenceIn
@@ -91,6 +91,7 @@ async def application_lifespan(application):
             con.execute('SELECT case_id,revision FROM support_case_events LIMIT 0')
     with db() as con:
         con.execute('SELECT point_id FROM pickup_point_coordinates LIMIT 0')
+        con.execute('SELECT point_id,confirmed_at FROM pickup_point_arrivals LIMIT 0')
         from backend.local_marketplace import refresh_product_index
         refresh_product_index(con, postgres=bool(DATABASE_URL))
     async def sweep():
@@ -1343,6 +1344,8 @@ def require_unexpired_unpaid_reservation(con, order_id):
 @app.post('/test/orders/{order_id}/ready')
 def mark_ready_test(order_id:int,user=Depends(current_user), authorization: str | None = Header(default=None)):
     require(user,'rolnik')
+    if os.environ.get('WP_REQUIRE_PICKUP_GPS') == '1':
+        raise HTTPException(409, 'Potwierdź przybycie w punkcie odbioru przyciskiem „Jestem na miejscu”.')
     with order_write_db(user, authorization, ('rolnik',)) as con:
         o=con.execute('SELECT farmer_id,status,fulfillment FROM orders WHERE id=?' + (' FOR UPDATE' if DATABASE_URL else ''),(order_id,)).fetchone()
         if not o or o['farmer_id']!=user['id']:
@@ -1681,6 +1684,8 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
             (payload.name,payload.city,payload.street,payload.opening_hours,int(payload.active),point_id,user['id']))
         if payload.attendance_dates is not None:
             pickup_dates.replace(con,point_id,payload.attendance_dates)
+        if coords_changed or (point['active'] and not payload.active):
+            con.execute('DELETE FROM pickup_point_arrivals WHERE point_id=?', (point_id,))
         if payload.clear_coordinates:
             con.execute('DELETE FROM pickup_point_coordinates WHERE point_id=?',(point_id,))
         elif payload.latitude_e6 is not None:
@@ -1689,12 +1694,57 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
     return {'id':point_id,'saved':True,'active':payload.active}
 
 
+
+@app.post('/pickup-points/{point_id}/arrival')
+def confirm_pickup_arrival(point_id: int, payload: pickup_arrival.ArrivalIn,
+                           user=Depends(current_user), authorization: str | None = Header(default=None)):
+    require(user, 'rolnik')
+    with order_write_db(user, authorization, ('rolnik',)) as con:
+        point = con.execute('SELECT active FROM pickup_points WHERE id=? AND farmer_id=?' +
+                            (' FOR UPDATE' if DATABASE_URL else ''), (point_id, user['id'])).fetchone()
+        if point is None:
+            raise HTTPException(404, 'Nie znaleziono punktu')
+        if not point['active']:
+            raise HTTPException(409, 'Punkt odbioru jest nieaktywny.')
+        coordinates = con.execute(
+            'SELECT latitude_e6,longitude_e6 FROM pickup_point_coordinates WHERE point_id=?',
+            (point_id,),
+        ).fetchone()
+        pickup_arrival.verify_location(coordinates, payload)
+        now = datetime.now(timezone.utc)
+        stamp = now.isoformat()
+        con.execute("""INSERT INTO pickup_point_arrivals(point_id,confirmed_at) VALUES(?,?)
+            ON CONFLICT(point_id) DO UPDATE SET confirmed_at=excluded.confirmed_at""", (point_id, stamp))
+        orders = con.execute("""SELECT o.id,o.status FROM orders o
+            JOIN order_locations l ON l.order_id=o.id
+            WHERE o.farmer_id=? AND l.pickup_point_id=? AND o.fulfillment='odbior'
+              AND o.status IN ('oczekuje_na_platnosc_testowa','gotowe_do_odbioru_testowo')
+            ORDER BY o.id""" + (' FOR UPDATE OF o' if DATABASE_URL else ''), (user['id'], point_id)).fetchall()
+        notified = 0
+        ready = 'gotowe_do_odbioru_testowo'
+        for order in orders:
+            order_id, status = order['id'], order['status']
+            if status != ready:
+                if payment_deadline_passed(con, order_id, now=now):
+                    payment = get_payment(con, order_id)
+                    if payment is None or payment.state in ('awaiting_payment', 'failed_test'):
+                        continue
+                require_transition('odbior', status, ready)
+                con.execute('UPDATE orders SET status=? WHERE id=?', (ready, order_id))
+            elif con.execute("""SELECT 1 FROM order_events WHERE order_id=?
+                    AND event_type='pickup_arrived' LIMIT 1""", (order_id,)).fetchone():
+                continue
+            record_order_event(con, order_id, user['id'], 'pickup_arrived', status, ready)
+            notified += 1
+    return {'confirmed_at': stamp, 'notified_orders': notified}
+
+
 @app.get('/farmers/me/pickup-points')
 def my_pickup_points(user=Depends(current_user)):
     require(user, 'rolnik')
     with db() as con:
         from backend.pickup_promotions import point_terms
-        points=[pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6 FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
+        points=[pickup_dates.enrich(con,r) for r in con.execute('SELECT t.id,t.name,t.city,t.street,t.opening_hours,t.active,c.latitude_e6,c.longitude_e6,a.confirmed_at AS last_arrival_at FROM pickup_points t LEFT JOIN pickup_point_coordinates c ON c.point_id=t.id LEFT JOIN pickup_point_arrivals a ON a.point_id=t.id WHERE t.farmer_id=? ORDER BY t.id DESC',(user['id'],))]
         from backend.pickup_point_periods import point_status
         from backend.pickup_point_pricing import POINT_MONTHLY_PRICE_GROSZE, POINT_BILLING_PERIOD_DAYS
         from datetime import datetime
@@ -1791,6 +1841,7 @@ def record_order_event(con, order_id, actor_id, event_type, old_status, new_stat
         'address_delivery_accepted': ('Dostawa zaakceptowana', 'Sprzedawca zaakceptował termin dostawy na adres. Sprawdź termin rezerwacji przed płatnością.'),
         'address_delivery_declined': ('Dostawa odrzucona', 'Sprzedawca odrzucił dostawę na adres. Rezerwacja towaru została zwolniona.'),
         'order_created': ('Nowe zamówienie', 'Utworzono zamówienie testowe, bez pobrania płatności.'),
+        'pickup_arrived': ('Sprzedawca potwierdził przybycie', 'Sprzedawca zgłosił obecność w punkcie odbioru. Możesz odebrać zamówienie z PIN-em.'),
         'pickup_ready': ('Gotowe do odbioru', 'Możesz sprawdzić produkty przed podaniem PIN-u.'),
         'courier_assigned': ('Przydzielono dostawcę', 'Do zamówienia testowego przydzielono dostawcę.'),
         'dispatched_test': ('Zamówienie w drodze', 'Dostawa testowa została oznaczona jako wysłana.'),
@@ -3095,7 +3146,7 @@ if not DATABASE_URL and product_unit_storage.enabled():
 if not DATABASE_URL:
     from backend.local_marketplace import SCHEMA_SQLITE as LOCAL_MARKET_SCHEMA, refresh_product_index
     with db() as _local_market_con:
-        _local_market_con.executescript(LOCAL_MARKET_SCHEMA)
+        _local_market_con.executescript(LOCAL_MARKET_SCHEMA + pickup_arrival.SCHEMA)
         refresh_product_index(_local_market_con)
 
 

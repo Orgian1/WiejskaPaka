@@ -10,7 +10,7 @@ Gałąź `release/wiejskapaka-demo-zatwierdzony-20261120` powstała z zapisu `52
 4. Sprawdź układ katalogu, menu, koszyka i panelu sprzedawcy na komputerze oraz w widoku mobilnym. Otwórz portfel każdym kontem. Oczekiwany wynik to dwie różne reklamy, czerwony X z odliczaniem pięciu sekund, automatyczne zamknięcie i brak powtórki po ponownym wejściu przed upływem 30 minut.
 5. Na szerokim ekranie sprawdź miejsca reklamowe w wolnych kolumnach paneli klienta i sprzedawcy. W portfelu reklama jest po lewej od „Praw konsumenta”. Treść bierze się z kampanii „Klient” lub „Sprzedawca” w sekcji „Reklamy w panelach i przy logowaniu”.
 6. Wyloguj się i wybierz „Zaloguj się”. Nad formularzem pojawi się kampania „Logowanie – klienci”, a jeśli nie jest aktywna, kampania „Klient”.
-7. Złóż zamówienie testowe i potwierdź odbiór PIN-em. Po odbiorze sprawdź jedną ocenę od 1 do 5 gwiazdek. W panelu sprzedawcy sprawdź punkt promocyjny i termin jego ważności.
+7. Złóż zamówienie testowe. Wybierz właściwy punkt jako sprzedawca, kliknij „Jestem na miejscu” i zezwól przeglądarce na odczyt lokalizacji. Potem potwierdź wydanie zamówienia PIN-em. Po odbiorze sprawdź jedną ocenę od 1 do 5 gwiazdek. W panelu sprzedawcy sprawdź punkt promocyjny i termin jego ważności.
 
 ## Wyniki weryfikacji
 
@@ -34,3 +34,7 @@ Test startu z rozpakowanego archiwum uruchomił `run_phone_demo.py --full-demo` 
 - Punkty z wygasłym okresem są niedostępne w katalogu punktów i w obu ścieżkach zakupu. Bezpośredni endpoint zachowuje zgodność ze starszymi punktami bez zapisanego okresu. Publiczna lista wyboru i koszyk wymagają aktywnego okresu.
 - Zatwierdzony spis jednorazowych migracji zawiera 52 pliki SQL z sumami kontrolnymi. Bramkę FORCE RLS można odtworzyć poleceniem `python -m scripts.run_rls_api_gate` po instalacji `requirements-security-test.txt`. Przygotowuje odizolowany PostgreSQL na loopbacku oraz uruchamia testy istniejących tras przez ograniczoną rolę aplikacji.
 - Odbiór widoku na komputerze właściciela pozostaje osobnym krokiem. Demo lokalne startuje na SQLite z fikcyjnymi danymi. Próby RLS odbyły się na osobnej bazie PostgreSQL. Produkcyjna integracja PayU pozostaje poza tym odbiorem.
+
+## Potwierdzenie przybycia
+
+Sprzedawca potwierdza własny aktywny punkt z ustawioną lokalizacją na mapie. System sprawdza odległość do 100 m oraz zgłoszoną dokładność odczytu do 100 m. Zapisuje godzinę zgłoszenia, bez zapisywania aktualnych współrzędnych urządzenia. Klienci z aktualnymi zamówieniami dla tego punktu dostają powiadomienie na koncie. W pełnym demo przycisk „Jestem na miejscu” zastępuje ręczne oznaczanie poszczególnych zamówień jako gotowych.

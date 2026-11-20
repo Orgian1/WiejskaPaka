@@ -28,6 +28,8 @@ def prepare(directory, *, full_demo=False):
         database = directory/'demo.sqlite3'
         env = (full_demo_environment if full_demo else demo_environment)(os.environ, database)
         env['WP_ENABLE_TEST_PAYMENTS'] = '1'
+        # Seed ready test orders without fabricating a seller GPS arrival.
+        env.pop('WP_REQUIRE_PICKUP_GPS', None)
         os.environ.clear()
         os.environ.update(env)
         from fastapi.testclient import TestClient

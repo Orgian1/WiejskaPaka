@@ -118,4 +118,4 @@ jobs:
           cache-dependency-path: requirements-lock.txt
       - run: python -m pip install -r requirements-lock.txt
       - run: python scripts/check_approved_ui.py
-      - run: python -m pytest -q tests/test_live_demo_http.py tests/test_full_demo_seed.py
+      - run: python -m pytest -q tests/test_windows_demo_launcher.py tests/test_live_demo_http.py tests/test_full_demo_seed.py

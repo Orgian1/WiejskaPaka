@@ -4,7 +4,7 @@ Gałąź `release/wiejskapaka-demo-zatwierdzony-20261120` powstała z zapisu `52
 
 ## Uruchomienie na Windows
 
-1. Pobierz ZIP z gałęzi i rozpakuj go do nowego katalogu.
+1. Pobierz ZIP z gałęzi. W Eksploratorze Windows kliknij archiwum prawym przyciskiem, wybierz **Wyodrębnij wszystkie** i otwórz rozpakowany katalog zawierający foldery `scripts` i `backend`.
 2. Otwórz `START_DEMO_WINDOWS.cmd`. Przy pierwszym starcie skrypt przygotuje środowisko Pythona i pobierze przypięte wersje pakietów. Wymagany jest Python 3.12.
 3. Otwórz [http://127.0.0.1:8766](http://127.0.0.1:8766). Konta demonstracyjne są wypisane w oknie uruchomienia. Dane przykładowe powstają w tymczasowej bazie dla tego uruchomienia.
 4. Sprawdź układ katalogu, menu, koszyka i panelu sprzedawcy na komputerze oraz w widoku mobilnym. Otwórz portfel każdym kontem. Oczekiwany wynik to dwie różne reklamy, czerwony X z odliczaniem pięciu sekund, automatyczne zamknięcie i brak powtórki po ponownym wejściu przed upływem 30 minut.

@@ -5,12 +5,12 @@ import unittest
 ROOT=Path(__file__).resolve().parents[1]
 
 class MarketplaceAdRoutingTests(unittest.TestCase):
-    def test_ad_slots_remain_inside_their_own_sections(self):
+    def test_login_ad_is_a_grid_item_and_in_panel_ads_keep_their_sections(self):
         script=(ROOT/'web/app-views.js').read_text(encoding='utf-8')
         self.assertIn('target.append(host);',script)
-        self.assertIn("{id:'login',target:'#account-section',route:'account',role:'guest'}",script)
+        self.assertIn("{id:'login',target:'#tresc',route:'account',role:'guest'}",script)
         self.assertIn("{id:'seller',target:'#seller-listings-section',route:'listings',role:'rolnik'}",script)
-        self.assertNotIn("{id:'login',target:'#auth'",script)
+        self.assertIn("if(routeStatus)routeStatus.before(host);",script)
         self.assertNotIn('target.after(host);',script)
         self.assertIn("document.addEventListener('wiejskapaka:route-changed',refresh);",script)
         self.assertIn("document.dispatchEvent(new Event('wiejskapaka:route-changed'));",script)

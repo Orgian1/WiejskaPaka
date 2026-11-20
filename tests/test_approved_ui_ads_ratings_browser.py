@@ -35,15 +35,28 @@ def _check_browser(browser, url, accounts, role):
         page.route("**/ads/slots/*", show_campaign)
         page.goto(url)
         page.click("#header-login-link")
-        login_ad = page.locator('#account-section [data-ad-slot="login"]')
+        login_ad = page.locator('#tresc > [data-ad-slot="login"]')
         expect(login_ad.locator("strong")).to_have_text(
             "Oferta dla klientów przed logowaniem" if role == "rolnik" else "Kampania kupujących"
         )
         expect(login_ad).to_be_visible()
-        assert login_ad.bounding_box()["y"] < page.locator("#auth").bounding_box()["y"]
+        account = page.locator("#account-section")
+        reset = page.locator("#password-reset-section")
+        expect(reset).to_be_visible()
+        left, middle, right = (item.bounding_box() for item in (account, login_ad, reset))
+        assert left["x"] + left["width"] <= middle["x"]
+        assert middle["x"] + middle["width"] <= right["x"]
+        assert left["y"] == middle["y"] == right["y"]
+        assert left["width"] == pytest.approx(middle["width"], abs=1)
+        login_ad.evaluate("(ad) => { ad.hidden = true; }")
+        assert account.bounding_box()["x"] == left["x"]
+        assert reset.bounding_box()["x"] == right["x"]
+        login_ad.evaluate("(ad) => { ad.hidden = false; }")
         assert page.locator('.wp-ad-slot:visible').count() == 1
         page.set_viewport_size({"width": 390, "height": 844})
         expect(login_ad).to_be_visible()
+        mobile_form, mobile_ad = account.bounding_box(), login_ad.bounding_box()
+        assert mobile_form["y"] + mobile_form["height"] <= mobile_ad["y"]
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.set_viewport_size({"width": 1280, "height": 844})
         page.fill("#email", accounts[role]["email"])

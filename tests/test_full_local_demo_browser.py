@@ -56,7 +56,7 @@ def full_demo_server(tmp_path_factory):
     assert setup.returncode==0,'Local sample preparation failed; private output withheld'
     sample=json.loads(setup.stdout)
     with patch.dict(os.environ,full_demo_environment(os.environ,Path(sample['database'])),clear=True):
-        with server(Path(sample['database'])) as client:
+        with server(Path(sample['database']), reset_outbox=directory/"reset-mailbox") as client:
             yield str(client.base_url),sample['credentials']
 
 

@@ -472,7 +472,7 @@ loadFarmer=async function(...args){
  };
  defaultCampaigns.login=defaultCampaigns.buyer;
  const slots=[
-  {id:'login',target:'#account-section',route:'account',role:'guest'},
+  {id:'login',target:'#tresc',route:'account',role:'guest'},
   {id:'buyer',target:'#nearby-section',route:'nearby',role:'klient'},
   {id:'seller',target:'#seller-listings-section',route:'listings',role:'rolnik'}
  ];
@@ -504,8 +504,8 @@ loadFarmer=async function(...args){
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
   if(side)host.dataset.layout='side';
-  const form=config.id==='login'?target.querySelector('#auth'):null;
-  if(form)form.before(host);
+  const routeStatus=config.id==='login'?target.querySelector('#route-status'):null;
+  if(routeStatus)routeStatus.before(host);
   else target.append(host);
   mounted.push({...config,host});
  }
@@ -575,6 +575,7 @@ loadFarmer=async function(...args){
    const {host}=config;
    if(host.dataset.layout==='side')continue;
    host.hidden=config.role!==current || config.route!==appCurrentView ||
+     (config.id==='login'&&appRouteName()!=='account') ||
      Boolean(host.parentElement.closest('[data-route-hidden], [hidden]'));
   }
   if(!frame)frame=requestAnimationFrame(placeSide);

@@ -64,6 +64,8 @@ class Connection:
             return Cursor({'rolsuper':self.problem=='superuser','rolbypassrls':False,'rolcreaterole':False,'rolcreatedb':False})
         if 'has_schema_privilege' in sql:return Cursor({'allowed':self.problem!='schema-access'})
         if 'default_transaction_read_only' in sql:return Cursor({'value':'on' if self.problem=='read-only' else 'off'})
+        if 'to_regprocedure' in sql:
+            return Cursor({'installed': False})
         if 'information_schema.tables' in sql:
             return Cursor(rows=[{'table_name':x} for x in db.TABLES if not(self.problem=='missing-table' and x==db.TABLES[0])])
         if 'has_table_privilege' in sql:return Cursor({'allowed':self.problem!='missing-privilege'})

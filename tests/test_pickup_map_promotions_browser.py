@@ -82,10 +82,13 @@ def test_admin_config_and_seller_promo_redemption(sample_browser_server,tmp_path
             started = datetime.now(timezone.utc)
             with page.expect_response('**/pickup-points') as response:page.click('#point-create-submit')
             assert response.value.status == 201
-            end = datetime.fromisoformat(response.value.json()['promotion']['free_until'])
+            free_until = response.value.json()['promotion']['free_until']
+            end = datetime.fromisoformat(free_until)
             assert started <= end.astimezone(timezone.utc) - timedelta(days=30) <= datetime.now(timezone.utc)
             page.wait_for_function('()=>document.querySelector("#pickup-promo-status").textContent.includes(": 2.")')
-            assert page.locator('#my-points').get_by_text('Promocja: darmowy do 2099-12-31',exact=False).count()==1
+            page.locator('#my-points').get_by_text(
+                'Promocja: darmowy do ' + free_until, exact=False,
+            ).wait_for(state='visible')
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth') and not errors
             page.click('#logout');assert page.locator('#pickup-promo-grants').inner_text()==''
         finally:page.close()

@@ -184,14 +184,15 @@ def test_rehearsal_drops_only_its_created_database_even_after_failure(archive, m
     from psycopg import sql
     commands = []
     class Connection:
+        def __init__(self, dbname):self.dbname = dbname
         def __enter__(self):return self
         def __exit__(self, *_):pass
         def execute(self, command):
             text = command.as_string() if isinstance(command, sql.Composable) else command
-            commands.append(text)
+            commands.append((self.dbname, text))
             return self
         def fetchone(self):return ('160010',)
-    monkeypatch.setattr(psycopg, 'connect', lambda **_: Connection())
+    monkeypatch.setattr(psycopg, 'connect', lambda **parameters: Connection(parameters['dbname']))
     monkeypatch.setattr(pg, 'local_parameters', lambda _: {'dbname':'wp_test_seed'})
     def restore(_, parameters):
         assert parameters['dbname'].startswith('wp_test_restore_')
@@ -205,8 +206,15 @@ def test_rehearsal_drops_only_its_created_database_even_after_failure(archive, m
         assert pg.rehearse(path, key, 'private')['rehearsal_database_removed']
     else:
         with pytest.raises(ValueError):pg.rehearse(path, key, 'private')
-    assert len(commands) == 3
-    created = commands[1].split('"')[1]
-    dropped = commands[2].split('"')[1]
+    admin_commands = [command for database, command in commands if database == 'wp_test_seed']
+    assert len(admin_commands) == 3
+    created = admin_commands[1].split('"')[1]
+    dropped = admin_commands[2].split('"')[1]
     assert created == dropped and created.startswith('wp_test_restore_')
-    assert 'wp_test_seed' not in ''.join(commands)
+    quarantine = [command for database, command in commands if database == created]
+    assert quarantine == ([] if failure == 'restore' else [
+        'DROP SCHEMA IF EXISTS wp_rls CASCADE',
+        'DROP SCHEMA IF EXISTS wp_rls_keys CASCADE',
+        'DROP SCHEMA IF EXISTS wp_security CASCADE',
+    ])
+    assert all(database in ('wp_test_seed', created) for database, _ in commands)

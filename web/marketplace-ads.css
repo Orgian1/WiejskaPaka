@@ -27,10 +27,19 @@
   align-self: start;
   margin: 0;
 }
-/* The login ad occupies the grid cell normally held by the empty route status. */
-#tresc:has(> .wp-ad-slot[data-ad-slot="login"]:not([hidden])) > #route-status:empty {
+/* Use the grid cell normally held by the empty route status. */
+#tresc:has(> .wp-ad-slot[data-ad-slot="login"]:not([hidden]), > #points-arrival-column:not([hidden])) > #route-status:empty {
   display: none;
 }
+
+#points-arrival-column {
+  min-width: 0;
+  align-self: start;
+  overflow-wrap: anywhere;
+}
+#points-arrival-column .wp-ad-slot { margin: 16px 0 0; }
+#points-arrival-content [role="status"]:empty { margin: 0; }
+
 #tresc > .wp-ad-slot[data-layout="side"] {
   position: absolute;
   margin: 0;

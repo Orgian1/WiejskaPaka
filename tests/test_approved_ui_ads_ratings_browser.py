@@ -107,7 +107,7 @@ def _check_browser(browser, url, accounts, role):
         page.locator("#wallet-section").wait_for(state="visible", timeout=10000)
         assert ad.count() == 0, "Second wallet entry within 30 minutes must not show an ad"
         routes = ["products", "nearby", "favorites", "orders", "account", "dashboard", "notifications", "contact"]
-        routes += ["cart"] if role == "klient" else ["listings", "points"]
+        routes += ["cart"] if role == "klient" else ["listings"]
         for panel in routes:
             page.evaluate("""async (panel) => {
                 navigateApp(panel);
@@ -195,14 +195,31 @@ def test_seller_confirms_arrival_for_the_point(full_demo_server):
             button = arrival_panel.get_by_role("button", name="Jestem na miejscu")
             expect(button).to_be_visible()
             assert arrival_panel.evaluate("(panel) => panel === panel.parentElement.firstElementChild")
+            page.click("#points-nav-link")
+            column = page.locator("#points-arrival-column")
+            button = column.get_by_role("button", name="Jestem na miejscu")
+            ad = column.locator('[data-ad-slot="seller"]')
+            expect(button).to_be_visible()
+            expect(ad).to_be_visible()
+            assert page.locator(".wp-ad-slot:visible").count() == 1
+            panel_box, ad_box, profile_box, editor_box = (
+                locator.bounding_box() for locator in (
+                    column.locator("section"), ad, page.locator("#farmer-details"),
+                    page.locator("#point-location-panel"),
+                )
+            )
+            assert panel_box["y"] == profile_box["y"] == editor_box["y"]
+            assert panel_box["x"] == ad_box["x"] < profile_box["x"] < editor_box["x"]
+            assert panel_box["y"] + panel_box["height"] <= ad_box["y"]
+            page.set_viewport_size({"width": 390, "height": 844})
+            assert button.bounding_box()["y"] < ad.bounding_box()["y"]
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
             with page.expect_response("**/pickup-points/*/arrival") as response:
                 button.click()
             assert response.value.status == 200
+            expect(column.get_by_role("status")).to_contain_text("Ostatnie potwierdzenie przybycia")
+            page.click("#panel-nav-link")
             expect(arrival_panel.get_by_role("status")).to_contain_text("Ostatnie potwierdzenie przybycia")
-            page.click("#points-nav-link")
-            expect(page.locator("#my-points [data-pickup-arrival] [role=status]")).to_contain_text(
-                "Ostatnie potwierdzenie przybycia"
-            )
             page.click("#orders-nav-link")
             group = page.locator(".seller-pickup-group").first
             group.locator("summary").first.click()

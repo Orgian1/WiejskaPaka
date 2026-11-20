@@ -432,28 +432,61 @@ function pickupArrivalControl(pointId,lastArrival,onConfirmed){
  return host;
 }
 
+function renderPickupPointArrival(points){
+ const host=el('points-arrival-content');
+ const selected=host.querySelector('select')?.value;
+ const available=points.filter(point=>point.active && Number.isInteger(point.latitude_e6) &&
+  Number.isInteger(point.longitude_e6));
+ host.replaceChildren();
+ if(!available.length){
+  host.textContent='Ustaw lokalizację aktywnego punktu, aby potwierdzić przybycie.';
+  return;
+ }
+ const label=node('label','Punkt odbioru');
+ const select=node('select'),control=node('div');
+ for(const point of available){
+  const option=node('option',point.name+' — '+point.city+', '+point.street);
+  option.value=String(point.id);
+  select.append(option);
+ }
+ if(available.some(point=>String(point.id)===selected))select.value=selected;
+ label.append(select);
+ host.append(label,control);
+ const renderControl=()=>{
+  const point=available.find(item=>String(item.id)===select.value);
+  control.replaceChildren(pickupArrivalControl(point.id,point.last_arrival_at,async result=>{
+   point.last_arrival_at=result.confirmed_at;
+   await Promise.all([loadOrders(),loadDashboard()]);
+  }));
+ };
+ select.onchange=renderControl;
+ renderControl();
+}
+
 // Inform sellers of the renewal price without initiating an unimplemented charge.
 const loadFarmerBeforeRenewalInfo=loadFarmer;
 loadFarmer=async function(...args){
-  const epoch=sessionEpoch;
+  const epoch=sessionEpoch,request=farmerRequest+1;
   const result=await loadFarmerBeforeRenewalInfo.apply(this,args);
-  if(epoch!==sessionEpoch||role!=='rolnik')return result;
+  if(epoch!==sessionEpoch||role!=='rolnik'||request!==farmerRequest)return result;
   const host=el('my-points');if(!host)return result;
   try{
     const points=await api('/farmers/me/pickup-points');
-    if(epoch!==sessionEpoch||role!=='rolnik')return result;
-    host.querySelectorAll('[data-point-renewal-info],[data-pickup-arrival]').forEach(element=>element.remove());
+    if(epoch!==sessionEpoch||role!=='rolnik'||request!==farmerRequest)return result;
+    renderPickupPointArrival(points);
+    host.querySelectorAll('[data-point-renewal-info]').forEach(element=>element.remove());
     const note=node('p',`Odnowienie: 10,00 zł za każdy punkt na 30 dni. Płatności za punkty nie są jeszcze uruchomione w demo.`);
     note.dataset.pointRenewalInfo='true';
-    if(!host.querySelector('[data-point-renewal-info]'))host.prepend(note);
+    host.prepend(note);
     for(const pt of points){
       const p=node('p',`${pt.name}: ${pt.promotion_active?'promocja aktywna do '+pt.promotion.free_until:pt.promotion?'promocja wygasła':'bez aktywnej promocji'} · odnowienie 10,00 zł / 30 dni`);
       p.dataset.pointRenewalInfo='true';host.append(p);
-      if(pt.active){
-       host.append(pickupArrivalControl(pt.id,pt.last_arrival_at,()=>loadOrders()));
-      }
     }
-  }catch(_e){}
+  }catch(_error){
+    const content=el('points-arrival-content');
+    if(epoch===sessionEpoch&&role==='rolnik'&&request===farmerRequest&&!content.childElementCount)
+     content.textContent='Nie udało się wczytać punktów odbioru. Odśwież stronę.';
+  }
   return result;
 };
 
@@ -512,6 +545,14 @@ loadFarmer=async function(...args){
  for(const config of slots)mount(config,document.querySelector(config.target));
  const main=el('tresc'),routeStatus=el('route-status');
  const information=[...main.querySelectorAll(':scope > section:not([id])')].at(-1);
+ const pointsColumn=document.createElement('div');pointsColumn.id='points-arrival-column';pointsColumn.hidden=true;
+ const pointsPanel=document.createElement('section'),pointsContent=document.createElement('div');
+ pointsContent.id='points-arrival-content';
+ pointsPanel.append(node('h2','Przybycie do punktu odbioru'),pointsContent);
+ pointsColumn.append(pointsPanel);
+ routeStatus.before(pointsColumn);
+ const sellerSlot=slots.find(config=>config.role==='rolnik');
+ mount({...sellerSlot,route:'points'},pointsColumn);
  for(const config of slots.filter(config=>config.role!=='guest'))mount(config,main,true);
  const desktop=matchMedia('(min-width: 950px)');
  function findSideSpace(){
@@ -554,7 +595,7 @@ loadFarmer=async function(...args){
  function placeSide(){
   frame=0;
   const current=typeof role==='string'?role:'';
-  const space=findSideSpace(),bounds=main.getBoundingClientRect();
+  const space=pointsColumn.hidden?findSideSpace():null,bounds=main.getBoundingClientRect();
   let visible=false;
   for(const {host,role:audience} of mounted){
    if(host.dataset.layout!=='side')continue;
@@ -571,6 +612,8 @@ loadFarmer=async function(...args){
  }
  function refresh(){
   const current=typeof role==='string'&&role?role:'guest';
+  pointsColumn.hidden=current!=='rolnik'||appCurrentView!=='points';
+  if(current!=='rolnik')pointsContent.replaceChildren();
   for(const config of mounted){
    const {host}=config;
    if(host.dataset.layout==='side')continue;

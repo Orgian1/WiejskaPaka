@@ -101,14 +101,16 @@ def _check_browser(browser, url, accounts, role):
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             }""", panel)
             expect(side).to_be_visible()
-            assert side.evaluate("""(ad) => {
+            page.wait_for_function("""(slotId) => {
+                const ad = document.querySelector('[data-ad-slot="' + slotId + '"][data-layout="side"]');
+                if (!ad || ad.hidden) return false;
                 const a = ad.getBoundingClientRect();
                 return [...document.querySelectorAll('#tresc > section')].every(section => {
                     const b = section.getBoundingClientRect();
                     return !b.width || !b.height || a.right <= b.left + 1 ||
                            a.left >= b.right - 1 || a.bottom <= b.top + 1 || a.top >= b.bottom - 1;
                 });
-            }"""), panel
+            }""", arg=slot_id, timeout=5000)
             if panel == "dashboard":
                 assert side.bounding_box()["x"] > information.bounding_box()["x"], panel
             assert page.locator('.wp-ad-slot:visible').count() == 1, panel
@@ -175,10 +177,16 @@ def test_seller_confirms_arrival_for_the_point(full_demo_server):
             page.fill("#email", accounts["rolnik"]["email"])
             page.fill("#password", accounts["rolnik"]["password"])
             page.locator("#auth button[type=submit]").click()
-            page.locator("#points-nav-link").click()
+            page.click("#panel-nav-link")
+            arrival_panel = page.locator("#dashboard-content > [data-dashboard-pickup-arrival]")
+            button = arrival_panel.get_by_role("button", name="Jestem na miejscu")
+            expect(button).to_be_visible()
+            assert arrival_panel.evaluate("(panel) => panel === panel.parentElement.firstElementChild")
             with page.expect_response("**/pickup-points/*/arrival") as response:
-                page.locator("#my-points").get_by_role("button", name="Jestem na miejscu").click()
+                button.click()
             assert response.value.status == 200
+            expect(arrival_panel.get_by_role("status")).to_contain_text("Ostatnie potwierdzenie przybycia")
+            page.click("#points-nav-link")
             expect(page.locator("#my-points [data-pickup-arrival] [role=status]")).to_contain_text(
                 "Ostatnie potwierdzenie przybycia"
             )

@@ -180,6 +180,35 @@ function appendDashboardPages(box,items,render,active,label,afterPage=()=>{}){
   const append=()=>{if(!active()||!box.isConnected)return;for(const item of items.slice(offset,offset+20)){const card=render(item);if(card)box.insertBefore(card,more)}offset+=20;more.hidden=offset>=items.length;afterPage()};
   more.onclick=append;box.append(more);append();
 }
+async function loadDashboardPickupArrival(box,active){
+  const panel=node('section');
+  panel.dataset.dashboardPickupArrival='true';
+  panel.append(node('h3','Przybycie do punktu odbioru'));
+  const content=node('div');
+  panel.append(content);
+  box.prepend(panel);
+  try{
+    const points=await api('/farmers/me/pickup-points');
+    if(!active()||!panel.isConnected)return;
+    const available=points.filter(point=>point.active);
+    if(!available.length){
+      const link=node('a','Przejdź do punktów odbioru');
+      link.href='#farmer-details';
+      content.append(node('p','Brak aktywnych punktów odbioru.'),link);
+      return;
+    }
+    for(const point of available){
+      const card=dashboardCard(point.name,[point.city+', '+point.street]);
+      card.append(pickupArrivalControl(point.id,point.last_arrival_at,async()=>{
+        if(active())await Promise.all([loadOrders(),loadDashboard()]);
+      }));
+      content.append(card);
+    }
+  }catch(_error){
+    if(active()&&panel.isConnected)content.textContent='Nie udało się wczytać punktów odbioru. Odśwież panel.';
+  }
+}
+
 async function loadDashboard() {
   const requestId=++dashboardRequestId;
   const epoch=sessionEpoch;
@@ -240,6 +269,7 @@ async function loadDashboard() {
       box.append(c);
     }
   }else if(role==='rolnik'){
+    if(typeof pickupArrivalControl==='function')void loadDashboardPickupArrival(box,active);
     const farmerOrderCards=new Map();
     const [products,orders,shipmentData]=await Promise.all([api('/products/mine'),api('/orders/me'),api('/shipments/farmer/mine')]);
     if(!active())return;

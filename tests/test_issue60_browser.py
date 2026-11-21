@@ -15,7 +15,7 @@ def sign_in_view(page,accounts,role):
     page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
     dismiss_login_guide(page)
-    page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
+    assert page.evaluate('role') == role
     page.locator('#products-section').wait_for(state='visible')
 
 

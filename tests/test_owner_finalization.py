@@ -143,7 +143,7 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
             page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
             page.locator('#auth button[type=submit]').click()
             dismiss_login_guide(page)
-            page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
+            assert page.evaluate('role') == role
         try:
             page.goto(str(client.base_url));sign_in('klient')
             page.click('#nearby-nav-link');page.get_by_role('button',name='Zapamiętaj wybraną lokalizację na koncie').wait_for()

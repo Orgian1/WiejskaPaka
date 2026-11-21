@@ -13,7 +13,7 @@ def sign_in(page,accounts,role):
     page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
     dismiss_login_guide(page)
-    page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
+    assert page.evaluate('role') == role
 
 
 @pytest.mark.parametrize('width',[320,1280])

@@ -91,7 +91,7 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
     finally:page.close()
 
 
-def test_first_listing_discloses_fee_and_copies_redeemable_starter_code(full_demo_server, delivery_browser):
+def test_new_seller_guide_and_first_listing_promotion(full_demo_server, delivery_browser):
     from PIL import Image
     from playwright.sync_api import expect
 
@@ -103,13 +103,44 @@ def test_first_listing_discloses_fee_and_copies_redeemable_starter_code(full_dem
     page = context.new_page()
     account = {'email': 'first-offer@example.invalid', 'password': 'Test-First-Offer-987!'}
     try:
-        assert page.request.post(url + '/auth/register', data={**account, 'role': 'rolnik'}).status == 201
         page.goto(url)
+        page.click('#header-register-link')
+        page.fill('#email', account['email'])
+        page.fill('#password', account['password'])
+        page.select_option('#role', 'rolnik')
+        with page.expect_response('**/auth/register') as registered:
+            page.click('#register')
+        assert registered.value.status == 201
+        expect(page.locator('#notice')).to_contain_text('Teraz się zaloguj.')
+        expect(page.locator('#auth')).to_be_visible()
+
+        page.fill('#password', account['password'])
+        page.locator('#auth button[type=submit]').click()
+        guide = page.get_by_role('dialog', name='Jak zacząć sprzedawać w WiejskiejPace?')
+        close_guide = guide.get_by_role('button', name='Zamknij instrukcję sprzedawcy')
+        expect(guide).to_be_visible()
+        expect(page.locator('#dashboard')).to_be_visible()
+        expect(close_guide).to_be_disabled()
+        expect(guide.get_by_role('timer')).to_have_text('5')
+        expect(close_guide).to_have_css('color', 'rgb(192, 0, 0)')
+        assert guide.evaluate('(dialog) => dialog.scrollWidth <= dialog.clientWidth')
+        page.keyboard.press('Escape')
+        expect(guide).to_be_visible()
+        expect(guide.get_by_text('PIN odbioru', exact=False)).to_be_visible()
+        expect(close_guide).to_be_enabled(timeout=7000)
+        expect(guide).to_be_visible()
+        close_guide.click()
+        expect(guide).to_be_hidden()
+
+        page.click('#account-nav-link')
+        page.click('#logout')
+        page.reload()
         page.click('#header-login-link')
         page.fill('#email', account['email'])
         page.fill('#password', account['password'])
         page.locator('#auth button[type=submit]').click()
         page.click('#seller-nav-link')
+        expect(guide).to_be_hidden()
         notice = page.get_by_role('dialog', name='Dodajesz pierwszą ofertę')
         expect(notice.get_by_text('WiejskaPaka pobiera 5%', exact=False)).to_be_visible()
         expect(notice.get_by_text('pierwsze 3 punkty odbioru są darmowe przez 30 dni', exact=False)).to_be_visible()

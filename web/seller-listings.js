@@ -1,5 +1,84 @@
 "use strict";
 let sellerListingsRequest=0;
+const sellerGuideTitle='Jak zacząć sprzedawać w WiejskiejPace?';
+const dismissedSellerGuides=new Set();
+let sellerGuide;
+let sellerGuideTimer;
+
+function openSellerGuide(onDismiss){
+ if(sellerGuide?.open)return;
+ const dialog=node('dialog','','same-package-dialog seller-guide');
+ dialog.id='seller-guide';
+ dialog.setAttribute('aria-labelledby','seller-guide-title');
+ const header=node('div','','wallet-ad-heading seller-guide-heading');
+ const heading=node('h2',sellerGuideTitle);
+ heading.id='seller-guide-title';
+ heading.tabIndex=-1;
+ heading.autofocus=true;
+ const timer=node('span','5');
+ timer.setAttribute('role','timer');
+ timer.setAttribute('aria-label','Sekundy do odblokowania przycisku zamknięcia');
+ const close=node('button','×');
+ close.type='button';
+ close.disabled=true;
+ close.setAttribute('aria-label','Zamknij instrukcję sprzedawcy');
+ header.append(heading,timer,close);
+
+ const steps=node('ol');
+ for(const [title,body] of [
+  ['Dodaj pierwszą ofertę.','W „Moje ogłoszenia” dodaj zdjęcie, wpisz cenę i podaj dostępną ilość produktu.'],
+  ['Ustaw punkt odbioru.','W „Punktach odbioru” dodaj punkt na mapie, dni i godziny odbioru. Z kodem rabatowym pierwsze 3 punkty są darmowe przez 30 dni od aktywacji każdego punktu. Kod skopiujesz z okienka przy pierwszej ofercie.'],
+  ['Sprawdzaj zamówienia.','W „Zamówieniach” zobaczysz, co przygotować na każdy punkt. Przy dostawie na adres potwierdź termin lub zaproponuj inny.'],
+  ['Potwierdź przybycie i wydaj zamówienie.','Na miejscu kliknij „Jestem na miejscu” i zezwól na odczyt GPS. Klienci z zamówieniami na ten punkt dostaną powiadomienie. Przy wydaniu poproś klienta o PIN odbioru.'],
+  ['Sprawdzaj środki w portfelu.','W „Portfelu” zobaczysz saldo. WiejskaPaka pobiera 5% od każdej wypłaty z portfela sprzedawcy. Przy wypłacie 100 zł otrzymasz 95 zł.']
+ ]){
+  const step=node('li');
+  step.append(node('strong',title),' '+body);
+  steps.append(step);
+ }
+ dialog.append(header,steps);
+ const dismiss=()=>{
+  if(close.disabled||!dialog.open)return;
+  onDismiss?.();
+  clearTimeout(sellerGuideTimer);
+  dialog.close();
+  dialog.remove();
+  sellerGuide=null;
+  el('panel-nav-link').focus();
+ };
+ close.onclick=dismiss;
+ dialog.oncancel=event=>{event.preventDefault();dismiss();};
+ document.body.append(dialog);
+ sellerGuide=dialog;
+ dialog.showModal();
+ const end=performance.now()+5000;
+ const tick=()=>{
+  const remaining=end-performance.now();
+  timer.textContent=String(Math.max(0,Math.ceil(remaining/1000)));
+  if(remaining<=0){close.disabled=false;timer.hidden=true;return;}
+  sellerGuideTimer=setTimeout(tick,remaining%1000||1000);
+ };
+ sellerGuideTimer=setTimeout(tick,1000);
+}
+
+async function maybeShowSellerGuide(user){
+ clearTimeout(sellerGuideTimer);
+ if(sellerGuide){sellerGuide.close();sellerGuide.remove();sellerGuide=null;}
+ if(user?.role!=='rolnik')return;
+ const key='wp-seller-guide-v1:'+user.id;
+ if(dismissedSellerGuides.has(key))return;
+ try{if(localStorage.getItem(key)==='dismissed')return;}catch(_error){}
+ const epoch=sessionEpoch,view=appCurrentView;
+ let products;
+ try{products=await api('/products/mine');}catch(_error){return;}
+ if(epoch!==sessionEpoch||appCurrentView!==view||products.length)return;
+ navigateApp('dashboard');
+ openSellerGuide(()=>{
+  dismissedSellerGuides.add(key);
+  try{localStorage.setItem(key,'dismissed');}catch(_error){}
+ });
+}
+
 let firstListingNoticeEpoch;
 const firstListingNotice=node('dialog','','same-package-dialog');
 firstListingNotice.id='first-listing-notice';

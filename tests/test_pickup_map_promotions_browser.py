@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 """Actual browser map geometry and promotion UI on mobile and desktop."""
 from pathlib import Path
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
 from tests.test_sample_demo_browser import sample_browser_server
@@ -11,7 +12,8 @@ from tests.test_owner_finalization import login
 def sign_in(page,accounts,role):
     page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
-    page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email',arg=accounts[role]['email'])
+    dismiss_login_guide(page)
+    page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
 
 
 @pytest.mark.parametrize('width',[320,1280])

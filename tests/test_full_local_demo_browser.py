@@ -61,6 +61,10 @@ def full_demo_server(tmp_path_factory):
             yield str(client.base_url),sample['credentials']
 
 
+def close_login_guide(page):
+    page.locator('#login-guide').get_by_role('button').click(timeout=10000)
+
+
 @pytest.mark.parametrize('role',['klient','rolnik','dostawca','admin'])
 @pytest.mark.parametrize('width',[320,1280])
 def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width):
@@ -71,6 +75,8 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
         page.goto(url)
         page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
         page.locator('#auth button[type=submit]').click()
+        if role in ('klient','rolnik'):
+            close_login_guide(page)
         page.click('#panel-nav-link')
         page.locator('#dashboard-content article').first.wait_for(state='visible')
         assert page.locator('#header-login-link').is_hidden()
@@ -139,8 +145,8 @@ def test_new_seller_guide_and_first_listing_promotion(full_demo_server, delivery
         page.fill('#email', account['email'])
         page.fill('#password', account['password'])
         page.locator('#auth button[type=submit]').click()
+        close_login_guide(page)
         page.click('#seller-nav-link')
-        expect(guide).to_be_hidden()
         notice = page.get_by_role('dialog', name='Dodajesz pierwszą ofertę')
         expect(notice.get_by_text('WiejskaPaka pobiera 5%', exact=False)).to_be_visible()
         expect(notice.get_by_text('pierwsze 3 punkty odbioru są darmowe przez 30 dni', exact=False)).to_be_visible()
@@ -174,8 +180,52 @@ def test_new_seller_guide_and_first_listing_promotion(full_demo_server, delivery
         page.fill('#email', account['email'])
         page.fill('#password', account['password'])
         page.locator('#auth button[type=submit]').click()
+        close_login_guide(page)
         page.click('#seller-nav-link')
         page.get_by_role('heading', name='Pierwsze pomidory').wait_for()
         assert notice.is_hidden()
     finally:
         context.close()
+
+@pytest.mark.parametrize(('role','title','content'), [
+    ('klient', 'Jak kupować w WiejskiejPace?', 'Serduszkiem zapiszesz produkt'),
+    ('rolnik', 'Jak zacząć sprzedawać w WiejskiejPace?', '5% od każdej wypłaty'),
+])
+def test_instructions_for_the_first_five_logins(full_demo_server, delivery_browser, role, title, content):
+    from playwright.sync_api import expect
+
+    url, accounts = full_demo_server
+    page = delivery_browser.new_page(viewport={'width': 375, 'height': 812})
+    page.clock.install()
+    guide = page.get_by_role('dialog', name=title)
+    try:
+        page.goto(url)
+        page.click('#header-login-link')
+        page.fill('#email', accounts[role]['email'])
+        page.fill('#password', 'Niepoprawne-haslo-123!')
+        with page.expect_response('**/auth/login') as rejected:
+            page.locator('#auth button[type=submit]').click()
+        assert rejected.value.status == 401
+        expect(guide).to_be_hidden()
+
+        for number in range(1, 7):
+            if number == 4:
+                page.reload()
+                page.click('#header-login-link')
+            page.fill('#email', accounts[role]['email'])
+            page.fill('#password', accounts[role]['password'])
+            page.locator('#auth button[type=submit]').click()
+            expect(page.locator('#auth')).to_be_hidden()
+            if number <= 5:
+                expect(guide.get_by_text(content, exact=False)).to_be_visible()
+                expect(guide.get_by_role('button')).to_be_disabled()
+                page.clock.fast_forward(5000)
+                expect(guide).to_be_visible()
+                close_login_guide(page)
+            expect(page.locator('#login-guide')).to_be_hidden()
+            page.click('#account-nav-link')
+            with page.expect_response('**/auth/logout') as logged_out:
+                page.click('#logout')
+            assert logged_out.value.status == 200
+    finally:
+        page.close()

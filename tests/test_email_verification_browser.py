@@ -1,5 +1,6 @@
 """Actual link, login and confirmation at phone/desktop widths; no SMTP."""
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_email_verification_http import enabled, queued
 from tests.test_purchase_record_http_restart import server
@@ -21,6 +22,7 @@ def test_fragment_removed_login_confirm_logout(delivery_browser,enabled,width):
             page.wait_for_function('()=>(location.hash==="")')
             page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
             page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.locator('#logout').wait_for(state='visible');page.click('#account-nav-link');page.locator('#account-security summary').click()
             page.locator('#email-verification-confirm').wait_for(state='visible')
             with page.expect_response(lambda r:'/auth/email-verification/confirm' in r.url) as result:

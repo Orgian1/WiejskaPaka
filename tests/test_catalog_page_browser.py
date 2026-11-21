@@ -1,6 +1,7 @@
 """Bounded browsing and purchase controls on a real 52-offer HTTP catalog."""
 from pathlib import Path
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_sample_demo_browser import sample_browser_server
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
@@ -35,6 +36,7 @@ def test_catalog_pages_filter_and_cart_in_chromium(sample_browser_server,tmp_pat
                 page.wait_for_function('(n)=>document.querySelectorAll("#products > .card").length===n',arg=min(20,total))
             page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
             page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts['klient']['email'])
             page.locator('#products .favorite-button').first.wait_for(state='visible')
             page.locator('#products > .card').first.locator('summary > b').click()
@@ -68,6 +70,7 @@ def test_same_seller_recommendations_create_one_shipment(sample_browser_server,t
             page.goto(str(client.base_url))
             page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
             page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             card=page.locator('#products > .card').filter(has_text='Marchew demonstracyjna')
             card.locator('.favorite-button').wait_for(state='visible')
             card.locator('summary > b').click()
@@ -116,6 +119,7 @@ def test_customer_to_seller_switch_clears_cart_and_compacts_login(sample_browser
             for role in ('klient','rolnik'):
                 page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
+                dismiss_login_guide(page)
                 page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=accounts[role]['email'])
                 assert page.locator('#auth').is_hidden()
                 assert page.locator('#logout').is_visible()

@@ -3,6 +3,7 @@ from playwright.sync_api import expect
 from uuid import uuid4
 from urllib.parse import urlsplit, parse_qs
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server
 
@@ -25,6 +26,7 @@ def test_seller_alias_search_mode_and_selected_offers(delivery_browser,tmp_path,
         def login(actor):
             page.click('#account-nav-link');page.fill('#email',actor[0]['email']);page.fill('#password',actor[0]['password'])
             page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=actor[0]['email'])
         try:
             page.goto(str(client.base_url));login(actors[0])

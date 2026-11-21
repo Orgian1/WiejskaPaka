@@ -1,6 +1,6 @@
 """Real Chromium smoke test for wallet ad timing and seller stars on approved UI."""
 import pytest
-from tests.test_full_local_demo_browser import full_demo_server
+from tests.test_full_local_demo_browser import close_login_guide, full_demo_server
 from playwright.sync_api import expect, sync_playwright
 
 
@@ -72,6 +72,7 @@ def _check_browser(browser, url, accounts, role):
             "(email) => document.querySelector('#identity').textContent.includes(email)",
             arg=accounts[role]["email"],
         )
+        close_login_guide(page)
         expect(login_ad).to_be_hidden()
         page.click("#wallet-nav-link")
         ad = page.locator("#wallet-ad-dialog")
@@ -156,6 +157,7 @@ def test_same_package_button_opens_cart_and_badge_counts_units(full_demo_server)
                 "(email) => document.querySelector('#identity').textContent.includes(email)",
                 arg=accounts["klient"]["email"],
             )
+            close_login_guide(page)
             page.click("#products-nav-link")
             card = page.locator(".catalog-product[data-product-id]").first
             card.wait_for(timeout=10000)
@@ -190,6 +192,7 @@ def test_seller_confirms_arrival_for_the_point(full_demo_server):
             page.fill("#email", accounts["rolnik"]["email"])
             page.fill("#password", accounts["rolnik"]["password"])
             page.locator("#auth button[type=submit]").click()
+            close_login_guide(page)
             page.click("#panel-nav-link")
             arrival_panel = page.locator("#dashboard-content > [data-dashboard-pickup-arrival]")
             button = arrival_panel.get_by_role("button", name="Jestem na miejscu")

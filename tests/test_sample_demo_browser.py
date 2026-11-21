@@ -2,6 +2,7 @@
 import shutil
 from pathlib import Path
 import pytest
+from tests.browser_login_guide import dismiss_login_guide, stores_only_login_guide_counts
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
 
@@ -31,6 +32,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         with page.expect_response('**/auth/login') as response:
             page.locator('#auth button[type=submit]').click()
         assert response.value.status==200
+        dismiss_login_guide(page)
         assert not errors
         page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
         assert page.locator('#favorites-nav-link').is_hidden()==(role not in ('klient','rolnik'))
@@ -77,7 +79,7 @@ def test_seeded_role_page_and_logout_in_chromium(sample_browser_server,width,rol
         else:
             assert page.locator('#dashboard-content').text_content().count('Przesyłka')>=1
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-        assert page.evaluate('localStorage.length')==0
+        assert stores_only_login_guide_counts(page)
         page.click('#logout')
         page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
         assert page.locator('#dashboard-content').text_content()==''
@@ -106,6 +108,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             def sign_in(role):
                 page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
+                dismiss_login_guide(page)
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
                 page.click('#panel-nav-link')
                 page.locator('#dashboard-content article').first.wait_for(state='visible')

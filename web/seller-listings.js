@@ -1,18 +1,42 @@
 "use strict";
 let sellerListingsRequest=0;
-const sellerGuideTitle='Jak zacząć sprzedawać w WiejskiejPace?';
-const dismissedSellerGuides=new Set();
-let sellerGuide;
-let sellerGuideTimer;
+const loginGuides={
+ rolnik:{
+  title:'Jak zacząć sprzedawać w WiejskiejPace?',
+  closeLabel:'Zamknij instrukcję sprzedawcy',
+  steps:[
+   ['Dodaj pierwszą ofertę.','W „Moje ogłoszenia” dodaj zdjęcie, wpisz cenę i podaj dostępną ilość produktu.'],
+   ['Ustaw punkt odbioru.','W „Punktach odbioru” dodaj punkt na mapie, dni i godziny odbioru. Z kodem rabatowym pierwsze 3 punkty są darmowe przez 30 dni od aktywacji każdego punktu. Kod skopiujesz z okienka przy pierwszej ofercie.'],
+   ['Sprawdzaj zamówienia.','W „Zamówieniach” zobaczysz, co przygotować na każdy punkt. Przy dostawie na adres potwierdź termin lub zaproponuj inny.'],
+   ['Potwierdź przybycie i wydaj zamówienie.','Na miejscu kliknij „Jestem na miejscu” i zezwól na odczyt GPS. Klienci z zamówieniami na ten punkt dostaną powiadomienie. Przy wydaniu poproś klienta o PIN odbioru.'],
+   ['Sprawdzaj środki w portfelu.','W „Portfelu” zobaczysz saldo. WiejskaPaka pobiera 5% od każdej wypłaty z portfela sprzedawcy. Przy wypłacie 100 zł otrzymasz 95 zł.']
+  ]
+ },
+ klient:{
+  title:'Jak kupować w WiejskiejPace?',
+  closeLabel:'Zamknij instrukcję klienta',
+  steps:[
+   ['Znajdź produkty.','W „Produktach” wyszukaj to, czego potrzebujesz, a w „Blisko mnie” sprawdź oferty w okolicy. Serduszkiem zapiszesz produkt w „Ulubionych”.'],
+   ['Złóż zamówienie.','Dodaj produkty do koszyka. Wybierz punkt odbioru lub dostawę na adres, jeśli sprzedawca ją oferuje. Przed złożeniem zamówienia sprawdź koszt i sposób odbioru.'],
+   ['Sprawdź zamówienie.','W „Zamówieniach” zobaczysz jego status i dane odbioru. Przy dostawie sprawdź potwierdzony lub zaproponowany termin.'],
+   ['Odbierz zamówienie.','Gdy sprzedawca potwierdzi przybycie do Twojego punktu odbioru, dostaniesz powiadomienie. Przy odbiorze podaj sprzedawcy PIN z zamówienia.'],
+   ['Sprawdź środki w portfelu.','W „Portfelu” zobaczysz saldo i historię. WiejskaPaka nie pobiera prowizji od wypłaty z portfela klienta.']
+  ]
+ }
+};
+const guideLoginCounts=new Map();
+const guideLoginLimit=5;
+let loginGuide;
+let loginGuideTimer;
 
-function openSellerGuide(onDismiss){
- if(sellerGuide?.open)return;
- const dialog=node('dialog','','same-package-dialog seller-guide');
- dialog.id='seller-guide';
- dialog.setAttribute('aria-labelledby','seller-guide-title');
- const header=node('div','','wallet-ad-heading seller-guide-heading');
- const heading=node('h2',sellerGuideTitle);
- heading.id='seller-guide-title';
+function openLoginGuide({title,closeLabel,steps:instructions}){
+ if(loginGuide?.open)return;
+ const dialog=node('dialog','','same-package-dialog login-guide');
+ dialog.id='login-guide';
+ dialog.setAttribute('aria-labelledby','login-guide-title');
+ const header=node('div','','wallet-ad-heading login-guide-heading');
+ const heading=node('h2',title);
+ heading.id='login-guide-title';
  heading.tabIndex=-1;
  heading.autofocus=true;
  const timer=node('span','5');
@@ -21,17 +45,11 @@ function openSellerGuide(onDismiss){
  const close=node('button','×');
  close.type='button';
  close.disabled=true;
- close.setAttribute('aria-label','Zamknij instrukcję sprzedawcy');
+ close.setAttribute('aria-label',closeLabel);
  header.append(heading,timer,close);
 
  const steps=node('ol');
- for(const [title,body] of [
-  ['Dodaj pierwszą ofertę.','W „Moje ogłoszenia” dodaj zdjęcie, wpisz cenę i podaj dostępną ilość produktu.'],
-  ['Ustaw punkt odbioru.','W „Punktach odbioru” dodaj punkt na mapie, dni i godziny odbioru. Z kodem rabatowym pierwsze 3 punkty są darmowe przez 30 dni od aktywacji każdego punktu. Kod skopiujesz z okienka przy pierwszej ofercie.'],
-  ['Sprawdzaj zamówienia.','W „Zamówieniach” zobaczysz, co przygotować na każdy punkt. Przy dostawie na adres potwierdź termin lub zaproponuj inny.'],
-  ['Potwierdź przybycie i wydaj zamówienie.','Na miejscu kliknij „Jestem na miejscu” i zezwól na odczyt GPS. Klienci z zamówieniami na ten punkt dostaną powiadomienie. Przy wydaniu poproś klienta o PIN odbioru.'],
-  ['Sprawdzaj środki w portfelu.','W „Portfelu” zobaczysz saldo. WiejskaPaka pobiera 5% od każdej wypłaty z portfela sprzedawcy. Przy wypłacie 100 zł otrzymasz 95 zł.']
- ]){
+ for(const [title,body] of instructions){
   const step=node('li');
   step.append(node('strong',title),' '+body);
   steps.append(step);
@@ -39,44 +57,51 @@ function openSellerGuide(onDismiss){
  dialog.append(header,steps);
  const dismiss=()=>{
   if(close.disabled||!dialog.open)return;
-  onDismiss?.();
-  clearTimeout(sellerGuideTimer);
+  clearTimeout(loginGuideTimer);
   dialog.close();
   dialog.remove();
-  sellerGuide=null;
+  loginGuide=null;
   el('panel-nav-link').focus();
  };
  close.onclick=dismiss;
  dialog.oncancel=event=>{event.preventDefault();dismiss();};
  document.body.append(dialog);
- sellerGuide=dialog;
+ loginGuide=dialog;
  dialog.showModal();
  const end=performance.now()+5000;
  const tick=()=>{
   const remaining=end-performance.now();
   timer.textContent=String(Math.max(0,Math.ceil(remaining/1000)));
   if(remaining<=0){close.disabled=false;timer.hidden=true;return;}
-  sellerGuideTimer=setTimeout(tick,remaining%1000||1000);
+  loginGuideTimer=setTimeout(tick,remaining%1000||1000);
  };
- sellerGuideTimer=setTimeout(tick,1000);
+ loginGuideTimer=setTimeout(tick,1000);
 }
 
-async function maybeShowSellerGuide(user){
- clearTimeout(sellerGuideTimer);
- if(sellerGuide){sellerGuide.close();sellerGuide.remove();sellerGuide=null;}
- if(user?.role!=='rolnik')return;
- const key='wp-seller-guide-v1:'+user.id;
- if(dismissedSellerGuides.has(key))return;
- try{if(localStorage.getItem(key)==='dismissed')return;}catch(_error){}
- const epoch=sessionEpoch,view=appCurrentView;
- let products;
- try{products=await api('/products/mine');}catch(_error){return;}
- if(epoch!==sessionEpoch||appCurrentView!==view||products.length)return;
- navigateApp('dashboard');
- openSellerGuide(()=>{
-  dismissedSellerGuides.add(key);
-  try{localStorage.setItem(key,'dismissed');}catch(_error){}
- });
+async function showGuideOnLogin(user){
+ clearTimeout(loginGuideTimer);
+ if(loginGuide){loginGuide.close();loginGuide.remove();loginGuide=null;}
+ const guide=loginGuides[user?.role];
+ if(!guide)return;
+ const key='wp-login-guide-v2:'+user.role+':'+user.id;
+ let previous=guideLoginCounts.get(key)||0;
+ try{
+  const stored=Number(localStorage.getItem(key));
+  if(Number.isInteger(stored)&&stored>=0)previous=Math.max(previous,stored);
+  if(user.role==='rolnik'&&localStorage.getItem('wp-seller-guide-v1:'+user.id)==='dismissed')
+   previous=Math.max(previous,1);
+ }catch(_error){/* Use the in-page count when storage is unavailable. */}
+ if(previous>=guideLoginLimit)return;
+ if(user.role==='rolnik'&&appCurrentView==='products'){
+  const epoch=sessionEpoch;
+  let products;
+  try{products=await api('/products/mine');}catch(_error){}
+  if(epoch!==sessionEpoch)return;
+  if(appCurrentView==='products'&&products?.length===0)navigateApp('dashboard');
+ }
+ openLoginGuide(guide);
+ guideLoginCounts.set(key,previous+1);
+ try{localStorage.setItem(key,String(previous+1));}catch(_error){}
 }
 
 let firstListingNoticeEpoch;

@@ -3,6 +3,7 @@ from contextlib import closing
 import sqlite3
 from uuid import uuid4
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server
 from tests.test_wallet_preview_http import deposit,set_pin,withdraw,PASSWORD
@@ -25,7 +26,9 @@ def test_owner_cancel_admin_complete_and_logout(delivery_browser,tmp_path,monkey
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         def login(body):
             page.goto(str(client.base_url));page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
-            page.locator('#auth button[type=submit]').click();page.locator('#logout').wait_for(state='visible')
+            page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
+            page.locator('#logout').wait_for(state='visible')
             page.locator('#wallet-nav-link' if not page.evaluate("role==='admin'") else '#wallet-admin-nav-link').click()
         try:
             login(credentials)

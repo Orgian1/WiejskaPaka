@@ -2,6 +2,7 @@
 import shutil
 from uuid import uuid4
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_purchase_record_http_restart import server
 
 @pytest.mark.parametrize('width',[320,1280])
@@ -22,6 +23,7 @@ def test_seller_consent_in_chromium(tmp_path,width):
                 assert page.locator('#seller-compliance').is_hidden()
                 page.click('#account-nav-link');page.fill('#email',email);page.fill('#password',password)
                 page.locator('#auth button[type=submit]').click()
+                dismiss_login_guide(page)
                 page.locator('#logout').wait_for(state='visible');page.click('#account-nav-link');page.locator('#seller-compliance').wait_for(state='visible')
                 page.click('#account-nav-link')
                 assert not errors

@@ -2,6 +2,7 @@
 import time
 from uuid import uuid4
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server
 from tests.test_wallet_preview_http import PASSWORD,deposit,set_pin
@@ -17,7 +18,9 @@ def owner_account(client):
 
 def login(page,url,body):
     page.goto(url);page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password'])
-    page.locator('#auth button[type=submit]').click();page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
+    page.locator('#auth button[type=submit]').click()
+    dismiss_login_guide(page)
+    page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
     return page.locator('#wallet-section')
 
 

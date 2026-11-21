@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import pytest
 
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_purchase_record_http_restart import server
 
 
@@ -30,6 +31,7 @@ def login(page, url, account):
     page.click('#account-nav-link');page.fill('#email', account['email'])
     page.fill('#password', account['password'])
     page.locator('#auth button[type=submit]').click()
+    dismiss_login_guide(page)
     page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',
                            arg=account['email'])
     page.click('#orders-nav-link');page.locator('#address-delivery-panel').wait_for(state='visible')

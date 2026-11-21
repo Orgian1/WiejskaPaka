@@ -1,6 +1,7 @@
 """Actual wallet forms and logout isolation on narrow/wide Chromium."""
 from uuid import uuid4
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server
 
@@ -18,6 +19,7 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
         try:
             page.goto(str(client.base_url));page.click('#account-nav-link');page.fill('#email',email);page.fill('#password',password)
             page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.locator('#wallet-nav-link').click();panel=page.locator('#wallet-section');panel.wait_for(state='visible')
             page.locator('#wallet-nav-link').click()
             panel.get_by_role('button',name='Doładuj portfel',exact=True).click()

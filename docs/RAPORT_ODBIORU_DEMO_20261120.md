@@ -12,7 +12,7 @@ Gałąź `release/wiejskapaka-demo-zatwierdzony-20261120` powstała z zapisu `52
 6. Wyloguj się i wybierz „Zaloguj się”. W środkowej kolumnie pomiędzy logowaniem a odzyskiwaniem hasła pojawi się kampania „Logowanie – klienci”, a jeśli nie jest aktywna, kampania „Klient”.
 7. Złóż zamówienie testowe. Na górze głównego panelu sprzedawcy wybierz właściwy punkt, kliknij „Jestem na miejscu” i zezwól przeglądarce na odczyt lokalizacji. Ten sam przycisk znajdziesz w lewej kolumnie zakładki „Punkty odbioru”, nad reklamą sprzedawcy. Potem potwierdź wydanie zamówienia PIN-em. Po odbiorze sprawdź jedną ocenę od 1 do 5 gwiazdek. W panelu sprzedawcy sprawdź punkt promocyjny i termin jego ważności.
 
-8. Zarejestruj nowe konto sprzedawcy i zaloguj się osobno. Panel pokaże instrukcję, a czerwony × odblokuje się po 5 sekundach. Po zamknięciu instrukcja nie otworzy się ponownie na tym koncie w tej samej przeglądarce.
+8. Zaloguj się jako sprzedawca lub klient. Podczas pierwszych pięciu logowań w danej przeglądarce zobaczysz instrukcję dla swojej roli. Czerwony × odblokowuje się po 5 sekundach. Przy szóstym logowaniu instrukcja się nie otwiera.
 
 ## Wyniki weryfikacji
 

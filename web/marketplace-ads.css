@@ -68,14 +68,14 @@
   .wp-ad-slot { padding: 12px; }
 }
 
-.seller-guide-heading {
+.login-guide-heading {
   align-items: start;
   gap: .5rem;
 }
-.seller-guide-heading h2 {
+.login-guide-heading h2 {
   flex: 1;
   min-width: 0;
   margin: 0;
   font-size: clamp(1.1rem, 4.5vw, 1.5rem);
 }
-.seller-guide li + li { margin-top: .75rem; }
+.login-guide li + li { margin-top: .75rem; }

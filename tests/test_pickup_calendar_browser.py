@@ -1,6 +1,7 @@
 """Calendar selection and saved attendance through the actual seller UI."""
 import pytest
 from backend import pickup_dates
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_address_delivery_browser import delivery_browser
 from tests.test_purchase_record_http_restart import server, account
 
@@ -16,6 +17,7 @@ def test_seller_calendar_and_orders_layout(delivery_browser,tmp_path,monkeypatch
         try:
             page.goto(str(client.base_url))
             page.click('#account-nav-link');page.fill('#email',body['email']);page.fill('#password',body['password']);page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.click('#points-nav-link');page.locator('#farmer-details').wait_for(state='visible')
             page.click('#points-nav-link')
             assert page.locator('#products-section').is_hidden()

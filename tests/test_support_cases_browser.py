@@ -1,6 +1,7 @@
 """Private case workflow on real HTTP, at phone and desktop widths."""
 from pathlib import Path
 import pytest
+from tests.browser_login_guide import dismiss_login_guide, stores_only_login_guide_counts
 from tests.test_sample_demo_browser import sample_browser_server
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
@@ -17,6 +18,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             def login(role):
                 page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
                 page.locator('#auth button[type=submit]').click()
+                dismiss_login_guide(page)
                 page.wait_for_function('(email)=>document.getElementById("identity").textContent.includes(email)',arg=accounts[role]['email'])
                 page.click('#panel-nav-link')
                 page.locator('#dashboard-content article').first.wait_for(state='visible')
@@ -60,7 +62,7 @@ def test_private_case_in_real_chromium(sample_browser_server,tmp_path,width):
             page.get_by_role('heading',name='Szczegóły zgłoszenia — Zamknięte testowo',exact=True).wait_for(state='visible')
             assert page.get_by_label('Odpowiedź testowa do zgłoszenia').count()==0
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-            assert page.evaluate('localStorage.length')==0
+            assert stores_only_login_guide_counts(page)
             logout();login('dostawca');assert page.locator('#support-section').is_hidden()
             logout();assert not errors
         finally:page.close()

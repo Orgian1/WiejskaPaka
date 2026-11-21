@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import date,timedelta
 import pytest
 from scripts.run_phone_demo import FULL_DEMO_FLAGS
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_sample_demo_browser import sample_browser_server
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
@@ -13,7 +14,8 @@ def sign_in_view(page,accounts,role):
     page.click('#account-nav-link')
     page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
     page.locator('#auth button[type=submit]').click()
-    page.wait_for_function('(email)=>document.querySelector("#identity").textContent.includes(email)',arg=accounts[role]['email'])
+    dismiss_login_guide(page)
+    page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
     page.locator('#products-section').wait_for(state='visible')
 
 
@@ -40,15 +42,17 @@ def test_separate_routes_history_mobile_and_seller_edits(sample_browser_server,t
             page.reload();sign_in_view(page,accounts,'klient')
             page.wait_for_function('()=>document.querySelector("#catalog-status").textContent.includes("Strona 2.")')
             assert page.locator('#catalog-query').input_value()=='OfertaTest'
-            before=page.locator('#products > .catalog-product').first.inner_text()
+            first_product=page.locator('#products > .catalog-product').first
+            before=first_product.get_attribute('data-product-id')
             page.click('#cart-nav-link');page.locator('#cart-section').wait_for()
             assert page.locator('#products-section').is_hidden() and page.locator('#orders-section').is_hidden()
             page.go_back();page.locator('#products-section').wait_for()
             page.wait_for_function('()=>document.querySelector("#catalog-status").textContent.includes("Strona 2.")')
-            assert page.locator('#products > .catalog-product').first.inner_text()==before
+            page.wait_for_function('id => document.querySelector("#products > .catalog-product")?.dataset.productId === id', arg=before)
             page.go_forward();page.locator('#cart-section').wait_for()
             page.reload();page.locator('#auth').wait_for() # Tokens are deliberately memory-only.
             page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password']);page.locator('#auth button[type=submit]').click()
+            dismiss_login_guide(page)
             page.locator('#cart-section').wait_for();assert page.locator('#products-section').is_hidden()
             page.click('#contact-nav-link');page.locator('#contact-disclosure').wait_for()
             assert page.locator('#contact-message').is_hidden();page.click('#contact-nav-link');page.click('#footer-contact-toggle');page.locator('#contact-message').wait_for()

@@ -1,6 +1,7 @@
 """Owner acceptance: own pickup groups and a one-time PIN without a checkbox."""
 from pathlib import Path
 import pytest
+from tests.browser_login_guide import dismiss_login_guide
 from tests.test_sample_demo import prepare_sample
 from tests.test_purchase_record_http_restart import server
 from tests.test_sample_demo_browser import sample_browser_server
@@ -50,6 +51,7 @@ def test_inline_catalog_and_seller_groups_browser(sample_browser_server,width):
         assert card.evaluate('(e)=>e.open') and page.url==initial_url
         page.click('#account-nav-link');page.fill('#email',accounts['rolnik']['email']);page.fill('#password',accounts['rolnik']['password'])
         page.locator('#auth button[type=submit]').click()
+        dismiss_login_guide(page)
         page.click('#orders-nav-link');group=page.locator('.seller-pickup-group').first
         group.wait_for(state='visible')
         assert not group.evaluate('(e)=>e.open')
@@ -72,6 +74,7 @@ def test_favorite_heart_is_persistent_and_does_not_expand_card(sample_browser_se
         page.goto(url)
         page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
         page.locator('#auth button[type=submit]').click()
+        dismiss_login_guide(page)
         heart=page.locator('#products .favorite-button').first
         heart.wait_for(state='visible')
         page.wait_for_function("() => (document.querySelector('#favorites-status').textContent.length>0)")
@@ -88,6 +91,7 @@ def test_favorite_heart_is_persistent_and_does_not_expand_card(sample_browser_se
         page.reload()
         page.click('#account-nav-link');page.fill('#email',accounts['klient']['email']);page.fill('#password',accounts['klient']['password'])
         page.locator('#auth button[type=submit]').click()
+        dismiss_login_guide(page)
         page.wait_for_function("() => (document.querySelector('#products .favorite-button')?.getAttribute('aria-pressed')==='true')")
         page.click('#favorites-nav-link');page.locator('#favorites-results .favorite-button[data-favorite-product="'+product_id+'"]').click()
         page.wait_for_function("() => (document.querySelector('#products .favorite-button').getAttribute('aria-pressed')==='false')")
@@ -138,7 +142,8 @@ def test_saved_gps_location_seller_navigation_and_default_panels(sample_browser_
         def sign_in(role):
             page.click('#account-nav-link');page.fill('#email',accounts[role]['email']);page.fill('#password',accounts[role]['password'])
             page.locator('#auth button[type=submit]').click()
-            page.wait_for_function('(email)=>document.querySelector("#identity").textContent===email',arg=accounts[role]['email'])
+            dismiss_login_guide(page)
+            page.wait_for_function('(email)=>document.querySelector("#identity").title===email',arg=accounts[role]['email'])
         try:
             page.goto(str(client.base_url));sign_in('klient')
             page.click('#nearby-nav-link');page.get_by_role('button',name='Zapamiętaj wybraną lokalizację na koncie').wait_for()

@@ -29,6 +29,8 @@ Test startu z rozpakowanego archiwum uruchomił `run_phone_demo.py --full-demo` 
 
 ## Rozliczenia i baza
 
+- Przed dodaniem pierwszej oferty sprzedawca widzi informację o prowizji 5% przy wypłacie i trzech bezpłatnych punktach po 30 dni. Na nowym koncie w pełnym lokalnym demo można skopiować i zrealizować testowy kod `START3-DEMO`. W innym środowisku administrator tworzy kod w panelu, a konfiguracja `WP_PICKUP_STARTER_PROMO_CODE` wybiera kod, który ma się pojawić w okienku.
+
 - Promocja obejmuje trzy punkty bez obciążenia portfela. Okres aktywowanego punktu to 30 dni, liczonych jako 720 godzin od aktywacji. Cena odnowienia wynosi 1000 groszy. Odnowienie odpłatne jest w tym demo wyceną. Portfel i rozliczenia używają danych testowych.
 - Wypłaty testowe zachowują prowizję 5% dla sprzedawcy i 0% dla klienta. Opłaty za przesyłkę są naliczane w groszach, jednokrotnie dla wspólnej przesyłki.
 - Punkty z wygasłym okresem są niedostępne w katalogu punktów i w obu ścieżkach zakupu. Bezpośredni endpoint zachowuje zgodność ze starszymi punktami bez zapisanego okresu. Publiczna lista wyboru i koszyk wymagają aktywnego okresu.

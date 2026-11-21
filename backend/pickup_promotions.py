@@ -1,10 +1,13 @@
 """Three-point promotional entitlements, never a payment or automatic future charge."""
 from datetime import date, datetime, timedelta
+import os
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 from fastapi import Depends, Header, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+DEMO_STARTER_CODE = 'START3-DEMO'
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS pickup_promo_codes (
@@ -144,6 +147,27 @@ def install(app, db, write_db, current_user, database_url):
             con.execute('UPDATE pickup_promo_codes SET expires_on=?,max_redemptions=?,active=? WHERE code=?',
                         (payload.expires_on.isoformat(),payload.max_redemptions,int(payload.active),key))
         return {'saved':True,'existing_grants_unchanged':True}
+
+    @app.get('/farmers/me/pickup-promotions/starter')
+    def starter_code(user=Depends(current_user), authorization: str | None=Header(default=None)):
+        configured = os.getenv('WP_PICKUP_STARTER_PROMO_CODE')
+        if not configured and os.getenv('WP_ENABLE_DEMO_STARTER_PROMO') == '1':
+            configured = DEMO_STARTER_CODE
+        with write_db(user, authorization, ('rolnik',)) as con:
+            try:
+                key = CodeIn(code=configured or '').code
+            except ValueError:
+                return {'code': None}
+            if con.execute('SELECT id FROM products WHERE farmer_id=? LIMIT 1', (user['id'],)).fetchone():
+                return {'code': None}
+            if con.execute('SELECT code FROM pickup_promo_grants WHERE user_id=? AND code=?',
+                           (user['id'], key)).fetchone():
+                return {'code': None}
+            promo = con.execute('SELECT * FROM pickup_promo_codes WHERE code=?', (key,)).fetchone()
+            if (promo is None or not promo['active'] or promo['expires_on'] < business_today().isoformat()
+                    or promo['redemption_count'] >= promo['max_redemptions']):
+                return {'code': None}
+        return {'code': key}
 
     @app.get('/farmers/me/pickup-promotions')
     def my_grants(user=Depends(current_user), authorization: str | None=Header(default=None)):

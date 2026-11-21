@@ -3,8 +3,10 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from uuid import uuid4
 
+import pytest
+
 from tests.test_postgres_full_api_optin import (
-    delivery, inspection_connect, pg_api, product, register,
+    _postgres_api, delivery, inspection_connect, pg_api, product, register,
 )
 from tests.test_wallet_ads_http import campaign, claim
 
@@ -111,3 +113,38 @@ def test_native_pickup_arrival(pg_api):
 
     client, _ = pg_api
     exercise_arrival(client)
+
+
+@pytest.fixture
+def pg_starter_api():
+    yield from _postgres_api(starter_promo_code='START-APPROVED')
+
+
+def test_starter_code_only_for_eligible_sellers(pg_starter_api):
+    client, parameters = pg_starter_api
+    seller, _ = register(client, 'rolnik')
+    existing_seller, _ = register(client, 'rolnik')
+    buyer, _ = register(client, 'klient')
+    admin, admin_id = register(client, 'klient')
+    with inspection_connect(**parameters) as owner:
+        owner.execute("UPDATE users SET role='admin' WHERE id=%s", (admin_id,))
+    endpoint = '/farmers/me/pickup-promotions/starter'
+    assert client.get(endpoint).status_code == 401
+    assert client.get(endpoint, headers=buyer).status_code == 403
+    assert client.get(endpoint, headers=seller).json() == {'code': None}
+    settings = {'expires_on': '2099-12-31', 'max_redemptions': 10}
+    assert client.post('/admin/pickup-promotions', headers=admin, json={
+        'code': 'START-APPROVED', **settings,
+    }).status_code == 201
+    product(client, existing_seller)
+    assert client.get(endpoint, headers=existing_seller).json() == {'code': None}
+    available = client.get(endpoint, headers=seller)
+    assert available.headers['cache-control'] == 'no-store'
+    assert available.json() == {'code': 'START-APPROVED'}
+    assert client.post('/farmers/me/pickup-promotions/redeem', headers=seller,
+                       json={'code': 'START-APPROVED'}).status_code == 201
+    assert client.get(endpoint, headers=seller).json() == {'code': None}
+    new_seller, _ = register(client, 'rolnik')
+    assert client.put('/admin/pickup-promotions/START-APPROVED', headers=admin,
+                      json={**settings, 'active': False}).status_code == 200
+    assert client.get(endpoint, headers=new_seller).json() == {'code': None}

@@ -1,4 +1,5 @@
 """All enabled local demo panels in Chromium at phone and desktop sizes."""
+from io import BytesIO
 import json
 import os
 from pathlib import Path
@@ -88,3 +89,62 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
         assert page.locator('#header-panel-link').is_hidden()
         assert not errors
     finally:page.close()
+
+
+def test_first_listing_discloses_fee_and_copies_redeemable_starter_code(full_demo_server, delivery_browser):
+    from PIL import Image
+    from playwright.sync_api import expect
+
+    url, _ = full_demo_server
+    context = delivery_browser.new_context(
+        viewport={'width': 390, 'height': 844},
+        permissions=['clipboard-read', 'clipboard-write'],
+    )
+    page = context.new_page()
+    account = {'email': 'first-offer@example.invalid', 'password': 'Test-First-Offer-987!'}
+    try:
+        assert page.request.post(url + '/auth/register', data={**account, 'role': 'rolnik'}).status == 201
+        page.goto(url)
+        page.click('#header-login-link')
+        page.fill('#email', account['email'])
+        page.fill('#password', account['password'])
+        page.locator('#auth button[type=submit]').click()
+        page.click('#seller-nav-link')
+        notice = page.get_by_role('dialog', name='Dodajesz pierwszą ofertę')
+        expect(notice.get_by_text('WiejskaPaka pobiera 5%', exact=False)).to_be_visible()
+        expect(notice.get_by_text('pierwsze 3 punkty odbioru są darmowe przez 30 dni', exact=False)).to_be_visible()
+        notice.get_by_role('button', name='Kopiuj kod').click()
+        expect(notice.get_by_role('status')).to_have_text('Kod skopiowany.')
+        assert page.evaluate('navigator.clipboard.readText()') == 'START3-DEMO'
+        notice.get_by_role('button', name='Przejdź do realizacji kodu').click()
+        assert page.locator('#pickup-promo-code').input_value() == 'START3-DEMO'
+        with page.expect_response('**/pickup-promotions/redeem') as redeemed:
+            page.click('#pickup-promo-redeem-submit')
+        assert redeemed.value.status == 201
+        assert redeemed.value.json()['remaining'] == 3
+        page.click('#seller-nav-link')
+        assert notice.is_hidden()
+        page.select_option('#product-category', 'vegetables')
+        page.select_option('#product-subcategory', 'vegetables-tomatoes')
+        page.fill('#pname', 'Pierwsze pomidory')
+        page.fill('#price', '3,99')
+        page.fill('#delivery', '0')
+        page.fill('#stock', '4')
+        photo = BytesIO()
+        Image.new('RGB', (320, 240), 'red').save(photo, format='JPEG')
+        page.set_input_files('#product-photo-file', {
+            'name': 'pomidory.jpg', 'mimeType': 'image/jpeg', 'buffer': photo.getvalue(),
+        })
+        with page.expect_response('**/products/with-photo') as created:
+            page.locator('#new-product').get_by_role('button', name='Dodaj produkt', exact=True).click()
+        assert created.value.status == 201
+        page.click('#account-nav-link')
+        page.click('#logout')
+        page.fill('#email', account['email'])
+        page.fill('#password', account['password'])
+        page.locator('#auth button[type=submit]').click()
+        page.click('#seller-nav-link')
+        page.get_by_role('heading', name='Pierwsze pomidory').wait_for()
+        assert notice.is_hidden()
+    finally:
+        context.close()

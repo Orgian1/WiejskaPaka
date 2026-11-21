@@ -22,6 +22,15 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
             dismiss_login_guide(page)
             page.locator('#wallet-nav-link').click();panel=page.locator('#wallet-section');panel.wait_for(state='visible')
             page.locator('#wallet-nav-link').click()
+            fee_note = panel.locator('#wallet-withdrawal-fee-note')
+            if role == 'rolnik':
+                fee_note.wait_for()
+                assert fee_note.inner_text() == ('WiejskaPaka potrąca 5% od kwoty każdej wypłaty. '
+                                                'To prowizja platformy za obsługę płatności.')
+                assert panel.get_by_role('button', name='Wypłać środki', exact=True).get_attribute(
+                    'aria-describedby') == 'wallet-withdrawal-fee-note'
+            else:
+                assert fee_note.count() == 0
             panel.get_by_role('button',name='Doładuj portfel',exact=True).click()
             dialog=page.locator('#wallet-dialog-topup')
             assert dialog.locator('input[type=password]').count()==0

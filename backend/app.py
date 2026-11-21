@@ -855,7 +855,8 @@ def my_shipments(user=Depends(current_user)):
     require(user, 'klient')
     with db() as con:
         rows = con.execute("""SELECT s.id,s.farmer_id,s.fulfillment,s.delivery_grosze,
-            s.created_at,COUNT(l.order_id) AS item_count,COALESCE(SUM(o.total_grosze),0) AS total_grosze
+            s.created_at,COUNT(l.order_id) AS item_count,COALESCE(SUM(o.total_grosze),0) AS total_grosze,
+            (SELECT public_number FROM shipment_public_refs WHERE shipment_id=s.id) AS display_shipment_number
             FROM shipment_groups s JOIN shipment_order_links l ON l.shipment_id=s.id
             JOIN orders o ON o.id=l.order_id
             WHERE s.buyer_id=? AND o.buyer_id=s.buyer_id
@@ -868,7 +869,8 @@ def farmer_shipments(user=Depends(current_user)):
     require(user, 'rolnik')
     with db() as con:
         rows = con.execute("""SELECT s.id,s.fulfillment,s.delivery_grosze,s.created_at,
-            COUNT(l.order_id) AS item_count,COALESCE(SUM(o.total_grosze),0) AS total_grosze
+            COUNT(l.order_id) AS item_count,COALESCE(SUM(o.total_grosze),0) AS total_grosze,
+            (SELECT public_number FROM shipment_public_refs WHERE shipment_id=s.id) AS display_shipment_number
             FROM shipment_groups s JOIN shipment_order_links l ON l.shipment_id=s.id
             JOIN orders o ON o.id=l.order_id
             WHERE s.farmer_id=? AND o.farmer_id=s.farmer_id

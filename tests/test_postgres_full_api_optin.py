@@ -1770,6 +1770,9 @@ def test_native_wallet_retries_pin_and_restart(pg_wallet_api):
     state=client.get('/wallet',headers=buyer).json()
     assert (state['available_grosze'],state['reserved_grosze'])==(6000,4000)
     assert len(state['entries'])==2 and state['pin_configured']
+    older=client.get('/wallet?before_revision=2',headers=buyer)
+    assert older.status_code==200 and older.json()['entries']==state['entries'][1:]
+    assert client.get('/wallet?before_revision=2',headers=other).json()['entries']==[]
 
 
 def test_native_wallet_parallel_debits_do_not_overspend(pg_wallet_api):

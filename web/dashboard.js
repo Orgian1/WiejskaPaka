@@ -227,7 +227,7 @@ async function loadDashboard() {
     box.append(dashboardCard('Pamiętaj przy odbiorze',[
       'Sprawdź jakość i ilość towaru przy odbiorze, zanim podasz PIN sprzedawcy lub dostawcy.'
     ]));
-    for(const shipment of shipments){const c=dashboardCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`]);c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
+    for(const shipment of shipments){const c=dashboardCard(`Przesyłka ${shipment.display_shipment_number||shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`]);c.append(shipmentDetailsButton(shipment.id,c));if(typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('shipment',shipment.id,c));
       c.append(shipmentFinancialHistoryButton(shipment.id,c));
       if(typeof supportCreateButton==='function')c.append(supportCreateButton('shipment',shipment.id,c));
       if(typeof pinRecoveryControls==='function')c.append(pinRecoveryControls('shipment',shipment.id));
@@ -252,7 +252,7 @@ async function loadDashboard() {
       }));
       box.append(c);}
     box.append(dashboardCard('Twoje zakupy',[`Liczba zamówień: ${orders.length}`]));
-    for(const o of orders){const c=dashboardCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Razem: ${money(o.total_grosze)}`]);
+    for(const o of orders){const c=dashboardCard(`Zamówienie ${o.display_shipment_number||o.pickup_code}`,[`Status: ${o.status}`,`Razem: ${money(o.total_grosze)}`]);
       if(typeof supportCreateButton==='function')c.append(supportCreateButton('order',o.id,c));
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if(role==='klient'&&typeof pinRecoveryControls==='function'&&!['odebrane','anulowane_testowo','nieudana_dostawa_testowo'].includes(o.status))c.append(pinRecoveryControls('order',o.id));
@@ -280,7 +280,7 @@ async function loadDashboard() {
       'Planując godziny odbioru, uwzględnij czas przejazdów pomiędzy punktami oraz czas przygotowania i wydawania towaru.'
     ]));
     appendDashboardPages(box,shipmentData.shipments||[],shipment=>{
-      const c=sellerOrderCard(`Przesyłka ${shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`,`Status: ${shipment.status||'sprawdź zamówienia'}`]);
+      const c=sellerOrderCard(`Przesyłka ${shipment.display_shipment_number||shipment.id}`,[`Produkty: ${shipment.item_count}`,`Realizacja: ${shipment.fulfillment}`,`Dostawa: ${money(shipment.delivery_grosze)}`,`Łącznie: ${money(shipment.total_grosze)}`,`Status: ${shipment.status||'sprawdź zamówienia'}`]);
       if(shipment.fulfillment==='dostawa'){
         const courier=node('input');courier.type='number';courier.min='1';courier.placeholder='ID dostawcy';courier.setAttribute('aria-label','Identyfikator dostawcy przesyłki');
         c.append(courier,dashboardButton('Przypisz dostawcę całej przesyłce (test)',async()=>{
@@ -326,7 +326,7 @@ async function loadDashboard() {
     el('seller-stock-summary').replaceChildren(inventoryRegion);
     let payoutReport=null;
     const decorate=()=>{for(const row of payoutReport?.orders||[]){const entry=farmerOrderCards.get(row.order_id);if(entry&&entry.order.status==='odebrane'&&row.state==='paid_test'&&!entry.card._settlementAction){entry.card._settlementAction=true;entry.card.append(farmerTestSettlementButton(row.order_id,active))}}};
-    appendDashboardPages(box,orders,o=>{const c=sellerOrderCard(`Zamówienie ${o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
+    appendDashboardPages(box,orders,o=>{const c=sellerOrderCard(`Zamówienie ${o.display_shipment_number||o.pickup_code}`,[`Status: ${o.status}`,`Realizacja: ${o.fulfillment}`]);farmerOrderCards.set(o.id,{card:c,order:o});
       c.append(dashboardButton('Historia statusów',async()=>showOrderHistory(o.id,c)));
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));
       if(o.fulfillment==='dostawa' && o.status==='oczekuje_na_platnosc_testowa'){const dispatch=node('button','Oznacz jako wysłane (test)');dispatch.type='button';dispatch.onclick=()=>act(async()=>{if(dispatch.disabled)return;dispatch.disabled=true;try{await api(`/orders/${o.id}/dispatch-test`,'POST');if(!active())return;msg('Status zaktualizowany');await loadDashboard()}finally{dispatch.disabled=false}});c.append(dispatch)}
@@ -559,7 +559,7 @@ function sellerPickupGroups(orders,renderOrder){
         try{const result=await api('/shipments/'+encodeURIComponent(shipmentId)+'/confirm','POST',{pin:pin.value});
           if(epoch!==sessionEpoch)return;msg(result.confirmed?'Odebrano całą przesyłkę':'Nieprawidłowy PIN; pozostało prób: '+result.remaining_attempts);await loadOrders();await loadDashboard();
         }finally{pin.value='';confirm.disabled=false}
-      });host.append(node('p','Przesyłka '+shipmentId+' — klient sprawdza produkty i podaje jeden PIN dla wszystkich pozycji.'),pin,confirm);
+      });host.append(node('p','Przesyłka '+(members[0].display_shipment_number||shipmentId)+' — klient sprawdza produkty i podaje jeden PIN dla wszystkich pozycji.'),pin,confirm);
 
       }}
     }

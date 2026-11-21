@@ -79,12 +79,50 @@ async function refreshWallet(){
   withdraw.setAttribute('aria-describedby',note.id);
   box.append(note);
  }
- box.append(node('h3','Historia operacji'));if(!data.entries.length)box.append(node('p','Nie masz jeszcze żadnych operacji.'));for(const entry of data.entries){const details=entry.state==='cancelled_test'?['Anulowano bez pobrania prowizji.']:entry.withdrawal_preview?['Prowizja: '+money(entry.withdrawal_preview.fee_grosze),'Po potrąceniu: '+money(entry.withdrawal_preview.net_grosze)]:[];const status={pending:'Oczekuje na wypłatę',credited:'Zaksięgowano',cancelled_test:'Anulowano — środki ponownie dostępne',completed_test:'Symulacja wypłaty zakończona — bez przelewu'}[entry.state]||'Stan wymaga sprawdzenia';const card=dashboardCard(entry.kind==='topup'?'Doładowanie portfela':'Wypłata środków',[money(entry.amount_grosze),...details,status,new Date(entry.created_at*1000).toLocaleString('pl-PL')]);
+ renderWalletHistory(box,data,()=>current()&&serial===walletReadSerial);
+ if(typeof ensureSellerPanels==='function')ensureSellerPanels();
+}
+function walletHistoryCard(entry,current){
+ const details=entry.state==='cancelled_test'?['Anulowano bez pobrania prowizji.']:entry.withdrawal_preview?['Prowizja: '+money(entry.withdrawal_preview.fee_grosze),'Po potrąceniu: '+money(entry.withdrawal_preview.net_grosze)]:[];const status={pending:'Oczekuje na wypłatę',credited:'Zaksięgowano',cancelled_test:'Anulowano — środki ponownie dostępne',completed_test:'Symulacja wypłaty zakończona — bez przelewu'}[entry.state]||'Stan wymaga sprawdzenia';const card=dashboardCard(entry.kind==='topup'?'Doładowanie portfela':'Wypłata środków',[money(entry.amount_grosze),...details,status,new Date(entry.created_at*1000).toLocaleString('pl-PL')]);
  if(entry.kind==='withdrawal'&&entry.state==='pending'){
  const cancel=node('button','Anuluj wniosek wypłaty');cancel.type='button';cancel.onclick=()=>walletMutation('/wallet/withdrawals/'+encodeURIComponent(entry.id)+'/cancel-test',cancel,current,'Wniosek anulowany. Środki są ponownie dostępne.');card.append(cancel);
  }
- box.append(card);}
- if(typeof ensureSellerPanels==='function')ensureSellerPanels();
+ return card;
+}
+function renderWalletHistory(box,data,current){
+ box.append(node('h3','Historia operacji'));
+ if(!data.entries.length){box.append(node('p','Nie masz jeszcze żadnych operacji.'));return;}
+ const newest=data.entries.slice(0,5);
+ for(const entry of newest)box.append(walletHistoryCard(entry,current));
+ if(data.entries.length<=5)return;
+
+ const details=node('details');
+ const summary=node('summary','Rozwiń pełną historię operacji');
+ details.append(summary);
+ details.ontoggle=()=>{
+  summary.textContent=details.open?'Zwiń pełną historię operacji':'Rozwiń pełną historię operacji';
+ };
+ for(const entry of data.entries.slice(5))details.append(walletHistoryCard(entry,current));
+ let cursor=data.next_before_revision;
+ if(cursor){
+  const more=node('button','Pokaż starsze operacje');
+  more.type='button';
+  details.append(more);
+  more.onclick=async()=>{
+   if(!current()||more.disabled)return;
+   more.disabled=true;
+   try{
+    const page=await api('/wallet?before_revision='+encodeURIComponent(cursor));
+    if(!current())return;
+    const cards=page.entries.map(entry=>walletHistoryCard(entry,current));
+    more.before(...cards);
+    cursor=page.next_before_revision;
+    if(!cursor){more.remove();summary.focus();}
+   }catch(error){if(current())msg(error.message);}
+   finally{more.disabled=false;}
+  };
+ }
+ box.append(details);
 }
 async function walletMutation(path,button,current,notice){
  if(walletBusy||walletRecovering||!current())return;walletBusy=true;button.disabled=true;

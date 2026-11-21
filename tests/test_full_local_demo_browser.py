@@ -2,6 +2,7 @@
 from io import BytesIO
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -82,6 +83,8 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
         assert page.locator('#header-login-link').is_hidden()
         assert page.locator('#header-register-link').is_hidden()
         assert page.locator('#header-panel-link').is_visible()
+        if role in ('klient','rolnik'):
+            page.locator('#dashboard').get_by_text(re.compile(r'^Przesyłka A001-\d{3}$')).first.wait_for()
         if role in ('klient','rolnik'):
             page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
         else:

@@ -13,7 +13,13 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
     password='SyntheticWalletBrowser2026!'
     with server(tmp_path/'wallet-browser.sqlite3') as client:
         email=uuid4().hex+'@example.invalid'
-        assert client.post('/auth/register',json={'email':email,'password':password,'role':role}).status_code==201
+        account={'email':email,'password':password}
+        assert client.post('/auth/register',json={**account,'role':role}).status_code==201
+        actor=client.post('/auth/login',json=account).json()['access_token']
+        for amount in range(1,52):
+            response=client.post('/wallet/topups',headers={'Authorization':'Bearer '+actor},
+                                 json={'amount_grosze':amount,'request_key':uuid4().hex})
+            assert response.status_code==201
         page=delivery_browser.new_page(viewport={'width':width,'height':844})
         errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
         try:
@@ -31,6 +37,18 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
                     'aria-describedby') == 'wallet-withdrawal-fee-note'
             else:
                 assert fee_note.count() == 0
+            history = panel.get_by_role('heading',name='Doładowanie portfela',exact=True)
+            history.first.wait_for()
+            assert history.count()==5
+            panel.get_by_text('Rozwiń pełną historię operacji',exact=True).click()
+            assert history.count()==50
+            with page.expect_response('**/wallet?before_revision=*') as older:
+                panel.get_by_role('button',name='Pokaż starsze operacje').click()
+            assert older.value.status==200
+            history.nth(50).wait_for()
+            assert history.count()==51
+            panel.get_by_text('Zwiń pełną historię operacji',exact=True).click()
+            assert history.count()==5
             panel.get_by_role('button',name='Doładuj portfel',exact=True).click()
             dialog=page.locator('#wallet-dialog-topup')
             assert dialog.locator('input[type=password]').count()==0
@@ -38,7 +56,7 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
             with page.expect_response('**/wallet/topups') as response:
                 dialog.get_by_role('button',name='Doładuj',exact=True).click()
             assert response.value.status==201
-            panel.locator('.wallet-balances').get_by_text('100,00 zł',exact=True).wait_for(state='visible')
+            panel.locator('.wallet-balances').get_by_text('113,26 zł',exact=True).wait_for(state='visible')
             panel.get_by_role('button',name='Ustaw PIN portfela',exact=True).click()
             dialog=page.locator('#wallet-dialog-pin')
             dialog.get_by_label('Hasło konta').fill(password)
@@ -60,7 +78,7 @@ def test_wallet_topup_pin_withdrawal_and_logout(delivery_browser,tmp_path,monkey
             with page.expect_response('**/wallet/withdrawals') as response:
                 dialog.get_by_role('button',name='Potwierdź wypłatę',exact=True).click()
             assert response.value.status==201
-            panel.get_by_text('60,00 zł',exact=True).wait_for(state='visible')
+            panel.get_by_text('73,26 zł',exact=True).wait_for(state='visible')
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.click('#logout')
             assert panel.is_hidden()

@@ -113,20 +113,22 @@ def withdrawal_terms(amount_grosze,role):
             'net_grosze':amount_grosze-fee,'fee_basis_points':rate}
 
 
-def snapshot(con,user_id):
+def snapshot(con,user_id,*,before_revision=None):
     # One statement keeps balances, frozen terms and terminal states coherent.
+    older = ' AND e.revision<?' if before_revision is not None else ''
+    parameters = (before_revision, user_id) if before_revision is not None else (user_id,)
     rows=con.execute('''SELECT u.role,a.available_grosze,a.reserved_grosze,a.pin_hash,
-        e.id,e.kind,e.state,e.amount_grosze,e.available_after,e.reserved_after,e.created_at,
+        e.id,e.kind,e.state,e.amount_grosze,e.available_after,e.reserved_after,e.created_at,e.revision,
         t.withdrawal_id,t.gross_grosze,t.fee_basis_points,t.fee_grosze,t.net_grosze,
         r.state AS resolved_state,r.created_at AS resolved_at
         FROM users u LEFT JOIN wallet_preview_accounts a ON a.user_id=u.id
-        LEFT JOIN wallet_preview_entries e ON e.user_id=u.id
+        LEFT JOIN wallet_preview_entries e ON e.user_id=u.id'''+older+'''
         LEFT JOIN wallet_preview_terms t ON t.withdrawal_id=e.id
         LEFT JOIN wallet_preview_resolutions r ON r.withdrawal_id=e.id
-        WHERE u.id=? ORDER BY e.revision DESC LIMIT 50''',(user_id,)).fetchall()
+        WHERE u.id=? ORDER BY e.revision DESC LIMIT 51''',parameters).fetchall()
     row=rows[0]
     history=[]
-    for entry in rows:
+    for entry in rows[:50]:
         if entry['id'] is None:continue
         item={key:entry[key] for key in ('id','kind','state','amount_grosze','available_after','reserved_after','created_at')}
         if item['kind']=='withdrawal':
@@ -137,7 +139,8 @@ def snapshot(con,user_id):
     return {'withdrawal_fee_basis_points':500 if row['role']=='rolnik' else 0,
             'available_grosze':row['available_grosze'] or 0,
             'reserved_grosze':row['reserved_grosze'] or 0,
-            'pin_configured':bool(row['pin_hash']), 'entries':history}
+            'pin_configured':bool(row['pin_hash']), 'entries':history,
+            'next_before_revision':rows[49]['revision'] if len(rows)>50 else None}
 
 
 def move(con,user,payload,kind,*,now):
@@ -193,9 +196,9 @@ def install(app,db,write_db,current_user,env,database_url):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=status,content=result)
     @app.get('/wallet')
-    def read_wallet(user=Depends(current_user)):
+    def read_wallet(before_revision:int|None=Query(default=None,ge=1,le=2**63-1),user=Depends(current_user)):
         allow(user)
-        with db() as con:return snapshot(con,user['id'])
+        with db() as con:return snapshot(con,user['id'],before_revision=before_revision)
     @app.put('/wallet/pin')
     def set_pin(payload:PinIn,user=Depends(current_user),authorization:str|None=Header(default=None)):
         allow(user);now=int(time.time())

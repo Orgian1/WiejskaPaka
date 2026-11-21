@@ -17,8 +17,8 @@ class PromoPointDurationTests(unittest.TestCase):
         self.con.executescript(PERIOD_SCHEMA)
         self.con.execute('INSERT INTO users VALUES (1)')
         self.con.execute('INSERT INTO pickup_points VALUES (11),(12)')
-        self.con.execute("INSERT INTO pickup_promo_codes VALUES ('TEST','2027-12-31',10,1,1)")
-        self.con.execute("INSERT INTO pickup_promo_grants VALUES ('g',1,'TEST','2027-12-31',2)")
+        self.con.execute("INSERT INTO pickup_promo_codes(code,expires_on,max_redemptions,redemption_count,active) VALUES ('TEST','2027-12-31',10,1,1)")
+        self.con.execute("INSERT INTO pickup_promo_grants(id,user_id,code,expires_on,remaining) VALUES ('g',1,'TEST','2027-12-31',2)")
 
     def tearDown(self):
         self.con.close()

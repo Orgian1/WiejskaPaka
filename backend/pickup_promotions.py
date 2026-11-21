@@ -1,6 +1,7 @@
-"""Three-point promotional entitlements, never a payment or automatic future charge."""
+"""Pickup point promotions with 30-day entitlements."""
 from datetime import date, datetime, timedelta
 import os
+from typing import Literal
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 from fastapi import Depends, Header, HTTPException
@@ -8,6 +9,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 DEMO_STARTER_CODE = 'START3-DEMO'
+DEMO_SEVENTH_CODE = 'PUNKT7-DEMO'
+PROMOTION_POINTS = {'starter': 3, 'seventh': 1}
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS pickup_promo_codes (
@@ -15,7 +18,8 @@ CREATE TABLE IF NOT EXISTS pickup_promo_codes (
  expires_on TEXT NOT NULL,
  max_redemptions INTEGER NOT NULL CHECK(max_redemptions BETWEEN 1 AND 1000000),
  redemption_count INTEGER NOT NULL DEFAULT 0 CHECK(redemption_count>=0 AND redemption_count<=max_redemptions),
- active INTEGER NOT NULL CHECK(active IN (0,1))
+ active INTEGER NOT NULL CHECK(active IN (0,1)),
+ kind TEXT NOT NULL DEFAULT 'starter' CHECK(kind IN ('starter', 'seventh'))
 );
 CREATE TABLE IF NOT EXISTS pickup_promo_grants (
  id TEXT PRIMARY KEY,
@@ -23,6 +27,7 @@ CREATE TABLE IF NOT EXISTS pickup_promo_grants (
  code TEXT NOT NULL REFERENCES pickup_promo_codes(code),
  expires_on TEXT NOT NULL,
  remaining INTEGER NOT NULL CHECK(remaining BETWEEN 0 AND 3),
+ kind TEXT NOT NULL DEFAULT 'starter' CHECK(kind IN ('starter', 'seventh')),
  UNIQUE(user_id,code)
 );
 CREATE TABLE IF NOT EXISTS pickup_promo_points (
@@ -66,31 +71,35 @@ class PromoSettings(BaseModel):
 
 
 class PromoCreate(CodeIn, PromoSettings):
-    pass
+    kind: Literal['starter', 'seventh'] = 'starter'
 
 
 def grant_reply(row, *, today=None):
     today=(today or business_today()).isoformat()
     return {'code':row['code'],'expires_on':row['expires_on'],
             'remaining':row['remaining'] if row['expires_on']>=today else 0,
-            'granted_points':3}
+            'granted_points':PROMOTION_POINTS[row['kind']]}
 
 
 def consume_for_point(con, user_id, point_id, *, postgres=False, today=None):
     """Same transaction as point creation. Lock account before examining grants."""
     suffix=' FOR UPDATE' if postgres else ''
     con.execute('SELECT id FROM users WHERE id=?'+suffix,(user_id,)).fetchone()
-    row=con.execute('''SELECT id,expires_on FROM pickup_promo_grants
-        WHERE user_id=? AND remaining>0 AND expires_on>=? ORDER BY expires_on,id LIMIT 1'''+suffix,
-        (user_id,(today or business_today()).isoformat())).fetchone()
+    from backend.pickup_point_periods import active_seller_point_count, period_end
+    start = datetime.now(ZoneInfo('Europe/Warsaw')) if today is None else datetime.combine(
+        today, datetime.min.time(), tzinfo=ZoneInfo('Europe/Warsaw'))
+    grants = con.execute("""SELECT id,kind FROM pickup_promo_grants
+        WHERE user_id=? AND remaining>0 AND expires_on>=? ORDER BY expires_on,id"""+suffix,
+        (user_id,start.date().isoformat())).fetchall()
+    row = next((grant for grant in grants if grant['kind']=='starter'), None)
+    if row is None and grants and active_seller_point_count(con, user_id, excluding=point_id, now=start)==6:
+        row = grants[0]
     if row is None:
         return None
     changed=con.execute('UPDATE pickup_promo_grants SET remaining=remaining-1 WHERE id=? AND remaining>0',(row['id'],))
     if changed.rowcount!=1:
         raise HTTPException(409,'Uprawnienie promocyjne zmieniło się; odśwież punkty')
     # Each point receives its own 30-day free period starting at activation.
-    start = datetime.now(ZoneInfo('Europe/Warsaw')) if today is None else datetime.combine(today, datetime.min.time(), tzinfo=ZoneInfo('Europe/Warsaw'))
-    from backend.pickup_point_periods import period_end
     free_until = period_end(start).isoformat()
     con.execute('INSERT INTO pickup_promo_points(point_id,grant_id,free_until) VALUES(?,?,?)',(point_id,row['id'],free_until))
     # Record the free entitlement in the same transaction as the point.
@@ -106,6 +115,30 @@ def point_terms(con, point_id):
     return {'free_until':row['free_until'] or row['expires_on']} if row else None
 
 
+def configured_promo_code(kind):
+    variable, default = {
+        'starter': ('WP_PICKUP_STARTER_PROMO_CODE', DEMO_STARTER_CODE),
+        'seventh': ('WP_PICKUP_SEVENTH_PROMO_CODE', DEMO_SEVENTH_CODE),
+    }[kind]
+    configured = os.getenv(variable)
+    if not configured and os.getenv('WP_ENABLE_DEMO_STARTER_PROMO') == '1':
+        configured = default
+    try:
+        return CodeIn(code=configured or '').code
+    except ValueError:
+        return None
+
+
+def starter_used(con, user_id):
+    return con.execute("""SELECT 1 FROM pickup_promo_grants
+        WHERE user_id=? AND kind='starter' AND remaining=0 LIMIT 1""", (user_id,)).fetchone() is not None
+
+
+def seventh_claimed(con, user_id):
+    return con.execute("""SELECT 1 FROM pickup_promo_grants
+        WHERE user_id=? AND kind='seventh' LIMIT 1""", (user_id,)).fetchone() is not None
+
+
 def install(app, db, write_db, current_user, database_url):
     if not database_url:
         with db() as con:
@@ -115,6 +148,12 @@ def install(app, db, write_db, current_user, database_url):
             columns=[r['name'] for r in con.execute('PRAGMA table_info(pickup_promo_points)')]
             if 'free_until' not in columns:
                 con.execute('ALTER TABLE pickup_promo_points ADD COLUMN free_until TEXT')
+            for table in ('pickup_promo_codes', 'pickup_promo_grants'):
+                if 'kind' not in {row['name'] for row in con.execute(f'PRAGMA table_info({table})')}:
+                    con.execute(f"""ALTER TABLE {table} ADD COLUMN kind TEXT NOT NULL DEFAULT 'starter'
+                        CHECK (kind IN ('starter', 'seventh'))""")
+            con.execute("""CREATE UNIQUE INDEX IF NOT EXISTS pickup_promo_seventh_once_per_seller
+                ON pickup_promo_grants(user_id) WHERE kind='seventh'""")
 
     @app.get('/admin/pickup-promotions')
     def list_codes(user=Depends(current_user), authorization: str | None=Header(default=None)):
@@ -125,12 +164,12 @@ def install(app, db, write_db, current_user, database_url):
     def create_code(payload: PromoCreate, user=Depends(current_user), authorization: str | None=Header(default=None)):
         with write_db(user,authorization,('admin',)) as con:
             # Conditional INSERT handles concurrent administrators on either DB.
-            changed=con.execute('''INSERT INTO pickup_promo_codes(code,expires_on,max_redemptions,active)
-                VALUES(?,?,?,?) ON CONFLICT(code) DO NOTHING''',
-                (payload.code,payload.expires_on.isoformat(),payload.max_redemptions,int(payload.active)))
+            changed=con.execute('''INSERT INTO pickup_promo_codes(code,expires_on,max_redemptions,active,kind)
+                VALUES(?,?,?,?,?) ON CONFLICT(code) DO NOTHING''',
+                (payload.code,payload.expires_on.isoformat(),payload.max_redemptions,int(payload.active),payload.kind))
             if changed.rowcount!=1:
                 raise HTTPException(409,'Kod już istnieje; edytuj jego ustawienia')
-        return {'code':payload.code,'granted_points':3}
+        return {'code':payload.code,'granted_points':PROMOTION_POINTS[payload.kind]}
 
     @app.put('/admin/pickup-promotions/{code}')
     def update_code(code: str, payload: PromoSettings, user=Depends(current_user), authorization: str | None=Header(default=None)):
@@ -149,13 +188,11 @@ def install(app, db, write_db, current_user, database_url):
         return {'saved':True,'existing_grants_unchanged':True}
 
     def selected_code(user, authorization, *, before_first_listing):
-        configured = os.getenv('WP_PICKUP_STARTER_PROMO_CODE')
-        if not configured and os.getenv('WP_ENABLE_DEMO_STARTER_PROMO') == '1':
-            configured = DEMO_STARTER_CODE
         with write_db(user, authorization, ('rolnik',)) as con:
-            try:
-                key = CodeIn(code=configured or '').code
-            except ValueError:
+            user_id = user['id']
+            kind = 'starter' if before_first_listing or not starter_used(con, user_id) else 'seventh'
+            key = configured_promo_code(kind)
+            if key is None or (kind=='seventh' and seventh_claimed(con, user_id)):
                 return {'code': None}
             if before_first_listing and con.execute(
                     'SELECT id FROM products WHERE farmer_id=? LIMIT 1', (user['id'],)).fetchone():
@@ -164,10 +201,10 @@ def install(app, db, write_db, current_user, database_url):
                            (user['id'], key)).fetchone():
                 return {'code': None}
             promo = con.execute('SELECT * FROM pickup_promo_codes WHERE code=?', (key,)).fetchone()
-            if (promo is None or not promo['active'] or promo['expires_on'] < business_today().isoformat()
+            if (promo is None or promo['kind'] != kind or not promo['active'] or promo['expires_on'] < business_today().isoformat()
                     or promo['redemption_count'] >= promo['max_redemptions']):
                 return {'code': None}
-        return {'code': key}
+        return {'code': key, 'kind': 'seventh'} if kind=='seventh' else {'code': key}
 
     @app.get('/farmers/me/pickup-promotions/starter')
     def starter_code(user=Depends(current_user), authorization: str | None=Header(default=None)):
@@ -180,7 +217,7 @@ def install(app, db, write_db, current_user, database_url):
     @app.get('/farmers/me/pickup-promotions')
     def my_grants(user=Depends(current_user), authorization: str | None=Header(default=None)):
         with write_db(user,authorization,('rolnik',)) as con:
-            rows=con.execute('SELECT code,expires_on,remaining FROM pickup_promo_grants WHERE user_id=? ORDER BY expires_on,code',(user['id'],)).fetchall()
+            rows=con.execute('SELECT code,expires_on,remaining,kind FROM pickup_promo_grants WHERE user_id=? ORDER BY expires_on,code',(user['id'],)).fetchall()
             items=[grant_reply(r) for r in rows]
             return {'items':items,'available_points':sum(r['remaining'] for r in items)}
 
@@ -189,15 +226,22 @@ def install(app, db, write_db, current_user, database_url):
         with write_db(user,authorization,('rolnik',)) as con:
             suffix=' FOR UPDATE' if database_url else ''
             con.execute('SELECT id FROM users WHERE id=?'+suffix,(user['id'],)).fetchone()
-            existing=con.execute('SELECT code,expires_on,remaining FROM pickup_promo_grants WHERE user_id=? AND code=?',(user['id'],payload.code)).fetchone()
+            existing=con.execute('SELECT code,expires_on,remaining,kind FROM pickup_promo_grants WHERE user_id=? AND code=?',(user['id'],payload.code)).fetchone()
             if existing is not None:
                 result=grant_reply(existing);status=200
             else:
                 code=con.execute('SELECT * FROM pickup_promo_codes WHERE code=?'+suffix,(payload.code,)).fetchone()
                 if code is None or not code['active'] or code['expires_on']<business_today().isoformat() or code['redemption_count']>=code['max_redemptions']:
                     raise HTTPException(409,'Kod jest niedostępny, wygasł lub osiągnął limit')
-                con.execute('INSERT INTO pickup_promo_grants(id,user_id,code,expires_on,remaining) VALUES(?,?,?,?,3)',
-                            (uuid4().hex,user['id'],payload.code,code['expires_on']))
+                kind = code['kind']
+                if kind=='seventh':
+                    if not starter_used(con, user['id']):
+                        raise HTTPException(409, 'Najpierw wykorzystaj trzy darmowe punkty z promocji startowej')
+                    if seventh_claimed(con, user['id']):
+                        raise HTTPException(409, 'Promocja na siódmy punkt została już przypisana do tego konta')
+                points = PROMOTION_POINTS[kind]
+                con.execute('INSERT INTO pickup_promo_grants(id,user_id,code,expires_on,remaining,kind) VALUES(?,?,?,?,?,?)',
+                            (uuid4().hex,user['id'],payload.code,code['expires_on'],points,kind))
                 con.execute('UPDATE pickup_promo_codes SET redemption_count=redemption_count+1 WHERE code=?',(payload.code,))
-                result=grant_reply({'code':payload.code,'expires_on':code['expires_on'],'remaining':3});status=201
+                result=grant_reply({'code':payload.code,'expires_on':code['expires_on'],'remaining':points,'kind':kind});status=201
         return JSONResponse(status_code=status,content=result)

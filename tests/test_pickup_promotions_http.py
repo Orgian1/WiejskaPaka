@@ -142,8 +142,8 @@ def test_expiry_is_inclusive_and_expired_grants_cannot_fund_a_new_point():
     con=sqlite3.connect(':memory:');con.row_factory=sqlite3.Row
     con.executescript('CREATE TABLE users(id INTEGER PRIMARY KEY); CREATE TABLE pickup_points(id INTEGER PRIMARY KEY); INSERT INTO users VALUES(1); INSERT INTO pickup_points VALUES(1); INSERT INTO pickup_points VALUES(2);'+SCHEMA)
     con.executescript(PERIOD_SCHEMA)
-    con.execute("INSERT INTO pickup_promo_codes VALUES('BOUNDARY','2026-12-31',1,1,1)")
-    con.execute("INSERT INTO pickup_promo_grants VALUES('grant',1,'BOUNDARY','2026-12-31',3)")
+    con.execute("INSERT INTO pickup_promo_codes(code,expires_on,max_redemptions,redemption_count,active) VALUES('BOUNDARY','2026-12-31',1,1,1)")
+    con.execute("INSERT INTO pickup_promo_grants(id,user_id,code,expires_on,remaining) VALUES('grant',1,'BOUNDARY','2026-12-31',3)")
     assert consume_for_point(con,1,1,today=date(2026,12,31))['free_until']=='2027-01-30T00:00:00+01:00'
     assert consume_for_point(con,1,2,today=date(2027,1,1)) is None
     row=con.execute('SELECT * FROM pickup_promo_grants').fetchone()

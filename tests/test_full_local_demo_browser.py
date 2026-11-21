@@ -166,6 +166,18 @@ def test_new_seller_guide_and_first_listing_promotion(full_demo_server, delivery
             page.click('#pickup-promo-redeem-submit')
         assert redeemed.value.status == 201
         assert redeemed.value.json()['remaining'] == 3
+        for number in range(3):
+            point = page.evaluate("""index => api('/pickup-points', 'POST', {
+                name: 'Nowy punkt ' + index, city: 'Legnica', street: 'Testowa 1',
+                opening_hours: '9–16'
+            })""", number)
+            assert point['promotion']
+        page.click('#panel-nav-link')
+        page.click('#points-nav-link')
+        seventh = page.get_by_role('button', name='Siódmy punkt gratis na 30 dni: PUNKT7-DEMO')
+        expect(seventh).to_be_visible()
+        seventh.click()
+        assert page.locator('#pickup-promo-code').input_value() == 'PUNKT7-DEMO'
         page.click('#seller-nav-link')
         assert notice.is_hidden()
         page.select_option('#product-category', 'vegetables')

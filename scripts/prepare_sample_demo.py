@@ -35,7 +35,7 @@ def prepare(directory, *, full_demo=False):
         from fastapi.testclient import TestClient
         from backend.app import app, db, ph
         from backend.seller_compliance import RULES_VERSION
-        from backend.pickup_promotions import DEMO_STARTER_CODE
+        from backend.pickup_promotions import DEMO_SEVENTH_CODE, DEMO_STARTER_CODE
         from datetime import datetime, timedelta
         from zoneinfo import ZoneInfo
         today = datetime.now(ZoneInfo('Europe/Warsaw')).date()
@@ -87,6 +87,9 @@ def prepare(directory, *, full_demo=False):
                 request('POST', '/admin/pickup-promotions', 201, actor='admin', body={
                     'code': DEMO_STARTER_CODE, 'expires_on': (today + timedelta(days=30)).isoformat(),
                     'max_redemptions': 100})
+                request('POST', '/admin/pickup-promotions', 201, actor='admin', body={
+                    'code': DEMO_SEVENTH_CODE, 'expires_on': (today + timedelta(days=30)).isoformat(),
+                    'max_redemptions': 100, 'kind': 'seventh'})
                 request('PUT','/sellers/me/login',actor='rolnik',body={'login':'gospodarstwo_demo'})
                 window=request('POST','/address-delivery/windows',actor='rolnik',body={
                     'city':'Legnica','postal_code':'59-220','weekday':day.weekday(),

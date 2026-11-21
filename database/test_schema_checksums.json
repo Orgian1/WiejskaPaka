@@ -263,5 +263,10 @@
     "file": "upgrade_pickup_point_arrivals.sql",
     "sha256": "9284d56b89ad0d7fdc6e679a4d18398361df4fcfd5fe00ac6c4509defa768015",
     "bytes": 2018
+  },
+  {
+    "file": "upgrade_pickup_seventh_promo.sql",
+    "sha256": "094e9315f6bc1d91541a96d20554a74f3ffb0e19fed1452bb7722f44a41f9255",
+    "bytes": 483
   }
 ]

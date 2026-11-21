@@ -1666,6 +1666,8 @@ def update_pickup_point(point_id: int, payload: PickupPointUpdateIn, user=Depend
                         authorization: str | None = Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user, authorization, ('rolnik',)) as con:
+        if DATABASE_URL:
+            con.execute('SELECT id FROM users WHERE id=? FOR UPDATE',(user['id'],)).fetchone()
         point = con.execute('SELECT * FROM pickup_points WHERE id=? AND farmer_id=?' +
             (' FOR UPDATE' if DATABASE_URL else ''), (point_id,user['id'])).fetchone()
         if not point:
@@ -3526,6 +3528,8 @@ if not DATABASE_URL:
 def remove_pickup_point(point_id:int,user=Depends(current_user),authorization:str|None=Header(default=None)):
     require(user,'rolnik')
     with order_write_db(user,authorization,('rolnik',)) as con:
+        if DATABASE_URL:
+            con.execute('SELECT id FROM users WHERE id=? FOR UPDATE',(user['id'],)).fetchone()
         point=con.execute('SELECT id FROM pickup_points WHERE id=? AND farmer_id=?'+(' FOR UPDATE' if DATABASE_URL else ''),(point_id,user['id'])).fetchone()
         if not point:raise HTTPException(404,'Nie znaleziono punktu')
         pending=con.execute("SELECT 1 FROM order_locations l JOIN orders o ON o.id=l.order_id WHERE l.pickup_point_id=? AND o.status NOT IN ('odebrane','anulowane_testowo','nieudana_dostawa_testowo') LIMIT 1",(point_id,)).fetchone()

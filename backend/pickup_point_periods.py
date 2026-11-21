@@ -33,6 +33,19 @@ def period_end(start):
         raise ValueError('Start requires timezone')
     return (start.astimezone(timezone.utc) + timedelta(days=30)).astimezone(ZoneInfo('Europe/Warsaw'))
 
+def period_covers(row, now_utc):
+    return (datetime.fromisoformat(row['starts_at']).astimezone(timezone.utc) <= now_utc
+            < datetime.fromisoformat(row['ends_at']).astimezone(timezone.utc))
+
+
+def active_seller_point_count(con, farmer_id, *, excluding, now):
+    now_utc = now.astimezone(timezone.utc)
+    rows = con.execute("""SELECT p.point_id,p.starts_at,p.ends_at
+        FROM pickup_point_periods p JOIN pickup_points t ON t.id=p.point_id
+        WHERE t.farmer_id=? AND t.active=1 AND t.id<>?""", (farmer_id, excluding))
+    return len({row['point_id'] for row in rows if period_covers(row, now_utc)})
+
+
 def active_period(con, point_id, *, now=None):
     now=now or now_warsaw()
     # ISO strings with different UTC offsets do not sort chronologically.
@@ -40,8 +53,7 @@ def active_period(con, point_id, *, now=None):
     rows=con.execute("""SELECT kind,starts_at,ends_at,price_grosze
         FROM pickup_point_periods WHERE point_id=?""",(point_id,)).fetchall()
     now_utc=now.astimezone(timezone.utc)
-    valid=[r for r in rows if datetime.fromisoformat(r['starts_at']).astimezone(timezone.utc)<=now_utc
-           <datetime.fromisoformat(r['ends_at']).astimezone(timezone.utc)]
+    valid=[r for r in rows if period_covers(r, now_utc)]
     return dict(max(valid,key=lambda r:datetime.fromisoformat(r['ends_at']).astimezone(timezone.utc))) if valid else None
 
 def quote():

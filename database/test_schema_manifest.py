@@ -51,6 +51,7 @@ UPGRADES = (
     'upgrade_shipment_public_refs.sql',
     'upgrade_seller_ratings.sql',
     'upgrade_pickup_point_arrivals.sql',
+    'upgrade_pickup_seventh_promo.sql',
 )
 
 

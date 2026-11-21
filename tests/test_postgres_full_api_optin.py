@@ -123,7 +123,7 @@ def pg_verified_checkout_api():
     yield from _postgres_api(email_verification=True,require_email=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False,starter_promo_code=None):
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False,starter_promo_code=None,seventh_promo_code=None):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -187,6 +187,8 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 env.update(DATABASE_URL=app_dsn, WP_ENV='test', WP_ENABLE_TEST_PAYMENTS='1',WP_CHECKOUT_KEY_FILE=str(keyfile))
                 if starter_promo_code:
                     env['WP_PICKUP_STARTER_PROMO_CODE'] = starter_promo_code
+                if seventh_promo_code:
+                    env['WP_PICKUP_SEVENTH_PROMO_CODE'] = seventh_promo_code
                 if pickup_calendar:
                     env['WP_ENABLE_PICKUP_DATES'] = '1'
                 if units:

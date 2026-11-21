@@ -42,3 +42,10 @@ Test startu z rozpakowanego archiwum uruchomił `run_phone_demo.py --full-demo` 
 ## Potwierdzenie przybycia
 
 Sprzedawca potwierdza własny aktywny punkt z ustawioną lokalizacją na mapie. System sprawdza odległość do 100 m oraz zgłoszoną dokładność odczytu do 100 m. Zapisuje godzinę zgłoszenia, bez zapisywania aktualnych współrzędnych urządzenia. Klienci z aktualnymi zamówieniami dla tego punktu dostają powiadomienie na koncie. W pełnym demo przycisk „Jestem na miejscu” zastępuje ręczne oznaczanie poszczególnych zamówień jako gotowych.
+
+
+### Promocja na siódmy punkt
+
+Po wykorzystaniu wszystkich trzech uprawnień z promocji startowej nagłówek może pokazać jeden kod na siódmy punkt. Uprawnienie jest jednorazowe na konto, również po zmianie kodu kampanii. Zużywa się przy tworzeniu punktu tylko wtedy, gdy sprzedawca ma dokładnie sześć innych włączonych punktów z trwającym okresem aktywności. Nowy punkt otrzymuje własny okres 30 dni bez obciążenia portfela.
+
+Pełne demo zasila kody `START3-DEMO` i `PUNKT7-DEMO`. Na serwerze utwórz w panelu kod typu „Siódmy aktywny punkt gratis” i ustaw `WP_PICKUP_SEVENTH_PROMO_CODE`. PostgreSQL wymaga najpierw migracji `database/upgrade_pickup_seventh_promo.sql`. Płatne aktywacje nadal są poza zakresem demo, więc przypadek sześciu aktywnych punktów sprawdzają testy z przygotowanymi okresami.

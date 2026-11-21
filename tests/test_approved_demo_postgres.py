@@ -129,6 +129,9 @@ def test_starter_code_only_for_eligible_sellers(pg_starter_api):
     with inspection_connect(**parameters) as owner:
         owner.execute("UPDATE users SET role='admin' WHERE id=%s", (admin_id,))
     endpoint = '/farmers/me/pickup-promotions/starter'
+    featured = '/farmers/me/pickup-promotions/featured'
+    assert client.get(featured).status_code == 401
+    assert client.get(featured, headers=buyer).status_code == 403
     assert client.get(endpoint).status_code == 401
     assert client.get(endpoint, headers=buyer).status_code == 403
     assert client.get(endpoint, headers=seller).json() == {'code': None}
@@ -138,6 +141,7 @@ def test_starter_code_only_for_eligible_sellers(pg_starter_api):
     }).status_code == 201
     product(client, existing_seller)
     assert client.get(endpoint, headers=existing_seller).json() == {'code': None}
+    assert client.get(featured, headers=existing_seller).json() == {'code': 'START-APPROVED'}
     available = client.get(endpoint, headers=seller)
     assert available.headers['cache-control'] == 'no-store'
     assert available.json() == {'code': 'START-APPROVED'}
@@ -148,3 +152,4 @@ def test_starter_code_only_for_eligible_sellers(pg_starter_api):
     assert client.put('/admin/pickup-promotions/START-APPROVED', headers=admin,
                       json={**settings, 'active': False}).status_code == 200
     assert client.get(endpoint, headers=new_seller).json() == {'code': None}
+    assert client.get(featured, headers=new_seller).json() == {'code': None}

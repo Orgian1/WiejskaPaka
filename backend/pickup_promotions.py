@@ -148,8 +148,7 @@ def install(app, db, write_db, current_user, database_url):
                         (payload.expires_on.isoformat(),payload.max_redemptions,int(payload.active),key))
         return {'saved':True,'existing_grants_unchanged':True}
 
-    @app.get('/farmers/me/pickup-promotions/starter')
-    def starter_code(user=Depends(current_user), authorization: str | None=Header(default=None)):
+    def selected_code(user, authorization, *, before_first_listing):
         configured = os.getenv('WP_PICKUP_STARTER_PROMO_CODE')
         if not configured and os.getenv('WP_ENABLE_DEMO_STARTER_PROMO') == '1':
             configured = DEMO_STARTER_CODE
@@ -158,7 +157,8 @@ def install(app, db, write_db, current_user, database_url):
                 key = CodeIn(code=configured or '').code
             except ValueError:
                 return {'code': None}
-            if con.execute('SELECT id FROM products WHERE farmer_id=? LIMIT 1', (user['id'],)).fetchone():
+            if before_first_listing and con.execute(
+                    'SELECT id FROM products WHERE farmer_id=? LIMIT 1', (user['id'],)).fetchone():
                 return {'code': None}
             if con.execute('SELECT code FROM pickup_promo_grants WHERE user_id=? AND code=?',
                            (user['id'], key)).fetchone():
@@ -168,6 +168,14 @@ def install(app, db, write_db, current_user, database_url):
                     or promo['redemption_count'] >= promo['max_redemptions']):
                 return {'code': None}
         return {'code': key}
+
+    @app.get('/farmers/me/pickup-promotions/starter')
+    def starter_code(user=Depends(current_user), authorization: str | None=Header(default=None)):
+        return selected_code(user, authorization, before_first_listing=True)
+
+    @app.get('/farmers/me/pickup-promotions/featured')
+    def featured_code(user=Depends(current_user), authorization: str | None=Header(default=None)):
+        return selected_code(user, authorization, before_first_listing=False)
 
     @app.get('/farmers/me/pickup-promotions')
     def my_grants(user=Depends(current_user), authorization: str | None=Header(default=None)):

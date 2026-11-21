@@ -79,3 +79,30 @@
   font-size: clamp(1.1rem, 4.5vw, 1.5rem);
 }
 .login-guide li + li { margin-top: .75rem; }
+
+
+#seller-pickup-shortcuts:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .625rem;
+  max-width: 900px;
+  margin: 12px auto;
+}
+#seller-pickup-shortcuts > #seller-point-nav {
+  max-width: min(100%, 32rem);
+  margin: 0;
+  padding: 0 12px;
+}
+#seller-pickup-shortcuts summary {
+  align-content: center;
+}
+#seller-promo-shortcut {
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0;
+  background: #fff;
+  color: #20392a;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

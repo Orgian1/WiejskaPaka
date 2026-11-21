@@ -1,11 +1,38 @@
 "use strict";
 let pickupPromoSerial=0;
+const pickupShortcuts=document.createElement('div');
+pickupShortcuts.id='seller-pickup-shortcuts';
+pickupShortcuts.hidden=true;
+const sellerPointNav=el('seller-point-nav');
+sellerPointNav.before(pickupShortcuts);
+const pickupPromoShortcut=node('button','Kod rabatowy');
+pickupPromoShortcut.type='button';
+pickupPromoShortcut.id='seller-promo-shortcut';
+pickupShortcuts.append(sellerPointNav,pickupPromoShortcut);
+
+pickupPromoShortcut.onclick=()=>{
+  if(role!=='rolnik')return;
+  const input=el('pickup-promo-code');
+  if(!input.value)input.value=pickupPromoShortcut.dataset.code||'';
+  navigateApp('points');
+  input.focus();
+};
+
+async function refreshPickupPromoShortcut(epoch,serial){
+  try{
+    const {code}=await api('/farmers/me/pickup-promotions/featured');
+    if(epoch!==sessionEpoch||serial!==pickupPromoSerial||role!=='rolnik')return;
+    pickupPromoShortcut.dataset.code=code||'';
+    pickupPromoShortcut.textContent=code?'Kod rabatowy: '+code:'Kod rabatowy';
+  }catch(_error){/* Manual entry remains available. */}
+}
 function pickupPromoSettings(form){return {expires_on:form.elements.expires_on.value,max_redemptions:Number(form.elements.max_redemptions.value),active:form.elements.active.checked}}
 async function refreshPickupPromotions(){
   const epoch=sessionEpoch,serial=++pickupPromoSerial;
   el('pickup-promotions-admin').hidden=role!=='admin';el('pickup-promo-seller').hidden=role!=='rolnik';
   el('pickup-promotions-list').replaceChildren();el('pickup-promo-grants').replaceChildren();
   if(role==='rolnik'){
+    void refreshPickupPromoShortcut(epoch,serial);
     const data=await api('/farmers/me/pickup-promotions');if(epoch!==sessionEpoch||serial!==pickupPromoSerial)return;
     el('pickup-promo-status').textContent=`Dostępne darmowe punkty z promocji: ${data.available_points}. Demo nie nalicza opłat za pozostałe punkty.`;
     for(const grant of data.items)el('pickup-promo-grants').append(node('p',`${grant.code}: pozostało ${grant.remaining} z 3 punktów, do ${grant.expires_on} włącznie (czas polski).`));
@@ -26,7 +53,12 @@ async function refreshPickupPromotions(){
   }
 }
 function resetPickupPromotionViews(){
-  pickupPromoSerial++;el('pickup-promo-redeem-form').reset();el('pickup-promo-create-form').reset();
+  pickupPromoSerial++;
+  pickupShortcuts.hidden=role!=='rolnik';
+  sellerPointNav.open=false;
+  pickupPromoShortcut.dataset.code='';
+  pickupPromoShortcut.textContent='Kod rabatowy';
+  el('pickup-promo-redeem-form').reset();el('pickup-promo-create-form').reset();
   el('pickup-promo-status').textContent='';el('pickup-promo-grants').replaceChildren();el('pickup-promotions-list').replaceChildren();
   el('pickup-promotions-admin').hidden=role!=='admin';el('pickup-promo-seller').hidden=role!=='rolnik';
   if(['admin','rolnik'].includes(role))act(refreshPickupPromotions);

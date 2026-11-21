@@ -86,7 +86,14 @@ def test_complete_demo_role_panels(full_demo_server,delivery_browser,role,width)
             page.click('#wallet-nav-link');page.locator('#wallet-section').wait_for(state='visible')
         else:
             assert page.locator('#wallet-nav-link').count()==0 or page.locator('#wallet-nav-link').is_hidden()
-        if role=='rolnik':page.click('#orders-nav-link');page.locator('#address-delivery-panel').wait_for(state='visible')
+        if role=='rolnik':
+            shortcut = page.get_by_role('button', name='Kod rabatowy: START3-DEMO', exact=True)
+            shortcut.wait_for()
+            assert page.locator('#seller-point-nav').bounding_box()['width'] < 220
+            shortcut.click()
+            assert page.locator('#pickup-promo-code').input_value() == 'START3-DEMO'
+            page.click('#orders-nav-link')
+            page.locator('#address-delivery-panel').wait_for(state='visible')
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         page.click('#logout')
         page.locator('#auth').wait_for(state='visible')

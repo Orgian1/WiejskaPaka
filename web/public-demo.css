@@ -1,0 +1,11 @@
+.public-demo { display: block; }
+.demo-products { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.demo-products article { border: 1px solid #d9e3d9; border-radius: 10px; padding: 12px; overflow-wrap: anywhere; }
+.demo-products h3, .demo-products p { margin: 8px 0; }
+.demo-product-photo { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: #eff4ef; }
+.demo-ad { width: min(100%, 650px); margin: 20px auto; }
+.demo-ad img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.demo-pagination { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; }
+@media (max-width: 640px) {
+  .demo-products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

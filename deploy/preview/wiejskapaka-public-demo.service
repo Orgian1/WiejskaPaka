@@ -1,0 +1,19 @@
+[Unit]
+Description=WiejskaPaka public read-only demonstration
+After=network.target wiejskapaka-demo-v2.service
+Requires=wiejskapaka-demo-v2.service
+
+[Service]
+User=wiejskapaka
+Group=wiejskapaka
+WorkingDirectory=/opt/wiejskapaka/releases/nowe-demo
+ExecStart=/opt/wiejskapaka/releases/nowe-demo/.venv/bin/python -m uvicorn backend.public_demo:app --host 127.0.0.1 --port 8002 --no-access-log
+Environment=PYTHONDONTWRITEBYTECODE=1
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

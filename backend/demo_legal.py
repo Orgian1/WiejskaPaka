@@ -29,6 +29,7 @@ def render_document(name, details):
     return f'''<!doctype html>
 <html lang="pl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>{title} — WiejskaPaka</title><link rel="stylesheet" href="/assets/style.css">
 </head><body><header><h1>{title}</h1><p>WiejskaPaka · środowisko testowe</p></header>
 <main><section class="wide-section">{body}

@@ -24,10 +24,13 @@ def legal_server(tmp_path, monkeypatch):
 
 def test_public_documents_and_server_count(legal_server):
     page = legal_server.get('/')
+    robots_directive = '<meta name="robots" content="noindex">'
+    assert robots_directive not in page.text
     for name in ('regulamin', 'prywatnosc'):
         assert page.text.count(f'href="/{name}"') == 2
         document = legal_server.get('/' + name)
         assert document.status_code == 200
+        assert robots_directive in document.text
         assert 'Testowa 12 &lt;test&gt;' in document.text
         assert 'Testowa 12 <test>' not in document.text
         if name == 'prywatnosc':

@@ -493,37 +493,40 @@ loadFarmer=async function(...args){
 
 // Optional advertisement slots in unused space. Never alter the approved
 // forms, their widths, or the five-second wallet advertisement overlay.
-// A missing campaign is a compact placeholder, not a fabricated coupon.
+// The signed-out account view has its own fallback campaign.
 (function installMarketplaceAdSlots(){
  const style=document.createElement('link');
  style.rel='stylesheet';
  style.href='/assets/marketplace-ads.css';
  document.head.append(style);
  const defaultCampaigns={
+  login:{title:'Zareklamuj się na WiejskaPaka',body:'Sprzedawaj swoje produkty bezpośrednio do zalogowanych rolników.'},
   buyer:{title:'Miejsce na reklamę',body:'Tutaj pojawią się oferty i reklamy dla kupujących.'},
   seller:{title:'Miejsce na reklamę',body:'Tutaj pojawią się reklamy dla sprzedawców.'}
  };
- defaultCampaigns.login=defaultCampaigns.buyer;
  const slots=[
   {id:'login',target:'#tresc',route:'account',role:'guest'},
   {id:'buyer',target:'#nearby-section',route:'nearby',role:'klient'},
   {id:'seller',target:'#seller-listings-section',route:'listings',role:'rolnik'}
  ];
  const mounted=[];
- // Future admin-managed campaigns can replace these safe text defaults.
- // Campaign content is always inserted with textContent, never innerHTML.
+ function renderCampaign(slotId,campaign,showArtwork=false){
+  for(const {id,host,title,body,artwork} of mounted){
+   if(id!==slotId)continue;
+   title.textContent=campaign.title;
+   body.textContent=campaign.body;
+   title.hidden=body.hidden=showArtwork;
+   if(artwork)artwork.hidden=!showArtwork;
+   host.title=campaign.title+' — '+campaign.body;
+   host.setAttribute('aria-description',campaign.body);
+  }
+ }
  function setCampaign(slotId,campaign){
   if(!Object.prototype.hasOwnProperty.call(defaultCampaigns,slotId))return false;
   if(!campaign||typeof campaign.title!=='string'||typeof campaign.body!=='string'
     ||!campaign.title.trim()||!campaign.body.trim()
     ||campaign.title.length>100||campaign.body.length>500)return false;
-  for(const {id,host} of mounted){
-   if(id!==slotId)continue;
-   host.querySelector('strong').textContent=campaign.title;
-   host.querySelector('p').textContent=campaign.body;
-   host.title=campaign.title+' — '+campaign.body;
-   host.setAttribute('aria-description',campaign.body);
-  }
+  renderCampaign(slotId,campaign);
   return true;
  }
  window.WiejskaPakaAdSlots=Object.freeze({setCampaign});
@@ -536,11 +539,23 @@ loadFarmer=async function(...args){
   const title=document.createElement('strong');title.textContent=defaultCampaigns[config.id].title;
   const body=document.createElement('p');body.textContent=defaultCampaigns[config.id].body;
   host.append(label,title,body);
+  let artwork=null;
+  if(config.id==='login'){
+   artwork=document.createElement('img');
+   artwork.className='wp-login-ad-artwork';
+   artwork.alt=defaultCampaigns.login.title+'. '+defaultCampaigns.login.body;
+   artwork.width=1672;
+   artwork.height=941;
+   artwork.loading='lazy';
+   artwork.src='/assets/wiejskapaka-reklama-logowanie-20261122.webp';
+   title.hidden=body.hidden=true;
+   host.append(artwork);
+  }
   if(side)host.dataset.layout='side';
   const routeStatus=config.id==='login'?target.querySelector('#route-status'):null;
   if(routeStatus)routeStatus.before(host);
   else target.append(host);
-  mounted.push({...config,host});
+  mounted.push({...config,host,title,body,artwork});
  }
  for(const config of slots)mount(config,document.querySelector(config.target));
  const main=el('tresc'),routeStatus=el('route-status');
@@ -641,13 +656,9 @@ loadFarmer=async function(...args){
   }));
   if(version!==campaignReloadVersion)return;
   const campaigns=Object.fromEntries(entries);
-  for(const id of ['buyer','seller']){
-   if(!setCampaign(id,campaigns[id])){
-    campaigns[id]=defaultCampaigns[id];
-    setCampaign(id,campaigns[id]);
-   }
+  for(const {id} of slots){
+   if(!setCampaign(id,campaigns[id]))renderCampaign(id,defaultCampaigns[id],id==='login');
   }
-  if(!setCampaign('login',campaigns.login))setCampaign('login',campaigns.buyer);
  }
  window.addEventListener('wiejskapaka:ads-updated',()=>{void reloadCampaigns();});
  void reloadCampaigns();

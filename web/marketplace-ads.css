@@ -21,6 +21,11 @@
 .wp-ad-slot strong { font-size: 17px; }
 .wp-ad-slot p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
 .wp-ad-slot[hidden] { display: none; }
+.wp-login-ad-artwork {
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
 
 #tresc { position: relative; }
 #tresc > .wp-ad-slot[data-ad-slot="login"] {

@@ -36,10 +36,16 @@ def _check_browser(browser, url, accounts, role):
         page.goto(url)
         page.click("#header-login-link")
         login_ad = page.locator('#tresc > [data-ad-slot="login"]')
-        expect(login_ad.locator("strong")).to_have_text(
-            "Oferta dla klientów przed logowaniem" if role == "rolnik" else "Kampania kupujących"
-        )
         expect(login_ad).to_be_visible()
+        artwork = login_ad.get_by_role("img", name="Zareklamuj się na WiejskaPaka", exact=False)
+        if role == "rolnik":
+            expect(login_ad.locator("strong")).to_have_text("Oferta dla klientów przed logowaniem")
+            expect(artwork).to_have_count(0)
+        else:
+            expect(artwork).to_be_visible()
+            page.wait_for_function(
+                "() => document.querySelector('.wp-login-ad-artwork').naturalWidth === 1672"
+            )
         account = page.locator("#account-section")
         reset = page.locator("#password-reset-section")
         expect(reset).to_be_visible()
@@ -57,6 +63,10 @@ def _check_browser(browser, url, accounts, role):
         expect(login_ad).to_be_visible()
         mobile_form, mobile_ad = account.bounding_box(), login_ad.bounding_box()
         assert mobile_form["y"] + mobile_form["height"] <= mobile_ad["y"]
+        if role == "klient":
+            mobile_artwork = artwork.bounding_box()
+            assert mobile_artwork["width"] <= mobile_ad["width"]
+            assert mobile_artwork["width"] / mobile_artwork["height"] == pytest.approx(1672 / 941, abs=.03)
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.set_viewport_size({"width": 1280, "height": 844})
         page.fill("#email", accounts[role]["email"])

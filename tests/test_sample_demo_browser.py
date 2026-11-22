@@ -115,8 +115,9 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             def sign_out():
                 page.click('#logout')
                 page.wait_for_function("() => (document.getElementById('identity').textContent==='Nie zalogowano')")
-            def card(sid):
-                area=page.locator('#dashboard-content > article, #dashboard-content > details').filter(has=page.get_by_text('Przesyłka '+sid,exact=True))
+            def card(shipment,role):
+                reference=shipment['id'] if role=='dostawca' else shipment['display_shipment_number'] or shipment['id']
+                area=page.locator('#dashboard-content > article, #dashboard-content > details').filter(has=page.get_by_text('Przesyłka '+reference,exact=True))
                 area.wait_for(state='visible')
                 if area.evaluate('(node)=>node.tagName==="DETAILS"&&!node.open'):
                     area.locator(':scope > summary').click()
@@ -124,7 +125,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             pins={}
             sign_in('klient')
             for shipment in shipments:
-                sid=shipment['id'];area=card(sid)
+                sid=shipment['id'];area=card(shipment,'klient')
                 area.get_by_role('button',name='Odzyskaj PIN istniejącego zakupu (TEST)',exact=True).click()
                 area.get_by_label('Hasło do odzyskania PIN-u').fill(accounts['klient']['password'])
                 with page.expect_response(f'**/shipments/{sid}/recover-pin-test') as response:
@@ -135,7 +136,7 @@ def test_full_seeded_receipt_and_review_in_chromium(sample_browser_server,tmp_pa
             sign_out()
             for fulfillment,role,label in [('odbior','rolnik','Potwierdź odbiór przesyłki'),('dostawa','dostawca','Potwierdź całą przesyłkę PIN-em')]:
                 shipment=next(s for s in shipments if s['fulfillment']==fulfillment)
-                sid=shipment['id'];sign_in(role);area=card(sid)
+                sid=shipment['id'];sign_in(role);area=card(shipment,role)
                 area.locator('input[placeholder="PIN klienta"]').fill(pins[sid])
                 assert area.locator('input[type=checkbox]').count()==0
                 with page.expect_response(f'**/shipments/{sid}/confirm') as response:

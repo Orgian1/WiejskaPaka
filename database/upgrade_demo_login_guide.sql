@@ -1,0 +1,4 @@
+BEGIN;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS demo_guide_logins INTEGER NOT NULL DEFAULT 0
+    CHECK (demo_guide_logins BETWEEN 0 AND 5);
+COMMIT;

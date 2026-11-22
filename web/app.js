@@ -181,7 +181,7 @@ el('auth').onsubmit=e=>{e.preventDefault();const attempt=++loginAttempt;const ep
   const d=await api('/auth/login','POST',{email:el('email').value,password:submittedPassword});
   if(attempt!==loginAttempt||epoch!==sessionEpoch)return; // logout or newer login won the race
   sessionEpoch++;token=d.access_token;
-  try{const user=await api('/auth/me');if(attempt!==loginAttempt)return;logged(user);msg(user.role==='rolnik'?'Zalogowano — panel sprzedawcy':user.role==='klient'?'Zalogowano — panel klienta':'Zalogowano na konto techniczne')}
+  try{const user=await api('/auth/me');if(attempt!==loginAttempt)return;logged({...user,show_login_guide:d.show_login_guide});msg(user.role==='rolnik'?'Zalogowano — panel sprzedawcy':user.role==='klient'?'Zalogowano — panel klienta':'Zalogowano na konto techniczne')}
   catch(e){if(attempt===loginAttempt){sessionEpoch++;token=null;logged(null)}throw e}
 })};
 // Prevent repeated submissions while a write is in progress. This is a UI guard;

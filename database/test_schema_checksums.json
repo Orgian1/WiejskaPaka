@@ -268,5 +268,10 @@
     "file": "upgrade_pickup_seventh_promo.sql",
     "sha256": "094e9315f6bc1d91541a96d20554a74f3ffb0e19fed1452bb7722f44a41f9255",
     "bytes": 483
+  },
+  {
+    "file": "upgrade_demo_login_guide.sql",
+    "sha256": "9d6c0a60ae757665f100806d3f485dc6c76c780a3b39a64642e6403e2fbb41c3",
+    "bytes": 150
   }
 ]

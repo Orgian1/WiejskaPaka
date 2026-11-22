@@ -83,15 +83,19 @@ async function showGuideOnLogin(user){
  if(loginGuide){loginGuide.close();loginGuide.remove();loginGuide=null;}
  const guide=loginGuides[user?.role];
  if(!guide)return;
+ const serverCounts=typeof user.show_login_guide==='boolean';
+ if(serverCounts&&!user.show_login_guide)return;
  const key='wp-login-guide-v2:'+user.role+':'+user.id;
  let previous=guideLoginCounts.get(key)||0;
- try{
-  const stored=Number(localStorage.getItem(key));
-  if(Number.isInteger(stored)&&stored>=0)previous=Math.max(previous,stored);
-  if(user.role==='rolnik'&&localStorage.getItem('wp-seller-guide-v1:'+user.id)==='dismissed')
-   previous=Math.max(previous,1);
- }catch(_error){/* Use the in-page count when storage is unavailable. */}
- if(previous>=guideLoginLimit)return;
+ if(!serverCounts){
+  try{
+   const stored=Number(localStorage.getItem(key));
+   if(Number.isInteger(stored)&&stored>=0)previous=Math.max(previous,stored);
+   if(user.role==='rolnik'&&localStorage.getItem('wp-seller-guide-v1:'+user.id)==='dismissed')
+    previous=Math.max(previous,1);
+  }catch(_error){/* Use the in-page count when storage is unavailable. */}
+  if(previous>=guideLoginLimit)return;
+ }
  if(user.role==='rolnik'&&appCurrentView==='products'){
   const epoch=sessionEpoch;
   let products;
@@ -100,8 +104,10 @@ async function showGuideOnLogin(user){
   if(appCurrentView==='products'&&products?.length===0)navigateApp('dashboard');
  }
  openLoginGuide(guide);
- guideLoginCounts.set(key,previous+1);
- try{localStorage.setItem(key,String(previous+1));}catch(_error){}
+ if(!serverCounts){
+  guideLoginCounts.set(key,previous+1);
+  try{localStorage.setItem(key,String(previous+1));}catch(_error){}
+ }
 }
 
 let firstListingNoticeEpoch;

@@ -33,6 +33,7 @@ from backend.inventory_reservations import add_hold, payment_deadline_passed, ex
 from backend import product_unit_storage, pickup_dates, pickup_arrival
 from backend import address_delivery
 from backend import product_categories, product_listings
+from backend import demo_legal
 from backend.address_delivery import DeliveryPreferenceIn
 
 
@@ -49,6 +50,8 @@ async def application_lifespan(application):
     import asyncio
     import logging
     with db() as con:
+        if demo_legal.legal_details():
+            con.execute('SELECT demo_guide_logins FROM users LIMIT 0')
         con.execute('SELECT code FROM pickup_promo_codes LIMIT 0')
         con.execute('SELECT id FROM pickup_promo_grants LIMIT 0')
         con.execute('SELECT point_id FROM pickup_promo_points LIMIT 0')
@@ -202,6 +205,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS login_attempts(email TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, locked_until TEXT);
         CREATE TABLE IF NOT EXISTS orders(id INTEGER PRIMARY KEY, buyer_id INTEGER NOT NULL REFERENCES users(id), farmer_id INTEGER NOT NULL REFERENCES users(id), product_id INTEGER NOT NULL REFERENCES products(id), quantity INTEGER NOT NULL CHECK(quantity>0), subtotal_grosze INTEGER NOT NULL, delivery_grosze INTEGER NOT NULL, total_grosze INTEGER NOT NULL, fulfillment TEXT NOT NULL, status TEXT NOT NULL, pickup_code TEXT UNIQUE NOT NULL, pin_hash TEXT NOT NULL, pin_attempts INTEGER NOT NULL DEFAULT 0, pin_used INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, confirmed_at TEXT);
         ''')
+        con.execute('BEGIN IMMEDIATE')
+        if not any(column['name'] == 'demo_guide_logins' for column in con.execute('PRAGMA table_info(users)')):
+            con.execute('ALTER TABLE users ADD COLUMN demo_guide_logins INTEGER NOT NULL DEFAULT 0 CHECK (demo_guide_logins BETWEEN 0 AND 5)')
 init_db()
 
 def migrate_stage3():
@@ -427,6 +433,12 @@ def login(payload: Login):
             con.execute('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)',
                         (token_hash(token), row['id'], expires))
             result = {'access_token':token,'token_type':'bearer','expires_at':expires}
+            if demo_legal.legal_details() and row['role'] in ('klient', 'rolnik'):
+                updated = con.execute(
+                    'UPDATE users SET demo_guide_logins=demo_guide_logins+1 WHERE id=? AND demo_guide_logins<5',
+                    (row['id'],),
+                )
+                result['show_login_guide'] = updated.rowcount == 1
     if result is None:
         raise HTTPException(401, 'Nieprawidłowe dane logowania')
     return result
@@ -1372,7 +1384,17 @@ app.mount('/assets', StaticFiles(directory=str(WEB_DIR)), name='assets')
 @app.get('/', include_in_schema=False)
 def index():
     from backend.ui_assets import versioned_index
-    return HTMLResponse(versioned_index(WEB_DIR))
+    html = versioned_index(WEB_DIR)
+    return HTMLResponse(demo_legal.add_legal_links(html) if demo_legal.legal_details() else html)
+
+
+@app.get('/regulamin', include_in_schema=False)
+@app.get('/prywatnosc', include_in_schema=False)
+def demo_legal_document(request: Request):
+    details = demo_legal.legal_details()
+    if details is None:
+        raise HTTPException(404, 'Dokument nie jest dostępny')
+    return HTMLResponse(demo_legal.render_document(request.url.path.rsplit('/', 1)[-1], details))
 
 @app.get('/auth/me')
 def auth_me(user=Depends(current_user)):

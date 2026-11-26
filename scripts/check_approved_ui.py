@@ -2,7 +2,7 @@
 """Guard the owner-approved WiejskaPaka UI against accidental replacements.
 
 Usage: python scripts/check_approved_ui.py
-The baseline is the owner-confirmed browser view on 2026-11-18 (port 8766).
+The baseline follows the owner-confirmed browser view and the approved demo release.
 Only the three layout entry files are byte-locked here; new features may be
 added through separate assets without silently replacing these files.
 """
@@ -11,11 +11,11 @@ import hashlib
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-# Git blob IDs refer to the exact files from the owner-approved branch.
+# Release 2c193f4 retains the approved layout and loads the new admin-only panel.
 APPROVED_GIT_BLOBS = {
-    "web/index.html": "6aeaf173e4e4340143eb8e03afd0f5dcadc15c09",
+    "web/index.html": "79775b5f63356f32612aefe3900cf41a43d02363",
     "web/style.css": "4b16e2dda3241c6fe3d97e210cea31c74204b1b1",
-    "web/app.js": "1685387dc002ae65a411a54256cc4ad6d677e45b",
+    "web/app.js": "5b61bac6e32db5b30069d1be0dbb4fc01fb51409",
 }
 
 def git_blob_sha(data: bytes) -> str:

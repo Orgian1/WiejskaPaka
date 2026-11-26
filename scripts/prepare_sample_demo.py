@@ -4,6 +4,7 @@ Run in a fresh child process; never opens or upgrades an existing database.
 Credentials are returned only to the local launcher, not stored in a report.
 """
 import argparse
+from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,42 @@ if str(ROOT) not in sys.path:
 from scripts.run_phone_demo import demo_environment, full_demo_environment
 
 
-def prepare(directory, *, full_demo=False):
+def seed_incubator_demo(request, seller, password):
+    from backend.incubator_invoicing import today, WARSAW
+    pin = f'{secrets.randbelow(1_000_000):06d}'
+    request('POST', '/wallet/topups', 201, actor='rolnik',
+            body={'amount_grosze': 10000, 'request_key': secrets.token_hex(16)})
+    request('PUT', '/wallet/pin', actor='rolnik', body={'pin': pin, 'password': password})
+    withdrawal = request('POST', '/wallet/withdrawals', 201, actor='rolnik',
+                         body={'amount_grosze': 4010, 'request_key': secrets.token_hex(16), 'pin': pin})
+    request('POST', f'/admin/wallet/withdrawals/{withdrawal["id"]}/complete-test', 201, actor='admin')
+
+    path = '/admin/incubator-invoicing'
+    wallet = request('GET', '/wallet', actor='rolnik')
+    created_at = next(entry['created_at'] for entry in wallet['entries'] if entry['id'] == withdrawal['id'])
+    requested = datetime.fromtimestamp(created_at, WARSAW).date().isoformat()
+    stamp = today().isoformat()
+    reference = {'confirmed': True, 'operator_settlement_id': 'DEMO-ROZLICZENIE-1',
+                 'transaction_on': stamp, 'settled_on': stamp}
+    buyer = {'buyer_name': 'Gospodarstwo demonstracyjne', 'buyer_address': 'Testowa 1, Legnica',
+             'seller_id': seller}
+    request('POST', path, 201, actor='admin', body={
+        **reference, **buyer, 'transaction_on': requested, 'kind': 'withdrawal_fee', 'transaction_id': withdrawal['id'],
+        'amount_grosze': withdrawal['withdrawal_preview']['fee_grosze'],
+    })
+    advertising = request('POST', path, 201, actor='admin', body={
+        **reference, **buyer, 'kind': 'advertising', 'transaction_id': 'DEMO-REKLAMA-1',
+        'amount_grosze': 1299,
+    })
+    request('POST', f'{path}/{advertising["id"]}/issue', actor='admin',
+            body={'invoice_number': 'DEMO/1', 'issued_on': stamp, 'expected_grosze': 1299})
+    request('POST', f'{path}/{advertising["id"]}/refund', 201, actor='admin',
+            body={**reference, 'transaction_id': 'DEMO-ZWROT-1', 'amount_grosze': 199})
+
+
+def prepare(directory, *, full_demo=False, incubator_demo=False):
+    if incubator_demo and not full_demo:
+        raise ValueError('Scenariusz fakturowania wymaga pełnego demo')
     if 'backend.app' in sys.modules:
         raise ValueError('Wymagany nowy proces')
     directory = Path(directory).absolute()
@@ -36,7 +72,7 @@ def prepare(directory, *, full_demo=False):
         from backend.app import app, db, ph
         from backend.seller_compliance import RULES_VERSION
         from backend.pickup_promotions import DEMO_SEVENTH_CODE, DEMO_STARTER_CODE
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         from zoneinfo import ZoneInfo
         today = datetime.now(ZoneInfo('Europe/Warsaw')).date()
         day = today + timedelta(days=7)
@@ -171,6 +207,8 @@ def prepare(directory, *, full_demo=False):
                     finally:
                         con.execute('ROLLBACK TO SAVEPOINT verify_demo_ads')
                         con.execute('RELEASE SAVEPOINT verify_demo_ads')
+            if incubator_demo:
+                seed_incubator_demo(request, users['rolnik'], credentials['rolnik']['password'])
             with db() as con:
                 audit = audit_payment_integrity(con)
                 if not audit['ok'] or audit['checked_payments'] != 4:
@@ -190,10 +228,11 @@ def prepare(directory, *, full_demo=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--full-demo',action='store_true')
+    parser.add_argument('--incubator-demo', action='store_true', help='Dodaj przykładowe rozliczenia Twój StartUp do pełnego demo')
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        result = prepare(args.directory,full_demo=args.full_demo)
+        result = prepare(args.directory, full_demo=args.full_demo, incubator_demo=args.incubator_demo)
     except Exception:
         print('Nie udało się przygotować jednorazowego demo. Wymagany nowy katalog i nowy proces.', file=sys.stderr)
         return 1

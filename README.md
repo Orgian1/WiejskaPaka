@@ -97,10 +97,23 @@ prawdziwych danych osobowych. Numery telefonów nie są zbierane w formularzach.
 W Windows zamiast `.venv/bin/python` użyj `.venv\Scripts\python.exe`.
 Wznowienie po wyłączeniu komputera: `docs/WZNOWIENIE_PO_WYLACZENIU_WINDOWS.md`.
 
+## Uruchomienie wydania demo na Windows
+
+Rozpakuj ZIP do zwykłego folderu i uruchom `START_DEMO_WINDOWS.cmd`.
+Wymagany jest **Python 3.12** oraz internet przy pierwszej instalacji pakietów.
+Otwórz [http://127.0.0.1:8766](http://127.0.0.1:8766) i użyj kont z terminala.
+
+Aby przejść próbę rozliczenia, zaloguj się kontem `admin` i otwórz
+**Panel → Fakturowanie – Twój StartUp**. W kolejce znajdziesz prowizję 2,01 zł
+i zwrot −1,99 zł do korekty. W filtrze **Wystawione** znajdziesz fikcyjny dokument
+za reklamę. Możesz skopiować dane, zapisać fikcyjny numer faktury i pobrać CSV.
+Po następnym uruchomieniu demo utworzy świeże konta i dane.
+[Scenariusz i dokumentacja fakturowania](docs/FAKTUROWANIE_TWOJ_STARTUP.md).
+
 ## Pełne lokalne demo bez PayU
 
 ```bash
-python scripts/run_phone_demo.py --full-demo
+python scripts/run_phone_demo.py --full-demo --incubator-demo
 ```
 
 Profil tworzy nową jednorazową SQLite, cztery losowe konta i przesyłki.

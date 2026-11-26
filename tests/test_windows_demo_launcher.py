@@ -45,7 +45,7 @@ def test_launcher_recovers_environment_with_missing_pip(tmp_path):
     (project / 'scripts' / 'check_approved_ui.py').touch()
     (project / 'scripts' / 'run_phone_demo.py').write_text(
         "import sys\n"
-        "assert sys.argv[1:] == ['--full-demo', '--port', '8766']\n"
+        "assert sys.argv[1:] == ['--full-demo', '--incubator-demo', '--port', '8766']\n"
         "print('DEMO_START_CONFIRMED')\n",
         encoding='utf-8',
     )

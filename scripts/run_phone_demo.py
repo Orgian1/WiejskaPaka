@@ -109,6 +109,7 @@ def main(argv=None):
     parser.add_argument('--ssl-keyfile', type=Path, help='Prywatny klucz certyfikatu TLS, poza repozytorium')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--full-demo', action='store_true', help='Jednorazowe demo z portfelem, jednostkami, zdjęciami, wyszukiwaniem i terminami dostaw')
+    parser.add_argument('--incubator-demo', action='store_true', help='Dodaj fikcyjne faktury Twój StartUp do pełnego demo')
     parser.add_argument('--public-geocoder', choices=('photon',), help='Jawnie włącz publiczny geokoder Photon; wyszukiwanie tylko po kliknięciu')
     parser.add_argument('--sample-data', action='store_true', help='Nowe fikcyjne konta wszystkich ról, produkty i przesyłki')
     parser.add_argument('--credentials-file', type=Path, help='Prywatny, nowy plik kont zamiast haseł w terminalu (POSIX, wymaga --sample-data)')
@@ -117,6 +118,8 @@ def main(argv=None):
         host,tls_options=demo_listener(args.host,args.ssl_certfile,args.ssl_keyfile)
     except ValueError as error:
         parser.error(str(error))
+    if args.incubator_demo and not args.full_demo:
+        parser.error('--incubator-demo wymaga --full-demo')
     if args.full_demo:args.sample_data=True
     environment=full_demo_environment if args.full_demo else demo_environment
     if args.credentials_file and not args.sample_data:
@@ -131,7 +134,8 @@ def main(argv=None):
             sample = Path(directory) / 'sample'
             try:
                 setup = subprocess.run([sys.executable, '-m', 'scripts.prepare_sample_demo',
-                    *(['--full-demo'] if args.full_demo else []), '--directory', str(sample)], cwd=root,
+                    *(['--full-demo'] if args.full_demo else []),
+                    *(['--incubator-demo'] if args.incubator_demo else []), '--directory', str(sample)], cwd=root,
                     env=environment(os.environ, sample/'demo.sqlite3'),
                     capture_output=True, text=True, encoding='utf-8', timeout=120)
             except (OSError, subprocess.TimeoutExpired):
@@ -179,6 +183,8 @@ def main(argv=None):
                             account = credentials[role]
                             print(f"{role}: {account['email']} | hasło: {account['password']}", flush=True)
                     print('Przygotowano 2 produkty, przesyłkę do odbioru i dostawę w drodze. Płatności są symulowane.', flush=True)
+                if args.incubator_demo:
+                    print('Fakturowanie: zaloguj się kontem admin, otwórz Panel i wybierz Fakturowanie – Twój StartUp.', flush=True)
                 print(('Tylko na tym urządzeniu.' if ipaddress.ip_address(host).is_loopback else 'Tryb LAN HTTPS: tylko zaufana prywatna sieć Wi-Fi; nie przekierowuj portu do internetu.')+' Brak Neon i prawdziwych płatności. Ctrl+C kończy demo.', flush=True)
                 return subprocess.call(command, cwd=root, env=env)
         except KeyboardInterrupt:

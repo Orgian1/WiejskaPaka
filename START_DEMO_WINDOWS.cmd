@@ -49,7 +49,7 @@ set "stage=kontrola zatwierdzonego widoku"
 "%demo_python%" scripts\check_approved_ui.py
 if errorlevel 1 goto failed
 set "stage=uruchamianie aplikacji"
-"%demo_python%" scripts\run_phone_demo.py --full-demo --port 8766
+"%demo_python%" scripts\run_phone_demo.py --full-demo --incubator-demo --port 8766
 if "%ERRORLEVEL%"=="130" exit /b 0
 if errorlevel 1 goto failed
 exit /b 0

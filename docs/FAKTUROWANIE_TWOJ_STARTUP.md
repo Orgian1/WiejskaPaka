@@ -27,3 +27,26 @@ Rejestr nie zmienia sald portfeli, nie aktywuje zakupionych usług i nie wysyła
 - Tryb ręcznego zapisu potwierdzonych wpływów wymaga PostgreSQL z bramką RLS i osobnej flagi `WP_ENABLE_INCUBATOR_MANUAL_SETTLEMENTS=1`. Włącz ją po uzgodnieniu zasad z fundacją i PayU, po kopii bazy oraz próbie migracji na środowisku testowym. Na wdrożonej domenie brak tej konfiguracji pozostawia moduł wyłączony.
 - PayU musi zatwierdzić przepływ portfeli, rolę sprzedawców, miejsce pobrania 5%, rozdział środków i identyfikatory uzgodnień. Integracja musi kierować na subkonto fundacji tylko środki należne platformie. Testy na rachunkach i mechanizmach sandbox operatora pozostają do wykonania po uzyskaniu konfiguracji. [Dokumentacja PayU Marketplace](https://developers.payu.com/europe/pl/docs/services/marketplace/)
 - Z fundacją i księgowością ustal dane wymagane na dokumentach, traktowanie dat transakcji i wpływu, stawki VAT, sposób korekt i ewentualne faktury zbiorcze. Rejestr nie oblicza VAT i nie aktywuje zbiorczego wystawiania faktur.
+
+## Próba aktualizacji istniejącej instalacji
+
+26 listopada 2026 r. uruchomiono wersję `aa7107f` z bramką RLS na osobnej bazie PostgreSQL 16.2. Wprowadzono fikcyjne konta, produkt, zamówienie, promocję punktu odbioru, reklamę i operacje portfelowe. Wersję `c669829` sprawdzono za pomocą tego samego programu startowego, którego używa prywatne demo.
+
+| Sprawdzenie | Wynik |
+| --- | --- |
+| Start z aktywną zakładką przed migracją | Program startowy odmówił uruchomienia |
+| Szyfrowana kopia sprzed migracji | Odtworzono na osobnej bazie i zweryfikowano zamówienie oraz unieważnienie odtworzonych sesji |
+| Migracja na bazie ze starszą bramką RLS | Podwójne zastosowanie zakończyło się poprawnie. Nowa tabela ma wymuszone RLS |
+| Dane i uprawnienia po aktualizacji | Porównano dwa portfele, produkt, punkt odbioru, reklamę i zamówienie. Klient i sprzedawca otrzymali odmowę dostępu do rejestru faktur |
+| Fakturowanie w symulacji | Dla zapisanej wypłaty sprzedawcy 40,01 zł zarejestrowano prowizję 2,00 zł oraz numer dokumentu |
+| Wycofanie wersji aplikacji | Poprzednia aplikacja uruchomiła się na zaktualizowanej bazie. Po ponownym włączeniu nowej aplikacji numer faktury pozostał w rejestrze |
+| Szyfrowana kopia po migracji | Na osobnej bazie odtworzono wpis faktury wraz z numerem, kwotą i trybem symulacji |
+
+### Kolejność dla środowiska docelowego
+
+1. Potwierdź wersję aplikacji, PostgreSQL i stan RLS. Wykonaj szyfrowaną kopię oraz zweryfikuj odtworzenie na osobnej bazie z tą samą główną wersją PostgreSQL. Zachowaj klucze oddzielnie od kopii.
+2. Na kopii testowej z włączoną bramką RLS zastosuj migrację `database/upgrade_incubator_invoicing.sql` w jednej transakcji, przez uprawnioną rolę migracyjną. Sprawdź wymuszone RLS nowej tabeli i brak bezpośrednich uprawnień konta aplikacji do tabeli.
+3. Włącz wyłącznie symulację i sprawdź dostęp administratora, odmowę dla klienta i sprzedawcy, zapis danych rozliczenia z zakończonej wypłaty testowej oraz trwałość dokumentu po restarcie. Uruchomienie właściwej instalacji wymaga odrębnej zgody.
+4. Jeśli trzeba wycofać wydanie aplikacji, wróć do poprzedniej wersji i zachowaj nową tabelę wraz z wpisami. Sprawdź odtworzenie na osobnej bazie przed podjęciem decyzji o ewentualnym przywróceniu danych. Wycofanie samej aplikacji nie wymaga usuwania tabeli ani demontażu RLS.
+
+Próba opisana powyżej używa PostgreSQL 16.2 i danych fikcyjnych. Dokładny commit na VPS-ie, próba na jego wersji PostgreSQL i uruchomienie na tym serwerze pozostają do sprawdzenia w środowisku docelowym.

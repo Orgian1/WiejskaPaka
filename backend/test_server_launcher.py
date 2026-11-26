@@ -4,6 +4,7 @@ import os
 from backend.test_server_preflight import check_test_server
 
 OPTIONAL_PREVIEW_TABLES = {
+    'WP_ENABLE_INCUBATOR_INVOICING': ('incubator_invoice_entries',),
     'WP_ENABLE_WALLET_PREVIEW': ('wallet_preview_accounts','wallet_preview_entries','wallet_preview_terms','wallet_preview_resolutions','wallet_preview_operation_fences'),
     'WP_ENABLE_PICKUP_DATES': ('pickup_point_dates',),
     'WP_ENABLE_PRODUCT_UNITS': ('product_sale_units', 'order_sale_units'),

@@ -53,6 +53,7 @@ UPGRADES = (
     'upgrade_pickup_point_arrivals.sql',
     'upgrade_pickup_seventh_promo.sql',
     'upgrade_demo_login_guide.sql',
+    'upgrade_incubator_invoicing.sql',
 )
 
 

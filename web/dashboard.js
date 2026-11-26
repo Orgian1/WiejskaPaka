@@ -370,6 +370,7 @@ async function loadDashboard() {
       if((role==='klient'||role==='rolnik')&&typeof purchaseRecordControls==='function')c.append(purchaseRecordControls('order',o.id,c));box.append(c);
     }
   }else if(role==='admin'){
+    if(typeof incubatorInvoicingTab==='function')box.append(incubatorInvoicingTab(active));
     box.append(dashboardCard('Administracja',['Operacje zbiorcze i raporty są dostępne wyłącznie w trybie testowym.']));
     // Rejestr administracyjny: filtrowanie, stronicowanie i kontrola sum bez danych osobowych.
     const register=node('section');register.setAttribute('aria-label','Rejestr przesyłek');

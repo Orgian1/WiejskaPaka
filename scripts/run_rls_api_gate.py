@@ -48,7 +48,7 @@ def main(argv=None):
                 env.pop(variable, None)
             if args.logs:
                 env['WP_TEST_POSTGRES_LOG_DIR'] = str(args.logs.resolve())
-            tests = ['tests/test_postgres_full_api_optin.py', 'tests/test_approved_demo_postgres.py']
+            tests = ['tests/test_postgres_full_api_optin.py', 'tests/test_approved_demo_postgres.py', 'tests/test_incubator_invoicing.py']
             if args.legacy:
                 tests += ['tests/test_postgres_environment.py',
                           'tests/test_postgres_transaction_integration_optional.py']

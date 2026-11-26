@@ -273,5 +273,10 @@
     "file": "upgrade_demo_login_guide.sql",
     "sha256": "9d6c0a60ae757665f100806d3f485dc6c76c780a3b39a64642e6403e2fbb41c3",
     "bytes": 150
+  },
+  {
+    "file": "upgrade_incubator_invoicing.sql",
+    "sha256": "2add2c43f5ac89d1fe72ec02194b3af6abea54fd8c4ded958225e3bc77db7fc1",
+    "bytes": 3974
   }
 ]

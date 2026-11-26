@@ -82,6 +82,7 @@ BEGIN
  IF c.purpose='auth' AND t IN ('users','sessions','login_attempts','password_change_access','password_reset_tokens','password_reset_limits','reset_mail_queue','account_email_proofs','email_verification_queue','email_verification_limits','mail_send_budget','mail_send_attempts','mail_recipient_blocks') THEN RETURN true; END IF;
  IF op='select' AND t IN ('users','products','pickup_points','farmer_profiles','pickup_point_coordinates','pickup_point_dates','product_sale_units','product_search_names','seller_public_logins','seller_delivery_windows','user_photos','schema_migrations') THEN RETURN true; END IF;
  IF op='select' AND t IN ('product_categories','product_subcategories','product_classifications','product_listing_states') THEN RETURN true; END IF;
+ IF t='incubator_invoice_entries' THEN RETURN c.role='admin' AND op IN ('select','insert','update'); END IF;
  IF t='marketplace_ad_campaigns' THEN
   RETURN c.role='admin' OR (op='select' AND (r->>'enabled')::integer=1
    AND (r->>'starts_at')::bigint<=extract(epoch FROM statement_timestamp())
@@ -209,6 +210,11 @@ GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO wp_rls_executor;
 GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO wp_rls_backup;
 -- Preserve existing immutable financial snapshots.
 REVOKE UPDATE,DELETE ON public.wallet_preview_terms,public.wallet_preview_resolutions,public.wallet_preview_operation_fences,public.seller_ratings FROM wp_rls_executor;
+DO $$ BEGIN
+ IF to_regclass('public.incubator_invoice_entries') IS NOT NULL THEN
+  REVOKE DELETE ON public.incubator_invoice_entries FROM wp_rls_executor;
+ END IF;
+END $$;
 -- Verifier uses direct SELECT of sessions/users before context exists.
 GRANT SELECT ON public.sessions,public.users TO wp_rls_executor;
 DO $$ DECLARE t record; BEGIN

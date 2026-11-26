@@ -123,7 +123,7 @@ def pg_verified_checkout_api():
     yield from _postgres_api(email_verification=True,require_email=True)
 
 
-def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False,starter_promo_code=None,seventh_promo_code=None):
+def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_options=False, photos=False, sellers=False, email_verification=False, pickup_calendar=False,require_email=False,wallet=False,starter_promo_code=None,seventh_promo_code=None,incubator=False,incubator_verified=False):
     dsn = os.environ.get('WP_TEST_POSTGRES_DSN')
     if not dsn:
         pytest.skip('Native PostgreSQL API gate not executed: WP_TEST_POSTGRES_DSN absent')
@@ -198,6 +198,10 @@ def _postgres_api(*, reset=False, queued_reset=False, units=False, delivery_opti
                 if photos:
                     env['WP_ENABLE_USER_PHOTOS'] = '1'
                 if wallet:env['WP_ENABLE_WALLET_PREVIEW']='1'
+                if incubator:
+                    env['WP_ENABLE_INCUBATOR_INVOICING']='1'
+                if incubator_verified:
+                    env['WP_ENABLE_INCUBATOR_MANUAL_SETTLEMENTS']='1'
                 if delivery_options:
                     env['WP_ENABLE_ADDRESS_DELIVERY'] = '1'
                 env.pop('WP_AUTO_INIT_POSTGRES', None)
